@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Tambahkan nomor halaman PDF online gratis | Tanod Tools",
+  "description": "Beri nomor halaman pada PDF di browser Anda. Pilih posisi, format, dan nomor awal, lewati sampul, lalu unduh. Gratis, tanpa daftar, file tetap di perangkat.",
+  "h1": "Tambahkan nomor halaman ke PDF",
+  "lede": "Cantumkan nomor halaman di setiap halaman, atau hanya di halaman yang Anda pilih, dan tentukan letaknya.",
+  "blurb": "Beri nomor pada halaman PDF.",
+  "keywords": "nomor halaman pdf penomoran beri nomor halaman paginasi footer header halaman x dari y page number",
+  "limits": "Satu PDF sekali proses, hingga 200 MB. PDF yang dilindungi kata sandi tidak bisa diedit. Nomor ditulis dengan font Helvetica.",
+  "howto_title": "Cara menambahkan nomor halaman ke PDF",
+  "howto": [
+    "Pilih file PDF, atau seret ke halaman ini.",
+    "Pilih posisi, format nomor, dan nomor awal. Lewati halaman sampul atau batasi penomoran ke beberapa halaman jika perlu.",
+    "Tekan <strong>Tambahkan nomor halaman</strong>, lalu unduh PDF yang sudah bernomor."
+  ],
+  "faq": [
+    ["Apakah PDF saya diunggah?", "Tidak. Nomor ditulis ke salinan PDF Anda oleh pustaka open source pdf-lib, di dalam browser Anda. Tidak ada yang dikirim ke server."],
+    ["Bagaimana agar halaman sampul tidak diberi nomor?", "Centang <em>Lewati halaman pertama</em>. Nomor awal kemudian berlaku untuk halaman pertama yang diberi nomor, jadi halaman kedua mendapat nomor awal yang Anda atur. Jika Anda ingin halaman 2 menampilkan \"2\", atur nomor awal ke 2."],
+    ["Apa nilai N pada \"Halaman 1 dari N\"?", "N adalah nomor terakhir yang dipakai. Jika semua halaman diberi nomor dan Anda mulai dari 1, itu adalah jumlah total halaman. Jika Anda melewati sampul atau hanya memberi nomor pada beberapa halaman, N adalah nomor awal ditambah jumlah halaman yang diberi nomor, dikurangi satu."],
+    ["Apakah nomor tetap tegak pada halaman yang diputar?", "Ya. Jika halaman disimpan dengan rotasi 90, 180, atau 270 derajat, nomor ditempatkan sesuai tampilan halaman dan ikut diputar, sehingga terbaca tegak di posisi yang Anda pilih. Nomor ditempatkan di dalam area halaman yang terlihat (crop box-nya, jika ada)."],
+    ["Bisakah saya mengganti font?", "Tidak di alat ini. Nomor ditulis dengan Helvetica, font PDF standar, sehingga tampil di mana saja dan hanya menambah sedikit sekali ukuran file."],
+    ["Apakah bagian lain PDF ikut berubah?", "Isi halaman yang sudah ada dibiarkan apa adanya dan nomor ditambahkan di atasnya. Informasi dokumen seperti judul dan penulis tidak diubah."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Letakkan PDF di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Pilih PDF</span></label>
+  <p class="drop__hint">Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pos">Posisi</label>
+      <select id="pos">
+        <option value="bc" selected>Bawah, tengah</option>
+        <option value="br">Bawah, kanan</option>
+        <option value="bl">Bawah, kiri</option>
+        <option value="tc">Atas, tengah</option>
+        <option value="tr">Atas, kanan</option>
+        <option value="tl">Atas, kiri</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fmt">Format</label>
+      <select id="fmt">
+        <option value="n" selected>1</option>
+        <option value="page">Halaman 1</option>
+        <option value="of">Halaman 1 dari N</option>
+        <option value="slash">1 / N</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Mulai dari nomor</label>
+      <input id="start" type="number" inputmode="numeric" min="0" max="99999" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Ukuran font (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="6" max="48" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="margin">Jarak dari tepi (pt)</label>
+      <input id="margin" type="number" inputmode="numeric" min="0" max="200" step="1" value="28">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Halaman yang diberi nomor</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Semua halaman</label>
+        <label><input type="radio" name="scope" value="range">Beberapa halaman</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Halaman</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+      <span class="help">Halaman dihitung mulai dari 1.</span>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="skip"> Lewati halaman pertama (sampul)</label>
+    </div>
+  </div>
+  <p class="help" id="sample" aria-live="polite"></p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Tambahkan nomor halaman</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Menambahkan nomor halaman tanpa mengunggah PDF</h2>
+<p>Nomor halaman hanyalah potongan teks kecil yang ditulis di atas setiap halaman. Browser Anda bisa melakukannya langsung: browser membuka PDF dengan pdf-lib, menambahkan satu baris teks Helvetica ke setiap halaman yang Anda pilih, lalu menulis file baru. Isi halaman aslinya tidak diubah.</p>
+<p>Setiap halaman bisa memiliki ukuran, crop box, dan rotasi sendiri, sehingga posisinya dihitung per halaman. Margin diukur dari tepi area yang terlihat, dan pada halaman yang disimpan miring, nomor ikut diputar sehingga tetap terbaca tegak di tempat yang Anda harapkan.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ingin menggabungkan beberapa file terlebih dahulu? Gunakan <a href="/tools/merge-pdf/">Gabungkan PDF</a>, lalu beri nomor pada hasilnya agar penomorannya berurutan dari awal sampai akhir.</li>
+  <li>Perlu tanda di seluruh halaman, bukan nomor? Coba <a href="/tools/watermark-pdf/">Watermark PDF</a>.</li>
+  <li>Halaman tidak berurutan? Perbaiki dulu dengan <a href="/tools/reorder-pdf-pages/">Urutkan halaman PDF</a> sebelum memberi nomor.</li>
+</ul>

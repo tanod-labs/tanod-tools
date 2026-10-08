@@ -1,0 +1,101 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "chmod calculator",
+  "title": "chmod calculator: octal, symbolic and commands | Tanod Tools",
+  "description": "Tick read, write and execute boxes to get the chmod octal number, the rwxr-xr-x form and ready commands, or type a mode to see the boxes. Covers setuid and sticky.",
+  "h1": "chmod calculator",
+  "lede": "Set Unix file permissions with checkboxes, an octal number such as 755, or the rwxr-xr-x text, and get the matching chmod commands.",
+  "blurb": "Unix permissions as checkboxes, octal, rwx text and chmod commands.",
+  "keywords": "chmod calculator unix permissions linux file permissions octal rwx 755 644 setuid setgid sticky bit umask chmod generator",
+  "limits": "Works on the nine permission bits plus setuid, setgid and sticky, as in POSIX chmod. It does not read real files, show ownership, or cover ACLs, file attributes or umask. Octal modes need 3 or 4 digits.",
+  "howto_title": "How to work out a chmod mode",
+  "howto": [
+    "Tick the boxes for owner, group and others, or pick a common preset such as 644 or 755. You can also type an octal number or the nine-letter text and the boxes follow.",
+    "Check the plain-English summary of what each class can do to a file and to a directory, and read any warning shown.",
+    "Copy the numeric or symbolic <code>chmod</code> command. Change the file name first if you want the command ready to paste."
+  ],
+  "faq": [
+    ["How does the octal number work?", "Each digit adds up read (4), write (2) and execute (1) for one class, in the order owner, group, others. So 7 is read, write and execute, 5 is read and execute, and 4 is read only. 755 gives the owner everything and everyone else read and execute. An optional fourth digit in front holds setuid (4), setgid (2) and sticky (1)."],
+    ["What do the s, S, t and T letters mean?", "They replace the x in the owner, group or others position. A lower-case letter means the special bit is set and execute is also on; an upper-case letter means the special bit is set but execute is off, which is usually a mistake. So 4755 is <code>rwsr-xr-x</code> and 4644 is <code>rwSr--r--</code>."],
+    ["What is the difference between 644 and 755?", "644 is the usual mode for ordinary files: the owner can read and write, everyone else can only read. 755 adds execute for all, which programs, scripts and directories need. Directories need the execute bit for anyone to enter them."],
+    ["Why is 777 considered dangerous?", "It lets every user on the machine, and any program running as one, change or replace the file. A web server that is told to write somewhere does not need that: giving the right user or group ownership and using 775 or 770 solves most permission errors without opening the file to everyone."],
+    ["What does the sticky bit do?", "On a directory, it stops users from deleting or renaming files they do not own, even if they can write to the directory. That is why shared folders such as <code>/tmp</code> are mode 1777. On modern Linux it has no effect on ordinary files."],
+    ["Does this change anything on my computer?", "No. It only calculates the number and the commands. Nothing you enter is sent anywhere, and you run the commands yourself in a terminal."]
+  ],
+  "related": ["subnet-calculator", "number-base-converter", "http-status-codes", "cron-expression-generator", "user-agent-parser"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Permissions</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Owner</th><th scope="col">Group</th><th scope="col">Others</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Read <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Owner read"></td><td><input type="checkbox" id="m-g-r" aria-label="Group read"></td><td><input type="checkbox" id="m-o-r" aria-label="Others read"></td></tr>
+          <tr><th scope="row">Write <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Owner write"></td><td><input type="checkbox" id="m-g-w" aria-label="Group write"></td><td><input type="checkbox" id="m-o-w" aria-label="Others write"></td></tr>
+          <tr><th scope="row">Execute <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Owner execute"></td><td><input type="checkbox" id="m-g-x" aria-label="Group execute"></td><td><input type="checkbox" id="m-o-x" aria-label="Others execute"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Set user ID (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Set group ID (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Sticky bit <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Octal</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Symbolic</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Common modes">
+    <button class="btn btn--sm" type="button" data-mode="644">644 file</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 program or directory</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 private file</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 private directory</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 shared group</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 everyone</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">File or directory name in the commands</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Commands">
+    <div><dt>Numeric</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Copy numeric command">Copy</button></div>
+    <div><dt>Symbolic</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Copy symbolic command">Copy</button></div>
+  </dl>
+  <h2 class="util-h">What this mode allows</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Who</th><th scope="col">On a file</th><th scope="col">On a directory</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>How Unix file permissions are stored</h2>
+<p>Every file and directory on a Unix-like system carries a short mode: three permission bits (read, write, execute) for each of three classes (the owning user, the owning group, everyone else), plus three special bits. That is twelve bits, and the octal number is simply those bits written three at a time, which is why the digits only go up to 7. The nine-letter form from <code>ls -l</code> shows the same bits as letters.</p>
+<p>Read, write and execute mean different things on a directory. Read lets you list the names inside, write lets you add, rename and remove entries, and execute lets you step into the directory and reach things by name. A directory with read but no execute shows its names and denies access to everything in it, a common source of confusing permission errors.</p>
+<p>The special bits change how a mode behaves. Setuid and setgid make a program run with the file owner's or group's rights instead of the caller's, which is powerful and so is ignored for shell scripts on most systems. Setgid on a directory makes new files inherit its group, and the sticky bit on a directory stops users deleting each other's files. If you are unsure which mode a file needs, start restrictive and add only what an error message asks for.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Binary and octal are the same bits written differently; the <a href="/tools/number-base-converter/">number base converter</a> shows 755 as 111 101 101.</li>
+  <li>Planning a cron job that runs a script you just made executable? Build the schedule with the <a href="/tools/cron-expression-generator/">cron expression generator</a>.</li>
+  <li>Calculating network ranges next? Try the <a href="/tools/subnet-calculator/">subnet calculator</a>.</li>
+</ul>

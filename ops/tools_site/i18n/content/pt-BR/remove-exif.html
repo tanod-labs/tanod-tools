@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "Remover dados EXIF de fotos, incluindo GPS | Tanod Tools",
+  "description": "Veja o que uma foto revela (localização GPS, câmera, data) e remova dados EXIF, XMP e IPTC sem recodificar a imagem. No navegador; nada é enviado.",
+  "h1": "Remover dados EXIF de fotos",
+  "lede": "Veja a localização, a câmera e a data escondidas em uma foto e remova tudo sem mexer na imagem em si.",
+  "blurb": "Remova GPS, câmera e outros metadados de fotos.",
+  "keywords": "remover exif apagar metadados da foto remover localizacao gps privacidade limpar exif xmp iptc dados da foto",
+  "limits": "Até 50 imagens por lote, 50 MB cada. JPEG, PNG e WebP são limpos sem recodificação; GIF, BMP e AVIF são redesenhados e salvos como PNG.",
+  "howto_title": "Como remover dados EXIF de uma foto",
+  "howto": [
+    "Escolha suas fotos ou arraste-as para a página. Cada uma mostra o que contém, com qualquer localização GPS destacada.",
+    "Deixe \"Manter orientação\" ativado para que fotos que dependem disso não fiquem de lado, ou desative para remover tudo.",
+    "Clique em <strong>Remover metadados</strong> e depois baixe as cópias limpas ou um .zip. Os arquivos recebem \"-clean\" no nome."
+  ],
+  "faq": [
+    ["Minhas fotos são enviadas?", "Não. O arquivo é lido e regravado no seu navegador, e nada é enviado a nenhum servidor. Você pode conferir a lista do que cada foto contém antes de qualquer alteração."],
+    ["O meu JPEG é comprimido de novo?", "Não. Para JPEG, PNG e WebP, a ferramenta regrava o contêiner do arquivo e descarta os blocos de metadados. Os dados da imagem são copiados byte por byte, então não há perda de qualidade e os pixels continuam idênticos."],
+    ["O que exatamente é removido?", "JPEG: EXIF e XMP (APP1), IPTC (APP13), comentários e blocos de aplicativo, exceto o cabeçalho JFIF, o perfil de cor e o indicador de cor da Adobe. PNG: blocos de texto (tEXt, zTXt, iTXt, que podem conter XMP), EXIF e a data de modificação. WebP: blocos EXIF e XMP. Dados acrescentados depois do fim de uma imagem JPEG ou PNG também são descartados."],
+    ["O que é \"Manter orientação\"?", "Muitas câmeras guardam a foto de lado e acrescentam uma tag de orientação que diz aos visualizadores para girá-la. Se essa tag for removida, a foto pode aparecer de lado. Com esta opção ativada (o padrão), um pequeno bloco EXIF contendo só o número da orientação é gravado de volta quando o original não estava na posição certa. Ele não contém localização nem detalhes da câmera. Desative a opção para removê-lo também."],
+    ["O perfil de cor é removido?", "Não. Um perfil de cor ICC incorporado é mantido, porque removê-lo pode mudar a aparência das cores. Ele descreve o tratamento das cores, não onde nem como a foto foi tirada."],
+    ["Quão confiável é a lista do que foi encontrado?", "Ela lê os campos EXIF padrão (câmera, lente, data, software, GPS, orientação) e conta o resto. Os fabricantes de câmeras acrescentam dados privados em formatos próprios, que são contados, mas não descritos. O arquivo limpo é verificado depois de gravado para confirmar que não sobrou localização EXIF, câmera, XMP nem metadados de texto."],
+    ["O que acontece com arquivos GIF, BMP ou AVIF?", "Esta ferramenta não edita esses contêineres. Ela redesenha a imagem e a salva como PNG, sem nenhum metadado. Um GIF vira o seu primeiro quadro."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Solte as fotos aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Escolher fotos</span></label>
+  <p class="drop__hint">JPEG, PNG ou WebP (também GIF, BMP, AVIF). Ou arraste para qualquer lugar desta página.</p>
+</div>
+<ol class="files" id="files" aria-label="Fotos a limpar" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Manter orientação para as fotos não ficarem de lado</label>
+      <p class="help">Grava de volta um pequeno bloco EXIF contendo só o número da orientação, e só quando a foto ainda não está na posição certa.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Remover metadados</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Limpar tudo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>O que uma foto pode revelar</h2>
+<p>Antes de remover os dados EXIF, vale saber o que eles contêm. A maioria das câmeras e celulares grava informações extras em cada foto: marca e modelo, o horário em que foi tirada, o software que a editou e, se a localização estiver ativada, as coordenadas GPS de onde você estava. Esse bloco se chama EXIF. Programas de edição acrescentam blocos XMP e IPTC com legendas, nomes de autores e palavras-chave. Muitos sites removem isso quando você envia a foto, mas nem todos, e um arquivo mandado por e-mail ou por aplicativo de mensagens costuma manter tudo.</p>
+<p>Esta ferramenta primeiro mostra o que cada foto contém e depois remove esses dados regravando o contêiner do arquivo. Um JPEG é uma sequência de blocos identificados seguida da imagem comprimida; os blocos de metadados ficam de fora e os dados da imagem são copiados sem alteração. É por isso que o resultado não é comprimido de novo e fica idêntico.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Confira a lista antes de compartilhar: uma localização destacada significa que a foto carrega coordenadas.</li>
+  <li>Prints e exportações editadas ainda podem conter metadados de texto. Passe esses arquivos por aqui também.</li>
+  <li>Para também reduzir o arquivo, use <a href="/tools/compress-image/">Comprimir imagem</a> depois; ela recodifica a imagem e também descarta os metadados.</li>
+</ul>

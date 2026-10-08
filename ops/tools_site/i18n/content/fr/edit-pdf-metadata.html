@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "Modifier les métadonnées d'un PDF en ligne | Tanod Tools",
+  "description": "Modifiez le titre, l'auteur, le sujet, les mots-clés et les dates d'un PDF, ou effacez toutes ses métadonnées. Gratuit, dans votre navigateur, rien n'est envoyé.",
+  "h1": "Modifier les métadonnées d'un PDF",
+  "lede": "Voyez ce qu'un PDF dit de lui-même, modifiez les champs, ou supprimez-les tous avant de le partager.",
+  "blurb": "Modifier ou effacer le titre, l'auteur et les autres propriétés d'un PDF.",
+  "keywords": "metadonnees pdf proprietes titre auteur supprimer effacer modifier metadonnees xmp informations document",
+  "limits": "Un PDF à la fois, jusqu'à 200 Mo. Les PDF protégés par mot de passe ne peuvent pas être modifiés.",
+  "howto_title": "Comment modifier les métadonnées d'un PDF",
+  "howto": [
+    "Choisissez un fichier PDF ou glissez-le sur la page. Ses propriétés actuelles s'affichent dans le formulaire.",
+    "Modifiez les champs voulus, ou cliquez sur <strong>Supprimer toutes les métadonnées</strong> pour les effacer.",
+    "Cliquez sur <strong>Enregistrer les modifications</strong> et téléchargez le PDF mis à jour."
+  ],
+  "faq": [
+    ["Mon PDF est-il envoyé ?", "Non. Les propriétés sont lues et réécrites dans votre navigateur avec la bibliothèque open source pdf-lib. Rien n'est envoyé à un serveur."],
+    ["Que fait « Supprimer toutes les métadonnées » ?", "Cette option efface chaque entrée du dictionnaire d'informations du document (titre, auteur, sujet, mots-clés, créateur, producteur et dates) et retire le flux de métadonnées XMP intégré, que beaucoup de programmes écrivent comme seconde copie des mêmes informations. Elle ne touche pas au contenu des pages : le texte, les images et les noms visibles sur les pages restent. Certains fichiers contiennent d'autres données privées, comme des commentaires ou des valeurs de formulaire, que cet outil ne modifie pas."],
+    ["Le fichier enregistré garde-t-il le même nom ?", "Oui. Le téléchargement utilise le nom d'origine, par exemple report.pdf : vérifiez donc que vous ouvrez bien la nouvelle copie. Votre fichier d'origine n'est pas modifié."],
+    ["Pourquoi l'option XMP se coche-t-elle quand je modifie des champs ?", "Beaucoup de visionneuses et d'outils de recherche lisent d'abord le flux XMP. S'il reste dans le fichier, il peut continuer à afficher l'ancien titre ou l'ancien auteur, et la modification semblerait sans effet. Cocher l'option retire ce flux à l'enregistrement."],
+    ["L'enregistrement modifie-t-il d'autres propriétés ?", "Seuls les champs que vous modifiez changent. L'outil n'ajoute ni son propre nom de producteur ni de date de modification, sauf si vous les indiquez vous-même."],
+    ["Peut-il modifier les dates ?", "Oui. Décochez <em>Conserver les dates d'origine</em> et indiquez de nouvelles valeurs dans votre heure locale. Si vous laissez l'option cochée, les dates restent telles quelles."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Déposez un PDF ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choisir un PDF</span></label>
+  <p class="drop__hint">Ou glissez-le n'importe où sur cette page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <dl class="stats" id="stats">
+    <div><dt>Pages</dt><dd id="s-pages"></dd></div>
+    <div><dt>Version PDF</dt><dd id="s-ver"></dd></div>
+    <div><dt>Flux XMP</dt><dd id="s-xmp"></dd></div>
+  </dl>
+  <div class="opts">
+    <div class="field"><label for="m-title">Titre</label><input id="m-title" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-author">Auteur</label><input id="m-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-subject">Sujet</label><input id="m-subject" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-keywords">Mots-clés</label><input id="m-keywords" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-creator">Créateur (programme qui l'a créé)</label><input id="m-creator" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-producer">Producteur (programme qui l'a enregistré)</label><input id="m-producer" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-created">Création</label><input id="m-created" type="datetime-local" step="1"></div>
+    <div class="field"><label for="m-modified">Modification</label><input id="m-modified" type="datetime-local" step="1"></div>
+    <div class="field opts__full">
+      <label class="check"><input type="checkbox" id="keep-dates" checked> Conserver les dates d'origine</label>
+      <label class="check"><input type="checkbox" id="drop-xmp"> Retirer aussi le flux de métadonnées XMP intégré</label>
+      <span class="help" id="xmp-help"></span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Enregistrer les modifications</button>
+    <button class="btn" id="wipe" type="button">Supprimer toutes les métadonnées</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+  <p class="help">Le fichier téléchargé garde le nom d'origine. Les champs vides sont retirés du fichier.</p>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Les métadonnées d'un PDF, et pourquoi les modifier</h2>
+<p>Chaque PDF peut contenir quelques champs descriptifs : un titre, un auteur, un sujet, des mots-clés, le programme qui l'a créé et les dates de création et de dernière modification. Ces métadonnées se trouvent dans le dictionnaire d'informations du document, et beaucoup de programmes en écrivent aussi une seconde copie sous forme de paquet XMP, un bloc XML joint au fichier.</p>
+<p>Ces champs apparaissent dans les propriétés du fichier, les résultats de recherche et les onglets du navigateur : un titre erroné ou un nom d'auteur oublié peut donc être gênant quand un document vous échappe. Cet outil les lit dans votre navigateur, vous permet de les corriger ou les efface. Le contenu des pages n'est jamais modifié.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Vous voulez plutôt nettoyer les métadonnées de photos ? Utilisez <a href="/tools/remove-exif/">Supprimer les données EXIF</a>.</li>
+  <li>Vous combinez des fichiers ? <a href="/tools/merge-pdf/">Fusionner des PDF</a> crée un nouveau document : définissez ensuite le titre ici.</li>
+</ul>

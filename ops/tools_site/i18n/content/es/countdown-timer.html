@@ -1,0 +1,94 @@
+<!--meta
+{
+  "title": "Temporizador online: cuenta regresiva con alarma | Tanod Tools",
+  "description": "Temporizador de cuenta regresiva online gratis con tiempos rápidos, sonido al terminar, el tiempo en el título de la pestaña y cuenta regresiva a una fecha.",
+  "h1": "Temporizador de cuenta regresiva",
+  "lede": "Elige una duración y presiona Iniciar, o haz una cuenta regresiva hasta una fecha y hora en la zona horaria que elijas y comparte el enlace.",
+  "blurb": "Temporizador con tiempos rápidos y alarma, o cuenta regresiva a una fecha.",
+  "keywords": "temporizador online cuenta regresiva cuenta atras timer reloj alarma pomodoro temporizador de cocina cuenta regresiva para un evento cuantos dias faltan año nuevo fecha limite",
+  "limits": "Las duraciones llegan hasta 99 horas, 59 minutos y 59 segundos. El temporizador solo funciona mientras esta página siga abierta en una pestaña; al cerrarla se detienen la cuenta regresiva y el sonido.",
+  "howto_title": "Cómo usar el temporizador de cuenta regresiva",
+  "howto": [
+    "Escribe las horas, los minutos y los segundos o presiona un <strong>tiempo rápido</strong>, y luego presiona <strong>Iniciar</strong>. El título de la pestaña muestra el tiempo restante.",
+    "Pausa y reanuda las veces que quieras, o presiona <strong>Reiniciar</strong> para volver al tiempo inicial.",
+    "Para hacer una cuenta regresiva hasta un evento, cambia a <em>Hasta una fecha</em>, escribe la fecha, la hora y la zona horaria, y copia el enlace para compartirlo."
+  ],
+  "faq": [
+    ["¿Sigue siendo preciso si cambio a otra pestaña?", "Sí. Los navegadores ralentizan los temporizadores en las pestañas en segundo plano, así que la página nunca cuenta pulsos. Compara la hora actual del reloj con el momento en que debe terminar el temporizador, así que la pantalla se pone al día en cuanto la pestaña vuelve a estar visible y la hora de fin no se desvía. En una pestaña oculta, la alarma puede llegar hasta un segundo tarde."],
+    ["¿Va a sonar?", "La alarma es un tono corto generado por el motor de audio de tu navegador, sin ningún archivo de audio. Los navegadores solo permiten sonido después de que hayas interactuado con la página, así que primero presiona Iniciar en esta página. Si tu dispositivo está en silencio o la pestaña está silenciada, no lo oirás, y el mensaje de fin se queda en pantalla. Usa la casilla para desactivar el sonido."],
+    ["¿El temporizador puede mantener la pantalla encendida?", "Hay una casilla opcional para eso. Usa la función Wake Lock del navegador, que ofrecen Chrome, Edge y Safari. Si tu navegador o el ahorro de batería lo rechazan, la página lo indica y sigue funcionando; la cuenta regresiva no se ve afectada."],
+    ["¿Cómo comparto una cuenta regresiva para un evento?", "Cambia al modo de fecha, escribe la fecha, la hora y la zona horaria, y usa Copiar enlace. El objetivo se guarda en la parte de la dirección que va después del <code>#</code>, como <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. Esa parte no se envía a ningún servidor cuando alguien abre el enlace, y esa persona ve el mismo momento en su propio reloj."],
+    ["¿Qué pasa con un cambio de horario de verano?", "En el modo de fecha, la hora se calcula para la zona horaria que elegiste, con los datos de zonas horarias del navegador. Si la hora del reloj se salta, por ejemplo las 02:30 de la noche en que se adelantan los relojes, la página pasa al momento equivalente posterior y te lo indica. Si ocurre dos veces, se usa la primera."],
+    ["¿Por qué muestra un segundo completo antes de llegar a cero?", "La pantalla redondea hacia arriba, así que 00:00:01 se mantiene durante el último segundo y el cero aparece justo cuando se acaba el tiempo, igual que un temporizador de cocina."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Cuenta regresiva</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>Por una duración</label>
+      <label><input type="radio" name="ct-mode" value="date">Hasta una fecha</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Tiempo restante" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>Se acabó el tiempo.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Horas</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minutos</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Segundos</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Tiempos rápidos">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 min</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Iniciar</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Reiniciar</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Fecha</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Hora</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Zona horaria</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Días</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Horas</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minutos</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Segundos</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Copiar enlace a esta cuenta regresiva</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Silenciar el sonido al terminar el tiempo</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Mantener la pantalla encendida durante la cuenta</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Cómo se mantiene preciso un temporizador y qué le hace una pestaña oculta</h2>
+<p>La forma obvia de crear un temporizador online es restar uno a un número cada vez que se dispara un temporizador de un segundo. También es la forma equivocada. Los navegadores limitan los temporizadores de las pestañas en segundo plano a una vez por segundo o incluso una vez por minuto, y una página ocupada los retrasa aún más, así que una cuenta regresiva hecha contando se va atrasando sin avisar. Esta página guarda el momento en que el temporizador debe terminar y, en cada pulso, le resta la hora actual, usando el reloj monotónico para las duraciones y el reloj del sistema para las fechas. Los pulsos solo deciden cuándo se vuelve a dibujar la pantalla.</p>
+<p>El modo de fecha trabaja con la hora del calendario, que es más complicada. "La medianoche del 1 de enero en Auckland" es un instante distinto de la misma hora de reloj en Londres, y dos veces al año algunas zonas se saltan o repiten una hora. La página consulta la base de datos de zonas horarias del navegador para obtener la diferencia exacta en el día objetivo, así que una cuenta regresiva para un evento local es correcta para el lugar donde ocurre, sin importar en qué zona esté quien la mira.</p>
+<p>Los anuncios para lectores de pantalla son deliberadamente escasos: el inicio, cada minuto completo, los 10 y 5 segundos y el final. Leer cada segundo en voz alta haría que la página fuera imposible de usar con un lector de pantalla y no ayudaría a nadie que pueda ver los dígitos.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Planificas un evento entre varias regiones? Compara primero las horas en el <a href="/tools/time-zone-converter/">conversor de zonas horarias</a>.</li>
+  <li>¿Quieres el tiempo transcurrido en lugar del tiempo restante, con vueltas? Usa el <a href="/tools/stopwatch/">cronómetro</a>.</li>
+  <li>¿Necesitas la diferencia en días entre dos fechas y no un reloj en vivo? Prueba <a href="/tools/date-difference-calculator/">Días entre fechas</a>.</li>
+</ul>

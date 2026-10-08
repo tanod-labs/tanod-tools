@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Filter foto online: hitam putih, sepia, blur | Tanod Tools",
+  "description": "Atur kecerahan, kontras, saturasi, dan hue, atau ubah foto jadi hitam putih, sepia, negatif, atau blur. Pratinjau langsung, gratis, berjalan di browser Anda.",
+  "h1": "Filter gambar",
+  "lede": "Edit foto dengan slider atau preset sekali klik, bandingkan dengan aslinya, lalu simpan hasilnya dalam ukuran penuh.",
+  "blurb": "Hitam putih, sepia, kecerahan, blur, dan lainnya.",
+  "keywords": "filter foto efek edit foto editor hitam putih grayscale abu-abu sepia vintage invert negatif kecerahan kontras saturasi hue blur buram instagram",
+  "limits": "Bekerja pada satu gambar hingga 50 MB dan sekitar 100 megapiksel. Gambar yang sangat besar butuh beberapa detik; halaman tetap bisa digunakan selama proses berjalan.",
+  "howto_title": "Cara menerapkan filter ke gambar",
+  "howto": [
+    "Pilih gambar. Pratinjau ditampilkan dalam ukuran yang diperkecil agar slider langsung merespons.",
+    "Mulai dari preset seperti <strong>Hitam putih</strong> atau <strong>Cerah</strong>, lalu atur slider. Aktifkan <strong>Tampilkan asli</strong> untuk membandingkan.",
+    "Tekan <strong>Terapkan dan simpan</strong>. Filter diterapkan lagi ke gambar ukuran penuh, lalu Anda mengunduhnya."
+  ],
+  "faq": [
+    ["Apakah foto saya diunggah?", "Tidak. Setiap filter dihitung di browser, di perangkat Anda, piksel demi piksel. Tidak ada yang dikirim ke server."],
+    ["Apakah hasil filternya sama dengan CSS di browser saya?", "Filter ini mengikuti rumus yang sama dengan spesifikasi CSS Filter Effects: kecerahan mengalikan, kontras berporos pada abu-abu tengah, dan saturasi, rotasi hue, grayscale, serta sepia memakai matriks warna dari spesifikasi tersebut. Karena perhitungannya dilakukan di halaman ini, bukan lewat fitur filter browser, alat ini juga berfungsi di browser yang tidak memiliki fitur itu."],
+    ["Dalam urutan apa filter diterapkan?", "Kecerahan, kontras, saturasi, rotasi hue, grayscale, sepia, invert, lalu blur. Urutannya tetap, jadi posisi slider yang sama selalu menghasilkan gambar yang sama."],
+    ["Mengapa blur terlihat sama di pratinjau dan di file yang disimpan?", "Besar blur adalah pecahan dari lebar gambar, bukan jumlah piksel. Foto 4000 piksel yang dipratinjau pada 800 piksel diburamkan lima kali lebih sedikit dalam piksel pratinjau, dan hasilnya terlihat identik saat dilihat pada skala yang sama."],
+    ["Apa yang terjadi pada transparansi?", "Transparansi tidak diubah. Kanal alfa tidak pernah diubah, dan blur menimbang warna berdasarkan opasitas sehingga tepi lembut dari gambar potongan tidak menjadi gelap. Simpan sebagai PNG atau WebP untuk mempertahankannya; JPEG mengisi area transparan dengan warna putih."],
+    ["Bisakah saya membatalkan preset?", "Pilih Atur ulang, atau geser kembali slider-nya. Preset hanya menggerakkan slider, dan Anda bisa menyesuaikannya setelahnya. Tidak ada yang mengubah file asli Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Letakkan gambar di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Pilih gambar</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, atau AVIF. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Pratinjau dengan filter yang diterapkan"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Tampilkan asli</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Preset</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Hitam putih</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Cerah</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Pudar</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Negatif</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Atur ulang</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Kecerahan: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Kontras: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Saturasi: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Grayscale: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepia: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Invert: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Rotasi hue: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Blur: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Simpan sebagai</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Sama</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Format sama mengembalikan PNG, JPEG, dan WebP sesuai format aslinya; GIF, BMP, dan AVIF menjadi PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Terapkan dan simpan</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Apa yang dilakukan setiap filter pada piksel</h2>
+<p>Filter foto online ini bekerja langsung pada angka-angka piksel. Setiap piksel terdiri dari tiga angka dari 0 sampai 255, untuk merah, hijau, dan biru. Kecerahan mengalikan angka-angka itu, jadi 150 persen mengubah nilai 100 menjadi 150 dan apa pun di atas 255 dipotong menjadi putih. Kontras merenggangkan angka-angka menjauhi abu-abu tengah (128) atau merapatkannya ke arah sana, itulah sebabnya kontras 0 persen menghasilkan gambar abu-abu datar. Saturasi dan rotasi hue mencampur ketiga kanal dengan matriks warna tetap, sehingga foto bergeser ke arah abu-abu atau berputar mengelilingi roda warna.</p>
+<p>Grayscale mengganti setiap piksel dengan luminansinya, yaitu jumlah berbobot yang paling banyak menghitung hijau (sekitar 72 persen), lalu merah (21 persen), dan paling sedikit biru (7 persen), karena mata paling peka terhadap hijau. Sepia memakai matriks yang memberikan warna cokelat hangat seperti foto cetak lama. Invert mengurangkan setiap nilai dari 255 untuk membuat negatif. Blur merata-ratakan setiap piksel dengan piksel di sekitarnya, tiga kali ke setiap arah, yang sangat mendekati Gaussian blur.</p>
+<p>Pratinjau kecil membuat slider terasa cepat, tetapi file yang disimpan diproses dalam resolusi penuh secara bertahap, jadi halaman tetap responsif dan menampilkan kemajuannya. Setelah disimpan, file aslinya tetap tidak tersentuh.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Untuk membaca warna yang persis dari hasilnya, gunakan <a href="/tools/image-color-picker/">Ambil warna dari gambar</a>.</li>
+  <li>Menerapkan filter sebelum menambahkan keterangan membuat teks tetap tajam: lakukan dengan urutan itu bersama <a href="/tools/add-text-to-image/">Tambahkan teks ke gambar</a>.</li>
+  <li>Gambar yang diburamkan dan berkontras tinggi terkompresi dengan cara yang sangat berbeda, jadi periksa ukurannya setelahnya di <a href="/tools/compress-image/">Kompres gambar</a>.</li>
+</ul>

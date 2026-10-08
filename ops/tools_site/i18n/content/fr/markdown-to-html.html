@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Convertir Markdown en HTML avec aperçu | Tanod Tools",
+  "description": "Convertissez du Markdown en HTML propre dans le navigateur : tableaux GitHub, listes de tâches, aperçu en direct, HTML dangereux retiré. Gratuit, sans envoi.",
+  "h1": "Convertir Markdown en HTML",
+  "lede": "Tapez ou collez du Markdown et obtenez du HTML propre pendant la saisie, avec un aperçu du rendu.",
+  "blurb": "Convertissez du Markdown en HTML, avec aperçu.",
+  "keywords": "markdown en html convertir markdown html convertisseur md html gfm github tableau apercu aperçu rendu readme",
+  "limits": "Markdown jusqu'à environ 5 Mo, tapé, collé ou ouvert depuis un fichier .md ou .txt. Le résultat se met à jour pendant la saisie.",
+  "howto_title": "Comment convertir du Markdown en HTML",
+  "howto": [
+    "Tapez ou collez votre Markdown, ou ouvrez un fichier .md.",
+    "Lisez le HTML à droite, ou passez à Aperçu pour voir le rendu. Activez l'option document complet si vous avez besoin d'une page entière.",
+    "Copiez le HTML ou téléchargez-le en fichier .html."
+  ],
+  "faq": [
+    ["Mon texte est-il envoyé en ligne ?", "Non. Le Markdown est converti dans votre navigateur avec la bibliothèque open source marked, et rien n'est envoyé nulle part ni conservé."],
+    ["Quelle syntaxe Markdown est prise en charge ?", "CommonMark plus les ajouts de GitHub : tableaux, listes de tâches (<code>- [x] done</code>), texte barré avec <code>~~</code>, blocs de code délimités et liens automatiques. Les retours à la ligne simples sont joints en un seul paragraphe, comme en Markdown standard ; activez <em>Retours à la ligne en &lt;br&gt;</em> pour les conserver, comme dans les commentaires GitHub."],
+    ["Le HTML peut-il être mis sans risque sur un site web ?", "Il est nettoyé avec la bibliothèque open source DOMPurify avant de s'afficher. Les scripts, les gestionnaires d'événements comme <code>onerror</code>, les liens <code>javascript:</code>, les iframes et les objets intégrés sont retirés, et la ligne sous le résultat liste ce qui a été supprimé. Le HTML ordinaire écrit dans le Markdown, comme <code>&lt;details&gt;</code> ou <code>&lt;sup&gt;</code>, est conservé. Comme pour tout contenu venant de quelqu'un d'autre, gardez les protections de votre propre site en place."],
+    ["Pourquoi une image s'affiche-t-elle comme un espace réservé dans l'aperçu ?", "L'aperçu ne charge jamais rien depuis un autre site web : votre texte n'est donc pas révélé à ce site et la page reste privée. Les images provenant d'adresses web apparaissent comme un espace réservé portant leur adresse. Le code HTML contient toujours la balise <code>&lt;img&gt;</code> normale : l'image s'affichera donc là où vous la publiez."],
+    ["Qu'ajoute l'option document complet ?", "Une page complète autour du HTML : un doctype, un <code>&lt;head&gt;</code> avec le jeu de caractères UTF-8, une balise viewport pour mobile et un titre tiré du premier intertitre. Laissez-la désactivée si vous collez le résultat dans une page existante ou un CMS."],
+    ["Les titres reçoivent-ils des attributs id pour les liens ?", "Non. Les titres sont produits sous forme de simples balises <code>&lt;h1&gt;</code> à <code>&lt;h6&gt;</code>. Si vous avez besoin d'ancres, ajoutez les id dans le modèle de votre site ou à la main."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="md" class="md-label">Markdown</label>
+      <textarea id="md" class="mono md-pane" spellcheck="false" autocomplete="off" placeholder="# Un titre&#10;&#10;Du texte en **gras** et un [lien](https://example.com).&#10;&#10;- [x] Fait&#10;- [ ] À faire"></textarea>
+    </div>
+    <div class="field md-result">
+      <div class="md-result__head">
+        <span class="label" id="view-l">Résultat</span>
+        <div class="seg" role="radiogroup" aria-labelledby="view-l">
+          <label><input type="radio" name="view" value="code" checked>Code HTML</label>
+          <label><input type="radio" name="view" value="preview">Aperçu</label>
+        </div>
+      </div>
+      <textarea id="out" class="mono md-pane" readonly aria-label="Code HTML"></textarea>
+      <div id="preview" class="md-preview md-pane" tabindex="0" role="region" aria-label="Aperçu" hidden></div>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="breaks">Retours à la ligne en &lt;br&gt;</label>
+    <label class="check"><input type="checkbox" id="full">Envelopper dans un document HTML complet</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Tapez ou collez du Markdown pour commencer.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le HTML</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Télécharger .html</button>
+    <button class="btn btn--quiet" id="clear" type="button">Effacer</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/markdown,.md,.markdown,text/plain,.txt">{{mark:i-upload}}<span>Ouvrir un fichier .md</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Comment le Markdown devient du HTML</h2>
+<p>Le Markdown permet d'écrire du texte mis en forme avec des caractères ordinaires : un <code>#</code> commence un titre, <code>**deux astérisques**</code> mettent en gras, une ligne qui commence par un tiret est un élément de liste. C'est le format des fichiers README, de nombreuses applications de notes et de la plupart des forums de développeurs. Les navigateurs, les modèles d'e-mail et les systèmes de gestion de contenu attendent du HTML : il faut donc tôt ou tard convertir le Markdown en HTML.</p>
+<p>Ce convertisseur suit CommonMark avec les ajouts de GitHub Flavored Markdown : tableaux, listes de tâches et texte barré fonctionnent comme sur GitHub. Le HTML produit passe ensuite par un nettoyeur, qui retire tout ce qui pourrait exécuter du code à l'affichage du HTML, sans toucher à la mise en forme ordinaire.</p>
+<p>L'onglet Aperçu montre le même HTML rendu dans la page. Les liens s'ouvrent dans un nouvel onglet, et les images hébergées ailleurs sont affichées comme des espaces réservés au lieu d'être chargées : rien de ce que vous écrivez n'est envoyé à un autre site pendant que vous travaillez.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vous avez du HTML et voulez du Markdown ? Utilisez <a href="/tools/html-to-markdown/">HTML en Markdown</a>.</li>
+  <li>Vérifiez la longueur d'un article avec le <a href="/tools/word-counter/">Compteur de mots</a>.</li>
+  <li>Comparez deux brouillons avec <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+</ul>

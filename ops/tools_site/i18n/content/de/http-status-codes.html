@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "HTTP-Statuscodes: Liste mit Suche und Erklärung | Tanod Tools",
+  "description": "Durchsuchbare Liste aller bei der IANA registrierten HTTP-Statuscodes von 100 bis 511: Bedeutung, wann sie auftreten, was zu tun ist, und das zugehörige RFC.",
+  "h1": "HTTP-Statuscodes",
+  "lede": "Schlagen Sie jeden HTTP-Statuscode nach Nummer oder Stichwort nach, mit verständlicher Bedeutung, häufigen Ursachen, Lösungen und dem RFC, das ihn definiert.",
+  "blurb": "Durchsuchbare Übersicht aller HTTP-Statuscodes mit Lösungen.",
+  "keywords": "http statuscodes http status codes statuscode liste fehlercode 404 not found 500 internal server error 301 302 weiterleitung redirect 429 too many requests 502 bad gateway 503 504 teapot 418 rfc 9110",
+  "limits": "Enthält die Codes aus der IANA HTTP Status Code Registry, wobei 306 und 418 als das gezeigt werden, was sie sind: reservierte Codes. Dazu kommt eine kleine Auswahl verbreiteter inoffizieller Codes von nginx, Cloudflare und Laravel, jeweils mit Quelle gekennzeichnet. Andere herstellerspezifische Codes sind nicht enthalten.",
+  "howto_title": "So schlagen Sie einen Statuscode nach",
+  "howto": [
+    "Geben Sie die Nummer, etwa <code>502</code>, oder ein Stichwort, etwa <em>rate limit</em> oder <em>redirect</em>, in das Suchfeld ein.",
+    "Grenzen Sie die Liste mit den Klassen-Schaltflächen ein: 1xx bis 5xx für die Standardcodes oder Inoffiziell für Codes von nginx, Cloudflare und Laravel.",
+    "Öffnen Sie einen Code, um zu sehen, wann er auftritt und was Sie als Client und als Serverbetreiber dagegen tun können. Über den #-Link teilen Sie einen direkten Link zu diesem Code."
+  ],
+  "faq": [
+    ["Was bedeuten die fünf Klassen von Statuscodes?", "Die erste Ziffer bestimmt die Klasse. 1xx ist informativ, die Anfrage läuft noch; 2xx bedeutet Erfolg; 3xx bedeutet, dass der Client einen weiteren Schritt tun muss (meist eine Weiterleitung); 4xx bedeutet, dass die Anfrage ein Problem auf Seiten des Clients hat; und 5xx bedeutet, dass der Server bei einer scheinbar gültigen Anfrage versagt hat."],
+    ["Was ist der Unterschied zwischen 401 und 403?", "401 bedeutet, dass der Server nicht weiß, wer Sie sind: Anmeldedaten fehlen, sind falsch oder abgelaufen, und eine Anmeldung kann das beheben. 403 bedeutet, dass er weiß, wer Sie sind, Sie dies aber nicht tun dürfen; dieselben Anmeldedaten erneut zu senden, hilft also nicht."],
+    ["Soll ich für eine Weiterleitung 301 oder 302 verwenden?", "Verwenden Sie 301 (oder 308), wenn der Umzug dauerhaft ist, damit Browser und Suchmaschinen zur neuen Adresse wechseln. Verwenden Sie 302 (oder 307), wenn die alte Adresse zurückkommt. 307 und 308 behalten die Anfragemethode bei, während 301 und 302 älteren Clients erlauben, aus einem POST ein GET zu machen."],
+    ["Ist 418 I'm a teapot ein echter Statuscode?", "Er entstand als Aprilscherz in RFC 2324 für ein Protokoll zur Steuerung von Kaffeemaschinen. Die IANA führt 418 heute als unbenutzt und reserviert, damit er keine echte Bedeutung bekommt. Manche Websites geben ihn noch zum Spaß oder zur Abwehr von Scrapern zurück, eine Standardantwort ist er aber nicht."],
+    ["Was sind 520 bis 526 und 499?", "Sie stehen in keinem HTTP-Standard. 520 bis 526 sind Cloudflare-Fehler, die Probleme zwischen Cloudflare und Ihrem eigenen Server melden, und 499 ist ein nginx-Log-Code für einen Client, der die Verbindung vor der Antwort getrennt hat. Sie erscheinen in der Gruppe Inoffiziell mit ihrer Quelle."],
+    ["Warum verschwindet ein 5xx-Fehler manchmal beim erneuten Versuch?", "Viele 5xx-Fehler entstehen durch Überlastung, ein neu startendes Backend oder eine kurze Netzwerkstörung, die sich innerhalb von Sekunden legen kann. Wiederholen mit wachsender Wartezeit ist bei idempotenten Anfragen wie GET unbedenklich; bei POST prüfen Sie, ob der erste Versuch nicht schon erfolgreich war."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="h-q">Nach Nummer oder Stichwort suchen</label>
+    <input type="search" id="h-q" class="hs-q" placeholder="z. B. 404, redirect, rate limit, timeout" autocomplete="off" spellcheck="false" aria-describedby="h-count">
+  </div>
+  <fieldset class="hs-groups">
+    <legend class="visually-hidden">Nach Klasse filtern</legend>
+    <div class="seg">
+      <label><input type="radio" name="h-group" id="h-g-all" value="all" checked>Alle</label>
+      <label><input type="radio" name="h-group" id="h-g-1" value="1">1xx</label>
+      <label><input type="radio" name="h-group" id="h-g-2" value="2">2xx</label>
+      <label><input type="radio" name="h-group" id="h-g-3" value="3">3xx</label>
+      <label><input type="radio" name="h-group" id="h-g-4" value="4">4xx</label>
+      <label><input type="radio" name="h-group" id="h-g-5" value="5">5xx</label>
+      <label><input type="radio" name="h-group" id="h-g-u" value="u">Inoffiziell</label>
+    </div>
+  </fieldset>
+  <p class="tt__report" id="h-count" aria-live="polite"></p>
+  <p class="note" id="h-none" role="status" hidden></p>
+  <div class="hs-list" id="h-list"></div>
+</div>
+<!--explain-->
+<h2>HTTP-Statuscodes verstehen</h2>
+<p>Jede HTTP-Antwort beginnt mit einem dreistelligen Statuscode, der dem Client sagt, was mit seiner Anfrage passiert ist. Die erste Ziffer gibt die Familie an: 1xx für Zwischenmeldungen, 2xx für Erfolg, 3xx für Weiterleitung, 4xx für ein Problem mit der Anfrage und 5xx für einen Fehler auf dem Server. Ein Programm, das einen bestimmten Code nicht kennt, kann anhand dieser ersten Ziffer trotzdem richtig reagieren; deshalb lassen sich neue Codes einführen, ohne alte Clients zu stören.</p>
+<p>Die offizielle Liste führt die IANA in der HTTP Status Code Registry, die Bedeutungen sind in RFC 9110 (HTTP Semantics) und einigen weiteren RFCs für WebDAV und Erweiterungen festgelegt. Die Reason Phrase nach der Nummer, etwa Not Found, ist nur eine Beschriftung; HTTP/2 und HTTP/3 übertragen sie gar nicht. Einige Phrasen wurden 2022 umbenannt, so heißt 413 jetzt Content Too Large und 422 Unprocessable Content.</p>
+<p>Server außerhalb der Standards erfinden auch eigene Codes. nginx protokolliert 499, wenn ein Client auflegt, und Cloudflare verwendet 520 bis 526 für Fehler zwischen seinem Netzwerk und Ihrem Ursprungsserver. Sie erscheinen hier in einer eigenen Gruppe, damit sie nicht mit registrierten Codes verwechselt werden. Denken Sie bei der Fehlersuche daran, dass der Code, den Sie sehen, von einem Proxy oder CDN vor Ihrer Anwendung stammen kann und nicht von der Anwendung selbst.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Eine fehlschlagende Anfrage mit Sonderzeichen in der Adresse? Kodieren oder dekodieren Sie sie mit <a href="/tools/url-encode-decode/">URL kodieren und dekodieren</a>.</li>
+  <li>Lesen Sie den Antwort-Body eines API-Fehlers mit <a href="/tools/json-formatter/">JSON formatieren und validieren</a>.</li>
+  <li>Ein 403 für einen bestimmten Browser oder Bot? Prüfen Sie mit <a href="/tools/user-agent-parser/">User-Agent analysieren</a>, was der Client sendet.</li>
+</ul>

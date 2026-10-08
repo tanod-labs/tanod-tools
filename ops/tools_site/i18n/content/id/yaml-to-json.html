@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Konversi YAML ke JSON online | Tanod Tools",
+  "description": "Konversi YAML ke JSON di browser Anda. Mendukung anchor, alias, merge key dan file multi-dokumen, dengan baris dan kolom untuk setiap error. Gratis dan privat.",
+  "h1": "Konversi YAML ke JSON",
+  "lede": "Tempel YAML dan dapatkan JSON, dengan anchor dan merge key sudah diuraikan serta baris persis dari setiap error sintaks.",
+  "blurb": "Konversi YAML ke JSON.",
+  "keywords": "yaml ke json konversi yaml ubah yaml ke json yml konverter kubernetes docker compose openapi konfigurasi anchor alias",
+  "limits": "Input hingga sekitar 10 MB. Alat ini membaca YAML 1.2 dengan tipe standar saja; tag kustom seperti <code>!!python/object</code> ditolak, bukan dijalankan.",
+  "howto_title": "Cara mengonversi YAML ke JSON",
+  "howto": [
+    "Tempel YAML Anda ke kotak, atau tekan <strong>Sisipkan contoh</strong>.",
+    "Pilih 2 spasi, 4 spasi, tab atau <strong>Minify</strong> untuk tata letak JSON.",
+    "Jika YAML memiliki error sintaks, Anda melihat baris dan kolomnya. Jika tidak, salin JSON atau unduh sebagai file <code>.json</code>."
+  ],
+  "faq": [
+    ["Apakah YAML saya diunggah?", "Tidak. Parser YAML dimuat dari situs ini saat pertama kali Anda menempel sesuatu dan berjalan di browser Anda. Konfigurasi yang berisi kata sandi atau kunci tidak dikirim ke mana pun."],
+    ["Mengapa yes tetap berupa teks \"yes\"?", "Alat ini mengikuti YAML 1.2, di mana hanya <code>true</code> dan <code>false</code> yang merupakan boolean. Kata <code>yes</code>, <code>no</code>, <code>on</code> dan <code>off</code> tetap berupa string, sehingga menghindari apa yang disebut masalah Norwegia, di mana kode negara <code>NO</code> berubah menjadi <code>false</code> pada parser YAML 1.1. Jika program yang memakai hasilnya adalah parser YAML 1.1, kata-kata itu mungkin dibaca berbeda."],
+    ["Apa yang terjadi pada tanggal dan timestamp?", "Nilai seperti <code>2024-05-01</code> dipertahankan sebagai string \"2024-05-01\". JSON tidak punya tipe tanggal, dan mengubahnya menjadi angka atau format lain akan menghilangkan informasi."],
+    ["Bagaimana dengan bilangan bulat yang sangat besar?", "Bilangan bulat di atas 9.007.199.254.740.991 (2<sup>53</sup> - 1) ditulis digit demi digit, tidak dibulatkan, sehingga ID seperti 12345678901234567890 tetap utuh. Perlu diingat, program yang nanti membaca JSON tersebut dengan angka JavaScript biasa akan membulatkannya."],
+    ["Apakah anchor, alias dan merge key didukung?", "Ya. Anchor <code>&amp;name</code> dan alias <code>*name</code> diperluas, dan <code>&lt;&lt;: *name</code> menggabungkan satu mapping ke mapping lain. Karena JSON tidak punya referensi, setiap alias ditulis lengkap."],
+    ["Apa itu batas alias dan batas 20 MB?", "File YAML kecil bisa memakai alias yang meluas menjadi sesuatu yang sangat besar, dikenal sebagai bom alias. File dengan lebih dari 10.000 alias ditolak, dan konversi berhenti jika JSON akan melewati 20 MB, sehingga tab Anda tidak macet."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Sisipkan contoh</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Hapus</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="name: example
+tags: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Tata letak</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spasi</label>
+      <label><input type="radio" name="indent" value="4">4 spasi</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+      <label><input type="radio" name="indent" value="min">Minify</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Perubahan</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Hasil</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Salin</button>
+    <button class="btn" id="f-dl" type="button">Unduh .json</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Dari YAML ke JSON</h2>
+<p>YAML dan JSON menggambarkan jenis data yang sama: mapping, daftar, dan nilai sederhana. YAML ditulis oleh manusia, dengan indentasi alih-alih kurung kurawal, komentar, dan pintasan seperti anchor; JSON adalah yang diharapkan sebagian besar program dan API. Konversi YAML ke JSON umum dilakukan saat manifest Kubernetes, file Compose, atau deskripsi OpenAPI harus diberikan ke sesuatu yang hanya membaca JSON.</p>
+<p>Beberapa fitur YAML tidak punya padanan di JSON, jadi konverter menguraikannya. Anchor (<code>&amp;base</code>) menandai blok yang bisa dipakai ulang oleh alias (<code>*base</code>), dan merge key (<code>&lt;&lt;</code>) menyalin entri sebuah mapping ke mapping lain; di JSON masing-masing menjadi salinan lengkap. Komentar dibuang, karena JSON tidak bisa menyimpannya. File dengan beberapa dokumen yang dipisahkan <code>---</code> menjadi array JSON.</p>
+<p>Aturan tipe mengikuti YAML 1.2: <code>true</code> dan <code>false</code> adalah boolean, <code>null</code> dan <code>~</code> adalah null, angka adalah angka, dan semua yang lain, termasuk <code>yes</code> dan <code>2024-05-01</code>, adalah teks. Error sintaks disertai baris dan kolom, dan penyebab yang paling sering adalah tab yang dipakai untuk indentasi, kunci yang berulang dalam mapping yang sama, dan nilai yang tidak diindentasi di bawah kuncinya.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Perlu arah sebaliknya? <a href="/tools/json-to-yaml/">Konversi JSON ke YAML</a> memberi tanda kutip pada nilai seperti "yes" agar tetap utuh setelah dikonversi.</li>
+  <li>Periksa atau rapikan hasilnya dengan <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+  <li>Punya data tabel? <a href="/tools/csv-to-json/">CSV ke JSON</a> menangani spreadsheet.</li>
+</ul>

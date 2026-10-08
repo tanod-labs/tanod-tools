@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Compresser une image en ligne : JPG, PNG, WebP | Tanod Tools",
+  "description": "Compressez vos images JPEG, PNG et WebP dans votre navigateur. Réglez la qualité, réduisez les couleurs PNG et voyez le gain de taille. Rien n'est envoyé.",
+  "h1": "Compresser une image",
+  "lede": "Compressez vos images JPEG, PNG et WebP et voyez exactement combien d'espace vous gagnez, sans rien envoyer.",
+  "blurb": "Alléger photos et graphiques, dans votre navigateur.",
+  "keywords": "compresser image reduire taille poids photo alleger optimiser jpg jpeg png webp qualite compresseur tinypng",
+  "limits": "Jusqu'à 50 images par lot, 50 Mo et environ 100 mégapixels chacune. PNG, JPEG, WebP, GIF, BMP et AVIF (si votre navigateur sait les ouvrir).",
+  "howto_title": "Comment compresser une image",
+  "howto": [
+    "Choisissez vos images ou glissez-les sur la page.",
+    "Choisissez un format de sortie et une qualité. Pour le PNG, vous pouvez aussi réduire le nombre de couleurs.",
+    "Cliquez sur <strong>Compresser</strong>, vérifiez les tailles, puis téléchargez les fichiers ou un .zip."
+  ],
+  "faq": [
+    ["Mes images sont-elles envoyées ?", "Non. La compression s'effectue dans votre navigateur : l'image est décodée, redessinée et réenregistrée sur votre appareil. Rien n'est envoyé à un serveur."],
+    ["Quelle qualité choisir ?", "Pour les photos, une valeur de 70 à 85 donne généralement un fichier nettement plus léger, identique à l'œil à taille d'affichage normale. Les valeurs plus basses gagnent plus de place, mais font apparaître des blocs autour des contours et dans les ciels unis. Pour une seule image, la page affiche côte à côte le centre de l'original et le résultat à 100 %, pour que vous puissiez juger."],
+    ["Que fait « Réduire les couleurs » ?", "Cette option réécrit un PNG avec une palette de 256, 128, 64 ou 32 couleurs au lieu de millions. Les logos, captures d'écran et illustrations en aplats diminuent souvent beaucoup, sans changement visible. Les photos et les dégradés doux peuvent présenter des effets de bandes : vérifiez l'aperçu. Cette réduction est avec perte et ne s'applique que si la sortie est en PNG."],
+    ["Pourquoi un fichier indique-t-il « déjà optimisée » ?", "Si la version réenregistrée n'est pas plus légère que l'original, l'outil garde votre fichier d'origine intact au lieu de vous donner quelque chose de plus lourd."],
+    ["Les métadonnées sont-elles conservées ?", "Non. L'image est réencodée : les données EXIF, comme les informations sur l'appareil photo et la position GPS, ne sont pas reprises, et le profil de couleur éventuel n'est pas intégré. L'image est enregistrée dans l'orientation où elle s'affiche. Pour retirer les métadonnées sans réencoder, utilisez <a href=\"/tools/remove-exif/\">Supprimer les données EXIF</a>."],
+    ["Que deviennent les fichiers GIF, BMP et AVIF ?", "Avec « Garder », ils sont enregistrés en PNG (un GIF devient sa première image). Si le résultat n'est pas plus léger, votre original est conservé. Vous pouvez aussi choisir JPEG ou WebP comme format de sortie."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez vos images ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choisir des images</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-les n'importe où sur cette page.</p>
+</div>
+<ol class="files" id="files" aria-label="Images à compresser" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Format de sortie</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Garder</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Garder enregistre les JPEG, WebP et PNG dans leur propre format ; les autres formats deviennent du PNG.</p>
+    </fieldset>
+    <div class="field">
+      <label for="quality">Qualité : <span class="num" id="quality-out">80</span></label>
+      <input type="range" id="quality" min="10" max="100" value="80">
+      <p class="help">S'applique aux sorties JPEG et WebP. Le JPEG ne gère pas la transparence : les zones transparentes deviennent blanches.</p>
+    </div>
+    <div class="field">
+      <label for="colours">Réduire les couleurs (sortie PNG)</label>
+      <select id="colours">
+        <option value="0" selected>Désactivé : garder toutes les couleurs</option>
+        <option value="256">256 couleurs</option>
+        <option value="128">128 couleurs</option>
+        <option value="64">64 couleurs</option>
+        <option value="32">32 couleurs</option>
+      </select>
+      <p class="help">Avec perte. Idéal pour les logos, les captures d'écran et les aplats.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Compresser</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tout effacer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="compare" class="compare" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Comment fonctionne la compression d'image ici</h2>
+<p>L'essentiel du poids d'un fichier image, ce sont les données des pixels. Pour compresser une image, le JPEG et le WebP éliminent les détails que l'œil a le moins de chances de remarquer ; le réglage de qualité décide de la quantité éliminée. Le PNG est sans perte : sa taille dépend de la prévisibilité des pixels. Réduire un PNG à une palette de 256 couleurs au maximum rend les données bien plus simples à compresser, au prix de l'exactitude des couleurs.</p>
+<p>Cet outil décode chaque image avec votre navigateur, la dessine sur un canevas et la réenregistre avec les encodeurs JPEG et WebP propres à votre navigateur. Pour les PNG à palette, il choisit les couleurs avec le quantificateur open source UPNG.js et écrit lui-même le fichier PNG. Si le résultat n'est pas plus léger que le fichier fourni, vous récupérez votre original.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Les grandes photos s'allègent le plus quand vous réduisez aussi leurs dimensions : essayez d'abord <a href="/tools/resize-image/">Redimensionner une image</a>, puis compressez.</li>
+  <li>Besoin d'un autre format ? <a href="/tools/convert-image/">Convertir une image</a> gère le PNG, le JPEG et le WebP.</li>
+  <li>Pour retirer la position et les informations sur l'appareil photo sans recompresser, utilisez <a href="/tools/remove-exif/">Supprimer les données EXIF</a>.</li>
+</ul>

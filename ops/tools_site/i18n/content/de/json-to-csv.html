@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "JSON in CSV umwandeln – kostenlos online | Tanod Tools",
+  "description": "JSON-Array im Browser in CSV umwandeln. Verschachtelte Objekte werden zu Punkt-Spalten, mit korrekten Anführungszeichen und Excel-Option. Ohne Upload.",
+  "h1": "JSON in CSV umwandeln",
+  "lede": "Fügen Sie ein JSON-Array ein oder öffnen Sie eine .json-Datei und erhalten Sie CSV, das Sie in Excel, Google Tabellen oder Numbers öffnen können.",
+  "blurb": "JSON-Array in CSV für Tabellen umwandeln.",
+  "keywords": "json in csv umwandeln konvertieren json zu csv konverter excel tabelle export verschachtelt flach array von objekten",
+  "limits": "Eingabe bis etwa 10 MB, eingefügt oder aus einer .json-Datei. Das Ergebnis aktualisiert sich während der Eingabe.",
+  "howto_title": "So wandeln Sie JSON in CSV um",
+  "howto": [
+    "Fügen Sie Ihr JSON in das Feld ein oder öffnen Sie eine .json-Datei. Ein Array von Objekten ergibt eine Zeile pro Objekt.",
+    "Wählen Sie das Trennzeichen und wie verschachtelte Objekte geschrieben werden. Aktivieren Sie die Excel-Option, wenn die Datei in Excel geöffnet wird.",
+    "Kopieren Sie das CSV oder laden Sie es als .csv-Datei herunter."
+  ],
+  "faq": [
+    ["Wird mein JSON hochgeladen?", "Nein. Es wird in Ihrem Browser geparst und umgewandelt, und nichts wird irgendwohin gesendet oder gespeichert."],
+    ["Welche JSON-Strukturen funktionieren?", "Ein Array von Objekten (eine Zeile pro Objekt, eine Spalte pro Schlüssel), ein Array von Arrays (jedes innere Array ist eine Zeile), ein Array einfacher Werte (eine Spalte) oder ein einzelnes Objekt (eine Zeile). Spalten erscheinen in der Reihenfolge, in der die Schlüssel zuerst vorkommen: Hat ein Objekt einen Schlüssel, der den anderen fehlt, kommt eine Spalte hinzu, und Zeilen ohne ihn erhalten eine leere Zelle."],
+    ["Wie werden verschachtelte Objekte und Arrays behandelt?", "Mit <em>Zu Punkt-Pfaden abflachen</em> wird ein verschachteltes Objekt wie <code>{\"address\": {\"city\": \"Lyon\"}}</code> zu einer Spalte namens <code>address.city</code>. Mit <em>Als JSON-Text behalten</em> kommt das ganze verschachtelte Objekt als JSON in eine Zelle. Arrays werden immer als JSON-Text in eine einzelne Zelle geschrieben, weil es keinen allgemein richtigen Weg gibt, eine Liste auf Spalten zu verteilen."],
+    ["Warum sehen Umlaute und Akzente in Excel falsch aus?", "Excel unter Windows nimmt oft eine alte regionale Kodierung an, wenn die Datei nicht mit einer Byte-Order-Mark beginnt. Aktivieren Sie vor dem Herunterladen <em>Byte-Order-Mark für Excel hinzufügen</em>, dann liest Excel die Datei als UTF-8. Google Tabellen und Numbers lesen UTF-8 ohnehin. Wenn Ihr Excel Semikolons erwartet, wie bei deutschen Ländereinstellungen üblich, wählen Sie auch das Semikolon als Trennzeichen."],
+    ["Wann werden Werte in Anführungszeichen gesetzt?", "Nur wenn nötig: Ein Wert, der das Trennzeichen, ein doppeltes Anführungszeichen oder einen Zeilenumbruch enthält oder mit einem Leerzeichen beginnt oder endet, wird in doppelte Anführungszeichen gesetzt, und jedes Anführungszeichen darin wird verdoppelt. Zahlen werden genau so geschrieben, wie sie im JSON stehen, sodass lange IDs nicht gerundet werden. <code>null</code> wird zu einer leeren Zelle."],
+    ["Warum heißt es, mein JSON sei ungültig?", "Die Meldung nennt Zeile und Spalte, an der das Lesen abgebrochen ist. Häufige Ursachen sind ein Komma am Ende, einfache statt doppelter Anführungszeichen oder eine fehlende Klammer. <a href=\"/tools/json-formatter/\">JSON formatieren und validieren</a> zeigt die genaue Stelle mit einem Caret an."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Trennzeichen</label>
+      <select id="delim">
+        <option value="," selected>Komma ( , )</option>
+        <option value=";">Semikolon ( ; )</option>
+        <option value="&#9;">Tab</option>
+        <option value="|">Senkrechter Strich ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Verschachtelte Objekte</label>
+      <select id="nested">
+        <option value="flatten" selected>Zu Punkt-Pfaden abflachen (address.city)</option>
+        <option value="json">Als JSON-Text in einer Zelle behalten</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Kopfzeile einfügen</label>
+    <label class="check"><input type="checkbox" id="crlf">Windows-Zeilenenden (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Byte-Order-Mark für Excel hinzufügen (nur beim Herunterladen)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Fügen Sie JSON ein, um zu beginnen.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}CSV kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.csv herunterladen</button>
+    <button class="btn btn--quiet" id="clear" type="button">Leeren</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>.json-Datei öffnen</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>JSON in eine Tabelle verwandeln</h2>
+<p>APIs und Exporte liefern oft JSON, während die Menschen, die die Daten brauchen, eine Tabelle wollen. CSV schlägt die Brücke: Wenn Sie JSON in CSV umwandeln, wird jedes Objekt im Array zu einer Zeile und jeder Schlüssel zu einer Spalte. Weil Objekte in echten Daten selten alle dieselben Schlüssel haben, sammelt das Tool jeden Schlüssel in der Reihenfolge, in der es ihn zuerst sieht, und lässt eine Zelle leer, wo ein Objekt für diese Spalte keinen Wert hat.</p>
+<p>Tabellen sind flach, also müssen verschachtelte Daten irgendwie in Spalten gepresst werden. Das Abflachen macht aus <code>user.name</code> und <code>user.email</code> getrennte Spalten, was für die meisten Auswertungen passt. Verschachtelte Objekte als JSON-Text zu behalten, hält die Spaltenzahl klein und lässt Sie die ursprüngliche Struktur später wiederherstellen.</p>
+<p>Das CSV folgt den üblichen Regeln (RFC 4180): Werte stehen nur bei Bedarf in Anführungszeichen, und Anführungszeichen innerhalb eines Wertes werden verdoppelt. Zahlen behalten die exakten Ziffern aus Ihrem JSON, statt so gerundet zu werden, wie es bei JavaScript-Zahlen geschähe.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie brauchen den umgekehrten Weg? Nutzen Sie <a href="/tools/csv-to-json/">CSV in JSON</a>.</li>
+  <li>Wenn sich das JSON nicht umwandeln lässt, finden Sie das Problem mit <a href="/tools/json-formatter/">JSON formatieren und validieren</a>.</li>
+  <li>Vergleichen Sie zwei Exporte Zeile für Zeile mit <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+</ul>

@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Générateur de slug : texte en URL propre | Tanod Tools",
+  "description": "Transformez un titre en slug d'URL propre : minuscules, accents convertis, tirets ou tirets bas, longueur maximale. Un slug par ligne, dans votre navigateur.",
+  "h1": "Générateur de slug d'URL",
+  "lede": "Tapez un titre et obtenez un slug propre et lisible pour une adresse web, accents convertis et ponctuation supprimée.",
+  "blurb": "Transformez vos titres en slugs d'URL propres.",
+  "keywords": "generateur de slug générateur slug slugify slug url permalien url seo url propre texte en slug titre en url supprimer accents url tirets",
+  "limits": "Jusqu'à 10 000 lignes à la fois ; chaque ligne devient un slug distinct.",
+  "howto_title": "Comment créer un slug d'URL",
+  "howto": [
+    "Tapez ou collez un titre. Pour plusieurs slugs à la fois, mettez chaque titre sur sa propre ligne.",
+    "Choisissez le séparateur et les options, comme les minuscules, une longueur maximale ou la suppression de petits mots anglais comme « the » et « of ».",
+    "Copiez le slug, ou téléchargez-les tous dans un fichier .txt."
+  ],
+  "faq": [
+    ["Qu'est-ce qu'un slug d'URL ?", "Le slug est la partie lisible d'une adresse web qui désigne une page précise, comme <code>recette-pain-maison</code> dans <code>example.com/blog/recette-pain-maison</code>. Un bon slug est court, en minuscules, avec des tirets entre les mots et uniquement des lettres et des chiffres : il se lit facilement et n'a jamais besoin d'être échappé."],
+    ["Que deviennent les accents et les lettres spéciales ?", "Les lettres accentuées prennent leur forme simple (é devient e, ü devient u, ñ devient n), et des lettres comme ß, æ, ø et ł deviennent ss, ae, o et l. Les lettres grecques et cyrilliques sont translittérées en alphabet latin. Les caractères sans équivalent latin, comme le chinois ou l'arabe, sont supprimés quand ASCII uniquement est activé ; désactivez cette option pour les garder, et les navigateurs les afficheront tels quels."],
+    ["Faut-il utiliser des tirets ou des tirets bas ?", "Des tirets. Les moteurs de recherche traitent un tiret comme une espace entre deux mots, alors qu'un tiret bas peut fusionner les mots en un seul. Les tirets bas restent courants pour les noms de fichiers et certains systèmes : les deux sont donc proposés."],
+    ["Faut-il supprimer les petits mots comme « the » et « and » ?", "C'est facultatif. Les retirer raccourcit les slugs, mais un slug qui se lit encore comme une expression est plus facile à comprendre. L'option retire une courte liste de mots anglais (a, an, the, and, or, of, to, in, on, at, for, with et quelques autres), sauf si le slug devenait vide. Les mots français comme « le » ou « de » ne sont pas concernés."],
+    ["Comment fonctionne la longueur maximale ?", "Le slug est coupé après le dernier mot entier qui tient dans la limite : vous n'obtenez jamais un demi-mot à la fin. Seul un mot unique plus long que la limite est coupé au milieu."],
+    ["Mon texte est-il envoyé en ligne ?", "Non. Les slugs sont créés dans votre navigateur, et le texte n'est ni envoyé ni conservé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2 slug-io">
+    <div class="field">
+      <label for="text">Titre ou texte</label>
+      <textarea id="text" spellcheck="false" placeholder="Comment faire son pain au levain à la maison"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Slug</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="out slug-preview" id="preview" aria-live="polite">example.com/<b id="preview-slug">votre-slug-ici</b></p>
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Séparateur</legend>
+      <div class="seg">
+        <label><input type="radio" name="sep" value="-" checked>Tiret -</label>
+        <label><input type="radio" name="sep" value="_">Tiret bas _</label>
+        <label><input type="radio" name="sep" value=".">Point .</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="max">Longueur maximale</label>
+      <input type="number" id="max" class="mono" min="0" max="500" step="1" inputmode="numeric" placeholder="Sans limite" aria-describedby="max-help">
+      <span class="help" id="max-help">Coupé après un mot entier. Laissez vide pour ne pas limiter.</span>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="lower" checked>Minuscules</label>
+    <label class="check"><input type="checkbox" id="ascii" checked>ASCII uniquement (convertir les accents, supprimer les autres écritures)</label>
+    <label class="check"><input type="checkbox" id="amp" checked>Écrire &amp; en « and » (anglais)</label>
+    <label class="check"><input type="checkbox" id="stop">Retirer les petits mots anglais (a, the, of…)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Tapez un titre pour commencer.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le slug</button>
+    <button class="btn" id="dl" type="button" disabled>Télécharger .txt</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Effacer</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Comment le slug est créé</h2>
+<p>Ce générateur de slug applique les mêmes étapes à chaque ligne de texte. Les lettres accentuées sont converties en leur forme latine simple et les lettres grecques et cyrilliques sont translittérées : « Crème brûlée » devient « creme-brulee » et « Москва » devient « moskva ». Les apostrophes sont supprimées sans laisser d'espace : « don't » reste donc un seul mot (et « l'été » devient « lete »). Toute autre suite d'espaces et de ponctuation devient un seul séparateur, et les séparateurs en début et en fin sont retirés.</p>
+<p>L'aperçu montre le slug tel qu'il apparaîtrait à la fin d'une adresse web. Gardez des slugs courts et descriptifs : quelques mots qui disent de quoi parle la page sont plus faciles à lire, partager et retenir qu'un titre complet.</p>
+<p>Changer le slug d'une page publiée change son adresse : les liens vers l'ancienne adresse cessent de fonctionner, sauf si le site les redirige. Choisissez le slug avant de publier quand c'est possible.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vérifiez la longueur d'un titre avant d'en faire un slug avec le <a href="/tools/character-counter/">Compteur de caractères</a>.</li>
+  <li>Besoin plutôt de noms en camelCase ou snake_case pour du code ? Utilisez <a href="/tools/case-converter/">Convertir majuscules et minuscules</a>.</li>
+  <li>Pour mettre tel quel dans une URL un texte avec des espaces et des symboles, encodez-le avec <a href="/tools/url-encode-decode/">Encoder et décoder une URL</a>.</li>
+</ul>

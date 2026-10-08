@@ -1,0 +1,108 @@
+<!--meta
+{
+  "title": "Convertisseur de couleurs HEX, RGB, HSL, CMJN | Tanod Tools",
+  "description": "Convertissez une couleur entre HEX, RGB, HSL, HSV et CMJN, trouvez les noms de couleurs CSS et vérifiez le contraste WCAG texte/fond. Gratuit.",
+  "h1": "Convertisseur de couleurs",
+  "lede": "Convertissez une couleur entre HEX, RGB, HSL, HSV et CMJN (CMYK), et vérifiez si deux couleurs ont assez de contraste pour un texte lisible.",
+  "blurb": "HEX, RGB, HSL, CMJN et vérificateur de contraste WCAG.",
+  "keywords": "convertisseur couleur couleurs hex en rgb rgb en hex hsl cmjn cmyk hsv selecteur de couleur nuancier rapport de contraste verificateur wcag accessibilite noms de couleurs css",
+  "limits": "Lit le HEX (3, 4, 6 ou 8 chiffres), rgb(), hsl(), hsv(), cmyk() et les noms de couleurs CSS ; les autres syntaxes de couleur CSS sont lues par votre navigateur quand il le peut. HSL, HSV et CMJN sont affichés avec une décimale.",
+  "howto_title": "Comment convertir une couleur",
+  "howto": [
+    "Tapez ou collez une couleur dans n'importe quel format courant, comme <code>#1636a3</code>, <code>rgb(22, 54, 163)</code>, <code>hsl(226, 76%, 36%)</code> ou <code>navy</code>, ou choisissez-en une avec le sélecteur de couleur.",
+    "Copiez le format dont vous avez besoin dans la liste. Les valeurs se mettent à jour pendant la saisie.",
+    "Sous <strong>Vérificateur de contraste</strong>, saisissez une couleur de texte et une couleur d'arrière-plan pour voir leur rapport de contraste et savoir si elles respectent les niveaux WCAG AA et AAA."
+  ],
+  "faq": [
+    ["La valeur CMJN convient-elle pour l'impression ?", "Seulement de façon approximative. Le CMJN affiché ici vient de la formule simple qui convertit le RGB d'écran sans profil colorimétrique, celle qu'utilisent la plupart des convertisseurs en ligne. Les imprimeurs travaillent avec des encres et des papiers précis, décrits par un profil ICC : pour l'impression, convertissez dans un logiciel de PAO avec le profil fourni par votre imprimeur."],
+    ["Comment le rapport de contraste est-il calculé ?", "Avec la formule WCAG 2 : la luminance relative de chaque couleur est calculée à partir de ses valeurs sRGB, et le rapport vaut (plus claire + 0,05) divisé par (plus foncée + 0,05). Il va de 1:1 (aucun contraste) à 21:1 (noir sur blanc). Le texte actuel des WCAG utilise un seuil de 0,04045 dans la formule ; les anciennes versions indiquaient 0,03928, ce qui donne le même résultat pour toutes les couleurs 8 bits."],
+    ["Quels rapports exigent les niveaux AA et AAA ?", "Le texte normal exige 4,5:1 pour AA et 7:1 pour AAA. Le grand texte, c'est-à-dire au moins 24 px en normal ou environ 18,7 px en gras, exige 3:1 pour AA et 4,5:1 pour AAA. Les icônes, les bordures de champs et les autres éléments d'interface exigent 3:1 (WCAG 1.4.11). Un rapport n'est pas arrondi au supérieur : 4,49:1 échoue au niveau AA pour du texte normal."],
+    ["Que se passe-t-il avec les couleurs transparentes ?", "Une couleur de texte partiellement transparente est d'abord mélangée à l'arrière-plan, comme l'affiche un écran, et c'est la couleur obtenue qui est mesurée. Un arrière-plan partiellement transparent est supposé posé sur du blanc. Les canaux sont arrondis à des nombres entiers après le mélange, comme un écran les afficherait."],
+    ["Pourquoi les valeurs HSL changent-elles légèrement après un aller-retour ?", "Les couleurs d'écran ont 256 niveaux par canal : la plupart des valeurs HSL et HSV ne tombent donc pas exactement sur l'un d'eux. Le convertisseur garde une précision complète en interne et n'arrondit que pour l'affichage : HEX et RGB en nombres entiers, HSL, HSV et CMJN à une décimale."],
+    ["L'outil connaît-il les noms de couleurs CSS ?", "Oui, les 148 couleurs nommées de CSS, comme <code>rebeccapurple</code> et <code>cornflowerblue</code>. Tapez un nom pour le convertir ; quand une couleur correspond exactement à un nom, ce nom est aussi affiché. Certaines couleurs ont deux noms, comme <code>aqua</code> et <code>cyan</code>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="col-top">
+    <div class="util-stack">
+      <div class="col-in">
+        <div class="field">
+          <label for="c-in">Couleur</label>
+          <input type="text" id="c-in" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+        </div>
+        <div class="field">
+          <label for="c-pick">Sélecteur</label>
+          <input type="color" id="c-pick" value="#1636a3">
+        </div>
+      </div>
+      <p class="tt__report" id="c-info" aria-live="polite"></p>
+    </div>
+    <div class="col-swatch" aria-hidden="true"><i id="c-swatch"></i></div>
+  </div>
+  <dl class="dv-rows" id="c-out">
+    <div><dt>HEX</dt><dd id="o-hex"></dd></div>
+    <div><dt>RGB</dt><dd id="o-rgb"></dd></div>
+    <div><dt>HSL</dt><dd id="o-hsl"></dd></div>
+    <div><dt>HSV / HSB</dt><dd id="o-hsv"></dd></div>
+    <div><dt>CMJN (CMYK)</dt><dd id="o-cmyk"></dd></div>
+    <div><dt>Nom CSS</dt><dd id="o-name"></dd></div>
+  </dl>
+
+  <h2 class="util-h">Vérificateur de contraste</h2>
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="k-fg">Couleur du texte</label>
+        <input type="text" id="k-fg" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-fg-pick">Sélecteur</label>
+        <input type="color" id="k-fg-pick" value="#1636a3">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="k-bg">Couleur d'arrière-plan</label>
+        <input type="text" id="k-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-bg-pick">Sélecteur</label>
+        <input type="color" id="k-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="k-swap" type="button">Inverser les couleurs</button>
+    <button class="btn btn--sm btn--quiet" id="k-use" type="button">Utiliser la couleur convertie pour le texte</button>
+  </div>
+  <p class="tt__report" id="k-info" aria-live="polite"></p>
+  <div class="col-sample" id="k-sample" aria-hidden="true">
+    <span class="col-sample__big">Grand texte, 24 px</span>
+    <span class="col-sample__small">Texte courant normal en 15 px, la taille de la plupart des paragraphes.</span>
+  </div>
+  <p>Rapport de contraste <span class="col-ratio" id="k-ratio" aria-live="polite">–</span></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Usage</th><th scope="col">Minimum</th><th scope="col">Résultat</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Texte normal, AA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Texte normal, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Grand texte, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Grand texte, AAA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Icônes et éléments d'interface, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="k-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Formats de couleur et contraste</h2>
+<p>Un convertisseur de couleurs passe d'une notation à l'autre. HEX et RGB décrivent une couleur d'écran par des quantités de rouge, de vert et de bleu de 0 à 255 ; le HEX écrit simplement chaque quantité en deux chiffres hexadécimaux, avec une paire supplémentaire facultative pour l'opacité. HSL et HSV décrivent les mêmes couleurs par la teinte (un angle sur le cercle chromatique), la saturation, et la luminosité ou la valeur, ce qui facilite le choix d'une version plus claire ou plus terne d'une couleur. Ce sont des coordonnées différentes pour les mêmes couleurs sRGB : la conversion entre elles est donc exacte, aux arrondis près.</p>
+<p>Le CMJN (CMYK en anglais) est différent : il décrit de l'encre, et la vraie conversion dépend du procédé d'impression. La valeur affichée vient de la formule naïve (le noir vaut 1 moins le canal le plus lumineux, et les autres encres complètent le reste), utile pour un travail approximatif mais qui ne remplace pas un profil d'impression.</p>
+<p>Le vérificateur de contraste applique la formule de contraste WCAG 2, celle des audits d'accessibilité et des outils de développement des navigateurs. Il mesure uniquement le contraste de luminance : il ne peut donc rien dire des paires problématiques pour les daltoniens, comme du rouge sur du vert, et les polices très fines ou très petites peuvent nécessiter plus de contraste que le minimum.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Besoin de la couleur d'un pixel dans une photo ou une capture d'écran ? Utilisez la <a href="/tools/image-color-picker/">Pipette de couleur pour image</a>.</li>
+  <li>Vous créez un QR code aux couleurs de votre marque ? Le <a href="/tools/qr-code-generator/">Générateur de QR code</a> vous avertit quand le contraste est trop faible pour la lecture.</li>
+  <li>Vous convertissez des nombres hexadécimaux qui ne sont pas des couleurs ? Essayez le <a href="/tools/number-base-converter/">Convertisseur de base numérique</a>.</li>
+</ul>

@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Bild komprimieren – JPG, PNG, WebP verkleinern | Tanod Tools",
+  "description": "JPEG-, PNG- und WebP-Bilder im Browser verkleinern. Qualität wählen, optional PNG-Farben reduzieren und die Ersparnis sehen. Nichts wird hochgeladen.",
+  "h1": "Bild komprimieren",
+  "lede": "Verkleinern Sie JPEG-, PNG- und WebP-Dateien und sehen Sie genau, wie viel Speicherplatz Sie sparen, ohne etwas hochzuladen.",
+  "blurb": "Fotos und Grafiken verkleinern, in Ihrem Browser.",
+  "keywords": "bild komprimieren bild verkleinern foto verkleinern dateigröße dateigroesse reduzieren optimieren jpg jpeg png webp qualität kb mb tinypng",
+  "limits": "Bis zu 50 Bilder pro Durchgang, je 50 MB und etwa 100 Megapixel. PNG, JPEG, WebP, GIF, BMP und AVIF (sofern Ihr Browser sie öffnen kann).",
+  "howto_title": "So komprimieren Sie ein Bild",
+  "howto": [
+    "Wählen Sie Ihre Bilder aus oder ziehen Sie sie auf die Seite.",
+    "Wählen Sie ein Ausgabeformat und eine Qualität. Bei PNG können Sie zusätzlich die Anzahl der Farben reduzieren.",
+    "Klicken Sie auf <strong>Komprimieren</strong>, prüfen Sie die Größen und laden Sie die Dateien oder ein .zip herunter."
+  ],
+  "faq": [
+    ["Werden meine Bilder hochgeladen?", "Nein. Die Komprimierung läuft in Ihrem Browser: Das Bild wird auf Ihrem Gerät dekodiert, neu gezeichnet und erneut gespeichert. Nichts wird an einen Server gesendet."],
+    ["Welche Qualität sollte ich wählen?", "Für Fotos ergibt 70 bis 85 meist eine deutlich kleinere Datei, die bei normaler Betrachtungsgröße gleich aussieht. Niedrigere Werte sparen mehr Platz, zeigen aber Blockartefakte an Kanten und in gleichmäßigen Himmelsflächen. Bei einem einzelnen Bild zeigt die Seite die Mitte des Originals und das Ergebnis nebeneinander bei 100 %, damit Sie es beurteilen können."],
+    ["Was bewirkt „Farben reduzieren“?", "Es schreibt ein PNG mit einer Palette von 256, 128, 64 oder 32 Farben statt Millionen neu. Logos, Screenshots und flächige Illustrationen schrumpfen dadurch oft stark, ohne sichtbaren Unterschied. Fotos und weiche Farbverläufe können Streifen zeigen, prüfen Sie also die Vorschau. Das Verfahren ist verlustbehaftet und gilt nur, wenn die Ausgabe PNG ist."],
+    ["Warum stand bei einer Datei „bereits optimiert“?", "Wäre die neu gespeicherte Version nicht kleiner als Ihr Original, behält das Tool Ihre Originaldatei unverändert, statt Ihnen etwas Größeres zu geben."],
+    ["Bleiben Metadaten erhalten?", "Nein. Das Bild wird neu kodiert, daher werden EXIF-Daten wie Kameradetails und GPS-Standort nicht übernommen, und ein Farbprofil wird nicht eingebettet. Das Bild wird in der Ausrichtung gespeichert, in der es angezeigt wird. Um Metadaten ohne Neukodierung zu entfernen, nutzen Sie <a href=\"/tools/remove-exif/\">EXIF-Daten entfernen</a>."],
+    ["Was passiert mit GIF-, BMP- und AVIF-Dateien?", "Mit „Behalten“ werden sie als PNG gespeichert (ein GIF wird zu seinem ersten Einzelbild). Ist das nicht kleiner, bleibt Ihr Original erhalten. Sie können auch JPEG oder WebP als Ausgabe wählen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Bilder hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Bilder auswählen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP oder AVIF. Oder ziehen Sie sie an eine beliebige Stelle dieser Seite.</p>
+</div>
+<ol class="files" id="files" aria-label="Zu komprimierende Bilder" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Ausgabeformat</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Behalten</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">„Behalten“ speichert JPEG, WebP und PNG im eigenen Format; andere Formate werden zu PNG.</p>
+    </fieldset>
+    <div class="field">
+      <label for="quality">Qualität: <span class="num" id="quality-out">80</span></label>
+      <input type="range" id="quality" min="10" max="100" value="80">
+      <p class="help">Gilt für JPEG- und WebP-Ausgabe. JPEG kennt keine Transparenz, daher werden transparente Bereiche weiß.</p>
+    </div>
+    <div class="field">
+      <label for="colours">Farben reduzieren (PNG-Ausgabe)</label>
+      <select id="colours">
+        <option value="0" selected>Aus: alle Farben behalten</option>
+        <option value="256">256 Farben</option>
+        <option value="128">128 Farben</option>
+        <option value="64">64 Farben</option>
+        <option value="32">32 Farben</option>
+      </select>
+      <p class="help">Verlustbehaftet. Am besten für Logos, Screenshots und flächige Grafiken.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Komprimieren</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Alle entfernen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="compare" class="compare" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>So funktioniert die Bildkomprimierung hier</h2>
+<p>Den größten Teil einer Bilddatei machen die Pixeldaten aus. JPEG und WebP verkleinern sie, indem sie Details verwerfen, die dem Auge am wenigsten fehlen; die Qualitätseinstellung bestimmt, wie viel verworfen wird. PNG ist verlustfrei, daher hängt seine Größe davon ab, wie vorhersehbar die Pixel sind. Wird ein PNG auf eine Palette von höchstens 256 Farben reduziert, lassen sich die Daten viel einfacher komprimieren, auf Kosten exakter Farben.</p>
+<p>Dieses Tool dekodiert jedes Bild mit Ihrem Browser, zeichnet es auf einen Canvas und speichert es erneut, mit den eigenen JPEG- und WebP-Encodern Ihres Browsers. Für Paletten-PNGs wählt es die Farben mit dem Open-Source-Quantisierer UPNG.js und schreibt die PNG-Datei selbst. Ist das Ergebnis nicht kleiner als die Datei, die Sie hineingegeben haben, erhalten Sie Ihr Original zurück.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Große Fotos schrumpfen am stärksten, wenn Sie auch ihre Abmessungen verringern: Probieren Sie zuerst <a href="/tools/resize-image/">Bildgröße ändern</a> und komprimieren Sie dann.</li>
+  <li>Sie brauchen ein anderes Format? <a href="/tools/convert-image/">Bild konvertieren</a> verarbeitet PNG, JPEG und WebP.</li>
+  <li>Um Standort- und Kameradaten ohne erneute Komprimierung zu entfernen, nutzen Sie <a href="/tools/remove-exif/">EXIF-Daten entfernen</a>.</li>
+</ul>

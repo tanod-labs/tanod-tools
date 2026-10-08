@@ -1,0 +1,113 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Unix timestamp converter",
+  "title": "Unix timestamp converter: epoch to date and back | Tanod Tools",
+  "description": "Convert Unix timestamps in seconds, milliseconds, microseconds or nanoseconds to dates in UTC or any time zone, and dates back to epoch time. Free, in your browser.",
+  "h1": "Unix timestamp converter",
+  "lede": "Turn an epoch timestamp into a readable date in any time zone, or a date and time into a timestamp.",
+  "blurb": "Epoch time to date and date to timestamp, any zone.",
+  "keywords": "epoch converter unix time posix time seconds since 1970 milliseconds timestamp to date date to timestamp utc time zone",
+  "limits": "Timestamps up to about 270,000 years either side of 1970, the range a browser can represent; typed dates from year 1 to 9999. Time-zone rules come from your browser's built-in time-zone data.",
+  "howto_title": "How to convert a Unix timestamp",
+  "howto": [
+    "Paste a timestamp into <strong>Timestamp to date</strong>. The unit (seconds, milliseconds, microseconds or nanoseconds) is detected from its length, and you can change it.",
+    "Pick a time zone to see the date there as well as in UTC, ISO 8601 and RFC 2822 form.",
+    "To go the other way, enter a date and time under <strong>Date to timestamp</strong>; it is read in the time zone you picked."
+  ],
+  "faq": [
+    ["What is a Unix timestamp?", "It is the number of seconds since 00:00:00 UTC on 1 January 1970, not counting leap seconds. It is the same everywhere in the world at a given moment, which is why it is used to store times; the time zone only matters when you turn it into a date someone reads."],
+    ["How is the unit detected?", "By size. A value under 100 billion is read as seconds (that covers dates up to the year 5138), up to 100 trillion as milliseconds, up to 100 quadrillion as microseconds, and anything larger as nanoseconds. A 10-digit number is seconds, 13 digits milliseconds, 16 microseconds and 19 nanoseconds. If the guess is wrong, choose the unit yourself."],
+    ["What happens to a time that doesn't exist because of daylight saving?", "When clocks spring forward, an hour of local time is skipped. A date and time inside that gap is moved forward by the length of the gap, which is what most software does, and the tool says so. When clocks fall back, an hour happens twice; the tool uses the first occurrence and shows the timestamp of the second as well."],
+    ["Can timestamps be negative?", "Yes. Negative values are moments before 1970: -1 is 23:59:59 UTC on 31 December 1969. Dates far in the past use the proleptic Gregorian calendar, as ISO 8601 does."],
+    ["What is the year 2038 problem?", "Systems that store Unix time as a signed 32-bit number can count only up to 2,147,483,647, which is 03:14:07 UTC on 19 January 2038. One second later the value overflows. The tool points this out when a timestamp is beyond that range. Most current systems use 64-bit time and are not affected."],
+    ["Are leap seconds included?", "No. Unix time treats every day as exactly 86,400 seconds, and so does JavaScript, so the 27 leap seconds added since 1972 are not counted. This is normal and matches what servers, databases and programming languages report."]
+  ],
+  "related": ["time-zone-converter", "cron-expression-explainer", "date-difference-calculator", "date-calculator", "age-calculator", "json-formatter"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Current Unix time</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Seconds</dt><dd id="now-s">0</dd></div>
+      <div><dt>Milliseconds</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Copy seconds</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Copy milliseconds</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Pause</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Time zone</label>
+    <select id="tz"></select>
+    <span class="help">Used to show dates below and to read the date you enter.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Timestamp to date</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Unix timestamp</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Unit</label>
+      <select id="ts-unit">
+        <option value="auto" selected>Detect from length</option>
+        <option value="s">Seconds</option>
+        <option value="ms">Milliseconds</option>
+        <option value="us">Microseconds</option>
+        <option value="ns">Nanoseconds</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Type or paste a timestamp.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Your time zone</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>ISO 8601 with offset</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Relative</dt><dd id="o-rel"></dd></div>
+    <div><dt>Seconds</dt><dd id="o-s"></dd></div>
+    <div><dt>Milliseconds</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Date to timestamp</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Date</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Time</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Use the current time</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Pick a date.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Seconds</dt><dd id="d-s"></dd></div>
+    <div><dt>Milliseconds</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>How epoch time works</h2>
+<p>A Unix timestamp counts seconds from the Unix epoch, midnight UTC on 1 January 1970. Because it names a moment rather than a clock reading, the same number means the same instant in Manila, London and New York. Converting it to a date is where time zones come in: the tool uses your browser's time-zone database, the same rules your operating system uses, to work out the local offset and daylight saving at that moment.</p>
+<p>Many systems use finer units. JavaScript and Java count milliseconds, some databases and Python's <code>time.time_ns()</code> use microseconds or nanoseconds. Pasting such a value as seconds gives a date tens of thousands of years away, so the tool guesses the unit from the number's size and shows which it chose. Microsecond and nanosecond values keep their extra digits in the ISO 8601 line.</p>
+<p>Going from a date to a timestamp needs a time zone, because 09:00 happens at a different moment in each zone. The date you type is read as a clock reading in the zone you pick. Readings that fall in a daylight-saving gap or overlap are flagged, so you know which instant you got.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Schedules written as cron expressions can be checked with the <a href="/tools/cron-expression-explainer/">Cron expression explainer</a>, which lists the next run times in any zone.</li>
+  <li>UUID version 7 values carry a millisecond timestamp; the <a href="/tools/uuid-generator/">UUID generator</a> can read it.</li>
+  <li>Tidy a JSON response full of timestamps with the <a href="/tools/json-formatter/">JSON formatter</a>.</li>
+</ul>

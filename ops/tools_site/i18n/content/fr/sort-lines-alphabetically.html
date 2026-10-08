@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Trier par ordre alphabétique, de A à Z ou Z à A | Tanod Tools",
+  "description": "Triez des lignes par ordre alphabétique, en ordre naturel, par longueur ou au hasard, sans doublons ni lignes vides. Gratuit, dans votre navigateur.",
+  "h1": "Trier par ordre alphabétique",
+  "lede": "Collez une liste, un élément par ligne, et récupérez-la triée de A à Z, de Z à A, en ordre naturel, par longueur ou mélangée.",
+  "blurb": "Triez une liste de A à Z, par nombre, longueur ou au hasard.",
+  "keywords": "trier ordre alphabetique ordre alphabétique classer liste trier liste a-z z-a tri naturel trier par longueur melanger lignes mélanger aleatoire",
+  "limits": "Texte jusqu'à environ 5 Mo. Le résultat se met à jour pendant la saisie ; pour les très longues listes, juste après que vous arrêtez de taper.",
+  "howto_title": "Comment trier des lignes par ordre alphabétique",
+  "howto": [
+    "Collez votre liste dans le champ, un élément par ligne, ou ouvrez un fichier .txt.",
+    "Choisissez le mode de tri et le sens : de A à Z ou de Z à A. Cochez les options de nettoyage souhaitées.",
+    "Copiez la liste triée ou téléchargez-la en fichier .txt."
+  ],
+  "faq": [
+    ["Comment sont triées les lettres accentuées et les autres langues ?", "Les lignes sont comparées avec les règles de tri linguistiques de votre navigateur : é se range à côté de e et Ä à côté de A, et non après Z. L'ordre suit la langue configurée dans votre navigateur, ce qui compte pour quelques lettres : en suédois, par exemple, Ä vient après Z."],
+    ["Qu'est-ce que le tri naturel ?", "Le tri naturel lit les suites de chiffres comme des nombres : « item 2 » passe donc avant « item 10 ». L'ordre alphabétique simple compare un caractère à la fois et place « item 10 » en premier, car 1 vient avant 2."],
+    ["À quoi sert Ignorer la casse ?", "Avec Ignorer la casse activé, « pomme » et « Pomme » sont traités comme le même mot pour le tri, et les lignes qui ne diffèrent que par la casse gardent leur ordre d'origine. Sinon, la minuscule passe avant la majuscule quand les lettres sont par ailleurs identiques. L'ordre des codes de caractères est encore différent : il place toutes les majuscules avant toutes les minuscules, comme le font beaucoup de programmes."],
+    ["Puis-je supprimer les doublons en triant ?", "Oui. Cochez Supprimer les lignes en double et seul le premier exemplaire de chaque ligne est gardé. Quand Ignorer la casse est activé, les lignes qui ne diffèrent que par les majuscules comptent comme des doublons. Pour plus de contrôle, par exemple garder le dernier exemplaire, utilisez <a href=\"/tools/remove-duplicate-lines/\">Supprimer les lignes en double</a>."],
+    ["Le mélange est-il vraiment aléatoire ?", "Le mélange utilise le générateur de nombres aléatoires cryptographique de votre navigateur avec la méthode de Fisher-Yates : tous les ordres ont la même probabilité. Cliquez à nouveau sur Mélanger pour obtenir un nouvel ordre."],
+    ["Ma liste est-elle envoyée en ligne ?", "Non. Le tri se fait dans votre navigateur, et le texte n'est ni envoyé ni conservé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Lignes à trier</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Un élément par ligne."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Liste triée</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="by">Trier par</label>
+      <select id="by">
+        <option value="alpha">Ordre alphabétique</option>
+        <option value="natural">Naturel (nombres dans l'ordre)</option>
+        <option value="code">Code de caractère (majuscules d'abord)</option>
+        <option value="length">Longueur de ligne</option>
+        <option value="reverse">Inverser l'ordre actuel</option>
+        <option value="shuffle">Mélanger (ordre aléatoire)</option>
+      </select>
+    </div>
+    <fieldset id="dir-field">
+      <legend>Sens</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="asc" checked><span id="asc-l">De A à Z</span></label>
+        <label><input type="radio" name="dir" value="desc"><span id="desc-l">De Z à A</span></label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci" checked>Ignorer la casse</label>
+    <label class="check"><input type="checkbox" id="dedupe">Supprimer les lignes en double</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Supprimer les lignes vides</label>
+    <label class="check"><input type="checkbox" id="trim">Supprimer les espaces en bout de ligne</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Collez des lignes pour commencer.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le résultat</button>
+    <button class="btn" id="dl" type="button" disabled>Télécharger .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Mélanger à nouveau</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Réutiliser le résultat</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Effacer</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Ouvrir un fichier .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Mettre une liste dans l'ordre alphabétique</h2>
+<p>Chaque ligne du texte est un élément. L'outil trie les lignes par ordre alphabétique et affiche le résultat à côté du texte d'origine pendant la saisie : vous pouvez essayer un autre ordre ou une autre option et voir l'effet immédiatement. Les lignes sont comparées en entier, à partir du premier caractère : une liste de noms est donc triée par prénom, sauf si le nom de famille vient en premier sur chaque ligne.</p>
+<p>Le tri alphabétique utilise les règles linguistiques de votre navigateur, qui gèrent correctement les accents et le mélange de majuscules et minuscules. L'ordre naturel convient le mieux à tout ce qui contient des nombres, comme les noms de fichiers, les titres de chapitres ou les numéros de version. L'ordre des codes de caractères correspond à ce que font beaucoup d'outils de programmation et de tableurs avec un tri simple : toutes les majuscules passent avant toutes les minuscules.</p>
+<p>Quand deux lignes sont jugées égales, par exemple « Pomme » et « pomme » avec Ignorer la casse activé, elles restent dans leur ordre d'origine : trier deux fois donne donc le même résultat.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Retirez la numérotation ou les puces avant de trier avec <a href="/tools/find-and-replace/">Rechercher et remplacer</a>, pour qu'elles ne décident pas de l'ordre.</li>
+  <li>Voyez ce qui a changé entre deux versions d'une liste avec <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+  <li>Besoin de remettre la liste sur une seule ligne ? Utilisez <a href="/tools/remove-line-breaks/">Supprimer les sauts de ligne</a> avec une virgule comme séparateur.</li>
+</ul>

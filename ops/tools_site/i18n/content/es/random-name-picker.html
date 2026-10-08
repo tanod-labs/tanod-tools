@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Sorteo de nombres al azar: ruleta y equipos | Tanod Tools",
+  "description": "Pega una lista de nombres y elige uno o varios ganadores con una ruleta, o divide a todos en equipos al azar y equilibrados. Sorteos justos, no se sube nada.",
+  "h1": "Sorteo de nombres al azar",
+  "lede": "Pega tus nombres, uno por línea, y gira la ruleta para elegir un ganador o reparte a todos en equipos.",
+  "blurb": "Gira una ruleta para elegir ganadores o divide nombres en equipos.",
+  "keywords": "sorteo de nombres ruleta de nombres ruleta aleatoria elegir nombre al azar rifa sorteo de regalos giveaway sortear generador de equipos grupos aleatorios elegir ganador salon de clases",
+  "limits": "La ruleta muestra etiquetas para un máximo de 100 nombres; con más, sigue eligiendo de forma justa, pero muestra porciones sin etiqueta. La lista solo existe en esta página y desaparece cuando la cierras o la recargas.",
+  "howto_title": "Cómo elegir un nombre al azar",
+  "howto": [
+    "Escribe o pega los nombres en el cuadro, <strong>uno por línea</strong>. Las líneas en blanco se ignoran.",
+    "Elige <em>Elegir ganadores</em> y cuántos, o <em>Dividir en equipos</em> y cuántos equipos.",
+    "Presiona el botón. Marca <em>Quitar de la lista los nombres elegidos</em> si la misma persona no debe ganar dos veces."
+  ],
+  "faq": [
+    ["¿El sorteo es justo?", "Sí. Primero se elige al ganador, con un sorteo sin sesgo a partir de la fuente aleatoria segura de tu navegador, y luego la ruleta gira hasta detenerse en ese nombre. La animación es decorativa, así que una porción larga o un giro con suerte no cambia las probabilidades de nadie. Cada línea tiene la misma probabilidad."],
+    ["¿Qué pasa si un nombre está dos veces en la lista?", "Cada línea es una entrada independiente, así que un nombre escrito dos veces tiene dos oportunidades, y la página te indica qué nombres se repiten. Si es un error, borra la línea sobrante; si es a propósito, por ejemplo dos boletos de rifa, déjala."],
+    ["¿Cómo saco varios ganadores seguidos?", "Marca <em>Quitar de la lista los nombres elegidos</em> y presiona el botón otra vez para cada sorteo. O pon 3 como número de ganadores y obtén tres entradas distintas de una vez. Los ganadores de un mismo sorteo siempre son entradas distintas."],
+    ["¿Cómo se forman los equipos?", "La lista se mezcla con un barajado Fisher-Yates sin sesgo y luego se reparte un nombre a la vez, como cartas. Así los equipos no difieren en más de una persona: 10 nombres en 3 equipos dan 4, 3 y 3."],
+    ["¿Puedo desactivar el giro?", "Si tu dispositivo está configurado para reducir el movimiento, la ruleta salta directamente al resultado sin animación, y el resultado se anuncia a los lectores de pantalla en cualquier caso. Los resultados también aparecen como texto debajo de la ruleta."],
+    ["¿Mi lista se envía a algún lado?", "No. Los nombres solo los lee la página en tu navegador y no se guarda nada, así que al cerrar la pestaña se borran. Copia el historial si necesitas un registro de quién salió elegido."]
+  ]
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Nombres, uno por línea</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Amara&#10;Bruno&#10;Chen"></textarea>
+      <p class="help" id="rp-info">Todavía no hay nombres</p>
+    </div>
+    <fieldset class="field">
+      <legend>Qué hacer</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Elegir ganadores</label>
+        <label><input type="radio" name="rp-mode" value="teams">Dividir en equipos</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">Cuántos ganadores</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">Cuántos equipos</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Quitar de la lista los nombres elegidos</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Elegir</button>
+      <button class="btn" id="rp-sample" type="button">Usar nombres de ejemplo</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Ruleta vacía: agrega nombres para llenarla"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">Historial</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Borrar historial</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Un sorteo justo, y por qué la ruleta es solo para el espectáculo</h2>
+<p>Un sorteo de nombres al azar justo le da a cada entrada la misma probabilidad. La trampa habitual es girar una animación, leer dónde se detiene y tomar eso como resultado: la física de una ruleta dibujada, un fotograma lento o un error de redondeo pueden favorecer algunas porciones. Aquí el orden es al revés. Primero se elige la entrada ganadora sacando un índice aleatorio con muestreo por rechazo, que descarta el sobrante desigual que dejaría un módulo simple, y luego la ruleta gira hasta terminar en esa porción.</p>
+<p>Elegir varios ganadores funciona igual, sin reposición. La página hace un barajado Fisher-Yates parcial sobre las posiciones de tu lista y toma las primeras, así que una posición nunca puede salir dos veces en un mismo sorteo. Los equipos usan el barajado completo y luego reparten los nombres uno por uno entre los equipos. Eso garantiza que los tamaños difieran como mucho en uno, mientras que quiénes terminan juntos sigue siendo aleatorio.</p>
+<p>Para cualquier sorteo con algo en juego, como un sorteo de regalos, mantén la lista visible al sortear y explica cómo se hizo. Leer el historial en voz alta o publicarlo después es un mejor registro que una captura de pantalla de la ruleta.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Ordena primero una lista pegada: <a href="/tools/remove-duplicate-lines/">elimina las líneas duplicadas</a> si cada persona debe tener una sola entrada.</li>
+  <li>¿Necesitas números y no nombres, como un boleto del 1 al 500? Usa el <a href="/tools/random-number-generator/">generador de números aleatorios</a>.</li>
+  <li>¿Diriges una ronda de preguntas o una charla? Dale un límite a cada turno con el <a href="/tools/countdown-timer/">temporizador de cuenta regresiva</a>.</li>
+</ul>

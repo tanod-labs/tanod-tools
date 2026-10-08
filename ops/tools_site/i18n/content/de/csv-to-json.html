@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "CSV in JSON umwandeln – kostenlos online | Tanod Tools",
+  "description": "CSV im Browser in JSON umwandeln. Mit Anführungszeichen, Zeilenumbrüchen in Zellen, Semikolon und Tab als Trennzeichen und Kopfzeile. Kostenlos, ohne Upload.",
+  "h1": "CSV in JSON umwandeln",
+  "lede": "Fügen Sie CSV ein oder öffnen Sie eine .csv-Datei und erhalten Sie ein JSON-Array aus Objekten oder Zeilen. Das Trennzeichen wird automatisch erkannt.",
+  "blurb": "CSV-Zeilen in ein JSON-Array umwandeln.",
+  "keywords": "csv in json umwandeln konvertieren csv zu json konverter tabelle excel export tsv semikolon array von objekten",
+  "limits": "Eingabe bis etwa 10 MB, eingefügt oder aus einer .csv- oder .tsv-Datei. Das Ergebnis aktualisiert sich während der Eingabe.",
+  "howto_title": "So wandeln Sie CSV in JSON um",
+  "howto": [
+    "Fügen Sie Ihr CSV in das Feld ein oder öffnen Sie eine .csv-Datei.",
+    "Prüfen Sie das Trennzeichen (es wird automatisch erkannt) und ob die erste Zeile die Spaltennamen enthält. Aktivieren Sie die Umwandlung von Zahlen und true/false, wenn Sie typisierte Werte möchten.",
+    "Kopieren Sie das JSON oder laden Sie es als .json-Datei herunter."
+  ],
+  "faq": [
+    ["Werden meine Daten hochgeladen?", "Nein. Das CSV wird in Ihrem Browser gelesen und umgewandelt, und nichts wird irgendwohin gesendet oder gespeichert. Wenn Sie den Tab schließen, ist es weg."],
+    ["Welche CSV-Formate werden gelesen?", "Standard-CSV nach RFC 4180: durch ein Trennzeichen getrennte Felder, Felder mit Trennzeichen, Anführungszeichen oder Zeilenumbrüchen in doppelten Anführungszeichen, und ein Anführungszeichen innerhalb eines solchen Feldes doppelt geschrieben (<code>\"\"</code>). Zeilenenden von Windows (CRLF), Unix (LF) und alten Macs (CR) funktionieren alle, und eine Byte-Order-Mark am Anfang wird ignoriert. Komma, Semikolon, Tab und senkrechter Strich werden als Trennzeichen unterstützt."],
+    ["Wie wird das Trennzeichen erkannt?", "Das Tool probiert Komma, Semikolon, Tab und senkrechten Strich an den ersten Zeilen aus und wählt dasjenige, das die meisten Zeilen in gleich viele Felder teilt. Mit Excel in vielen europäischen Ländereinstellungen gespeicherte Dateien, auch in Deutschland, verwenden Semikolons, deshalb ist das wichtig. Liegt die Erkennung daneben, wählen Sie das Trennzeichen selbst."],
+    ["Warum stehen meine Zahlen in Anführungszeichen?", "Standardmäßig bleibt jeder Wert Text, genau wie im CSV geschrieben, denn CSV kennt keine Typen, und Raten kann Daten wie Postleitzahlen oder IDs beschädigen. Aktivieren Sie <em>Zahlen, true/false und null umwandeln</em>, um typisierte Werte zu erhalten. Selbst dann bleiben Werte mit führender Null (007) und Zahlen mit mehr als 15 Ziffern Text, damit sie nicht verändert oder gerundet werden."],
+    ["Was passiert bei doppelten oder leeren Spaltennamen oder ungleich langen Zeilen?", "Leere Spaltennamen werden zu column_1, column_2 usw., und ein wiederholter Name erhält _2, _3 angehängt, sodass kein Wert einen anderen überschreibt. Zeilen mit weniger Feldern als die Kopfzeile erhalten leere Werte, Zeilen mit mehr Feldern zusätzliche column_N-Schlüssel. Beides wird über dem Ergebnis gemeldet, damit Sie die Quelle prüfen können."],
+    ["Kann ich Arrays statt Objekten bekommen?", "Ja. Schalten Sie <em>Erste Zeile ist die Kopfzeile</em> aus, dann wird jede Zeile zu einem Array von Werten, auch die erste."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="name,email,age&#10;Ana,ana@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Trennzeichen</label>
+      <select id="delim">
+        <option value="auto" selected>Automatisch erkennen</option>
+        <option value=",">Komma ( , )</option>
+        <option value=";">Semikolon ( ; )</option>
+        <option value="&#9;">Tab</option>
+        <option value="|">Senkrechter Strich ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Layout</label>
+      <select id="indent">
+        <option value="2" selected>Eingerückt, 2 Leerzeichen</option>
+        <option value="4">Eingerückt, 4 Leerzeichen</option>
+        <option value="min">Minifiziert</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>Erste Zeile ist die Kopfzeile (Array von Objekten)</label>
+    <label class="check"><input type="checkbox" id="types">Zahlen, true/false und null umwandeln</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Fügen Sie CSV ein, um zu beginnen.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}JSON kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.json herunterladen</button>
+    <button class="btn btn--quiet" id="clear" type="button">Leeren</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>.csv-Datei öffnen</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Von CSV-Zeilen zu JSON</h2>
+<p>CSV ist der kleinste gemeinsame Nenner für Daten: Jede Tabellenkalkulation und jede Datenbank kann es exportieren. JSON erwarten dagegen die meisten Web-APIs, Skripte und Konfigurationsdateien. Um CSV in JSON umzuwandeln, liest dieses Tool das CSV mit einem Parser, der dem CSV-Standard folgt. Ein Komma in einer Adresse in Anführungszeichen oder ein Zeilenumbruch in einem Kommentar in Anführungszeichen bleibt also in seiner Zelle, statt die Zeile zu teilen.</p>
+<p>Mit Kopfzeile wird jede Zeile zu einem Objekt, dessen Schlüssel die Spaltennamen in Spaltenreihenfolge sind. Ohne Kopfzeile wird jede Zeile zu einem Array. Werte bleiben Text, sofern Sie nicht die Umwandlung von Zahlen und true/false anfordern, denn eine CSV-Datei enthält keine Typen, und eine automatische Vermutung kann eine Postleitzahl wie 01067 stillschweigend in die Zahl 1067 verwandeln.</p>
+<p>Die Zeile unter den Optionen zeigt, wie viele Zeilen und Spalten gelesen wurden und welches Trennzeichen verwendet wurde. Haben einige Zeilen mehr oder weniger Felder als die Kopfzeile, nennt ein Hinweis die betroffenen Zeilen. Das deutet meist auf ein verirrtes Trennzeichen oder ein nicht geschlossenes Anführungszeichen in der Quelle hin.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie brauchen den umgekehrten Weg? Nutzen Sie <a href="/tools/json-to-csv/">JSON in CSV</a>.</li>
+  <li>Um das Ergebnis zu prüfen oder neu zu formatieren, fügen Sie es in <a href="/tools/json-formatter/">JSON formatieren und validieren</a> ein.</li>
+  <li>Entfernen Sie wiederholte Zeilen vorher mit <a href="/tools/remove-duplicate-lines/">Doppelte Zeilen entfernen</a>.</li>
+</ul>

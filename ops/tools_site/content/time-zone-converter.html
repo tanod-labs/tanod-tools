@@ -1,0 +1,95 @@
+<!--meta
+{
+  "category": "calc",
+  "name": "Time zone converter",
+  "title": "Time zone converter and meeting planner | Tanod Tools",
+  "description": "Convert a date and time to many time zones at once, with UTC offsets, day changes, daylight saving gaps and overlaps, and an hourly meeting planner.",
+  "h1": "Time zone converter",
+  "lede": "Pick a date, a time and the zone it is in, then see the same moment in every city on your list, with a planner for finding shared working hours.",
+  "blurb": "Convert one time to many zones and plan meetings across them.",
+  "keywords": "time zone converter world clock meeting planner convert time between cities utc offset daylight saving est pst gmt ist jst timezones overlap",
+  "limits": "Uses the time-zone data built into your browser, so offsets and daylight saving rules follow whatever your browser knows, including past and future dates. Abbreviations are shown only where the browser has one. Nothing leaves your device.",
+  "howto_title": "How to convert a time between zones",
+  "howto": [
+    "Choose the date, the time and the zone that time is in. Press <strong>Now</strong> to start from the current moment.",
+    "Add the cities you need with <em>Add a place</em>. Each row shows the local time, the day (same, next or previous) and the UTC offset. Your list is remembered on this device.",
+    "Use the meeting planner under the list to find hours when everyone is inside 09:00 to 17:00 local time. Hatched cells are working hours."
+  ],
+  "faq": [
+    ["What happens if I choose a time that doesn't exist?", "When clocks spring forward, one local hour is skipped: in New York on 8 March 2026 the clock goes from 01:59 straight to 03:00, so 02:30 never happens. The converter says so and uses the usual convention, moving the time forward by the length of the gap (02:30 becomes 03:30), then converts that moment."],
+    ["And a time that happens twice?", "When clocks fall back, one hour is repeated. On 1 November 2026 in New York, 01:30 occurs first as 01:30 EDT (UTC-04:00) and again an hour later as 01:30 EST (UTC-05:00). The converter shows both possibilities and lets you choose; it starts with the earlier one."],
+    ["Why are some offsets not whole hours?", "Several places use half-hour or 45-minute offsets: India is UTC+05:30, Nepal is UTC+05:45, and Lord Howe Island, Australia, is UTC+10:30 in winter and UTC+11:00 in summer, a daylight saving shift of only 30 minutes. The tool uses the exact offset in force on the date you choose."],
+    ["Does the day change show up?", "Yes. Each row says Same day, Next day or Previous day, relative to the date you chose in the source zone. Kiritimati in Kiribati is UTC+14, the earliest zone in the world, so a mid-day time in London is already the next day there."],
+    ["How does the meeting planner work?", "It lays out 24 hourly cells for each place, lined up by the same instant, starting from midnight on your chosen date in the source zone. Cells inside 09:00 to 17:00 local time are hatched and read as working hours, and the bottom row marks hours that work for everyone. A column with a heavy outline is the time you entered."],
+    ["Which zone names can I use?", "Any IANA zone your browser lists, such as Europe/London or Asia/Tokyo, plus UTC and your own zone. City names are shown in readable form with the full zone id underneath. For converting a Unix timestamp rather than a wall-clock time, use the <a href=\"/tools/unix-timestamp-converter/\">Unix timestamp converter</a>."]
+  ],
+  "related": ["unix-timestamp-converter", "date-calculator", "date-difference-calculator", "age-calculator", "cron-expression-explainer"]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Date</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Time</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Now</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Time zone of that time</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>This time happens twice. Which one?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Add a place</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Add</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Clock</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24-hour</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12-hour</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Converted times"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Meeting planner</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Planner key">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Working hours, 09:00 to 17:00 local (hatched)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>The time you entered (heavy outline)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Everyone is in working hours</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Why converting times across zones goes wrong</h2>
+<p>A time zone is not just an offset from UTC. It is a set of rules, kept in the IANA time-zone database, that says what the offset was and will be on each date. That is why the same city is UTC-5 in winter and UTC-4 in summer, why two cities that share an offset today may part ways next month, and why a meeting set for 9:00 in London moves relative to New York for a few weeks each spring and autumn, when the two countries change their clocks on different dates.</p>
+<p>Daylight saving transitions create two awkward cases. In spring a stretch of local time is skipped, so a time inside it does not exist. In autumn a stretch repeats, so a time inside it is ambiguous and needs the offset to settle which occurrence is meant. Many programs quietly pick one answer; this converter tells you about the gap or the overlap and, for the overlap, lets you pick.</p>
+<p>For scheduling, comparing clock readings is only half the job. Fairness depends on whose working hours the meeting falls in. The hourly planner lines up every place on the same instants so you can see at a glance where 09:00 to 17:00 overlaps, and where someone would be joining from the middle of the night. Even with a very good overlap, state the zone explicitly in the invitation, preferably with the UTC offset, so nobody has to guess.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Reading a timestamp from a log or API? The <a href="/tools/unix-timestamp-converter/">Unix timestamp converter</a> shows it in any zone.</li>
+  <li>To find the date a deadline lands on after adding days or business days, use the <a href="/tools/date-calculator/">date calculator</a>.</li>
+  <li>Working out how long a project or trip lasts? The <a href="/tools/date-difference-calculator/">date difference calculator</a> counts it.</li>
+</ul>

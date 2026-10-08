@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Convertir JSON en CSV en ligne, gratuit | Tanod Tools",
+  "description": "Convertissez un tableau JSON en CSV dans votre navigateur. Objets imbriqués en colonnes chemin.pointé, guillemets gérés, option pour Excel. Rien n'est envoyé.",
+  "h1": "Convertir JSON en CSV",
+  "lede": "Collez un tableau JSON ou ouvrez un fichier .json et obtenez un CSV à ouvrir dans Excel, Google Sheets ou Numbers.",
+  "blurb": "Transformez un tableau JSON en CSV pour tableur.",
+  "keywords": "json en csv convertir json csv convertisseur json csv excel tableur export aplatir objets imbriques imbriqués tableau d'objets",
+  "limits": "Données jusqu'à environ 10 Mo, collées ou ouvertes depuis un fichier .json. Le résultat se met à jour pendant la saisie.",
+  "howto_title": "Comment convertir du JSON en CSV",
+  "howto": [
+    "Collez votre JSON dans le champ, ou ouvrez un fichier .json. Un tableau d'objets donne une ligne par objet.",
+    "Choisissez le séparateur et la façon d'écrire les objets imbriqués. Activez l'option Excel si le fichier sera ouvert dans Excel.",
+    "Copiez le CSV ou téléchargez-le en fichier .csv."
+  ],
+  "faq": [
+    ["Mon JSON est-il envoyé en ligne ?", "Non. Il est analysé et converti dans votre navigateur, et rien n'est envoyé nulle part ni conservé."],
+    ["Quelles structures JSON fonctionnent ?", "Un tableau d'objets (une ligne par objet, une colonne par clé), un tableau de tableaux (chaque tableau intérieur est une ligne), un tableau de valeurs simples (une colonne) ou un objet unique (une ligne). Les colonnes apparaissent dans l'ordre où les clés sont vues pour la première fois : un objet qui a une clé absente des autres ajoute une colonne, et les lignes qui ne l'ont pas reçoivent une cellule vide."],
+    ["Comment les objets et tableaux imbriqués sont-ils traités ?", "Avec <em>Aplatir en chemins pointés</em>, un objet imbriqué comme <code>{\"address\": {\"city\": \"Lyon\"}}</code> devient une colonne nommée <code>address.city</code>. Avec <em>Garder en texte JSON</em>, tout l'objet imbriqué va dans une seule cellule, en JSON. Les tableaux sont toujours écrits en texte JSON dans une seule cellule, car il n'existe pas de façon unique et correcte de répartir une liste sur plusieurs colonnes."],
+    ["Pourquoi les accents s'affichent-ils mal quand j'ouvre le fichier dans Excel ?", "Excel sous Windows suppose souvent un ancien encodage régional, sauf si le fichier commence par une marque d'ordre des octets (BOM). Activez <em>Ajouter un BOM pour Excel</em> avant de télécharger, et Excel lira le fichier en UTF-8. Google Sheets et Numbers lisent l'UTF-8 dans tous les cas. Si votre Excel attend des points-virgules, comme souvent en français, choisissez aussi le séparateur point-virgule."],
+    ["Quand les valeurs sont-elles mises entre guillemets ?", "Seulement quand c'est nécessaire : une valeur qui contient le séparateur, un guillemet double ou un saut de ligne, ou qui commence ou finit par une espace, est entourée de guillemets doubles, et tout guillemet à l'intérieur est doublé. Les nombres sont écrits exactement comme dans le JSON : les longs identifiants ne sont donc pas arrondis. <code>null</code> devient une cellule vide."],
+    ["Pourquoi l'outil dit-il que mon JSON n'est pas valide ?", "Le message donne la ligne et la colonne où la lecture s'est arrêtée. Les causes habituelles sont une virgule finale, des apostrophes au lieu de guillemets doubles ou un crochet manquant. L'outil <a href=\"/tools/json-formatter/\">Formater et valider du JSON</a> montre l'endroit exact avec un repère."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Séparateur</label>
+      <select id="delim">
+        <option value="," selected>Virgule ( , )</option>
+        <option value=";">Point-virgule ( ; )</option>
+        <option value="&#9;">Tabulation</option>
+        <option value="|">Barre verticale ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Objets imbriqués</label>
+      <select id="nested">
+        <option value="flatten" selected>Aplatir en chemins pointés (address.city)</option>
+        <option value="json">Garder en texte JSON dans une cellule</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Inclure une ligne d'en-tête</label>
+    <label class="check"><input type="checkbox" id="crlf">Fins de ligne Windows (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Ajouter un BOM pour Excel (téléchargement uniquement)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Collez du JSON pour commencer.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le CSV</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Télécharger .csv</button>
+    <button class="btn btn--quiet" id="clear" type="button">Effacer</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Ouvrir un fichier .json</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Transformer du JSON en tableur</h2>
+<p>Les API et les exports fournissent souvent du JSON, alors que les personnes qui ont besoin des données veulent un tableur. Convertir le JSON en CSV fait le lien : chaque objet du tableau devient une ligne et chaque clé une colonne. Comme les objets de données réelles ont rarement tous les mêmes clés, l'outil rassemble toutes les clés qu'il rencontre, dans l'ordre où il les voit pour la première fois, et laisse une cellule vide quand un objet n'a pas de valeur pour cette colonne.</p>
+<p>Un tableur est plat : les données imbriquées doivent donc être ramenées en colonnes d'une manière ou d'une autre. L'aplatissement transforme <code>user.name</code> et <code>user.email</code> en colonnes distinctes, ce qui convient à la plupart des rapports. Garder les objets imbriqués en texte JSON limite le nombre de colonnes et permet de reconstruire plus tard la structure d'origine.</p>
+<p>Le CSV suit les règles habituelles (RFC 4180) : les valeurs ne sont mises entre guillemets que si nécessaire et les guillemets à l'intérieur d'une valeur sont doublés. Les nombres gardent les chiffres exacts de votre JSON au lieu d'être arrondis comme le seraient des nombres JavaScript.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Dans l'autre sens ? Utilisez <a href="/tools/csv-to-json/">CSV en JSON</a>.</li>
+  <li>Si le JSON ne se convertit pas, trouvez le problème avec <a href="/tools/json-formatter/">Formater et valider du JSON</a>.</li>
+  <li>Comparez deux exports ligne par ligne avec <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+</ul>

@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Encoder et décoder une URL en ligne, avec analyseur | Tanod Tools",
+  "description": "Encodez ou décodez du texte pour une URL (encodage pourcent) : composant, URL complète ou formulaire, compatible UTF-8, erreurs claires. Découpe aussi une URL.",
+  "h1": "Encoder et décoder une URL",
+  "lede": "Encodez du texte en pourcent pour une URL ou décodez-le, et découpez n'importe quelle URL en ses parties et paramètres de requête.",
+  "blurb": "Encoder, décoder et analyser des URL.",
+  "keywords": "urlencode urldecode encoder decoder url encodage pourcent pourcentage encodeuricomponent chaine de requete query string parametres uri echapper",
+  "limits": "Texte jusqu'à 5 Mo environ. Les résultats se mettent à jour pendant la saisie.",
+  "howto_title": "Comment encoder ou décoder une URL",
+  "howto": [
+    "Choisissez Encoder ou Décoder, puis indiquez la nature du texte : une valeur seule (composant), une URL complète ou des données de formulaire.",
+    "Tapez ou collez votre texte. Le résultat s'affiche en dessous pendant la saisie ; une séquence d'échappement incorrecte est signalée avec sa position.",
+    "Copiez le résultat, ou collez une URL complète dans l'analyseur plus bas pour voir son hôte, son chemin et ses paramètres de requête."
+  ],
+  "faq": [
+    ["Quelle différence entre l'encodage d'un composant et celui d'une URL complète ?", "L'encodage de composant (<code>encodeURIComponent</code> en JavaScript) échappe tout sauf les lettres, les chiffres et <code>- _ . ! ~ * ' ( )</code> : des caractères comme <code>/ ? &amp; =</code> deviennent <code>%2F %3F %26 %3D</code>. Utilisez-le pour une seule valeur de requête ou un segment de chemin. L'encodage d'URL complète (<code>encodeURI</code>) laisse intacts les caractères qui structurent une URL et n'échappe que les espaces, les lettres non ASCII et quelques autres caractères, pour que l'adresse entière reste utilisable."],
+    ["Quand utiliser l'encodage de formulaire ?", "L'encodage de formulaire (<code>application/x-www-form-urlencoded</code>) est celui qu'envoie un formulaire HTML et qu'utilisent la plupart des chaînes de requête. Il écrit une espace sous la forme <code>+</code> et échappe tout sauf les lettres, les chiffres et <code>* - . _</code>. Au décodage dans ce mode, un <code>+</code> est lu comme une espace ; dans les autres modes, il reste un signe plus."],
+    ["Comment les lettres accentuées et les emoji sont-ils encodés ?", "En octets UTF-8, chacun écrit sous la forme <code>%</code> suivi de deux chiffres hexadécimaux, ce qu'attendent les navigateurs et les serveurs. Par exemple, é devient <code>%C3%A9</code>. Le décodage vérifie que les octets forment de l'UTF-8 valide et vous prévient si ce n'est pas le cas."],
+    ["Pourquoi le décodage signale-t-il une erreur ?", "Chaque signe pourcentage doit être suivi de deux chiffres hexadécimaux (0-9, A-F). Un <code>%</code> isolé, une séquence tronquée comme <code>%A</code> ou des octets qui ne sont pas de l'UTF-8 valide sont signalés avec leur position pour que vous puissiez les retrouver. Si le texte contient un signe pourcentage littéral, il doit être écrit <code>%25</code>."],
+    ["L'analyseur d'URL visite-t-il l'adresse ?", "Non. Il utilise l'analyseur d'URL intégré au navigateur pour découper le texte en parties ; rien n'est téléchargé et rien n'est envoyé nulle part. Le texte que vous saisissez reste dans cet onglet."],
+    ["Faut-il encoder une URL complète plusieurs fois ?", "Non. Encoder un texte déjà encodé transforme <code>%20</code> en <code>%2520</code>, une erreur courante. Si vous voyez <code>%25</code> suivi de deux chiffres hexadécimaux dans un résultat, l'entrée était probablement déjà encodée : décodez-la d'abord."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Sens</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Encoder</label>
+        <label><input type="radio" name="dir" value="decode">Décoder</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">Le texte est</label>
+      <select id="u-kind">
+        <option value="component" selected>Une valeur seule (composant)</option>
+        <option value="uri">Une URL complète</option>
+        <option value="form">Des données de formulaire (espace = +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Entrée</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Tapez ou collez ici, par ex. café au lait &amp; thé"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Résultat</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Copier</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Utiliser le résultat comme entrée</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Effacer</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">Découper une URL en parties</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Paramètres de requête</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Nom</th><th scope="col">Valeur (décodée)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>À quoi sert l'encodage d'URL</h2>
+<p>Encoder et décoder une URL est nécessaire parce qu'une URL ne peut contenir qu'un ensemble limité de caractères ASCII, et certains ont un rôle : <code>/</code> sépare les segments du chemin, <code>?</code> ouvre la requête, <code>&amp;</code> et <code>=</code> la découpent en noms et valeurs, <code>#</code> ouvre le fragment. L'encodage pourcent (percent-encoding) écrit tout autre octet sous la forme <code>%</code> suivi de deux chiffres hexadécimaux : une valeur comme <code>R&amp;D / 2026</code> peut ainsi voyager dans une chaîne de requête sans être confondue avec la structure : <code>R%26D%20%2F%202026</code>.</p>
+<p>Le texte est d'abord transformé en octets UTF-8, c'est pourquoi une lettre accentuée devient deux séquences d'échappement et un emoji en devient quatre. Le décodage inverse le processus et vérifie que les octets forment de l'UTF-8 valide. Cet outil décode avec son propre lecteur strict : au lieu d'une erreur générique « URI malformed », il vous indique quelle séquence est incorrecte et où.</p>
+<p>Les trois modes correspondent aux trois situations courantes. Encodez une valeur seule (composant) quand vous construisez un paramètre de requête ou un segment de chemin. N'encodez une URL complète que si vous avez une adresse entière contenant des espaces ou des lettres non ASCII. Utilisez les données de formulaire pour le corps d'un envoi de formulaire ou une chaîne de requête construite comme le font les formulaires HTML.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Besoin d'un chemin propre et lisible plutôt que de séquences d'échappement ? Créez-en un avec le <a href="/tools/text-to-slug/">Générateur de slug</a>.</li>
+  <li>Les données binaires dans une URL sont généralement en Base64url, pas en encodage pourcent : essayez <a href="/tools/base64-encode-decode/">Encoder et décoder en Base64</a>.</li>
+  <li>Un jeton dans une chaîne de requête qui commence par <code>eyJ</code> est probablement un JWT. Lisez-le avec le <a href="/tools/jwt-decoder/">Décodeur JWT</a>.</li>
+</ul>

@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Subnetzrechner für IPv4 und IPv6 (CIDR) | Tanod Tools",
+  "description": "IPv4- oder IPv6-Adresse mit Präfix oder Maske eingeben: Netzadresse, Broadcast, Host-Bereich, Anzahl, Wildcard-Maske, Binäransicht und Aufteilung in Subnetze.",
+  "h1": "Subnetzrechner",
+  "lede": "Berechnen Sie Netzadresse, Host-Bereich und Adressanzahl für jedes IPv4- oder IPv6-Subnetz und teilen Sie es in kleinere auf.",
+  "blurb": "IPv4- und IPv6-CIDR-Rechner mit Host-Bereichen und Subnetz-Aufteilung.",
+  "keywords": "subnetzrechner subnetz rechner subnet calculator cidr rechner ip rechner netzmaske subnetzmaske wildcard maske broadcast adresse nutzbare hosts ipv6 präfix praefix subnetting rfc 1918",
+  "limits": "Nur IPv4 und IPv6, jeweils ein Subnetz. Der Adresstyp wird aus den in die Seite eingebauten IANA-Bereichen für besondere Zwecke ermittelt; über den Inhaber einer öffentlichen Adresse weiß die Seite nichts. Tabellen für die Subnetz-Aufteilung enden bei 256 Zeilen.",
+  "howto_title": "So berechnen Sie ein Subnetz",
+  "howto": [
+    "Geben Sie eine Adresse mit Präfixlänge ein, etwa <code>192.168.1.10/24</code> oder <code>2001:db8::/32</code>. Eine IPv4-Adresse mit Punkt-Maske, etwa <code>192.168.1.10 255.255.255.0</code>, funktioniert ebenfalls.",
+    "Lesen Sie Netzadresse, Host-Bereich und Anzahl ab. Waren in der Adresse Host-Bits gesetzt, sagt Ihnen die Seite, auf welches Netz sie normalisiert wurde.",
+    "Um kleinere Netze zu planen, geben Sie unter <strong>Aufteilen in</strong> ein längeres Präfix ein und lesen die Tabelle der Subnetze."
+  ],
+  "faq": [
+    ["Warum gibt es zwei nutzbare Hosts weniger als Adressen?", "In einem gewöhnlichen IPv4-Subnetz bezeichnet die erste Adresse das Netz und die letzte ist die Broadcast-Adresse, daher kann keine der beiden einem Gerät zugewiesen werden. Ein /24 hat 256 Adressen und 254 nutzbare Hosts. Es gibt zwei Ausnahmen: Ein /31 hat zwei Adressen, die auf einer Punkt-zu-Punkt-Verbindung beide nutzbar sind (RFC 3021), und ein /32 ist ein einzelner Host."],
+    ["Was zeigt eine Wildcard-Maske?", "Sie ist die umgedrehte Netzmaske: 0-Bits müssen übereinstimmen, 1-Bits werden ignoriert. Für 255.255.255.0 lautet die Wildcard 0.0.0.255. Access-Listen auf Cisco-Geräten und OSPF-network-Anweisungen verwenden diese Form."],
+    ["Warum wird 010.0.0.1 abgelehnt?", "Durch eine führende Null lesen manche Systeme diesen Teil als Oktalzahl, 010 bedeutet dann 8, während andere ihn als dezimal 10 lesen. Derselbe Text kann also auf zwei verschiedene Rechner zeigen, daher bittet die Seite Sie, die Zahl ohne die Null zu schreiben."],
+    ["Was ist bei IPv6 in der Subnetzberechnung anders?", "IPv6 hat keine Broadcast-Adresse, daher kann jede Adresse eines Präfixes vergeben werden, und die Anzahl ist einfach 2 hoch (128 minus Präfix). Normale LAN-Subnetze sind /64. Die Seite zeigt die Adresse in der komprimierten Form nach RFC 5952 und ausgeschrieben, mit allen acht vierstelligen Gruppen."],
+    ["Was ist die komprimierte Form einer IPv6-Adresse?", "Führende Nullen in jeder Gruppe entfallen, und die längste Folge von zwei oder mehr Gruppen, die nur aus Nullen bestehen, wird durch <code>::</code> ersetzt; bei Gleichstand die am weitesten links stehende. Eine einzelne Null-Gruppe wird nie komprimiert, daher behält <code>2001:db8:0:1:1:1:1:1</code> seine 0."],
+    ["Werden meine Adressen irgendwohin gesendet?", "Nein. Die Berechnung läuft in Ihrem Browser mit großen Ganzzahlen, nichts von dem, was Sie eingeben, wird gesendet, und sobald die Seite geladen ist, funktioniert sie auch offline."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">IP-Adresse mit Präfix oder Maske</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Beispiele">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + Maske</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Subnetz-Details"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">In kleinere Subnetze aufteilen</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Aufteilen in Präfixlänge /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="zum Beispiel 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Leer lassen, um nicht aufzuteilen. Muss länger sein als das Präfix oben.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Subnetze</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Subnetze und CIDR-Notation</h2>
+<p>Eine IP-Adresse hat zwei Teile: Die vorderen Bits bezeichnen das Netz, die restlichen Bits den Host darin. Die Präfixlänge nach dem Schrägstrich gibt an, wie viele vordere Bits zum Netz gehören; <code>192.168.1.10/24</code> bedeutet also, dass die ersten 24 von 32 Bits das Netz sind und die letzten 8 eine von 256 Adressen bezeichnen. Setzt man alle Host-Bits auf 0, erhält man die Netzadresse; setzt man alle auf 1, die Broadcast-Adresse, und deshalb werden diese beiden normalerweise nicht an Geräte vergeben.</p>
+<p>Die Netzmaske (Subnetzmaske) enthält dieselbe Information, als Adresse geschrieben: 24 Eins-Bits gefolgt von 8 Null-Bits ergeben 255.255.255.0. Nur zusammenhängende Masken sind gültig, etwas wie 255.0.255.0 wird abgelehnt. IPv6 funktioniert genauso mit 128 Bits, aber ohne Broadcast-Adresse und mit einem viel größeren Bereich: Ein übliches /64-LAN-Subnetz umfasst 2<sup>64</sup> Adressen, etwa 18 Trillionen.</p>
+<p>Manche Bereiche haben überall eine besondere Bedeutung. 10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16 sind privat und werden im öffentlichen Internet nicht geroutet, 100.64.0.0/10 ist gemeinsamer Adressraum für Carrier-Grade-NAT, 169.254.0.0/16 ist link-lokal, und die Blöcke 192.0.2.0, 198.51.100.0 und 203.0.113.0 sind für Dokumentation reserviert. Die Seite benennt den Bereich, in den Ihre Adresse fällt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Rechnen Sie ein Oktett oder eine ganze Adresse mit dem <a href="/tools/number-base-converter/">Zahlensystem-Umrechner</a> zwischen binär und dezimal um.</li>
+  <li>Sie setzen auch Dateirechte auf einem Server? Der <a href="/tools/chmod-calculator/">chmod-Rechner</a> macht aus 755 rwxr-xr-x und umgekehrt.</li>
+  <li>Schlagen Sie einen Statuscode aus einem fehlschlagenden Health-Check in der Übersicht der <a href="/tools/http-status-codes/">HTTP-Statuscodes</a> nach.</li>
+</ul>

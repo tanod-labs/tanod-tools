@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Convertir JSON en interfaces TypeScript en ligne | Tanod Tools",
+  "description": "Collez un exemple JSON et obtenez des interfaces ou types TypeScript : objets imbriqués nommés, champs optionnels, unions. Dans votre navigateur, gratuit.",
+  "h1": "JSON en TypeScript",
+  "lede": "Transformez un exemple de document JSON en interfaces ou alias de type TypeScript, avec champs optionnels et unions déduits de vos données.",
+  "blurb": "Exemple JSON vers interfaces ou types TypeScript.",
+  "keywords": "json typescript ts convertir convertisseur generateur interface type types quicktype json2ts reponse api typer generer types depuis json",
+  "limits": "Les types sont déduits de l'exemple que vous collez : ils décrivent cet exemple et non un schéma. Un champ qui est une chaîne dans votre exemple peut être un nombre ailleurs. Tous les nombres deviennent <code>number</code>, et les dates restent <code>string</code>. L'ordre des propriétés suit JSON.parse, qui place en premier les clés qui sont des nombres entiers.",
+  "howto_title": "Comment générer du TypeScript à partir de JSON",
+  "howto": [
+    "Collez une réponse ou un fichier JSON dans la zone de saisie. Plusieurs éléments dans un tableau donnent un meilleur résultat, car les champs absents de certains éléments deviennent optionnels.",
+    "Indiquez le nom du type de premier niveau, choisissez <code>interface</code> ou <code>type</code>, et cochez <strong>export</strong>, <strong>readonly</strong> ou la détection des champs optionnels selon vos besoins.",
+    "Copiez les déclarations ou téléchargez-les en fichier <code>.ts</code>. Relisez les noms, car ils viennent de vos noms de clés."
+  ],
+  "faq": [
+    ["Comment l'outil décide-t-il qu'un champ est optionnel ?", "Quand vous avez un tableau d'objets, ces objets sont fusionnés en une seule forme. Une clé présente dans certains éléments mais pas dans tous reçoit un <code>?</code>. Une clé présente mais qui vaut <code>null</code> dans certains éléments n'est pas optionnelle : elle devient <code>T | null</code>. Désactivez la détection des champs optionnels si vous préférez que toutes les clés soient obligatoires."],
+    ["Comment les types imbriqués sont-ils nommés ?", "Chaque objet imbriqué est nommé d'après sa clé en PascalCase : <code>billing_address</code> devient <code>BillingAddress</code>. Pour un tableau, le type des éléments perd un « s » final quand la clé fait plus de 3 lettres et ne se termine pas par ss, us ou is : <code>users</code> donne <code>User</code>, tandis que <code>address</code> donne <code>AddressItem</code>. Si deux formes différentes veulent le même nom, la seconde est numérotée, ce qui donne <code>User</code> et <code>User2</code>. Ces règles de pluriel sont celles de l'anglais."],
+    ["Que deviennent les objets de même forme ?", "Ils partagent une seule déclaration. Si <code>billing</code> et <code>shipping</code> contiennent tous deux <code>{ street, city }</code>, vous obtenez une seule interface, nommée d'après le premier endroit où elle apparaît. Deux objets avec les mêmes clés mais des types de valeurs différents sont des formes différentes et reçoivent des noms distincts."],
+    ["Pourquoi un tableau vide est-il typé unknown[] ?", "Un tableau vide ne contient aucun exemple : rien ne peut être déduit sur ses éléments. <code>unknown[]</code> est la réponse honnête ; modifiez-la à la main une fois que vous connaissez le type des éléments. Un tableau qui mélange les valeurs devient une union, comme <code>(string | number)[]</code>."],
+    ["Le résultat peut-il différer de l'API réelle ?", "Oui. Un exemple ne montre que les valeurs qu'il contient. Un champ toujours présent dans votre exemple mais parfois absent en production sera obligatoire ici, et une chaîne de type énumération sera un simple <code>string</code>. Pour une validation stricte, utilisez un schéma ; pour démarrer vite, utilisez ce résultat et ajustez-le."],
+    ["Mon JSON est-il envoyé sur un serveur ?", "Non. Rien de ce que vous collez n'est envoyé nulle part : la conversion s'exécute dans votre navigateur, et vous pouvez vous déconnecter du réseau une fois la page chargée."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">Exemple JSON</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "name": "Ada Lovelace",
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Nom du type de premier niveau</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Déclarer avec</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Modificateurs</span>
+      <label class="check"><input type="checkbox" id="t-export" checked>Ajouter <code>export</code></label>
+      <label class="check"><input type="checkbox" id="t-readonly">Marquer les propriétés <code>readonly</code></label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Détecter les champs optionnels</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">Copier le TypeScript</button>
+    <button class="btn" id="t-dl" type="button">Télécharger .ts</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Déduire des types à partir d'un exemple JSON</h2>
+<p>Convertir du JSON en TypeScript revient à écrire la forme des données. Les types TypeScript décrivent cette forme, et une réponse JSON en contient déjà une : chaque clé, le genre de valeur qu'elle porte et la façon dont les objets s'imbriquent. Le convertisseur parcourt l'exemple et transcrit cette forme en déclarations, pour que vous n'ayez pas à taper quarante champs à la main avant d'appeler une API en toute confiance.</p>
+<p>L'étape la plus importante concerne les tableaux. Chaque élément d'un tableau d'objets est lu, et leurs formes sont fusionnées : une clé présente dans tous les éléments reste obligatoire, une clé présente dans certains seulement devient optionnelle, et les valeurs de natures différentes deviennent une union. C'est pourquoi un exemple avec plusieurs enregistrements donne de bien meilleurs types qu'un exemple avec un seul. Une valeur <code>null</code> est traitée différemment d'une clé absente, car les deux n'ont pas le même sens pour le code qui lit le champ.</p>
+<p>Les types déduits sont un point de départ, pas un contrat. Ils ne peuvent pas savoir qu'une chaîne prend toujours l'une de trois valeurs, qu'un nombre est en réalité un identifiant entier, ou qu'un champ présent dans tous vos exemples peut disparaître en production. Relisez le résultat, renommez ce qui est sorti maladroitement et resserrez les types qui comptent.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Vérifiez d'abord que votre exemple est bien formé avec <a href="/tools/json-formatter/">Formater et valider du JSON</a>, qui indique le caractère exact d'une erreur de syntaxe.</li>
+  <li>Vous travaillez plutôt avec une config YAML ? Convertissez-la avec <a href="/tools/yaml-to-json/">Convertir YAML en JSON</a> et collez le résultat ici.</li>
+  <li>Besoin de regarder le contenu d'un jeton avant de le typer ? Décodez-le avec le <a href="/tools/jwt-decoder/">Décodeur JWT</a>.</li>
+</ul>

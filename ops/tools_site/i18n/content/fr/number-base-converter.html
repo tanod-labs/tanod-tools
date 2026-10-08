@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Convertisseur binaire, octal, décimal, hexadécimal | Tanod Tools",
+  "description": "Convertissez des entiers de toute taille entre binaire, octal, décimal, hexadécimal et toute base de 2 à 36, avec complément à deux sur 8, 16, 32 et 64 bits.",
+  "h1": "Convertisseur de base numérique",
+  "lede": "Convertissez un nombre entier entre binaire, octal, décimal, hexadécimal et toute base jusqu'à 36, et voyez ses représentations en complément à deux.",
+  "blurb": "Binaire, octal, décimal, hexadécimal et bases 2 à 36.",
+  "keywords": "convertisseur base binaire en decimal decimal en binaire hexadecimal en decimal decimal en hexa hex octal radix base 36 complement a deux signe non signe bits conversion",
+  "limits": "Nombres entiers jusqu'à 4 096 chiffres, positifs ou négatifs. Les nombres à virgule ne sont pas convertis.",
+  "howto_title": "Comment convertir un nombre d'une base à une autre",
+  "howto": [
+    "Choisissez la base dans laquelle votre nombre est écrit, ou choisissez Autre et saisissez une base de 2 à 36.",
+    "Tapez le nombre. Un signe moins est autorisé, ainsi qu'un préfixe <code>0x</code>, <code>0b</code> ou <code>0o</code> correspondant à la base ; les espaces et les tirets bas sont ignorés.",
+    "Lisez-le dans chaque base ci-dessous, copiez celle dont vous avez besoin, et consultez le tableau du complément à deux pour les entiers de largeur fixe."
+  ],
+  "faq": [
+    ["Quelle taille de nombre peut-il convertir ?", "Jusqu'à 4 096 chiffres dans la base d'entrée. La conversion utilise une arithmétique exacte sur les entiers (BigInt) : de très grandes valeurs comme 2⁶⁴ + 1 = 18446744073709551617 sont converties sans arrondi, contrairement aux calculatrices qui passent en virgule flottante au-delà d'environ 9 millions de milliards."],
+    ["Peut-il convertir des nombres à virgule comme 0,1 ?", "Non. Seuls les nombres entiers sont convertis, et un séparateur décimal est signalé comme une erreur au lieu d'être ignoré en silence. Beaucoup de fractions n'ont pas de forme exacte dans une autre base : 0,1 en décimal donne un motif qui se répète à l'infini en binaire, c'est pourquoi <code>0.1 + 0.2</code> ne vaut pas exactement <code>0.3</code> dans la plupart des langages de programmation."],
+    ["Que montre le complément à deux ?", "C'est la façon dont les ordinateurs stockent les entiers signés sur un nombre fixe de bits. Un nombre négatif −n est stocké comme 2 puissance le nombre de bits, moins n : −1 sur 8 bits donne 11111111 (FF). Le tableau montre la représentation binaire sur 8, 16, 32 et 64 bits, et ce qu'elle signifie lue comme un entier signé et comme un entier non signé. Si le nombre ne tient pas dans une largeur, la ligne l'indique au lieu de le tronquer."],
+    ["Quels chiffres sont utilisés au-delà de la base 10 ?", "Des lettres, comme dans la plupart des langages de programmation : A vaut 10, B vaut 11, et ainsi de suite jusqu'à Z pour 35, c'est pourquoi la base 36 est la plus élevée. La saisie est acceptée en majuscules ou en minuscules ; l'option majuscules contrôle le résultat."],
+    ["Pourquoi un chiffre est-il signalé comme non valide ?", "Chaque base n'autorise que les chiffres inférieurs à sa valeur : le binaire autorise 0 et 1, l'octal 0 à 7, l'hexadécimal 0 à 9 et A à F. Le message d'erreur indique le caractère et sa position pour que vous puissiez trouver une faute de frappe, ou passer à la base dans laquelle le nombre est réellement écrit."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Le nombre est en</label>
+      <select id="nb-from">
+        <option value="10" selected>Décimal (base 10)</option>
+        <option value="2">Binaire (base 2)</option>
+        <option value="8">Octal (base 8)</option>
+        <option value="16">Hexadécimal (base 16)</option>
+        <option value="other">Autre base…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Base (2 à 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Nombre</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Grouper les chiffres</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Lettres majuscules</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Complément à deux</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bits</th><th scope="col">Représentation (hex, binaire)</th><th scope="col">Lu comme</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment fonctionnent les bases numériques</h2>
+<p>Pour convertir entre binaire, décimal et hexadécimal, il faut savoir qu'une base, ou radix, est le nombre de chiffres différents qu'utilise un système de numération. En décimal, chaque position vaut dix fois celle de droite ; en binaire, elle vaut deux fois plus : 1101 signifie donc 8 + 4 + 0 + 1 = 13. L'hexadécimal utilise seize chiffres, de 0 à 9 puis de A à F, et chaque chiffre hexadécimal correspond exactement à quatre chiffres binaires, c'est pourquoi les programmeurs s'en servent pour écrire les octets de façon compacte : 255 s'écrit FF, ou 11111111.</p>
+<p>L'octal regroupe les chiffres binaires par trois et apparaît encore dans les permissions de fichiers Unix (755 signifie rwxr-xr-x). La base 36 utilise tous les chiffres et toutes les lettres et se retrouve dans des identifiants courts et des raccourcisseurs d'URL.</p>
+<p>Les ordinateurs stockent les entiers signés sur un nombre fixe de bits grâce au complément à deux, où le bit de poids fort a une valeur négative. Les mêmes bits peuvent donc signifier deux nombres différents : 11001000 vaut 200 lu comme non signé et −56 lu comme signé. Le tableau sous les résultats montre les deux lectures pour les tailles d'entiers courantes.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Vous voulez transformer du texte en octets binaires plutôt qu'un nombre ? Utilisez <a href="/tools/text-to-binary/">Texte en binaire</a>.</li>
+  <li>Les codes couleur comme <code>#1636A3</code> sont trois octets hexadécimaux : lisez-les avec le <a href="/tools/color-converter/">Convertisseur de couleurs et contraste</a>.</li>
+  <li>Les timestamps Unix sont de simples secondes en décimal ; convertissez-en un avec le <a href="/tools/unix-timestamp-converter/">Convertisseur de timestamp Unix</a>.</li>
+</ul>

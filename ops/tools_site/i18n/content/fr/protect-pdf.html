@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Protéger un PDF par mot de passe (AES-256) | Tanod Tools",
+  "description": "Mettez un mot de passe sur un PDF pour qu'il ne s'ouvre pas sans lui. Chiffrement AES-256, limites d'impression et de copie. Gratuit ; fichier supprimé aussitôt.",
+  "h1": "Protéger un PDF par mot de passe",
+  "lede": "Verrouillez un PDF avec un mot de passe avant de l'envoyer. Sans le mot de passe, il ne peut pas être ouvert.",
+  "blurb": "Ajouter un mot de passe à un PDF (AES-256).",
+  "keywords": "proteger pdf mot de passe chiffrer crypter verrouiller securiser pdf mettre un mot de passe sur un pdf",
+  "limits": "Un PDF jusqu'à 10 Mo, qui n'a pas encore de mot de passe. Traité sur notre serveur, puis supprimé. 10 tâches gratuites sur le serveur par jour et par personne, partagées entre tous les outils serveur. Pour plus : l'<a href=\"/learn/password-protect-pdf-api.html\">API Protéger un PDF</a> (payante à l'appel).",
+  "howto_title": "Comment protéger un PDF par mot de passe",
+  "howto": [
+    "Choisissez un PDF de 10 Mo maximum ou glissez-le sur la page.",
+    "Tapez un mot de passe deux fois. Décochez l'impression ou la copie si les lecteurs ne doivent pas pouvoir le faire.",
+    "Cliquez sur <strong>Protéger le PDF</strong>, téléchargez la copie verrouillée et conservez le mot de passe en lieu sûr."
+  ],
+  "faq": [
+    ["Mon PDF et mon mot de passe sont-ils envoyés sur un serveur ?", "Oui. Contrairement à la plupart des outils de ce site, celui-ci fonctionne sur notre serveur : votre PDF et le mot de passe sont envoyés via HTTPS, le fichier est chiffré, et la copie verrouillée est renvoyée directement à votre navigateur. Le fichier et le mot de passe n'existent sur le serveur que pendant la tâche, en mémoire et dans un dossier temporaire privé qui est supprimé dès la fin de la tâche. Nous ne conservons ni ne journalisons jamais le fichier ou le mot de passe."],
+    ["Quel est le niveau de protection ?", "Le PDF est chiffré en AES-256, le chiffrement PDF standard le plus fort, pris en charge par tous les lecteurs PDF actuels. La vraie force, c'est votre mot de passe : choisissez-en un long, que vous n'utilisez nulle part ailleurs. Notre <a href=\"/tools/password-generator/\">Générateur de mot de passe</a> en crée un dans votre navigateur."],
+    ["Et si j'oublie le mot de passe ?", "Le fichier ne pourra pas être ouvert, et nous ne pourrons pas vous aider : nous ne gardons jamais le mot de passe ni le fichier. Conservez votre original non protégé, ou enregistrez le mot de passe dans un gestionnaire de mots de passe."],
+    ["À quoi servent les options d'impression et de copie ?", "Elles limitent ce que peut faire une personne qui connaît le mot de passe : imprimer le document ou copier son texte. La plupart des lecteurs PDF respectent ces limites, mais elles sont moins solides que le mot de passe lui-même. Un mot de passe propriétaire distinct et aléatoire, que personne ne connaît, protège ces limites."],
+    ["Puis-je protéger un PDF qui a déjà un mot de passe ?", "Pas directement. Retirez d'abord l'ancien mot de passe avec <a href=\"/tools/unlock-pdf/\">Déverrouiller un PDF</a>, puis protégez la copie avec le nouveau."],
+    ["Y a-t-il une limite ?", "Des fichiers jusqu'à 10 Mo, et 10 tâches gratuites sur le serveur par jour et par personne, partagées entre tous nos outils serveur. Seules les tâches réussies sont comptées, et le compteur est remis à zéro à minuit UTC."],
+    ["Qu'est-ce que la vérification anti-robot ?", "Avant chaque tâche, Cloudflare Turnstile vérifie que c'est une personne, et non un robot, qui utilise l'outil. Elle est généralement invisible ; parfois, elle vous demande de cocher une case."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:protect-pdf drop__mark}}
+  <p class="drop__title">Déposez un PDF ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choisir un PDF</span></label>
+  <p class="drop__hint">Ou glissez-le n'importe où sur cette page. Jusqu'à 10 Mo.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Mot de passe</label>
+      <input id="pw" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <div class="field">
+      <label for="pw2">Confirmez-le</label>
+      <input id="pw2" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <p class="help opts__full" id="pw-help">Choisissez un mot de passe long que vous n'utilisez nulle part ailleurs. Nous ne pourrons pas le récupérer pour vous.</p>
+    <div class="field opts__full">
+      <span class="label">Avec le mot de passe, les lecteurs peuvent</span>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="allow-print" checked>Imprimer</label>
+        <label class="check"><input type="checkbox" id="allow-copy" checked>Copier le texte</label>
+        <label class="check"><input type="checkbox" id="show">Afficher le mot de passe</label>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Protéger le PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ce que fait la protection par mot de passe</h2>
+<p>Un PDF protégé par mot de passe est chiffré : ses pages sont brouillées avec une clé dérivée de votre mot de passe, si bien qu'un lecteur n'affiche rien tant que le mot de passe n'a pas été saisi. Notre serveur chiffre le fichier en AES-256 avec la bibliothèque open source qpdf et vous renvoie la copie verrouillée.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Envoyez le mot de passe séparément du fichier, par exemple par SMS plutôt que dans le même e-mail.</li>
+  <li>Vous voulez aussi une mention « Confidentiel » visible ? Ajoutez-la d'abord avec <a href="/tools/watermark-pdf/">Filigrane PDF</a> ; cet outil fonctionne dans votre navigateur.</li>
+</ul>

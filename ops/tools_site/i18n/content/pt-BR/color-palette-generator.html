@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Gerador de paleta de cores a partir de uma cor | Tanod Tools",
+  "description": "Escolha uma cor base e gere paletas análogas, complementares, triádicas, tetrádicas e monocromáticas, com contraste e exportação. Grátis, no seu navegador.",
+  "h1": "Gerador de paleta de cores",
+  "lede": "Comece com uma cor e receba paletas combinando, cada amostra com os valores HEX e RGB e o contraste com branco e preto.",
+  "blurb": "Harmonias de cores a partir de uma cor base, com taxas de contraste.",
+  "keywords": "gerador de paleta de cores paleta de cores combinacao de cores esquema de cores harmonia analoga complementar triadica tetradica complementar dividida monocromatica tons tints shades oklch paleta aleatoria amostras variaveis css",
+  "limits": "As paletas são montadas no espaço de cor OKLCH e mostradas como HEX sRGB, então cores vivas demais para uma tela têm o croma reduzido. Os números de contraste usam a fórmula do WCAG 2, que mede apenas o contraste de luminosidade.",
+  "howto_title": "Como criar uma paleta de cores",
+  "howto": [
+    "Escolha uma cor base no seletor ou digite um valor como <code>#1636a3</code> ou <code>f60</code> no campo HEX.",
+    "Veja as paletas de harmonia logo abaixo. Cada amostra mostra o HEX, o RGB e se um texto preto ou branco sobre ela passa no WCAG AA ou AAA.",
+    "Escolha uma paleta em <strong>Exportar</strong> e copie ou baixe como propriedades personalizadas CSS, um array JSON ou uma lista simples. Use <strong>Paleta aleatória</strong> e os botões de travar para explorar."
+  ],
+  "faq": [
+    ["Por que OKLCH em vez de HSL?", "No HSL, um amarelo e um azul com o mesmo valor de luminosidade parecem muito diferentes em brilho. O OKLCH foi feito para que passos iguais de luminosidade pareçam iguais, o que mantém as amostras de uma paleta com peso uniforme. O matiz é o ângulo usado nas harmonias, então uma cor complementar fica a 180 graus da sua base no OKLCH, não no HSL."],
+    ["O que acontece quando uma cor não pode ser mostrada na tela?", "Girar um matiz mantendo a luminosidade e o croma às vezes cai fora da faixa sRGB que uma tela comum consegue mostrar. A ferramenta então reduz o croma, mantendo luminosidade e matiz, até a cor caber. É por isso que uma amostra girada pode parecer um pouco menos viva que a base."],
+    ["O que significam os rótulos AA e AAA?", "Eles informam a taxa de contraste WCAG 2 de um texto branco ou preto sobre aquela amostra. Uma taxa de 4,5 ou mais é AA para texto normal, 7 ou mais é AAA, e de 3 a 4,5 passa no AA só para texto grande. Uma amostra que reprova tanto com preto quanto com branco é um fundo ruim para texto."],
+    ["Como funciona a paleta aleatória?", "Cinco cores são sorteadas com o gerador seguro de números aleatórios do navegador: matizes espalhados pela roda, com luminosidade e croma aleatórios em uma faixa que evita quase preto e quase branco. Trave uma amostra para mantê-la e depois clique em Paleta aleatória ou aperte a barra de espaço para trocar as outras."],
+    ["Qual formato de exportação devo usar?", "As propriedades personalizadas CSS podem ser coladas direto no bloco <code>:root</code> de uma folha de estilos. O array JSON serve para design tokens ou scripts, e a lista simples tem um HEX por linha, para ferramentas que aceitam cores coladas. Os três usam os valores HEX exibidos."],
+    ["Aceita HEX abreviado e letras maiúsculas?", "Sim. <code>#abc</code>, <code>abc</code>, <code>#AABBCC</code> e <code>aabbcc</code> são todos aceitos. Valores com um par de alfa, como os de oito dígitos, não são aceitos aqui; use o <a href=\"/tools/color-converter/\">Conversor de cores e contraste</a> para remover o alfa antes."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack gen-pal">
+  <div class="gen-base">
+    <div class="field">
+      <label for="cp-pick">Cor base</label>
+      <input type="color" id="cp-pick" value="#1636a3">
+    </div>
+    <div class="field gen-base__hex">
+      <label for="cp-hex">Valor HEX</label>
+      <input type="text" id="cp-hex" class="mono" value="#1636a3" maxlength="9" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="cp-msg">
+    </div>
+    <p class="tt__report gen-base__info" id="cp-msg" aria-live="polite"></p>
+  </div>
+
+  <div id="cp-harmonies" class="util-stack"></div>
+
+  <h2 class="util-h">Paleta aleatória</h2>
+  <p class="help" id="cp-rand-help">Cinco cores do gerador de números aleatórios do seu navegador. Trave as que quiser manter e sorteie de novo. Aperte a barra de espaço para sortear quando nenhum campo de texto estiver em foco.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="cp-random" type="button">Paleta aleatória</button>
+  </div>
+  <div id="cp-random-out" data-scheme="random"></div>
+
+  <h2 class="util-h">Exportar</h2>
+  <div class="opts">
+    <div class="field"><label for="cp-which">Paleta</label><select id="cp-which"></select></div>
+    <fieldset class="field">
+      <legend>Formato</legend>
+      <div class="seg" role="radiogroup" aria-label="Formato de exportação">
+        <label><input type="radio" name="cp-fmt" value="css" checked>Variáveis CSS</label>
+        <label><input type="radio" name="cp-fmt" value="json">JSON</label>
+        <label><input type="radio" name="cp-fmt" value="list">Lista simples</label>
+      </div>
+    </fieldset>
+  </div>
+  <label class="visually-hidden" for="cp-out">Paleta exportada</label>
+  <textarea id="cp-out" class="mono gen-out" rows="7" readonly spellcheck="false"></textarea>
+  <div class="actions">
+    <button class="btn" id="cp-copy" type="button">Copiar</button>
+    <button class="btn" id="cp-dl" type="button">Baixar</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Como as harmonias são montadas</h2>
+<p>Um gerador de paleta de cores parte da ideia de harmonia: um conjunto de cores cujos matizes ficam em ângulos fixos na roda de cores. Cores análogas são vizinhas, a 30 graus de distância. Uma cor complementar fica a 180 graus, um par complementar dividido fica a 150 e 210 graus, uma tríade tem matizes espaçados em 120 graus, e uma tétrade usa quatro matizes a 90 graus um do outro. A paleta monocromática mantém o matiz e varia a luminosidade, dos tons claros aos escuros.</p>
+<p>A roda usada aqui é o OKLCH, a forma cilíndrica do espaço OKLab de Björn Ottosson. A conversão vai de sRGB para luz linear, passa pelas matrizes do OKLab e volta, com uma verificação de gama. Se uma cor girada cai fora do que o sRGB consegue mostrar, o croma dela é reduzido em pequenos passos até caber, mantendo a luminosidade e o matiz que você escolheu.</p>
+<p>O contraste é informado para cada amostra tanto com branco quanto com preto, porque a primeira pergunta sobre uma cor de paleta geralmente é qual texto pode ficar sobre ela. A taxa e a indicação AA ou AAA são sempre escritas por extenso, para que a informação não dependa de enxergar a cor.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Precisa da mesma cor em HSL, CMYK ou como nome CSS? Use o <a href="/tools/color-converter/">Conversor de cores e contraste</a>.</li>
+  <li>Transforme duas cores da paleta em um fundo com o <a href="/tools/css-gradient-generator/">Gerador de gradiente CSS</a>.</li>
+  <li>Quer uma cor tirada de uma foto em vez de uma roda? Experimente o <a href="/tools/image-color-picker/">Seletor de cores de imagem</a>.</li>
+</ul>

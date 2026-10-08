@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Redimensionner une image en ligne (pixels ou %) | Tanod Tools",
+  "description": "Redimensionnez vos images JPG, PNG et WebP dans votre navigateur : largeur, hauteur, proportions conservées, plusieurs images d'un coup. Rien n'est envoyé.",
+  "h1": "Redimensionner une image",
+  "lede": "Indiquez une nouvelle largeur et une nouvelle hauteur en pixels, ou un pourcentage, pour une image ou tout un lot.",
+  "blurb": "Changer les dimensions d'une image en pixels ou en pourcentage.",
+  "keywords": "redimensionner image changer taille dimensions largeur hauteur pixels reduire agrandir photo miniature",
+  "limits": "Jusqu'à 50 images par lot, 50 Mo chacune, environ 100 mégapixels en entrée comme en sortie. L'agrandissement est limité à 4 fois la taille d'origine.",
+  "howto_title": "Comment redimensionner une image",
+  "howto": [
+    "Choisissez vos images ou glissez-les sur la page.",
+    "Saisissez une largeur ou une hauteur en pixels (l'autre suit si les proportions sont verrouillées), ou passez en pourcentage.",
+    "Cliquez sur <strong>Redimensionner</strong>, puis téléchargez le résultat ou un .zip du lot."
+  ],
+  "faq": [
+    ["Mes images sont-elles envoyées ?", "Non. Le redimensionnement se fait dans votre navigateur, sur votre appareil. Rien n'est envoyé à un serveur."],
+    ["Comment fonctionne le verrouillage des proportions avec plusieurs images ?", "Les champs partent de la taille de la première image. Verrouillage activé, la dernière valeur modifiée, largeur ou hauteur, est appliquée à chaque image, et l'autre côté suit les proportions propres à chaque image. Verrouillage désactivé, chaque image est étirée exactement à la largeur et à la hauteur saisies."],
+    ["Puis-je agrandir une image ?", "Oui, jusqu'à 4 fois la largeur et la hauteur d'origine. L'agrandissement ne peut pas ajouter de détails : le résultat paraît plus doux. Au-delà de 4 fois, l'outil refuse plutôt que de produire un fichier flou."],
+    ["En quelle qualité les fichiers JPEG et WebP sont-ils enregistrés ?", "En qualité 92 sur 100, ce qui garde les fichiers visuellement proches de l'original. Si vous voulez aussi un fichier plus léger, passez le résultat dans <a href=\"/tools/compress-image/\">Compresser une image</a>."],
+    ["Comment l'image est-elle réduite ?", "Les fortes réductions se font en plusieurs étapes, en divisant chaque fois la taille par deux, puis un dernier dessin à la taille exacte avec le lissage haute qualité du navigateur. Cela évite l'aspect crénelé que peut donner une seule très forte réduction."],
+    ["Les données EXIF sont-elles conservées ?", "Non. L'image est réencodée : les métadonnées comme la position GPS et les informations sur l'appareil photo ne sont pas reprises, et l'image est enregistrée dans l'orientation où elle s'affiche."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez vos images ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choisir des images</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-les n'importe où sur cette page.</p>
+</div>
+<ol class="files" id="files" aria-label="Images à redimensionner" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Redimensionner en</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="pixels" checked>Pixels</label>
+        <label><input type="radio" name="mode" value="percent">Pourcentage</label>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Format de sortie</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Garder</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Les JPEG et WebP sont enregistrés en qualité 92. Les GIF, BMP et AVIF deviennent des PNG avec Garder.</p>
+    </fieldset>
+  </div>
+  <div id="pane-px">
+    <div class="opts">
+      <div class="field"><label for="width">Largeur (px)</label><input type="number" id="width" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><label for="height">Hauteur (px)</label><input type="number" id="height" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><span class="label">Proportions</span><label class="check"><input type="checkbox" id="lock" checked>Verrouiller les proportions</label></div>
+    </div>
+  </div>
+  <div id="pane-pct" hidden>
+    <div class="opts">
+      <div class="field"><label for="percent">Échelle (%)</label><input type="number" id="percent" min="1" max="400" value="50" inputmode="numeric"><p class="help">100 garde la taille. 50 divise la largeur et la hauteur par deux.</p></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Redimensionner</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tout effacer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Redimensionner une image dans votre navigateur</h2>
+<p>Redimensionner une image, c'est calculer une nouvelle grille de pixels à partir de l'ancienne. Une réduction fait la moyenne de groupes de pixels : c'est pourquoi une bonne réduction paraît lisse et une réduction bâclée paraît crénelée. Cet outil divise l'image par deux à plusieurs reprises tant qu'elle fait plus du double de la taille cible, puis effectue un dernier dessin à la taille exacte avec un lissage haute qualité.</p>
+<p>Le ratio d'aspect (les proportions) est la largeur divisée par la hauteur. Le garder verrouillé signifie qu'une photo de 1200 × 800 réglée sur 600 pixels de large devient 600 × 400, sans déformation. Ne désactivez le verrouillage que si vous voulez un cadre exact et acceptez la déformation.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Pour les pages web, redimensionnez à la plus grande taille à laquelle l'image est réellement affichée, puis allégez encore le fichier avec <a href="/tools/compress-image/">Compresser une image</a>.</li>
+  <li>Pour couper une partie de l'image plutôt, utilisez <a href="/tools/crop-image/">Recadrer une image</a>.</li>
+  <li>Besoin d'icônes carrées pour un site ? Le <a href="/tools/favicon-generator/">Générateur de favicon</a> crée toutes les tailles d'un coup.</li>
+</ul>

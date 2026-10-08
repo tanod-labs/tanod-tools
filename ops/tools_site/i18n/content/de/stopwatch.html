@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Stoppuhr online mit Runden und CSV-Export | Tanod Tools",
+  "description": "Kostenlose Stoppuhr online mit Runden- und Zwischenzeiten, schnellster und langsamster Runde, Tastenkürzeln und CSV-Download, auf die Hundertstel genau.",
+  "h1": "Stoppuhr",
+  "lede": "Starten, stoppen und Runden erfassen, auf Wunsch auch per Tastatur. Die Zeiten werden auf die Hundertstelsekunde angezeigt.",
+  "blurb": "Stoppuhr mit Runden, Zwischenzeiten und CSV-Export.",
+  "keywords": "stoppuhr online stoppuhr rundenzeit zwischenzeit rundenzähler rundenzaehler laufen training wettkampf zeitmessung zeit stoppen chronometer",
+  "limits": "Die Anzeige zeigt Stunden, Minuten, Sekunden und Hundertstel und funktioniert bis 99 Stunden. Runden bleiben nur erhalten, solange die Seite geöffnet ist; laden Sie sie herunter oder kopieren Sie sie, bevor Sie den Tab schließen.",
+  "howto_title": "So nutzen Sie die Stoppuhr",
+  "howto": [
+    "Klicken Sie auf <strong>Start</strong> oder drücken Sie die <kbd>Leertaste</kbd>. Ein erneuter Druck stoppt die Uhr; <strong>Fortsetzen</strong> macht dort weiter, wo Sie aufgehört haben.",
+    "Während die Uhr läuft, klicken Sie auf <strong>Runde</strong> oder drücken <kbd>L</kbd>, um eine Runde zu erfassen. Jede Zeile zeigt die Rundenzeit und die laufende Zwischenzeit.",
+    "Kopieren Sie die Runden oder laden Sie sie als CSV-Datei für eine Tabellenkalkulation herunter. <strong>Zurücksetzen</strong> oder <kbd>R</kbd> löscht alles."
+  ],
+  "faq": [
+    ["Was ist der Unterschied zwischen Rundenzeit und Zwischenzeit?", "Die Rundenzeit ist die Dauer dieser einen Runde. Die Zwischenzeit ist die Gesamtzeit auf der Uhr in dem Moment, in dem Sie auf Runde geklickt haben. Runde 3 bei einer Zwischenzeit von 3:10.00 und Runden von 1:00, 1:05 und 1:05 sind dieselbe Geschichte, auf zwei Arten erzählt."],
+    ["Wie genau ist die Stoppuhr?", "Sie liest die hochauflösende Uhr des Browsers, wenn Sie eine Taste drücken, und erneut bei jedem Neuzeichnen, und zeigt die Differenz auf die Hundertstelsekunde an. Ihre eigene Reaktionszeit, etwa eine Zehntelsekunde oder mehr, ist der größere Fehler. Für offizielle Sportzeitmessungen braucht es eine richtige Zeitmessanlage."],
+    ["Zählt sie weiter, wenn ich den Tab wechsle oder mein Handy sperre?", "Sie misst weiter, weil sie mit der Uhr arbeitet und nicht Neuzeichnungen zählt, sodass die richtige Zeit erscheint, sobald Sie zurückkehren. Hält ein Smartphone den Browser vollständig an, läuft die Uhr trotzdem weiter, aber Sie können in der Zwischenzeit keine Runde erfassen."],
+    ["Welche Tastenkürzel gibt es?", "Die <kbd>Leertaste</kbd> startet und stoppt, <kbd>L</kbd> erfasst eine Runde und <kbd>R</kbd> setzt zurück. Sie werden ignoriert, während Sie in einem Feld tippen oder eine Schaltfläche den Fokus hat, damit sie nie mit der normalen Tastaturnutzung kollidieren; klicken Sie auf eine leere Stelle der Seite, um sie zu verwenden."],
+    ["Wie werden die schnellste und die langsamste Runde bestimmt?", "Sobald es mindestens zwei Runden gibt, wird die kürzeste Rundenzeit als „Schnellste“ und die längste als „Langsamste“ gekennzeichnet, in Worten wie auch farblich. Sind alle Runden gleich, wird nichts markiert. Die noch laufende Runde zählt nicht mit."],
+    ["Was enthält die CSV-Datei?", "Eine Kopfzeile und dann eine Zeile pro Runde mit Rundennummer, Rundenzeit und Zwischenzeit im Format hh:mm:ss.cc. Tabellenprogramme öffnen sie direkt. Nichts wird hochgeladen: Die Datei wird in Ihrem Browser erstellt."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack sw">
+  <div class="sw-display" id="sw-display" role="timer" aria-live="off" aria-label="Verstrichene Zeit" data-state="idle">00:00:00.00</div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="sw-start" type="button">Start</button>
+    <button class="btn btn--lg" id="sw-lap" type="button" aria-keyshortcuts="L" disabled>Runde</button>
+    <button class="btn btn--lg" id="sw-reset" type="button" aria-keyshortcuts="R" disabled>Zurücksetzen</button>
+  </div>
+  <p class="help sw-keys">Tastatur: <kbd>Leertaste</kbd> Start oder Stopp, <kbd>L</kbd> Runde, <kbd>R</kbd> Zurücksetzen. Funktioniert, wenn kein Feld und keine Schaltfläche den Fokus hat.</p>
+  <div id="sw-lap-box" class="util-stack" hidden>
+    <div class="sw-head">
+      <h2 class="util-h">Runden</h2>
+      <div class="actions">
+        <button class="btn btn--sm" id="sw-copy" type="button" disabled>Runden kopieren</button>
+        <button class="btn btn--sm" id="sw-csv" type="button" disabled>CSV herunterladen</button>
+      </div>
+    </div>
+    <div class="calc-table">
+      <table class="dens sw-table">
+        <thead><tr><th scope="col">Runde</th><th scope="col">Rundenzeit</th><th scope="col">Zwischenzeit</th><th scope="col">Hinweis</th></tr></thead>
+        <tbody id="sw-laps"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Rundenzeiten, Zwischenzeiten und wie eine Browser-Stoppuhr sie misst</h2>
+<p>Eine Stoppuhr erfasst bei jedem Klick auf Runde zwei Werte. Die <em>Zwischenzeit</em> ist die gesamte Zeit seit dem Start. Die <em>Rundenzeit</em> ist die Zwischenzeit minus der vorherigen Zwischenzeit. Läufer und Schwimmer lesen Rundenzeiten, um zu sehen, ob sie nachlassen; wer einen Ablauf misst, etwa die Schritte eines Rezepts oder die Runden eines Meetings, will meist die Zwischenzeiten. Werden beide angezeigt, können Sie das eine am anderen prüfen: Die Rundenzeiten ergeben zusammen die letzte Zwischenzeit.</p>
+<p>Diese Online-Stoppuhr liest die monotone Uhr des Browsers, wenn Sie auf Start klicken, und erneut bei jedem Neuzeichnen, und zeigt die Differenz an. Sie addiert nie „Ticks“. Deshalb bleibt die Zahl richtig, wenn der Browser einen Hintergrund-Tab verlangsamt, und deshalb geht beim Pausieren und Fortsetzen keine Zeit verloren: Die Zeit vor einem Stopp wird gespeichert, und der neue Lauf kommt hinzu. Die monotone Uhr kann nicht springen, wenn Ihr Computer seine Uhrzeit anpasst oder auf Sommer- oder Winterzeit umstellt.</p>
+<p>Rundenzeiten werden als ganze Zahlen in Hundertstelsekunden gespeichert. Das vermeidet die Rundungsfalle, bei der die gerundeten Runden von 1,234 und 2,345 Sekunden zusammen etwas anderes ergeben als die gerundete Gesamtzeit; was Sie sehen, geht also immer auf.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für ein Zeitlimit, das herunterzählt und klingelt, nutzen Sie den <a href="/tools/countdown-timer/">Countdown-Timer</a>.</li>
+  <li>Wandeln Sie die exportierten Zeiten mit <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> in reine Sekunden oder Daten um.</li>
+  <li>Sie brauchen eine faire Reihenfolge, bevor die Uhr startet? Losen Sie sie mit <a href="/tools/random-name-picker/">Namen auslosen</a> aus.</li>
+</ul>

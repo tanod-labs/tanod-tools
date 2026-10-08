@@ -1,0 +1,93 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "URL encode and decode",
+  "title": "URL encode and decode online, plus a URL parser | Tanod Tools",
+  "description": "Percent-encode or decode text for URLs: component, full URL or form encoding, UTF-8 safe, with clear errors for broken escapes. Also splits a URL into its parts.",
+  "h1": "URL encode and decode",
+  "lede": "Percent-encode text for a URL or decode it back, and split any URL into its parts and query parameters.",
+  "blurb": "Percent-encode, decode and parse URLs.",
+  "keywords": "urlencode urldecode percent encoding encodeuricomponent query string parameters uri escape",
+  "limits": "Text up to about 5 MB. Results update as you type.",
+  "howto_title": "How to encode or decode a URL",
+  "howto": [
+    "Pick Encode or Decode, then choose what the text is: a single value (component), a whole URL, or form data.",
+    "Type or paste your text. The result appears below as you type; a broken escape is reported with its position.",
+    "Copy the result, or paste a full URL into the parser further down to see its host, path and query parameters."
+  ],
+  "faq": [
+    ["What is the difference between component and full URL encoding?", "Component encoding (JavaScript's <code>encodeURIComponent</code>) escapes everything except letters, digits and <code>- _ . ! ~ * ' ( )</code>, so characters such as <code>/ ? &amp; =</code> become <code>%2F %3F %26 %3D</code>. Use it for a single query value or path segment. Full URL encoding (<code>encodeURI</code>) leaves the characters that give a URL its structure alone and only escapes spaces, non-ASCII letters and a few others, so a whole address stays usable."],
+    ["When should I use form encoding?", "Form encoding (<code>application/x-www-form-urlencoded</code>) is what an HTML form sends and what most query strings use. It writes a space as <code>+</code> and escapes everything except letters, digits and <code>* - . _</code>. When decoding in this mode, a <code>+</code> is read as a space; in the other modes it stays a plus sign."],
+    ["How are accented letters and emoji encoded?", "As UTF-8 bytes, each written as <code>%</code> plus two hex digits, which is what browsers and servers expect. For example é becomes <code>%C3%A9</code>. Decoding checks that the bytes form valid UTF-8 and tells you if they do not."],
+    ["Why does decoding report an error?", "Every percent sign must be followed by two hex digits (0-9, A-F). A stray <code>%</code>, a cut-off escape such as <code>%A</code>, or bytes that are not valid UTF-8 are reported with their position, so you can find them. If the text contains a literal percent sign, it should be written as <code>%25</code>."],
+    ["Does the URL parser visit the address?", "No. It uses the browser's built-in URL parser to split the text into parts; nothing is fetched and nothing is sent anywhere. The text you type stays in this tab."],
+    ["Should I encode a whole URL more than once?", "No. Encoding already-encoded text turns <code>%20</code> into <code>%2520</code>, which is a common bug. If you see <code>%25</code> followed by two hex digits in a result, the input was probably encoded already; decode it first."]
+  ],
+  "related": ["base64-encode-decode", "html-to-markdown", "json-formatter", "jwt-decoder", "text-to-slug", "hash-generator"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Direction</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Encode</label>
+        <label><input type="radio" name="dir" value="decode">Decode</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">The text is</label>
+      <select id="u-kind">
+        <option value="component" selected>A single value (component)</option>
+        <option value="uri">A whole URL</option>
+        <option value="form">Form data (space as +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Input</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Type or paste here, e.g. café au lait &amp; tea"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Result</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Copy</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Use result as input</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Clear</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">Split a URL into parts</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Query parameters</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Value (decoded)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>What URL encoding does</h2>
+<p>A URL may only contain a limited set of ASCII characters, and some of them have a job: <code>/</code> separates path segments, <code>?</code> starts the query, <code>&amp;</code> and <code>=</code> split it into names and values, <code>#</code> starts the fragment. Percent-encoding writes any other byte as <code>%</code> followed by two hex digits, so a value such as <code>R&amp;D / 2026</code> can travel inside a query string without being mistaken for structure: <code>R%26D%20%2F%202026</code>.</p>
+<p>Text is first turned into UTF-8 bytes, which is why one accented letter becomes two escapes and an emoji becomes four. Decoding reverses the process and checks that the bytes form valid UTF-8. This tool decodes with its own strict reader, so instead of a generic "URI malformed" error it tells you which escape is broken and where.</p>
+<p>The three modes match the three common situations. Encode a single value (component) when you are building a query parameter or a path segment. Encode a whole URL only when you have a complete address with spaces or non-ASCII letters in it. Use form data for the body of a form post or a query string built the way HTML forms build it.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need a clean, readable path instead of escapes? Make one with the <a href="/tools/text-to-slug/">slug generator</a>.</li>
+  <li>Binary data in a URL is usually Base64url, not percent-encoding: try <a href="/tools/base64-encode-decode/">Base64 encode and decode</a>.</li>
+  <li>A token in a query string that starts with <code>eyJ</code> is probably a JWT. Read it with the <a href="/tools/jwt-decoder/">JWT decoder</a>.</li>
+</ul>

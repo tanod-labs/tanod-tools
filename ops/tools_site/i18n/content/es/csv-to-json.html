@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Convertir CSV a JSON online gratis | Tanod Tools",
+  "description": "Convierte CSV a JSON en tu navegador. Admite campos entre comillas, saltos de línea en celdas, delimitadores punto y coma y tabulador, y encabezados. Gratis.",
+  "h1": "Convertir CSV a JSON",
+  "lede": "Pega un CSV o abre un archivo .csv y obtén un array JSON de objetos o de filas, con el delimitador detectado automáticamente.",
+  "blurb": "Convierte filas CSV en un array JSON.",
+  "keywords": "csv a json convertir csv json conversor hoja de calculo excel exportar tsv punto y coma array de objetos",
+  "limits": "Entrada de hasta unos 10 MB, pegada o desde un archivo .csv o .tsv. El resultado se actualiza mientras escribes.",
+  "howto_title": "Cómo convertir CSV a JSON",
+  "howto": [
+    "Pega tu CSV en el cuadro o abre un archivo .csv.",
+    "Revisa el delimitador (se detecta automáticamente) y si la primera fila contiene los nombres de las columnas. Activa la conversión de números y true/false si quieres valores con tipo.",
+    "Copia el JSON o descárgalo como archivo .json."
+  ],
+  "faq": [
+    ["¿Se suben mis datos?", "No. El CSV se lee y se convierte en tu navegador, y no se envía a ningún lado ni se guarda. Al cerrar la pestaña se borra."],
+    ["¿Qué formatos de CSV lee?", "CSV estándar según la RFC 4180: campos separados por un delimitador, campos que contienen el delimitador, comillas o saltos de línea encerrados entre comillas dobles, y una comilla dentro de un campo entre comillas escrita dos veces (<code>\"\"</code>). Funcionan los finales de línea de Windows (CRLF), Unix (LF) y Mac antiguo (CR), y se ignora la marca de orden de bytes (BOM) al principio. Se admiten los delimitadores coma, punto y coma, tabulador y barra vertical."],
+    ["¿Cómo se detecta el delimitador?", "La herramienta prueba coma, punto y coma, tabulador y barra vertical en las primeras líneas y elige el que divide más líneas en la misma cantidad de campos. Los archivos que Excel guarda en muchas configuraciones regionales europeas usan punto y coma, por eso esto importa. Si no acierta, elige el delimitador tú mismo."],
+    ["¿Por qué mis números aparecen entre comillas?", "De forma predeterminada, todos los valores quedan como texto, exactamente como están en el CSV, porque CSV no tiene tipos y adivinar puede dañar datos como códigos postales o identificadores. Activa <em>Convertir números, true/false y null</em> para obtener valores con tipo. Aun así, los valores con un cero inicial (007) y los números de más de 15 dígitos quedan como texto para que no se modifiquen ni se redondeen."],
+    ["¿Qué pasa con nombres de columna repetidos o vacíos, o con filas desiguales?", "Los nombres de columna vacíos pasan a ser column_1, column_2, etc., y a un nombre repetido se le agrega _2, _3, así ningún valor sobrescribe a otro. Las filas con menos campos que el encabezado reciben valores vacíos; las que tienen más reciben claves column_N adicionales. Ambos casos se informan sobre el resultado para que revises el origen."],
+    ["¿Puedo obtener arrays en lugar de objetos?", "Sí. Desactiva <em>La primera fila es el encabezado</em> y cada fila se convierte en un array de valores, incluida la primera."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="nombre,email,edad&#10;Ana,ana@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Delimitador</label>
+      <select id="delim">
+        <option value="auto" selected>Detectar automáticamente</option>
+        <option value=",">Coma ( , )</option>
+        <option value=";">Punto y coma ( ; )</option>
+        <option value="&#9;">Tabulador</option>
+        <option value="|">Barra vertical ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Formato</label>
+      <select id="indent">
+        <option value="2" selected>Con sangría de 2 espacios</option>
+        <option value="4">Con sangría de 4 espacios</option>
+        <option value="min">Minificado</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>La primera fila es el encabezado (array de objetos)</label>
+    <label class="check"><input type="checkbox" id="types">Convertir números, true/false y null</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Pega un CSV para empezar.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copiar JSON</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Descargar .json</button>
+    <button class="btn btn--quiet" id="clear" type="button">Borrar</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>Abrir un archivo .csv</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>De filas CSV a JSON</h2>
+<p>CSV es el mínimo común denominador de los datos: cualquier hoja de cálculo o base de datos puede exportarlo. JSON es lo que esperan la mayoría de las API web, los scripts y los archivos de configuración. Para convertir CSV a JSON, esta herramienta lee el archivo con un analizador que sigue el estándar CSV, así que una coma dentro de una dirección entre comillas o un salto de línea dentro de un comentario entre comillas se queda en su celda en lugar de partir la fila.</p>
+<p>Con una fila de encabezado, cada línea se convierte en un objeto cuyas claves son los nombres de las columnas, en el orden de las columnas. Sin encabezado, cada línea se convierte en un array. Los valores se conservan como texto a menos que pidas convertir números y true/false, porque un archivo CSV no lleva tipos y una suposición automática puede convertir sin avisar un código postal como 02134 en el número 2134.</p>
+<p>La línea debajo de las opciones te dice cuántas filas y columnas se leyeron y qué delimitador se usó. Si algunas filas tienen más o menos campos que el encabezado, una nota indica qué líneas, lo que suele apuntar a un delimitador suelto o a unas comillas sin cerrar en el origen.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Necesitas lo contrario? Usa <a href="/tools/json-to-csv/">JSON a CSV</a>.</li>
+  <li>Para revisar o reformatear el resultado, pégalo en <a href="/tools/json-formatter/">Formatear y validar JSON</a>.</li>
+  <li>Limpia antes las filas repetidas con <a href="/tools/remove-duplicate-lines/">Eliminar líneas duplicadas</a>.</li>
+</ul>

@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "Supprimer les données EXIF d'une photo, GPS compris | Tanod Tools",
+  "description": "Voyez ce qu'une photo révèle (GPS, appareil, date), puis supprimez les données EXIF, XMP et IPTC sans réencoder l'image. Dans le navigateur, sans envoi.",
+  "h1": "Supprimer les données EXIF d'une photo",
+  "lede": "Découvrez la position, l'appareil et la date cachés dans une photo, puis supprimez-les sans toucher à l'image elle-même.",
+  "blurb": "Retirez GPS, appareil et autres métadonnées.",
+  "keywords": "supprimer exif effacer metadonnees photo supprimer localisation gps photo vie privee nettoyer photo xmp iptc retirer donnees exif",
+  "limits": "Jusqu'à 50 images par lot, 50 Mo chacune. Les JPEG, PNG et WebP sont nettoyés sans réencodage ; les GIF, BMP et AVIF sont redessinés et enregistrés en PNG.",
+  "howto_title": "Comment supprimer les données EXIF d'une photo",
+  "howto": [
+    "Choisissez vos photos ou glissez-les sur la page. Chacune affiche ce qu'elle contient, avec toute position GPS signalée.",
+    "Laissez « Conserver l'orientation » activé pour que les photos qui en dépendent ne s'affichent pas de travers, ou désactivez-le pour tout supprimer.",
+    "Cliquez sur <strong>Supprimer les métadonnées</strong>, puis téléchargez les copies nettoyées ou un .zip. Les fichiers sont nommés avec « -clean »."
+  ],
+  "faq": [
+    ["Mes photos sont-elles envoyées en ligne ?", "Non. Le fichier est lu et réécrit dans votre navigateur, et rien n'est envoyé à un serveur. Vous pouvez consulter la liste de ce que contient chaque photo avant toute modification."],
+    ["Mon JPEG est-il recompressé ?", "Non. Pour les JPEG, PNG et WebP, l'outil réécrit le conteneur du fichier et supprime les blocs de métadonnées. Les données de l'image sont copiées octet par octet : il n'y a aucune perte de qualité et les pixels restent identiques."],
+    ["Qu'est-ce qui est supprimé exactement ?", "JPEG : EXIF et XMP (APP1), IPTC (APP13), commentaires et blocs d'application autres que l'en-tête JFIF, le profil colorimétrique et l'indicateur de couleur Adobe. PNG : blocs de texte (tEXt, zTXt, iTXt, qui peuvent contenir du XMP), EXIF et heure de modification. WebP : blocs EXIF et XMP. Les données ajoutées après la fin d'une image JPEG ou PNG sont également supprimées."],
+    ["À quoi sert « Conserver l'orientation » ?", "Beaucoup d'appareils photo enregistrent une photo couchée et ajoutent une balise d'orientation qui indique aux visionneuses de la tourner. Si cette balise est supprimée, la photo peut s'afficher de travers. Avec cette option activée (par défaut), un minuscule bloc EXIF ne contenant que le numéro d'orientation est réécrit lorsque l'original n'était pas droit. Il ne contient aucune information de localisation ni d'appareil photo. Désactivez l'option pour le supprimer aussi."],
+    ["Le profil colorimétrique est-il supprimé ?", "Non. Un profil colorimétrique ICC intégré est conservé, car le supprimer peut changer l'aspect des couleurs. Il décrit la gestion des couleurs, et non le lieu ou la façon dont la photo a été prise."],
+    ["Quelle est la fiabilité de la liste des éléments trouvés ?", "Elle lit les champs EXIF standard (appareil, objectif, date, logiciel, GPS, orientation) et compte le reste. Les fabricants d'appareils photo ajoutent des données privées dans leurs propres formats, qui sont comptées mais pas décrites. Le fichier nettoyé est vérifié après l'écriture pour confirmer qu'il ne reste aucune donnée EXIF de localisation ou d'appareil, ni de métadonnées XMP ou de texte."],
+    ["Que deviennent les fichiers GIF, BMP ou AVIF ?", "Cet outil ne modifie pas ces conteneurs. Il redessine l'image et l'enregistre en PNG, qui ne contient aucune métadonnée. Un GIF devient sa première image."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez vos photos ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choisir des photos</span></label>
+  <p class="drop__hint">JPEG, PNG ou WebP (et aussi GIF, BMP, AVIF). Ou glissez-les n'importe où sur cette page.</p>
+</div>
+<ol class="files" id="files" aria-label="Photos à nettoyer" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Conserver l'orientation pour que les photos ne s'affichent pas de travers</label>
+      <p class="help">Réécrit un minuscule bloc EXIF ne contenant que le numéro d'orientation, et seulement si la photo n'est pas déjà droite.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Supprimer les métadonnées</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tout effacer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ce qu'une photo peut révéler</h2>
+<p>La plupart des appareils photo et des téléphones écrivent des informations supplémentaires dans chaque photo : la marque et le modèle, l'heure de la prise de vue, le logiciel qui l'a retouchée et, si la localisation est activée, les coordonnées GPS de l'endroit où vous vous trouviez. Ce bloc s'appelle EXIF. Les logiciels de retouche ajoutent des blocs XMP et IPTC avec des légendes, des noms d'auteur et des mots-clés. Beaucoup de sites suppriment ces données lors de l'envoi, mais pas tous, et un fichier envoyé par e-mail ou par messagerie conserve généralement tout. Supprimer les données EXIF avant de partager une photo protège donc votre vie privée.</p>
+<p>Cet outil montre d'abord ce que contient chaque photo, puis supprime ces données en réécrivant le conteneur du fichier. Un JPEG est une suite de blocs étiquetés suivie de l'image compressée ; les blocs de métadonnées sont laissés de côté et les données de l'image sont copiées sans modification. C'est pourquoi le résultat n'est pas recompressé et paraît identique.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Consultez la liste avant de partager : une position signalée signifie que la photo contient des coordonnées.</li>
+  <li>Les captures d'écran et les exports retouchés peuvent quand même contenir des métadonnées de texte. Passez-les aussi par ici.</li>
+  <li>Pour alléger aussi le fichier, utilisez ensuite <a href="/tools/compress-image/">Compresser une image</a> ; cet outil réencode l'image et supprime également les métadonnées.</li>
+</ul>

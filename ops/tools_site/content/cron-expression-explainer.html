@@ -1,0 +1,90 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Cron expression explainer",
+  "title": "Cron expression explainer and next run times | Tanod Tools",
+  "description": "Paste a cron expression to read it in plain English and see its next run times in your time zone, UTC or any other. Checks each field and explains errors.",
+  "h1": "Cron expression explainer",
+  "lede": "Read a crontab schedule in plain English and list the next times it will run, in any time zone.",
+  "blurb": "Cron schedule in plain English, with next run times.",
+  "keywords": "crontab cron schedule cron job next run crontab guru every 5 minutes cron syntax checker",
+  "limits": "Standard five-field cron (minute, hour, day of month, month, day of week) as used by Vixie cron, cronie and most Linux systems, plus @daily-style shortcuts. Quartz and other seconds-field formats are detected but not explained.",
+  "howto_title": "How to check a cron expression",
+  "howto": [
+    "Type or paste the five schedule fields, such as <code>*/15 9-17 * * 1-5</code>, or pick an example. A full crontab line works too; the command after the fifth field is ignored.",
+    "Read the plain-English summary and the breakdown of each field. A mistake is pointed out in the field where it happens.",
+    "Check the list of next run times. Choose the time zone the server runs in, and a different start time if you want to look ahead."
+  ],
+  "faq": [
+    ["What do the five fields mean?", "In order: minute (0-59), hour (0-23), day of the month (1-31), month (1-12 or JAN-DEC) and day of the week (0-7 or SUN-SAT, where both 0 and 7 are Sunday). Each field takes a single value, a list such as <code>1,15</code>, a range such as <code>9-17</code>, a step such as <code>*/15</code> or <code>0-30/10</code>, or <code>*</code> for every value."],
+    ["Why does my job run on more days than I expected?", "When both the day-of-month and the day-of-week fields are restricted, cron runs on days that match either of them, not both. <code>0 9 1 * 1</code> runs on the 1st of every month and on every Monday. This is how Vixie cron and cronie behave. A quirk of the same rule: a field that starts with <code>*</code>, such as <code>*/2</code>, counts as unrestricted, so then both fields must match."],
+    ["Which time zone does cron use?", "The time zone of the machine or container it runs on, unless the crontab sets <code>CRON_TZ</code> or <code>TZ</code>. Many servers run on UTC, so check that before trusting the times you see. Pick the server's zone in the list to see its run times."],
+    ["What happens when the clocks change for daylight saving?", "The list follows the clock in the zone you choose: a time that is skipped when clocks spring forward is left out, and a time that happens twice when they fall back is listed once. Vixie cron and cronie run a job scheduled in a skipped hour soon after the change and don't repeat jobs in the repeated hour; other schedulers vary. A note appears when a listed period includes a change."],
+    ["Does it support seconds or Quartz syntax?", "No. Expressions with six or seven fields, or with <code>?</code>, <code>L</code>, <code>W</code> or <code>#</code>, come from Quartz, Spring and similar schedulers, where the first field is seconds. The tool says so instead of guessing, because reading them as standard cron would give the wrong schedule."],
+    ["What do @daily, @hourly and the other shortcuts mean?", "<code>@hourly</code> is <code>0 * * * *</code>, <code>@daily</code> and <code>@midnight</code> are <code>0 0 * * *</code>, <code>@weekly</code> is <code>0 0 * * 0</code>, <code>@monthly</code> is <code>0 0 1 * *</code>, and <code>@yearly</code> and <code>@annually</code> are <code>0 0 1 1 *</code>. <code>@reboot</code> runs once when the cron service starts, so it has no times to list."]
+  ],
+  "related": ["cron-expression-generator", "unix-timestamp-converter", "time-zone-converter", "regex-tester", "date-difference-calculator", "json-formatter"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="c-in">Cron expression</label>
+    <input type="text" id="c-in" class="mono cron-in" value="*/15 9-17 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Examples">
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Every 5 minutes</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Every hour</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Every day at midnight</button>
+    <button class="btn btn--sm" type="button" data-cron="0 9 * * 1-5">Weekdays at 09:00</button>
+    <button class="btn btn--sm" type="button" data-cron="30 2 * * 0">Sundays at 02:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">First of the month</button>
+  </div>
+  <p class="tt__report" id="c-info" aria-live="polite"></p>
+  <p class="cron-say" id="c-say" aria-live="polite"></p>
+  <dl class="cron-fields" id="c-fields" aria-label="Fields">
+    <div><dt>Minute</dt><dd></dd></div>
+    <div><dt>Hour</dt><dd></dd></div>
+    <div><dt>Day of month</dt><dd></dd></div>
+    <div><dt>Month</dt><dd></dd></div>
+    <div><dt>Day of week</dt><dd></dd></div>
+  </dl>
+  <p class="note" id="c-note" hidden></p>
+
+  <h2 class="util-h">Next runs</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="c-tz">Time zone</label>
+      <select id="c-tz"></select>
+    </div>
+    <div class="field">
+      <label for="c-from">Starting from</label>
+      <input type="datetime-local" id="c-from" step="60">
+      <span class="help">Leave empty to start from now.</span>
+    </div>
+    <div class="field">
+      <label for="c-count">How many</label>
+      <select id="c-count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="c-runs-info"></p>
+  <ol class="cron-runs" id="c-runs" aria-label="Next run times"></ol>
+  <p class="note" id="c-runs-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Reading a cron schedule</h2>
+<p>Cron checks its table once a minute and runs every job whose five fields all match the current time, with one exception for the two day fields described below. So <code>*/15 9-17 * * 1-5</code> means: at minutes 0, 15, 30 and 45, in hours 9 to 17, on any day of the month, in any month, Monday to Friday. The last run of the day is at 17:45, because the hour field covers the whole of hour 17.</p>
+<p>The explainer parses each field the way Vixie cron and cronie do, which is what most Linux distributions ship. Names for months and weekdays are accepted in any case and 7 counts as Sunday. A step after a single number, such as <code>5/10</code>, is read as <code>5-59/10</code> the way many cron versions read it; some older ones reject it, so the tool reminds you to write the range out. Ranges must run from low to high: <code>FRI-MON</code> is flagged rather than wrapped around, because standard cron does not wrap ranges.</p>
+<p>Next run times are worked out by stepping through the calendar in the time zone you choose, so an expression that can only match on 29 February finds the next leap year at once, and one that can never match, such as <code>0 0 31 2 *</code>, is reported as never running.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Turn a run time from a log into a Unix timestamp, or back, with the <a href="/tools/unix-timestamp-converter/">Unix timestamp converter</a>.</li>
+  <li>Testing the pattern a job uses to filter its log? Try the <a href="/tools/regex-tester/">Regex tester</a>.</li>
+  <li>Check what a JSON config containing schedules looks like with the <a href="/tools/json-formatter/">JSON formatter</a>.</li>
+</ul>

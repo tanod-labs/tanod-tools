@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Kalkulator chmod: oktal, simbolis dan perintah | Tanod Tools",
+  "description": "Centang baca, tulis dan eksekusi untuk mendapat angka oktal chmod, bentuk rwxr-xr-x dan perintah siap pakai, atau ketik mode. Termasuk setuid dan sticky.",
+  "h1": "Kalkulator chmod",
+  "lede": "Atur izin file Unix dengan kotak centang, angka oktal seperti 755, atau teks rwxr-xr-x, lalu dapatkan perintah chmod yang sesuai.",
+  "blurb": "Izin Unix sebagai kotak centang, oktal, teks rwx dan perintah chmod.",
+  "keywords": "kalkulator chmod hitung chmod izin file linux permission unix hak akses file oktal rwx 755 644 777 setuid setgid sticky bit umask chmod generator",
+  "limits": "Bekerja dengan sembilan bit izin ditambah setuid, setgid dan sticky, seperti pada chmod POSIX. Alat ini tidak membaca file sungguhan, tidak menampilkan kepemilikan, dan tidak mencakup ACL, atribut file atau umask. Mode oktal harus 3 atau 4 digit.",
+  "howto_title": "Cara menentukan mode chmod",
+  "howto": [
+    "Centang kotak untuk pemilik, grup dan lainnya, atau pilih preset umum seperti 644 atau 755. Anda juga bisa mengetik angka oktal atau teks sembilan huruf, dan kotak centangnya akan menyesuaikan.",
+    "Periksa ringkasan dalam bahasa sehari-hari tentang apa yang bisa dilakukan tiap kelas terhadap file dan direktori, dan baca peringatan yang muncul.",
+    "Salin perintah <code>chmod</code> numerik atau simbolis. Ganti nama file terlebih dahulu jika Anda ingin perintahnya siap ditempel."
+  ],
+  "faq": [
+    ["Bagaimana cara kerja angka oktal?", "Setiap digit menjumlahkan baca/read (4), tulis/write (2) dan eksekusi/execute (1) untuk satu kelas, dengan urutan pemilik, grup, lainnya. Jadi 7 berarti baca, tulis dan eksekusi, 5 berarti baca dan eksekusi, dan 4 berarti baca saja. 755 memberi pemilik semua izin dan orang lain baca dan eksekusi. Digit keempat opsional di depan berisi setuid (4), setgid (2) dan sticky (1)."],
+    ["Apa arti huruf s, S, t dan T?", "Huruf-huruf itu menggantikan x di posisi pemilik, grup atau lainnya. Huruf kecil berarti bit khusus aktif dan eksekusi juga aktif; huruf besar berarti bit khusus aktif tetapi eksekusi mati, yang biasanya merupakan kesalahan. Jadi 4755 adalah <code>rwsr-xr-x</code> dan 4644 adalah <code>rwSr--r--</code>."],
+    ["Apa bedanya 644 dan 755?", "644 adalah mode biasa untuk file biasa: pemilik bisa membaca dan menulis, orang lain hanya bisa membaca. 755 menambahkan eksekusi untuk semua, yang dibutuhkan oleh program, skrip dan direktori. Direktori butuh bit eksekusi agar siapa pun bisa memasukinya."],
+    ["Mengapa 777 dianggap berbahaya?", "Mode ini mengizinkan setiap pengguna di mesin tersebut, dan program apa pun yang berjalan sebagai pengguna itu, untuk mengubah atau mengganti file. Web server yang perlu menulis ke suatu tempat tidak membutuhkan itu: memberi kepemilikan ke pengguna atau grup yang tepat dan memakai 775 atau 770 menyelesaikan sebagian besar error permission tanpa membuka file untuk semua orang."],
+    ["Apa fungsi sticky bit?", "Pada direktori, sticky bit mencegah pengguna menghapus atau mengganti nama file yang bukan miliknya, meskipun mereka bisa menulis ke direktori tersebut. Itulah sebabnya folder bersama seperti <code>/tmp</code> bermode 1777. Di Linux modern, bit ini tidak berpengaruh pada file biasa."],
+    ["Apakah alat ini mengubah sesuatu di komputer saya?", "Tidak. Alat ini hanya menghitung angka dan perintahnya. Apa pun yang Anda masukkan tidak dikirim ke mana pun, dan Anda sendiri yang menjalankan perintahnya di terminal."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Izin</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Pemilik</th><th scope="col">Grup</th><th scope="col">Lainnya</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Baca <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Pemilik: baca"></td><td><input type="checkbox" id="m-g-r" aria-label="Grup: baca"></td><td><input type="checkbox" id="m-o-r" aria-label="Lainnya: baca"></td></tr>
+          <tr><th scope="row">Tulis <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Pemilik: tulis"></td><td><input type="checkbox" id="m-g-w" aria-label="Grup: tulis"></td><td><input type="checkbox" id="m-o-w" aria-label="Lainnya: tulis"></td></tr>
+          <tr><th scope="row">Eksekusi <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Pemilik: eksekusi"></td><td><input type="checkbox" id="m-g-x" aria-label="Grup: eksekusi"></td><td><input type="checkbox" id="m-o-x" aria-label="Lainnya: eksekusi"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">ID pengguna (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">ID grup (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Sticky bit <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Oktal</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Simbolis</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Mode umum">
+    <button class="btn btn--sm" type="button" data-mode="644">644 file</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 program atau direktori</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 file pribadi</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 direktori pribadi</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 grup bersama</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 semua orang</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Nama file atau direktori dalam perintah</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Perintah">
+    <div><dt>Numerik</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Salin perintah numerik">Salin</button></div>
+    <div><dt>Simbolis</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Salin perintah simbolis">Salin</button></div>
+  </dl>
+  <h2 class="util-h">Apa yang diizinkan mode ini</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Siapa</th><th scope="col">Pada file</th><th scope="col">Pada direktori</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Cara izin file Unix disimpan</h2>
+<p>Kalkulator chmod bekerja dengan mode singkat yang dimiliki setiap file dan direktori di sistem mirip Unix: tiga bit izin (baca, tulis, eksekusi; dalam bahasa Inggris read, write, execute) untuk masing-masing dari tiga kelas (pengguna pemilik, grup pemilik, semua orang lain), ditambah tiga bit khusus. Totalnya dua belas bit, dan angka oktal hanyalah bit-bit itu yang ditulis tiga sekaligus, itulah sebabnya digitnya hanya sampai 7. Bentuk sembilan huruf dari <code>ls -l</code> menampilkan bit yang sama sebagai huruf.</p>
+<p>Baca, tulis dan eksekusi punya arti berbeda pada direktori. Baca memungkinkan Anda melihat daftar nama di dalamnya, tulis memungkinkan Anda menambah, mengganti nama dan menghapus entri, dan eksekusi memungkinkan Anda masuk ke direktori dan mengakses isinya lewat nama. Direktori dengan izin baca tetapi tanpa eksekusi menampilkan nama-namanya tetapi menolak akses ke semua isinya, sumber umum error permission yang membingungkan.</p>
+<p>Bit khusus mengubah perilaku sebuah mode. Setuid dan setgid membuat program berjalan dengan hak pemilik atau grup file, bukan hak pemanggilnya, yang sangat kuat sehingga diabaikan untuk skrip shell di kebanyakan sistem. Setgid pada direktori membuat file baru mewarisi grupnya, dan sticky bit pada direktori mencegah pengguna menghapus file milik satu sama lain. Jika Anda ragu mode apa yang dibutuhkan sebuah file, mulailah dari yang ketat dan tambahkan hanya yang diminta oleh pesan error.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Biner dan oktal adalah bit yang sama yang ditulis berbeda; <a href="/tools/number-base-converter/">Konverter basis bilangan</a> menampilkan 755 sebagai 111 101 101.</li>
+  <li>Merencanakan cron job yang menjalankan skrip yang baru Anda buat executable? Susun jadwalnya dengan <a href="/tools/cron-expression-generator/">Generator ekspresi cron</a>.</li>
+  <li>Berikutnya mau menghitung rentang jaringan? Coba <a href="/tools/subnet-calculator/">Kalkulator subnet</a>.</li>
+</ul>

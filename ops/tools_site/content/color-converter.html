@@ -1,0 +1,112 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Color converter and contrast checker",
+  "title": "Color converter: HEX, RGB, HSL, CMYK and contrast | Tanod Tools",
+  "description": "Convert colours between HEX, RGB, HSL, HSV and CMYK, look up CSS colour names, and check the WCAG contrast ratio of text on a background. Free, in your browser.",
+  "h1": "Color converter",
+  "lede": "Convert a colour between HEX, RGB, HSL, HSV and CMYK, and check whether two colours have enough contrast for readable text.",
+  "blurb": "HEX, RGB, HSL, CMYK and a WCAG contrast checker.",
+  "keywords": "colour converter hex to rgb rgb to hex hsl cmyk hsv color picker contrast ratio checker wcag accessibility css color names",
+  "limits": "Reads HEX (3, 4, 6 or 8 digits), rgb(), hsl(), hsv(), cmyk() and CSS colour names; other CSS colour syntax is read by your browser where it can. HSL, HSV and CMYK are shown to one decimal place.",
+  "howto_title": "How to convert a colour",
+  "howto": [
+    "Type or paste a colour in any common format, such as <code>#1636a3</code>, <code>rgb(22, 54, 163)</code>, <code>hsl(226, 76%, 36%)</code> or <code>navy</code>, or pick one with the colour picker.",
+    "Copy the format you need from the list. Values update as you type.",
+    "Under <strong>Contrast checker</strong>, enter a text colour and a background colour to see their contrast ratio and whether they pass WCAG AA and AAA."
+  ],
+  "faq": [
+    ["Is the CMYK value right for printing?", "Only roughly. The CMYK here is the simple formula that converts screen RGB without a colour profile, which is what most online converters use. Printers work with specific inks and paper, described by an ICC profile, so for print work convert in design software with the profile your printer gives you."],
+    ["How is the contrast ratio calculated?", "With the WCAG 2 formula: each colour's relative luminance is worked out from its sRGB values, and the ratio is (lighter + 0.05) divided by (darker + 0.05). It ranges from 1:1 (no contrast) to 21:1 (black on white). The current WCAG text uses a threshold of 0.04045 in the formula; older copies said 0.03928, which gives the same result for every 8-bit colour."],
+    ["What ratios do AA and AAA require?", "Normal text needs 4.5:1 for AA and 7:1 for AAA. Large text, meaning at least 24 px regular or about 18.7 px bold, needs 3:1 for AA and 4.5:1 for AAA. Icons, input borders and other user-interface parts need 3:1 (WCAG 1.4.11). A ratio is not rounded up: 4.49:1 fails AA for normal text."],
+    ["What happens with transparent colours?", "A partly transparent text colour is blended with the background first, the way a screen shows it, and the blended colour is measured. A partly transparent background is assumed to sit on white. Channels are rounded to whole numbers after blending, as a display would show them."],
+    ["Why do HSL values change slightly after converting back?", "Screen colours have 256 levels per channel, so most HSL and HSV values don't land exactly on one of them. The converter keeps full precision internally and rounds only for display: HEX and RGB to whole numbers, HSL, HSV and CMYK to one decimal place."],
+    ["Does it know CSS colour names?", "Yes, all 148 named colours in CSS, such as <code>rebeccapurple</code> and <code>cornflowerblue</code>. Type a name to convert it; when a colour exactly matches a name, the name is shown too. Some colours have two names, such as <code>aqua</code> and <code>cyan</code>."]
+  ],
+  "related": ["color-palette-generator", "css-gradient-generator", "image-color-picker", "qr-code-generator", "favicon-generator", "number-base-converter"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="col-top">
+    <div class="util-stack">
+      <div class="col-in">
+        <div class="field">
+          <label for="c-in">Colour</label>
+          <input type="text" id="c-in" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+        </div>
+        <div class="field">
+          <label for="c-pick">Picker</label>
+          <input type="color" id="c-pick" value="#1636a3">
+        </div>
+      </div>
+      <p class="tt__report" id="c-info" aria-live="polite"></p>
+    </div>
+    <div class="col-swatch" aria-hidden="true"><i id="c-swatch"></i></div>
+  </div>
+  <dl class="dv-rows" id="c-out">
+    <div><dt>HEX</dt><dd id="o-hex"></dd></div>
+    <div><dt>RGB</dt><dd id="o-rgb"></dd></div>
+    <div><dt>HSL</dt><dd id="o-hsl"></dd></div>
+    <div><dt>HSV / HSB</dt><dd id="o-hsv"></dd></div>
+    <div><dt>CMYK</dt><dd id="o-cmyk"></dd></div>
+    <div><dt>CSS name</dt><dd id="o-name"></dd></div>
+  </dl>
+
+  <h2 class="util-h">Contrast checker</h2>
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="k-fg">Text colour</label>
+        <input type="text" id="k-fg" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-fg-pick">Picker</label>
+        <input type="color" id="k-fg-pick" value="#1636a3">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="k-bg">Background colour</label>
+        <input type="text" id="k-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-bg-pick">Picker</label>
+        <input type="color" id="k-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="k-swap" type="button">Swap colours</button>
+    <button class="btn btn--sm btn--quiet" id="k-use" type="button">Use the converted colour as text colour</button>
+  </div>
+  <p class="tt__report" id="k-info" aria-live="polite"></p>
+  <div class="col-sample" id="k-sample" aria-hidden="true">
+    <span class="col-sample__big">Large text, 24 px</span>
+    <span class="col-sample__small">Normal body text at 15 px, the size most paragraphs use.</span>
+  </div>
+  <p>Contrast ratio <span class="col-ratio" id="k-ratio" aria-live="polite">–</span></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Use</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Normal text, AA</th><td class="num">4.5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Normal text, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Large text, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Large text, AAA</th><td class="num">4.5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Icons and UI parts, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="k-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Colour formats and contrast</h2>
+<p>HEX and RGB describe a screen colour as amounts of red, green and blue from 0 to 255; HEX simply writes each amount as two hexadecimal digits, with an optional third pair for opacity. HSL and HSV describe the same colours by hue (an angle around the colour wheel), saturation, and lightness or value, which makes it easier to pick a lighter or duller version of a colour. They are different coordinates for the same sRGB colours, so converting between them is exact apart from rounding.</p>
+<p>CMYK is different: it describes ink, and the true conversion depends on the printing process. The figure shown is the naive formula (black is 1 minus the brightest channel, and the other inks make up the rest), useful for rough work but not a substitute for a print profile.</p>
+<p>The contrast checker applies the WCAG 2 contrast formula, the one used in accessibility audits and by browser developer tools. It measures luminance contrast only, so it can't tell you about colour-blindness pairs such as red on green, and very thin or small fonts may need more contrast than the minimum.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need the colour of a pixel in a photo or screenshot? Use the <a href="/tools/image-color-picker/">Image colour picker</a>.</li>
+  <li>Making a QR code in brand colours? The <a href="/tools/qr-code-generator/">QR code generator</a> warns when the contrast is too low to scan.</li>
+  <li>Converting hex numbers that aren't colours? Try the <a href="/tools/number-base-converter/">Number base converter</a>.</li>
+</ul>

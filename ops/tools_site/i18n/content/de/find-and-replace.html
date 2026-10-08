@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Suchen und Ersetzen online – auch mit Regex | Tanod Tools",
+  "description": "Text im Browser suchen und ersetzen: mit Groß-/Kleinschreibung, ganzen Wörtern und optional Regex mit $1-Gruppen. Kostenlos, nichts wird hochgeladen.",
+  "h1": "Text suchen und ersetzen",
+  "lede": "Ersetzen Sie Wörter oder Muster in einem ganzen Textblock und sehen Sie vorher, wie viele Treffer es gibt.",
+  "blurb": "Suchen und Ersetzen mit Groß-/Kleinschreibung, ganzen Wörtern und Regex.",
+  "keywords": "suchen ersetzen text ersetzen wörter ersetzen woerter regex regulärer ausdruck regulaerer massenhaft austauschen find replace",
+  "limits": "Text bis etwa 5 MB. Regex-Muster, die länger als 2 Sekunden laufen, werden abgebrochen.",
+  "howto_title": "So suchen und ersetzen Sie Text",
+  "howto": [
+    "Fügen Sie Ihren Text in das Feld ein oder öffnen Sie eine .txt-Datei.",
+    "Geben Sie ein, was gesucht und womit es ersetzt werden soll. Die Zahl der Treffer aktualisiert sich während der Eingabe.",
+    "Klicken Sie auf <strong>Alle ersetzen</strong> und kopieren Sie dann das Ergebnis oder laden Sie es herunter."
+  ],
+  "faq": [
+    ["Wird wörtlich gesucht oder nach einem Muster?", "Standardmäßig wörtlich: Was Sie eingeben, wird exakt gesucht, auch Zeichen wie . und *. Aktivieren Sie „Regulärer Ausdruck“, um die Syntax regulärer Ausdrücke von JavaScript zu verwenden."],
+    ["Wie verwende ich Gruppen in der Ersetzung?", "Im Regex-Modus fügen $1, $2 usw. den Text ein, den die erste, zweite (usw.) geklammerte Gruppe gefunden hat, $& fügt den gesamten Treffer ein und $&lt;name&gt; eine benannte Gruppe. Wenn Sie zum Beispiel nach (\\w+)@(\\w+) suchen und durch $2 at $1 ersetzen, wird aus bob@example der Text example at bob. Im wörtlichen Modus wird die Ersetzung genau so eingefügt, wie Sie sie eingeben."],
+    ["Was bewirkt Ganzes Wort?", "Der Suchtext wird nur gefunden, wenn er nicht Teil eines längeren Wortes ist: Eine Suche nach Haus findet also nicht Haustür. Im wörtlichen Modus zählen Buchstaben, Ziffern und Unterstrich jeder Schrift als Wortzeichen. Im Regex-Modus wird Ihr Muster in Wortgrenzen (\\b) eingeschlossen, die nur A–Z, Ziffern und Unterstrich erkennen."],
+    ["Was hat es mit der 2-Sekunden-Grenze auf sich?", "Manche Muster, etwa (a+)+$, können bei bestimmtem Text extrem lange laufen. Der Regex-Modus läuft in einem separaten Hintergrund-Worker; ist er nach 2 Sekunden nicht fertig, wird er abgebrochen und Sie erhalten den Hinweis, dass das Muster zu lange gedauert hat. So friert die Seite nie ein."],
+    ["Wirkt das Muster über mehrere Zeilen?", "Im Regex-Modus passen ^ und $ auf Anfang und Ende jeder Zeile, und der Punkt passt nicht auf einen Zeilenumbruch. Groß-/Kleinschreibung wird ignoriert, sofern Groß-/Kleinschreibung beachten nicht aktiv ist."],
+    ["Wird mein Text hochgeladen?", "Nein. Alles läuft in Ihrem Browser, und nichts wird gespeichert oder gesendet."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Ihr Text</label>
+    <textarea id="text" spellcheck="false" placeholder="Geben Sie Ihren Text hier ein oder fügen Sie ihn ein."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Suchen</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Ersetzen durch</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Groß-/Kleinschreibung beachten</label>
+    <label class="check"><input type="checkbox" id="whole">Ganzes Wort</label>
+    <label class="check"><input type="checkbox" id="regex">Regulärer Ausdruck</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Syntax regulärer Ausdrücke von JavaScript. Verwenden Sie in der Ersetzung $1, $2 für Gruppen und $&amp; für den gesamten Treffer.</p>
+  <p class="tt__report" id="info" aria-live="polite">Geben Sie den Suchbegriff ein.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Alle ersetzen</button>
+    <button class="btn btn--quiet" id="clear" type="button">Text leeren</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>.txt-Datei öffnen</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Ergebnis</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Ergebnis kopieren</button>
+      <button class="btn" id="dl" type="button">.txt herunterladen</button>
+      <button class="btn btn--quiet" id="use" type="button">Ergebnis als Text</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Text in großen Mengen ersetzen</h2>
+<p>Suchen und Ersetzen ändert jedes Vorkommen eines Wortes oder Musters in einem Durchgang. Die Trefferzahl aktualisiert sich während der Eingabe, sodass Sie sehen, wie weit eine Änderung reicht, bevor Sie sie anwenden. Das Ergebnis erscheint in einem eigenen Feld, damit Ihr Originaltext nie überschrieben wird, bis Sie „Ergebnis als Text“ wählen.</p>
+<p>Mit regulären Ausdrücken beschreiben Sie eine Form statt einer festen Zeichenkette: eine Ziffernfolge, ein Datum, ein Wort gefolgt von einem Komma. Geklammerte Gruppen lassen sich in der Ersetzung mit $1, $2 usw. neu anordnen. Weil ein schlecht geschriebenes Muster sehr lange laufen kann, werden Muster in einem Hintergrund-Worker ausgeführt, der nach zwei Sekunden abgebrochen wird.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Bauen und testen Sie ein Muster zuerst im <a href="/tools/regex-tester/">Regex-Tester</a>, der jeden Treffer und seine Gruppen auflistet.</li>
+  <li>Ändern Sie die Schreibweise mit <a href="/tools/case-converter/">Groß- und Kleinschreibung umwandeln</a>.</li>
+  <li>Prüfen Sie die Änderung mit <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Entfernen Sie wiederholte Zeilen mit <a href="/tools/remove-duplicate-lines/">Doppelte Zeilen entfernen</a>.</li>
+</ul>

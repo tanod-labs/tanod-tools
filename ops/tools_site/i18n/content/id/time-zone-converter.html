@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Konverter zona waktu dan perencana rapat | Tanod Tools",
+  "description": "Konversi tanggal dan jam ke banyak zona waktu sekaligus, dengan offset UTC, pergantian hari, celah dan tumpang tindih DST, serta perencana rapat per jam.",
+  "h1": "Konverter zona waktu",
+  "lede": "Pilih tanggal, jam dan zona waktunya, lalu lihat momen yang sama di setiap kota dalam daftar Anda, lengkap dengan perencana untuk menemukan jam kerja bersama.",
+  "blurb": "Konversi satu waktu ke banyak zona dan rencanakan rapat lintas zona.",
+  "keywords": "konverter zona waktu konversi zona waktu jam dunia perbedaan waktu selisih jam antar negara perencana rapat offset utc daylight saving wib wita wit gmt est pst jst",
+  "limits": "Memakai data zona waktu bawaan browser Anda, jadi offset dan aturan daylight saving mengikuti apa yang diketahui browser Anda, termasuk untuk tanggal lampau dan mendatang. Singkatan hanya ditampilkan jika browser punya singkatannya. Tidak ada yang meninggalkan perangkat Anda.",
+  "howto_title": "Cara mengonversi waktu antarzona",
+  "howto": [
+    "Pilih tanggal, jam dan zona waktu dari jam tersebut. Tekan <strong>Sekarang</strong> untuk mulai dari waktu saat ini.",
+    "Tambahkan kota yang Anda perlukan lewat <em>Tambah tempat</em>. Setiap baris menampilkan waktu setempat, harinya (sama, berikutnya atau sebelumnya) dan offset UTC. Daftar Anda diingat di perangkat ini.",
+    "Gunakan perencana rapat di bawah daftar untuk menemukan jam saat semua orang berada di antara 09:00 sampai 17:00 waktu setempat. Sel yang diarsir adalah jam kerja."
+  ],
+  "faq": [
+    ["Apa yang terjadi jika saya memilih waktu yang tidak ada?", "Saat jam dimajukan, satu jam waktu setempat terlewati: di New York pada 8 Maret 2026 jam melompat dari 01:59 langsung ke 03:00, jadi 02:30 tidak pernah terjadi. Konverter memberi tahu hal itu dan memakai konvensi yang lazim, yaitu memajukan waktunya sepanjang celah tersebut (02:30 menjadi 03:30), lalu mengonversi momen itu."],
+    ["Bagaimana dengan waktu yang terjadi dua kali?", "Saat jam dimundurkan, satu jam terulang. Pada 1 November 2026 di New York, 01:30 terjadi pertama kali sebagai 01:30 EDT (UTC-04:00) dan sekali lagi satu jam kemudian sebagai 01:30 EST (UTC-05:00). Konverter menampilkan kedua kemungkinan dan membiarkan Anda memilih; awalnya dipilih yang lebih dulu."],
+    ["Kenapa sebagian offset tidak berupa jam bulat?", "Beberapa tempat memakai offset setengah jam atau 45 menit: India UTC+05:30, Nepal UTC+05:45, dan Pulau Lord Howe di Australia UTC+10:30 pada musim dingin dan UTC+11:00 pada musim panas, pergeseran daylight saving yang hanya 30 menit. Alat ini memakai offset tepat yang berlaku pada tanggal yang Anda pilih."],
+    ["Apakah pergantian hari ditampilkan?", "Ya. Setiap baris menyebut Hari yang sama, Hari berikutnya atau Hari sebelumnya, relatif terhadap tanggal yang Anda pilih di zona asal. Kiritimati di Kiribati memakai UTC+14, zona paling awal di dunia, jadi tengah hari di London di sana sudah hari berikutnya."],
+    ["Bagaimana cara kerja perencana rapat?", "Perencana menampilkan 24 sel per jam untuk setiap tempat, disejajarkan pada momen yang sama, mulai dari tengah malam pada tanggal pilihan Anda di zona asal. Sel di antara 09:00 sampai 17:00 waktu setempat diarsir dan dianggap jam kerja, dan baris paling bawah menandai jam yang cocok untuk semua orang. Kolom dengan garis tepi tebal adalah waktu yang Anda masukkan."],
+    ["Nama zona apa saja yang bisa saya pakai?", "Semua zona IANA yang ada di browser Anda, seperti Asia/Jakarta, Europe/London atau Asia/Tokyo, ditambah UTC dan zona Anda sendiri. Nama kota ditampilkan dalam bentuk yang mudah dibaca dengan id zona lengkap di bawahnya. Untuk mengonversi timestamp Unix, bukan waktu jam dinding, gunakan <a href=\"/tools/unix-timestamp-converter/\">Konverter timestamp Unix</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Tanggal</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Jam</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Sekarang</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Zona waktu dari jam itu</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Waktu ini terjadi dua kali. Yang mana?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Tambah tempat</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Tambah</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Format jam</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24 jam</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12 jam</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Waktu hasil konversi"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Perencana rapat</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Keterangan perencana">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Jam kerja, 09:00 sampai 17:00 waktu setempat (diarsir)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>Waktu yang Anda masukkan (garis tepi tebal)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Semua orang dalam jam kerja</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Kenapa konversi waktu antarzona sering keliru</h2>
+<p>Zona waktu bukan sekadar selisih dari UTC. Zona waktu adalah sekumpulan aturan, yang dicatat dalam basis data zona waktu IANA, tentang berapa offset yang berlaku dulu dan nanti pada setiap tanggal. Konverter zona waktu ini memakai aturan itu. Karena itulah kota yang sama bisa UTC-5 pada musim dingin dan UTC-4 pada musim panas, dua kota yang offset-nya sama hari ini bisa berbeda bulan depan, dan rapat pukul 9:00 di London bergeser terhadap New York selama beberapa minggu setiap musim semi dan musim gugur, saat kedua negara mengubah jam pada tanggal yang berbeda.</p>
+<p>Peralihan daylight saving menimbulkan dua kasus yang merepotkan. Pada musim semi, sebagian waktu setempat terlewati, jadi waktu di dalamnya tidak ada. Pada musim gugur, sebagian waktu terulang, jadi waktu di dalamnya ambigu dan perlu offset untuk memastikan kemunculan mana yang dimaksud. Banyak program diam-diam memilih satu jawaban; konverter ini memberi tahu Anda tentang celah atau tumpang tindih itu, dan untuk tumpang tindih, membiarkan Anda memilih.</p>
+<p>Untuk menjadwalkan rapat, membandingkan angka jam baru separuh pekerjaan. Keadilan bergantung pada jam kerja siapa yang terkena rapat itu. Perencana per jam menyejajarkan semua tempat pada momen yang sama sehingga Anda langsung melihat di mana 09:00 sampai 17:00 saling tumpang tindih, dan di mana seseorang harus ikut rapat tengah malam. Meskipun jam kerjanya sangat cocok, tulis zona waktunya secara jelas di undangan, sebaiknya dengan offset UTC, agar tidak ada yang perlu menebak.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Membaca timestamp dari log atau API? <a href="/tools/unix-timestamp-converter/">Konverter timestamp Unix</a> menampilkannya di zona mana pun.</li>
+  <li>Untuk mencari tanggal jatuhnya tenggat setelah ditambah sejumlah hari atau hari kerja, gunakan <a href="/tools/date-calculator/">Kalkulator tanggal</a>.</li>
+  <li>Menghitung berapa lama sebuah proyek atau perjalanan? <a href="/tools/date-difference-calculator/">Hitung selisih tanggal</a> menghitungnya.</li>
+</ul>

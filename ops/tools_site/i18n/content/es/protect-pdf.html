@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Proteger PDF con contraseña online gratis (AES-256) | Tanod Tools",
+  "description": "Ponle contraseña a un PDF para que nadie lo abra sin ella. Cifrado AES-256 y límites opcionales de impresión y copia. Gratis; el archivo se borra al terminar.",
+  "h1": "Proteger un PDF con contraseña",
+  "lede": "Bloquea un PDF con una contraseña antes de enviarlo. Sin la contraseña no se puede abrir.",
+  "blurb": "Ponle contraseña a un PDF (AES-256).",
+  "keywords": "proteger pdf con contraseña poner clave a un pdf encriptar cifrar bloquear pdf seguro agregar contrasena",
+  "limits": "Un PDF de hasta 10 MB que todavía no tenga contraseña. Se procesa en nuestro servidor y luego se elimina. 10 tareas gratuitas en el servidor al día por persona, compartidas por todas las herramientas de servidor. Para más: la <a href=\"/learn/password-protect-pdf-api.html\">API de Proteger PDF</a> (de pago por llamada).",
+  "howto_title": "Cómo proteger un PDF con contraseña",
+  "howto": [
+    "Elige un PDF de hasta 10 MB o arrástralo a la página.",
+    "Escribe una contraseña dos veces. Desmarca imprimir o copiar si los lectores no deben poder hacerlo.",
+    "Pulsa <strong>Proteger PDF</strong>, descarga la copia bloqueada y guarda la contraseña en un lugar seguro."
+  ],
+  "faq": [
+    ["¿Se suben mi PDF y mi contraseña?", "Sí. A diferencia de la mayoría de las herramientas de este sitio, esta funciona en nuestro servidor: tu PDF y la contraseña se envían por HTTPS, el archivo se cifra y la copia bloqueada vuelve directamente a tu navegador. El archivo y la contraseña solo existen en el servidor mientras dura la tarea, en memoria y en una carpeta temporal privada que se elimina en cuanto la tarea termina. Nunca guardamos ni registramos el archivo ni la contraseña."],
+    ["¿Qué tan fuerte es la protección?", "El PDF se cifra con AES-256, el cifrado estándar de PDF más fuerte, compatible con todos los lectores de PDF actuales. La fuerza real está en tu contraseña: usa una larga que no uses en ningún otro lugar. Nuestro <a href=\"/tools/password-generator/\">Generador de contraseñas</a> crea una en tu navegador."],
+    ["¿Qué pasa si olvido la contraseña?", "El archivo no se podrá abrir y no podemos ayudarte: nunca guardamos la contraseña ni el archivo. Conserva tu original sin protección o guarda la contraseña en un gestor de contraseñas."],
+    ["¿Qué hacen las opciones de impresión y copia?", "Limitan lo que puede hacer alguien que conoce la contraseña: imprimir el documento o copiar su texto. La mayoría de los lectores de PDF respetan estos límites, pero no son tan fuertes como la contraseña en sí. Los límites los protege una contraseña de propietario aparte y aleatoria que nadie conoce."],
+    ["¿Puedo proteger un PDF que ya tiene contraseña?", "No directamente. Primero quita la contraseña anterior con <a href=\"/tools/unlock-pdf/\">Desbloquear PDF</a> y luego protege la copia con la nueva."],
+    ["¿Hay algún límite?", "Archivos de hasta 10 MB y 10 tareas gratuitas en el servidor al día por persona, compartidas por todas nuestras herramientas de servidor. Solo cuentan las tareas que terminan bien, y el contador se reinicia a la medianoche UTC."],
+    ["¿Qué es la verificación humana?", "Antes de ejecutar una tarea, Cloudflare Turnstile comprueba que quien usa la herramienta es una persona y no un bot. Normalmente es invisible; a veces te pide marcar una casilla."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:protect-pdf drop__mark}}
+  <p class="drop__title">Suelta un PDF aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Elegir un PDF</span></label>
+  <p class="drop__hint">O arrástralo a cualquier parte de esta página. Hasta 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Contraseña</label>
+      <input id="pw" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <div class="field">
+      <label for="pw2">Escríbela de nuevo</label>
+      <input id="pw2" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <p class="help opts__full" id="pw-help">Usa una contraseña larga que no uses en ningún otro lugar. No podemos recuperarla por ti.</p>
+    <div class="field opts__full">
+      <span class="label">Con la contraseña, los lectores pueden</span>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="allow-print" checked>Imprimir</label>
+        <label class="check"><input type="checkbox" id="allow-copy" checked>Copiar texto</label>
+        <label class="check"><input type="checkbox" id="show">Mostrar contraseña</label>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Proteger PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Qué hace la protección con contraseña</h2>
+<p>Un PDF protegido con contraseña está cifrado: sus páginas se codifican con una clave derivada de tu contraseña, así que un lector no muestra nada hasta que se escribe la contraseña. Nuestro servidor cifra el archivo con AES-256 usando la biblioteca de código abierto qpdf y te devuelve la copia bloqueada.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Envía la contraseña por separado del archivo, por ejemplo por mensaje de texto en lugar de en el mismo correo.</li>
+  <li>¿También quieres una marca visible de "Confidencial"? Agrégala primero con <a href="/tools/watermark-pdf/">Marca de agua en PDF</a>; funciona en tu navegador.</li>
+</ul>

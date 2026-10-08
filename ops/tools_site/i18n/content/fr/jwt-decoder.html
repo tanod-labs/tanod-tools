@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Décodeur JWT : lire les claims d'un JSON Web Token | Tanod Tools",
+  "description": "Décodez un JSON Web Token dans votre navigateur : en-tête, payload et claims, avec exp, nbf et iat en dates et le temps restant. Rien n'est envoyé.",
+  "h1": "Décodeur JWT",
+  "lede": "Collez un JSON Web Token pour lire son en-tête et son payload, avec les dates d'expiration et d'émission affichées en clair.",
+  "blurb": "Lire l'en-tête, les claims et l'expiration d'un JWT.",
+  "keywords": "jwt decoder decodeur decoder json web token jws jwe bearer jeton claims exp iat nbf expiration oauth id token lire",
+  "limits": "Jetons jusqu'à 1 Mo. Décodage uniquement : la signature est affichée mais pas vérifiée.",
+  "howto_title": "Comment décoder un JWT",
+  "howto": [
+    "Collez le jeton dans la zone de saisie. Un préfixe <code>Bearer </code> et les espaces ou guillemets autour sont ignorés.",
+    "Lisez l'en-tête et le payload ci-dessous, ainsi que les dates d'expiration, de début de validité et d'émission, dans votre fuseau horaire et en UTC.",
+    "Copiez le payload ou l'en-tête décodé en JSON mis en forme si vous en avez besoin ailleurs."
+  ],
+  "faq": [
+    ["L'outil vérifie-t-il la signature ?", "Non. Cette page se contente de décoder le jeton. N'importe qui peut créer un jeton avec n'importe quel en-tête et payload : le contenu affiché ici est donc une suite d'affirmations, pas une preuve. Seul le service qui détient la clé de signature (ou la clé publique, pour les jetons RS256 et ES256) peut dire si un jeton est authentique, et il doit aussi vérifier l'expiration, l'audience et l'émetteur."],
+    ["Est-il sûr de coller un jeton ici ?", "Cette page n'envoie le jeton nulle part : il est décodé par du code qui s'exécute dans votre navigateur et n'est pas conservé. Malgré cela, un jeton d'accès actif équivaut à un mot de passe tant qu'il est valide. Évitez de coller des jetons de production sur quelque site web que ce soit, et préférez des jetons expirés ou de test pour le débogage."],
+    ["Pourquoi certains jetons sont-ils illisibles ?", "Un jeton en cinq parties au lieu de trois est un JWT chiffré (JWE). Son en-tête est lisible, mais le payload est chiffré et ne peut être lu qu'avec la clé du destinataire : l'outil affiche donc l'en-tête et explique les différentes parties. Les autres erreurs, comme un mauvais nombre de parties ou un texte qui n'est pas du Base64url ou du JSON valide, sont signalées avec la cause du problème."],
+    ["Comment les dates sont-elles calculées ?", "Les claims <code>exp</code>, <code>nbf</code> et <code>iat</code> sont des NumericDate : des secondes écoulées depuis le 1er janvier 1970 UTC. Elles sont affichées dans le fuseau horaire de votre appareil et en UTC, et comparées à l'horloge de votre appareil pour indiquer si le jeton a expiré. Si votre horloge est fausse, les durées relatives le seront aussi. Une valeur qui ressemble à des millisecondes est signalée, car c'est une erreur fréquente."],
+    ["Que signifient alg, typ et kid ?", "<code>alg</code> est l'algorithme de signature, comme HS256 (un secret partagé), RS256 ou ES256 (une paire de clés). <code>typ</code> vaut généralement JWT. <code>kid</code> est l'identifiant de la clé utilisée par l'émetteur, qui indique au vérificateur avec quelle clé contrôler la signature. Un jeton dont <code>alg</code> vaut <code>none</code> n'est pas signé et ne doit jamais être accepté pour quoi que ce soit d'important."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">Jeton</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">Essayer un jeton d'exemple</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">Effacer</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>Signature non vérifiée.</strong> Cette page décode le jeton ; elle ne vérifie pas qu'il est authentique. N'importe qui peut créer un jeton avec n'importe quel contenu.</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>Algorithme</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>Type</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>ID de clé</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>Parties</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">Dates</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Votre fuseau horaire, puis UTC</th><th scope="col">Relatif</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">En-tête</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">Payload</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">Claims</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Signification</th><th scope="col">Valeur</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">Signature</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}Copier le payload</button>
+      <button class="btn" id="jw-copy-h" type="button">Copier l'en-tête</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Que contient un JSON Web Token</h2>
+<p>Pour décoder un JWT, il suffit de savoir qu'un JWT signé est formé de trois morceaux de texte Base64url reliés par des points : un en-tête, un payload et une signature. L'en-tête et le payload sont simplement du JSON écrit en Base64url, c'est pourquoi n'importe qui peut les lire. Le Base64url est un encodage, pas un chiffrement : ne placez donc jamais de secrets dans le payload d'un JWT, sauf si le jeton est chiffré.</p>
+<p>Le payload contient des claims (revendications). Certains noms sont enregistrés : <code>iss</code> (qui a émis le jeton), <code>sub</code> (le sujet du jeton), <code>aud</code> (à qui il est destiné), <code>exp</code> (quand il expire), <code>nbf</code> (pas valide avant), <code>iat</code> (quand il a été émis) et <code>jti</code> (un identifiant unique). Les services ajoutent leurs propres claims, comme des rôles, des portées (scopes) ou une adresse e-mail.</p>
+<p>C'est la signature qui rend les claims dignes de confiance, et la vérifier nécessite la clé de signature, que seuls l'émetteur et les services qui acceptent le jeton devraient détenir. Ce décodeur s'arrête volontairement à la lecture : il montre ce que dit un jeton et quand il expire, ce qui est généralement ce dont vous avez besoin pour déboguer une connexion ou un appel d'API.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Convertissez n'importe quel autre temps Unix en date avec le <a href="/tools/unix-timestamp-converter/">Convertisseur de timestamp Unix</a>.</li>
+  <li>Mettez en forme ou vérifiez un gros payload avec <a href="/tools/json-formatter/">Formater et valider du JSON</a>.</li>
+  <li>Décodez à la main un seul morceau en Base64url avec <a href="/tools/base64-encode-decode/">Encoder et décoder en Base64</a>.</li>
+</ul>

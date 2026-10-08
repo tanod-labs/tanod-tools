@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Pipette couleur image : code HEX et RGB d'une photo | Tanod Tools",
+  "description": "Récupérez les couleurs d'une image : cliquez sur un pixel pour son code HEX, RGB et HSL, et voyez sa palette principale. Dans le navigateur, sans envoi.",
+  "h1": "Pipette de couleur pour image",
+  "lede": "Cliquez n'importe où sur une image pour lire la couleur exacte de ce pixel, ou récupérez la palette de ses couleurs principales.",
+  "blurb": "Codes HEX et RGB de n'importe quel pixel.",
+  "keywords": "pipette couleur image trouver couleur image code couleur photo selecteur de couleur pipette en ligne code hex rgb hsl extraire palette capture d'ecran couleur pixel",
+  "limits": "Une image à la fois, 50 Mo et environ 100 mégapixels. PNG, JPEG, WebP, GIF (première image), BMP ou AVIF.",
+  "howto_title": "Comment récupérer une couleur dans une image",
+  "howto": [
+    "Choisissez une image, ou glissez-la ou collez-la sur la page.",
+    "Survolez l'image pour viser avec la loupe, puis cliquez ou touchez pour sélectionner. Au clavier, placez le focus sur l'image, déplacez-vous avec les flèches (Maj pour de plus grands pas) et appuyez sur Entrée.",
+    "Copiez le code HEX, RGB ou HSL, ou copiez une couleur de la palette des couleurs principales."
+  ],
+  "faq": [
+    ["Quelle est la précision de la couleur ?", "C'est la valeur enregistrée du pixel unique situé sous le réticule, lue sur l'image en taille réelle, et non sur l'aperçu réduit. La loupe montre les pixels environnants pour que vous puissiez viser un seul pixel sur un bord chargé."],
+    ["Pourquoi la couleur diffère-t-elle de celle qu'affiche une autre application ?", "La compression JPEG décale légèrement les couleurs, surtout près des bords et dans les aplats : des pixels voisins peuvent donc différer de quelques valeurs. Les images dotées d'un profil colorimétrique sont converties en sRGB standard par votre navigateur avant la lecture, ce qu'utilisent les pages web ; un logiciel de retouche travaillant dans un autre espace colorimétrique peut afficher d'autres valeurs."],
+    ["Comment la palette est-elle calculée ?", "L'image est échantillonnée sur 160 sur 160 points au maximum, puis regroupée en huit groupes de couleurs en divisant à plusieurs reprises la plage de couleurs là où elle est la plus étendue (méthode de la coupe médiane, ou median cut). Chaque échantillon est la couleur moyenne de son groupe, avec sa part de l'image. Les pixels entièrement ou presque entièrement transparents sont ignorés."],
+    ["Que signifient HEX, RGB et HSL ?", "Ce sont trois façons d'écrire la même couleur. HEX correspond aux valeurs de rouge, vert et bleu (de 0 à 255) écrites en base 16, comme dans le CSS et les outils de design. RGB les liste sous forme de nombres simples. HSL donne la teinte (de 0 à 360 degrés), la saturation et la luminosité, plus faciles à ajuster à la main."],
+    ["Mon image est-elle envoyée en ligne ?", "Non. L'image est décodée et lue dans votre navigateur, sur votre appareil."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Déposez une image ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Choisir une image</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-la ou collez-la ici.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="pipette de couleur" aria-label="Image. Les flèches déplacent le réticule, Maj avec les flèches le déplace plus vite, Entrée sélectionne la couleur." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Cliquez ou touchez pour sélectionner. Au clavier : les flèches déplacent le réticule, Maj accélère, Entrée sélectionne.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Sous le réticule</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Couleur sélectionnée</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="Copier le code HEX">Copier</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="Copier le code RGB">Copier</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="Copier le code HSL">Copier</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Couleurs déjà sélectionnées</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Couleurs principales</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">Sélectionnez un échantillon pour copier son code HEX.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Lire les couleurs directement dans les pixels</h2>
+<p>Retrouver la couleur d'une marque à partir d'un logo, trouver le bleu exact d'une capture d'écran ou construire une palette à partir d'une photo revient toujours à la même chose : lire les valeurs de rouge, de vert et de bleu enregistrées pour un pixel. Cette pipette de couleur pour image décode l'image dans votre navigateur et lit ces valeurs sur l'image en pleine résolution : le code que vous copiez est donc la couleur réellement présente dans le fichier.</p>
+<p>Un pixel isolé peut être trompeur sur une photo, où le bruit et la compression font varier les pixels voisins. Utilisez la loupe pour viser le milieu d'un aplat, ou prenez la palette, qui fait la moyenne de groupes entiers de pixels similaires pour obtenir quelques couleurs représentatives.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Convertissez une couleur sélectionnée en CMJN ou vérifiez son contraste avec du texte grâce au <a href="/tools/color-converter/">Convertisseur de couleurs et contraste</a>.</li>
+  <li>Vous visez une petite partie d'une grande image ? <a href="/tools/crop-image/">Recadrez-la</a> d'abord pour que la zone remplisse l'écran.</li>
+</ul>

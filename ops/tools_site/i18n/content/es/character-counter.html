@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Contador de caracteres: cuenta caracteres y letras | Tanod Tools",
+  "description": "Cuenta caracteres con y sin espacios, letras y bytes UTF-8 mientras escribes, y mira cuánto te queda para un post en X, un SMS, un title o una meta descripción.",
+  "h1": "Contador de caracteres",
+  "lede": "Pega o escribe tu texto para contar caracteres con y sin espacios, y compáralo con los límites de longitud más comunes.",
+  "blurb": "Caracteres, bytes y límites para posts, SMS y meta tags.",
+  "keywords": "contador de caracteres contar caracteres contar letras caracteres sin espacios longitud de tweet longitud de sms longitud meta description longitud title contar bytes",
+  "limits": "Texto de hasta unos 5 MB. Los conteos se actualizan mientras escribes; con textos muy largos se actualizan un momento después de que dejas de escribir.",
+  "howto_title": "Cómo contar caracteres",
+  "howto": [
+    "Escribe o pega tu texto en el cuadro, o abre un archivo .txt.",
+    "Lee los conteos que aparecen al lado: caracteres con y sin espacios, letras, palabras, líneas y bytes.",
+    "Revisa la tabla <strong>Límites de longitud</strong> para ver cuánto espacio te queda para un post en X, un mensaje de texto, una etiqueta title o una meta descripción."
+  ],
+  "faq": [
+    ["¿Qué cuenta como un carácter?", "Un carácter es lo que ves como un solo símbolo, aunque la computadora lo guarde en varias piezas. Un emoji como el de una familia o una bandera, o una letra con un acento guardado por separado, cuenta como un carácter. La segmentación de texto del propio navegador decide dónde empieza y termina cada carácter. La cifra de Puntos de código muestra el conteo de nivel más bajo, en el que esos símbolos combinados cuentan como dos o más."],
+    ["¿Por qué otros sitios dan un conteo distinto?", "Cada sistema cuenta a su manera. Algunos cuentan puntos de código o unidades UTF-16 en lugar de caracteres visibles, así que un emoji puede contar como 2 o más. Algunos cuentan un salto de línea de Windows como dos caracteres. Aquí cada cifra indica qué unidad usa, para que puedas igualar el conteo que espera el sistema que recibe el texto."],
+    ["¿Cómo funciona el conteo de X (Twitter)?", "El límite de 280 de X es ponderado: la mayoría de las letras latinas, dígitos y signos de puntuación cuentan como 1, mientras que los caracteres chinos, japoneses y coreanos y los emojis cuentan como 2, y cualquier enlace web cuenta como 23 sin importar su longitud. Esta herramienta aplica esas reglas, pero X puede cambiarlas y trata algunos casos de otra forma, así que toma el resultado como una estimación cercana y revisa antes de publicar."],
+    ["¿Cómo se calcula el conteo de SMS?", "Un mensaje de texto que solo usa el juego de caracteres GSM estándar admite 160 caracteres; algunos símbolos como € [ ] { } cuentan como dos. Si el mensaje contiene cualquier otro carácter, como un emoji o muchas letras con tilde, todo el mensaje se envía como Unicode y el límite baja a 70. Los mensajes más largos se dividen en partes de 153 caracteres cada una (o 67 en Unicode), que es lo que muestra el número de mensajes. Algunos teléfonos y operadores convierten o cuentan los caracteres de otra forma."],
+    ["¿Qué longitud debe tener una etiqueta title o una meta descripción?", "Los buscadores recortan los títulos y las descripciones según el ancho que ocupan en pantalla, no por un número fijo de caracteres. Como guía aproximada, los títulos de hasta unos 60 caracteres y las descripciones de unos 155 a 160 caracteres suelen mostrarse completos. Las letras anchas como la W y la M ocupan el espacio más rápido que las estrechas."],
+    ["¿Se sube mi texto?", "No. El conteo se hace en tu navegador y el texto no se sube ni se guarda. Al cerrar la pestaña se borra."]
+  ]
+}
+-->
+<!--tool-->
+<div class="wc">
+  <div class="wc__bar" aria-hidden="true">
+    <span><b id="bar-chars" class="num">0</b> caracteres</span>
+    <span><b id="bar-nospace" class="num">0</b> sin espacios</span>
+  </div>
+  <div class="wc__main">
+    <div class="field">
+      <label for="text">Tu texto</label>
+      <textarea id="text" class="wc__text" spellcheck="false" placeholder="Escribe o pega tu texto aquí."></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button" disabled>{{mark:i-copy}}Copiar texto</button>
+      <button class="btn btn--quiet" id="clear" type="button" disabled>Borrar</button>
+      <span class="spacer"></span>
+      <div class="drop is-compact wc__open" id="drop">
+        <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Abrir un archivo .txt</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="wc__side">
+    <dl class="stats" aria-label="Conteos">
+      <div><dt>Caracteres</dt><dd id="c-chars">0</dd></div>
+      <div><dt>Sin espacios</dt><dd id="c-nospace">0</dd></div>
+      <div><dt>Letras</dt><dd id="c-letters">0</dd></div>
+      <div><dt>Dígitos</dt><dd id="c-digits">0</dd></div>
+      <div><dt>Espacios</dt><dd id="c-spaces">0</dd></div>
+      <div><dt>Palabras</dt><dd id="c-words">0</dd></div>
+      <div><dt>Líneas</dt><dd id="c-lines">0</dd></div>
+      <div><dt>Puntos de código</dt><dd id="c-cp">0</dd></div>
+      <div><dt>Bytes UTF-8</dt><dd id="c-bytes">0</dd></div>
+    </dl>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<section class="wc__more" aria-labelledby="lim-h">
+  <h2 id="lim-h" class="wc__h">Límites de longitud</h2>
+  <div class="cc-scroll" tabindex="0" role="region" aria-labelledby="lim-h">
+    <table class="dens cc-lim">
+      <thead><tr><th scope="col">Dónde</th><th scope="col">Límite</th><th scope="col">Usados</th><th scope="col">Quedan</th></tr></thead>
+      <tbody id="lim-body"></tbody>
+    </table>
+  </div>
+  <p class="note">Las filas de X y SMS siguen las reglas de conteo propias de esos sistemas; las demás cuentan los caracteres como se muestra arriba. Los límites son orientativos: las plataformas los cambian y algunas miden el ancho en pantalla en lugar de los caracteres.</p>
+</section>
+<!--explain-->
+<h2>Contar caracteres como lo hace el sistema que recibe el texto</h2>
+<p>"Carácter" significa cosas distintas para cada programa. Una persona ve un solo carácter en "é" o en el emoji de una bandera, pero una computadora puede guardar cualquiera de los dos en dos o más piezas. Este contador de caracteres muestra el conteo que ves (Caracteres), el conteo de nivel más bajo de puntos de código Unicode y el número de bytes que ocupa el texto en UTF-8, la codificación que usan la mayoría de los sitios web y bases de datos. Cuando un formulario dice "máximo 255 caracteres", normalmente cuenta una de estas cifras, y la diferencia solo importa con emojis, acentos guardados como marcas separadas y escrituras no latinas.</p>
+<p>La tabla de límites de longitud compara tu texto con lugares donde la longitud suele estar limitada. Cada fila muestra lo usado y lo que queda; una fila que supera su límite muestra cuántos caracteres hay que recortar. Los mensajes de texto se cuentan con las reglas GSM que usan los teléfonos, así que un solo emoji puede pasar todo el mensaje al límite Unicode, más corto.</p>
+<p>Todo se cuenta en tu navegador mientras escribes. El texto no se sube ni se guarda.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Necesitas palabras, oraciones, tiempo de lectura y densidad de palabras clave? Usa el <a href="/tools/word-counter/">Contador de palabras</a>.</li>
+  <li>¿Pegaste texto de un PDF lleno de saltos de línea? Límpialo con <a href="/tools/remove-line-breaks/">Eliminar saltos de línea</a> antes de contar.</li>
+  <li>¿Vas a convertir un título en una dirección web? El <a href="/tools/text-to-slug/">Generador de slugs</a> crea un slug de URL limpio.</li>
+</ul>

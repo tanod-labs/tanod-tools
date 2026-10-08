@@ -1,0 +1,106 @@
+<!--meta
+{
+  "title": "Bilder zusammenfügen – nebeneinander oder im Raster | Tanod Tools",
+  "description": "2 bis 20 Bilder zu einem kombinieren: nebeneinander, untereinander oder im Raster, mit Abstand, Ausrichtung und Hintergrundfarbe. Nichts wird hochgeladen.",
+  "h1": "Bilder zusammenfügen",
+  "lede": "Fügen Sie mehrere Bilder zu einem zusammen: in einer Reihe, in einer Spalte oder im Raster, mit Abstand und Hintergrund nach Wahl.",
+  "blurb": "Bilder in Reihe, Spalte oder Raster zusammenfügen.",
+  "keywords": "bilder zusammenfügen zusammenfuegen fotos kombinieren verbinden zusammensetzen collage nebeneinander untereinander übereinander vertikal horizontal raster sprite sheet foto",
+  "limits": "2 bis 20 Bilder pro Zusammenfügung, je 50 MB. Das zusammengefügte Bild darf bis zu 100 Megapixel und 32.767 Pixel pro Seite haben. Ausgabe als PNG, JPEG oder WebP.",
+  "howto_title": "So fügen Sie Bilder zusammen",
+  "howto": [
+    "Wählen Sie zwei oder mehr Bilder aus oder ziehen Sie sie auf die Seite. Legen Sie mit den Pfeilen in der Liste die Reihenfolge fest.",
+    "Wählen Sie <strong>Nebeneinander</strong>, <strong>Untereinander</strong> oder <strong>Raster</strong> und stellen Sie dann Abstand, Ausrichtung, Hintergrund und eine eventuelle Größenangleichung ein.",
+    "Prüfen Sie die Vorschau, wählen Sie PNG, JPEG oder WebP und klicken Sie auf <strong>Zusammenfügen</strong>."
+  ],
+  "faq": [
+    ["Werden meine Bilder hochgeladen?", "Nein. Die Bilder werden in Ihrem Browser dekodiert und auf ein gemeinsames Canvas gezeichnet. Nichts wird an einen Server gesendet."],
+    ["Was passiert, wenn die Bilder unterschiedlich groß sind?", "Standardmäßig behält jedes Bild seine Größe, und die kleineren werden je nach Wahl am Anfang, in der Mitte oder am Ende der Reihe oder Spalte platziert; die Hintergrundfarbe füllt den freien Platz. Damit sie bündig abschließen, stellen Sie „Größen angleichen“ so ein, dass sie auf das kleinste oder größte Bild der Auswahl skaliert werden."],
+    ["Wie wirkt „Größen angleichen“ in den einzelnen Layouts?", "Nebeneinander erhalten alle Bilder dieselbe Höhe, ihre Proportionen bleiben erhalten. Untereinander erhalten alle dieselbe Breite. Im Raster wird jedes Bild ohne Beschneiden in dieselbe Zellengröße eingepasst; die Formen bleiben also erhalten, und der übrige Platz erhält die Hintergrundfarbe."],
+    ["Kann der Hintergrund transparent sein?", "Ja, bei PNG und WebP. Abstände und freie Flächen bleiben durchsichtig. JPEG kann keine Transparenz speichern, daher werden diese Bereiche bei JPEG stattdessen mit der Hintergrundfarbe gefüllt."],
+    ["Warum wurde meine Zusammenfügung als zu groß abgelehnt?", "Beim Zusammenfügen addieren sich die Bildgrößen, und eine Reihe mehrerer großer Fotos wird sehr schnell sehr breit. Das Ergebnis ist auf 100 Megapixel und 32.767 Pixel pro Seite begrenzt, damit Ihr Browser es erzeugen kann. Skalieren Sie auf das kleinste Bild, verwenden Sie ein Raster oder entfernen Sie einige Bilder."],
+    ["Spielt die Reihenfolge in der Liste eine Rolle?", "Ja. Das erste Bild steht in jedem Layout oben links, und ein Raster füllt jede Zeile von links nach rechts, bevor die nächste beginnt. Die Pfeile ändern die Reihenfolge, und die Vorschau aktualisiert sich sofort."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Zwei oder mehr Bilder hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Bilder auswählen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP oder AVIF. Oder ziehen Sie sie an eine beliebige Stelle dieser Seite.</p>
+</div>
+<ol class="files mrg-list" id="files" aria-label="Zusammenzufügende Bilder, in Reihenfolge" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts mrg-opts">
+    <fieldset class="field">
+      <legend>Layout</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="row" checked>Nebeneinander</label>
+        <label><input type="radio" name="layout" value="column">Untereinander</label>
+        <label><input type="radio" name="layout" value="grid">Raster</label>
+      </div>
+    </fieldset>
+    <div class="field" id="cols-field" hidden>
+      <label for="cols">Spalten</label>
+      <input type="number" id="cols" min="1" max="20" step="1" value="2" inputmode="numeric">
+    </div>
+    <fieldset class="field">
+      <legend>Ausrichtung</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="start">Anfang</label>
+        <label><input type="radio" name="align" value="center" checked>Mitte</label>
+        <label><input type="radio" name="align" value="end">Ende</label>
+      </div>
+      <p class="help" id="align-help"></p>
+    </fieldset>
+    <div class="field">
+      <label for="scale">Größen angleichen</label>
+      <select id="scale">
+        <option value="none" selected>Originalgrößen behalten</option>
+        <option value="min">Auf das kleinste skalieren</option>
+        <option value="max">Auf das größte skalieren</option>
+      </select>
+      <p class="help" id="scale-help"></p>
+    </div>
+    <div class="field">
+      <label for="gap">Abstand (px)</label>
+      <input type="number" id="gap" min="0" max="10000" step="1" value="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="bg">Hintergrundfarbe</label>
+      <input type="color" id="bg" value="#ffffff">
+      <label class="check"><input type="checkbox" id="transparent">Transparent (PNG und WebP)</label>
+    </div>
+    <fieldset class="field">
+      <legend>Ausgabeformat</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="png" checked>PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help" id="fmt-help">PNG behält jeden Pixel und jede Transparenz bei.</p>
+    </fieldset>
+  </div>
+  <p class="help">Vorschau, verkleinert. Die gespeicherte Datei wird in voller Größe erzeugt.</p>
+  <div class="preview mrg-preview"><canvas id="preview" role="img" aria-label="Vorschau des zusammengefügten Bildes"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Zusammenfügen</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Alle entfernen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Wie unterschiedlich große Bilder zusammengefügt werden</h2>
+<p>Eine Reihe von Bildern ist so hoch wie ihr höchstes Bild, eine Spalte so breit wie ihr breitestes. Kleinere Bilder lassen Platz übrig, und die Ausrichtung legt fest, wo das Bild darin sitzt: am Anfang, in der Mitte oder am Ende. Der freie Platz wird mit Ihrer Hintergrundfarbe gefüllt oder bleibt bei PNG und WebP durchsichtig.</p>
+<p>Skalieren ist der andere Weg, mit unterschiedlichen Größen umzugehen. Beim Skalieren auf das kleinste Bild wird nichts vergrößert, also wird auch nichts unscharf, aber große Fotos verlieren Details. Beim Skalieren auf das größte bleiben die großen scharf, und die kleinen werden gestreckt. Im Raster gilt dasselbe Prinzip für eine einheitliche Zellenform, in die jedes Bild eingepasst wird.</p>
+<p>Breiten und Höhen summieren sich schnell. Fünf 4000 Pixel breite Fotos in einer Reihe ergeben ein 20.000 Pixel breites Bild, und das kann mehr sein, als ein Browser bewältigt. Die Seite hält Sie deshalb auf und nennt Ihnen die Größe, bevor Sie auf die Schaltfläche klicken.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für eine Collage zum Drucken oder Teilen fügen Sie danach mit <a href="/tools/add-border-to-image/">Bild mit Rahmen versehen</a> einen Rahmen hinzu.</li>
+  <li>Ist die zusammengefügte Datei zu schwer zum Versenden, verkleinern <a href="/tools/compress-image/">Bild komprimieren</a> oder <a href="/tools/resize-image/">Bildgröße ändern</a> sie.</li>
+  <li>Sie möchten die Bilder lieber in einem Dokument? <a href="/tools/jpg-to-pdf/">JPG in PDF</a> legt jedes auf eine eigene Seite.</li>
+</ul>

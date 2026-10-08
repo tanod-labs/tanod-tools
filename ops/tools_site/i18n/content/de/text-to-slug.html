@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Slug-Generator: Text in sauberen URL-Slug umwandeln | Tanod Tools",
+  "description": "Einen Titel in einen sauberen URL-Slug umwandeln: Kleinbuchstaben, Umlaute umgewandelt, Binde- oder Unterstriche, optionale Längengrenze. Läuft im Browser.",
+  "h1": "URL-Slug-Generator",
+  "lede": "Geben Sie einen Titel ein und erhalten Sie einen sauberen, lesbaren Slug für eine Webadresse, mit umgewandelten Akzenten und ohne Satzzeichen.",
+  "blurb": "Titel in saubere URL-Slugs umwandeln.",
+  "keywords": "slug generator url slug erstellen permalink seo freundliche url text in slug titel in url umlaute umwandeln bindestriche slugify",
+  "limits": "Bis zu 10.000 Zeilen auf einmal; jede Zeile wird zu einem eigenen Slug.",
+  "howto_title": "So erstellen Sie einen URL-Slug",
+  "howto": [
+    "Geben Sie einen Titel ein oder fügen Sie ihn ein. Für mehrere Slugs auf einmal schreiben Sie jeden Titel in eine eigene Zeile.",
+    "Wählen Sie das Trennzeichen und Optionen wie Kleinbuchstaben, eine Längengrenze oder das Weglassen kleiner englischer Wörter wie „the“ und „of“.",
+    "Kopieren Sie den Slug oder laden Sie alle als .txt-Datei herunter."
+  ],
+  "faq": [
+    ["Was ist ein URL-Slug?", "Der Slug ist der lesbare Teil einer Webadresse, der eine einzelne Seite benennt, etwa <code>brot-backen-anleitung</code> in <code>example.com/blog/brot-backen-anleitung</code>. Ein guter Slug ist kurz, kleingeschrieben, trennt Wörter mit Bindestrichen und enthält nur Buchstaben und Ziffern, damit er gut lesbar ist und nie maskiert werden muss."],
+    ["Was passiert mit Umlauten, Akzenten und Sonderzeichen?", "Buchstaben mit Akzent oder Umlaut werden zu ihrer einfachen Form (é zu e, ü zu u, ñ zu n), und Buchstaben wie ß, æ, ø und ł werden zu ss, ae, o und l. Griechische und kyrillische Buchstaben werden ins Lateinische transliteriert. Zeichen ohne lateinische Entsprechung, etwa Chinesisch oder Arabisch, werden bei aktivem Nur ASCII entfernt; schalten Sie die Option aus, um sie zu behalten, dann zeigen Browser sie so an, wie sie eingegeben wurden."],
+    ["Soll ich Bindestriche oder Unterstriche verwenden?", "Bindestriche. Suchmaschinen behandeln einen Bindestrich als Leerzeichen zwischen Wörtern, während ein Unterstrich die Wörter zu einem verbinden kann. Unterstriche sind für Dateinamen und manche Systeme dennoch üblich, deshalb gibt es beide."],
+    ["Soll ich kleine Wörter wie „the“ und „and“ entfernen?", "Das ist optional. Ohne sie werden Slugs kürzer, aber ein Slug, der sich noch wie eine Wortgruppe liest, ist leichter zu verstehen. Die Option entfernt eine kurze Liste englischer Wörter (a, an, the, and, or, of, to, in, on, at, for, with und einige mehr), außer wenn der Slug dadurch leer würde."],
+    ["Wie funktioniert die Längengrenze?", "Der Slug wird nach dem letzten ganzen Wort gekürzt, das noch passt, sodass am Ende nie ein halbes Wort steht. Nur ein einzelnes Wort, das länger als die Grenze ist, wird mitten im Wort gekürzt."],
+    ["Wird mein Text hochgeladen?", "Nein. Die Slugs werden in Ihrem Browser erstellt, und der Text wird weder hochgeladen noch gespeichert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2 slug-io">
+    <div class="field">
+      <label for="text">Titel oder Text</label>
+      <textarea id="text" spellcheck="false" placeholder="So backen Sie Sauerteigbrot zu Hause"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Slug</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="out slug-preview" id="preview" aria-live="polite">example.com/<b id="preview-slug">ihr-slug-hier</b></p>
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Trennzeichen</legend>
+      <div class="seg">
+        <label><input type="radio" name="sep" value="-" checked>Bindestrich -</label>
+        <label><input type="radio" name="sep" value="_">Unterstrich _</label>
+        <label><input type="radio" name="sep" value=".">Punkt .</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="max">Maximale Länge</label>
+      <input type="number" id="max" class="mono" min="0" max="500" step="1" inputmode="numeric" placeholder="Keine Grenze" aria-describedby="max-help">
+      <span class="help" id="max-help">Kürzt nach einem ganzen Wort. Leer lassen für keine Grenze.</span>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="lower" checked>Kleinbuchstaben</label>
+    <label class="check"><input type="checkbox" id="ascii" checked>Nur ASCII (Akzente umwandeln, andere Schriften entfernen)</label>
+    <label class="check"><input type="checkbox" id="amp" checked>&amp; als „and“ schreiben</label>
+    <label class="check"><input type="checkbox" id="stop">Kleine englische Wörter entfernen (a, the, of …)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Geben Sie einen Titel ein, um zu beginnen.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Slug kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>.txt herunterladen</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Leeren</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>So entsteht der Slug</h2>
+<p>Der Slug-Generator schickt jede Textzeile durch dieselben Schritte. Buchstaben mit Akzent werden in ihre einfache lateinische Form umgewandelt und griechische sowie kyrillische Buchstaben transliteriert, sodass aus „Crème brûlée“ „creme-brulee“ und aus „Москва“ „moskva“ wird. Apostrophe werden ohne Lücke entfernt, sodass „don't“ ein Wort bleibt. Jede andere Folge von Leerzeichen und Satzzeichen wird zu einem einzigen Trennzeichen, und Trennzeichen am Anfang und Ende werden abgeschnitten.</p>
+<p>Die Vorschau zeigt den Slug so, wie er am Ende einer Webadresse erscheinen würde. Halten Sie Slugs kurz und aussagekräftig: Ein paar Wörter, die sagen, worum es auf der Seite geht, sind leichter zu lesen, zu teilen und zu merken als eine komplette Überschrift.</p>
+<p>Wenn Sie den Slug einer veröffentlichten Seite ändern, ändert sich ihre Adresse, und Links auf die alte Adresse funktionieren nicht mehr, sofern die Website sie nicht weiterleitet. Legen Sie den Slug nach Möglichkeit vor der Veröffentlichung fest.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Prüfen Sie die Länge eines Titels, bevor Sie ihn in einen Slug umwandeln, mit <a href="/tools/character-counter/">Zeichen zählen</a>.</li>
+  <li>Sie brauchen stattdessen camelCase- oder snake_case-Namen für Code? Nutzen Sie <a href="/tools/case-converter/">Groß- und Kleinschreibung umwandeln</a>.</li>
+  <li>Um Text mit Leerzeichen und Symbolen unverändert in eine URL zu setzen, kodieren Sie ihn mit <a href="/tools/url-encode-decode/">URL kodieren und dekodieren</a>.</li>
+</ul>

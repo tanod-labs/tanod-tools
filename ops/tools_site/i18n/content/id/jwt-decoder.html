@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Decoder JWT online: baca isi JSON Web Token | Tanod Tools",
+  "description": "Decode JSON Web Token di browser Anda: header, payload, claim, exp, nbf dan iat sebagai tanggal plus sisa masa berlaku. Token tidak dikirim ke mana pun.",
+  "h1": "Decoder JWT",
+  "lede": "Tempel JSON Web Token untuk membaca header dan payload-nya, dengan waktu kedaluwarsa dan waktu terbit yang ditampilkan sebagai tanggal sungguhan.",
+  "blurb": "Baca header, claim dan masa berlaku JWT.",
+  "keywords": "jwt decode decoder json web token jws jwe bearer token claim exp iat nbf kedaluwarsa expired oauth id token baca jwt",
+  "limits": "Token hingga 1 MB. Hanya decode: tanda tangan ditampilkan tetapi tidak diperiksa.",
+  "howto_title": "Cara decode JWT",
+  "howto": [
+    "Tempel token ke dalam kotak. Awalan <code>Bearer </code> serta spasi atau tanda kutip di sekelilingnya diabaikan.",
+    "Baca header dan payload di bawahnya, serta waktu kedaluwarsa, tidak-valid-sebelum dan waktu terbit dalam zona waktu Anda dan dalam UTC.",
+    "Salin payload atau header hasil decode sebagai JSON yang rapi jika Anda membutuhkannya di tempat lain."
+  ],
+  "faq": [
+    ["Apakah alat ini memeriksa tanda tangan?", "Tidak. Halaman ini hanya men-decode token. Siapa pun bisa membuat token dengan header dan payload apa pun, jadi isi yang ditampilkan di sini adalah klaim, bukan bukti. Hanya layanan yang memegang kunci penandatanganan (atau kunci publik, untuk token RS256 dan ES256) yang bisa memastikan apakah token itu asli, dan layanan itu juga harus memeriksa waktu kedaluwarsa, audiens dan penerbitnya."],
+    ["Amankah menempel token di sini?", "Halaman ini tidak mengirim token ke mana pun: token di-decode oleh kode yang berjalan di browser Anda dan tidak disimpan. Meski begitu, access token yang masih aktif sama dengan password selama masa berlakunya. Hindari menempel token production ke situs web mana pun, dan sebaiknya gunakan token yang sudah kedaluwarsa atau token uji saat debugging."],
+    ["Mengapa ada token yang tidak bisa saya baca?", "Token dengan lima bagian, bukan tiga, adalah JWT terenkripsi (JWE). Header-nya bisa dibaca, tetapi payload-nya terenkripsi dan hanya bisa dibaca dengan kunci penerima, jadi alat ini menampilkan header dan menjelaskan bagian-bagiannya. Kesalahan lain, seperti jumlah bagian yang salah atau teks yang bukan Base64url atau JSON yang valid, dilaporkan beserta penyebabnya."],
+    ["Bagaimana waktu-waktunya dihitung?", "Claim <code>exp</code>, <code>nbf</code> dan <code>iat</code> adalah NumericDate: jumlah detik sejak 1 Januari 1970 UTC. Waktu itu ditampilkan dalam zona waktu perangkat Anda dan dalam UTC, lalu dibandingkan dengan jam perangkat Anda untuk menentukan apakah token sudah kedaluwarsa. Jika jam Anda salah, waktu relatifnya juga akan salah. Nilai yang tampak seperti milidetik akan ditandai, karena itu bug yang sering terjadi."],
+    ["Apa arti alg, typ dan kid?", "<code>alg</code> adalah algoritma tanda tangan, seperti HS256 (rahasia bersama), RS256 atau ES256 (pasangan kunci). <code>typ</code> biasanya JWT. <code>kid</code> adalah ID kunci yang dipakai penerbit, yang memberi tahu pemverifikasi kunci mana yang harus dipakai untuk memeriksa tanda tangan. Token dengan <code>alg</code> bernilai <code>none</code> tidak bertanda tangan dan tidak boleh diterima untuk hal apa pun yang penting."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">Token</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">Coba contoh token</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">Hapus</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>Tanda tangan tidak diverifikasi.</strong> Halaman ini men-decode token; tidak memeriksa apakah token itu asli. Siapa pun bisa membuat token dengan isi apa pun.</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>Algoritma</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>Jenis</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>ID kunci</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>Bagian</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">Waktu</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Zona waktu Anda, lalu UTC</th><th scope="col">Relatif</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">Header</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">Payload</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">Claim</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Arti</th><th scope="col">Nilai</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">Tanda tangan</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}Salin payload</button>
+      <button class="btn" id="jw-copy-h" type="button">Salin header</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Apa isi sebuah JSON Web Token</h2>
+<p>Decoder JWT ini membaca JWT bertanda tangan, yang terdiri dari tiga potong teks Base64url yang digabung dengan titik: header, payload dan tanda tangan. Header dan payload hanyalah JSON yang ditulis dalam Base64url, itulah sebabnya siapa pun bisa membacanya. Base64url adalah encoding, bukan enkripsi, jadi jangan pernah menaruh rahasia di payload JWT kecuali token-nya terenkripsi.</p>
+<p>Payload berisi claim. Sebagian nama sudah terdaftar: <code>iss</code> (siapa yang menerbitkan token), <code>sub</code> (tentang siapa token itu), <code>aud</code> (untuk siapa token itu ditujukan), <code>exp</code> (kapan kedaluwarsa), <code>nbf</code> (tidak valid sebelum), <code>iat</code> (kapan diterbitkan) dan <code>jti</code> (ID unik). Layanan menambahkan claim mereka sendiri, seperti peran, scope atau alamat email.</p>
+<p>Tanda tanganlah yang membuat claim bisa dipercaya, dan memeriksanya membutuhkan kunci penandatanganan, yang seharusnya hanya dipegang oleh penerbit dan layanan yang menerima token tersebut. Decoder ini sengaja berhenti pada tahap membaca: alat ini menunjukkan apa isi token dan kapan kedaluwarsa, yang biasanya memang Anda perlukan saat men-debug login atau panggilan API.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ubah waktu Unix lainnya menjadi tanggal dengan <a href="/tools/unix-timestamp-converter/">Konverter timestamp Unix</a>.</li>
+  <li>Rapikan atau periksa payload besar dengan <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+  <li>Decode satu potong Base64url secara manual dengan <a href="/tools/base64-encode-decode/">Encode dan decode Base64</a>.</li>
+</ul>

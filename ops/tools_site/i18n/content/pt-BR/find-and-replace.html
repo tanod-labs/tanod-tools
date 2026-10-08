@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Localizar e substituir texto online, com regex | Tanod Tools",
+  "description": "Localize e substitua texto no navegador, com diferenciar maiúsculas, palavra inteira e expressões regulares com grupos $1. Grátis, nada é enviado.",
+  "h1": "Localizar e substituir texto",
+  "lede": "Substitua palavras ou padrões em um bloco de texto e veja quantas ocorrências existem antes de substituir.",
+  "blurb": "Localize e substitua com maiúsculas, palavra inteira e regex.",
+  "keywords": "localizar e substituir substituir texto trocar palavras buscar e substituir regex expressao regular substituicao em massa pesquisar",
+  "limits": "Texto de até cerca de 5 MB. Padrões regex que rodam por mais de 2 segundos são interrompidos.",
+  "howto_title": "Como localizar e substituir texto",
+  "howto": [
+    "Cole seu texto na caixa ou abra um arquivo .txt.",
+    "Digite o que localizar e pelo que substituir. O número de ocorrências é atualizado enquanto você digita.",
+    "Clique em <strong>Substituir tudo</strong> e depois copie ou baixe o resultado."
+  ],
+  "faq": [
+    ["A busca é literal ou por padrão?", "Literal por padrão: o que você digita é encontrado exatamente, incluindo caracteres como . e *. Ative “Expressão regular” para usar a sintaxe de expressões regulares do JavaScript."],
+    ["Como uso grupos na substituição?", "No modo de expressão regular, $1, $2 e assim por diante inserem o texto encontrado pelo primeiro, segundo (e assim por diante) grupo entre parênteses, $& insere a ocorrência inteira e $&lt;nome&gt; insere um grupo nomeado. Por exemplo, localizar (\\w+)@(\\w+) e substituir por $2 at $1 transforma bob@example em example at bob. No modo literal, a substituição é inserida exatamente como digitada."],
+    ["O que faz Palavra inteira?", "Só encontra o texto buscado quando ele não faz parte de uma palavra maior, então procurar sal não encontra salada. No modo literal, letras, dígitos e sublinhado contam como caracteres de palavra em qualquer alfabeto. No modo de expressão regular, o padrão é envolvido por limites de palavra (\\b), que só reconhecem A-Z, dígitos e sublinhado."],
+    ["Que limite de 2 segundos é esse?", "Alguns padrões, como (a+)+$, podem levar um tempo extremamente longo em certos textos. O modo de expressão regular roda em um worker separado em segundo plano; se não terminar depois de 2 segundos, ele é interrompido e você é avisado de que o padrão demorou demais, então a página nunca trava."],
+    ["O padrão funciona em várias linhas?", "No modo de expressão regular, ^ e $ correspondem ao início e ao fim de cada linha, e o ponto não corresponde a uma quebra de linha. Maiúsculas e minúsculas são ignoradas, a menos que Diferenciar maiúsculas esteja ativado."],
+    ["Meu texto é enviado para algum lugar?", "Não. Tudo roda no seu navegador e nada é armazenado nem enviado."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Seu texto</label>
+    <textarea id="text" spellcheck="false" placeholder="Digite ou cole seu texto aqui."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Localizar</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Substituir por</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Diferenciar maiúsculas</label>
+    <label class="check"><input type="checkbox" id="whole">Palavra inteira</label>
+    <label class="check"><input type="checkbox" id="regex">Expressão regular</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Sintaxe de expressões regulares do JavaScript. Use $1, $2 para grupos e $&amp; para a ocorrência inteira na substituição.</p>
+  <p class="tt__report" id="info" aria-live="polite">Digite o que localizar.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Substituir tudo</button>
+    <button class="btn btn--quiet" id="clear" type="button">Limpar texto</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Abrir arquivo .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Resultado</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Copiar resultado</button>
+      <button class="btn" id="dl" type="button">Baixar .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Usar resultado como texto</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Como substituir texto em massa</h2>
+<p>Localizar e substituir troca todas as ocorrências de uma palavra ou padrão de uma só vez. A contagem de ocorrências é atualizada enquanto você digita, para você ver até onde a mudança vai antes de aplicá-la, e o resultado aparece numa caixa separada, então seu texto original nunca é sobrescrito até você escolher “Usar resultado como texto”.</p>
+<p>Expressões regulares permitem descrever um formato em vez de um texto fixo: uma sequência de dígitos, uma data, uma palavra seguida de vírgula. Os grupos entre parênteses podem ser reorganizados na substituição com $1, $2 e assim por diante. Como um padrão mal escrito pode rodar por muito tempo, os padrões são executados num worker em segundo plano que é interrompido depois de dois segundos.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Monte e depure um padrão primeiro no <a href="/tools/regex-tester/">Testador de regex</a>, que lista cada ocorrência e seus grupos.</li>
+  <li>Mude maiúsculas e minúsculas com <a href="/tools/case-converter/">Converter maiúsculas e minúsculas</a>.</li>
+  <li>Confira a edição com <a href="/tools/text-diff/">Comparar textos</a>.</li>
+  <li>Remova linhas repetidas com <a href="/tools/remove-duplicate-lines/">Remover linhas duplicadas</a>.</li>
+</ul>

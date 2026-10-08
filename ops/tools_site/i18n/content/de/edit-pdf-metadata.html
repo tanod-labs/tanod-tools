@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "PDF-Metadaten bearbeiten oder entfernen – kostenlos | Tanod Tools",
+  "description": "Titel, Autor, Betreff, Stichwörter und Datum eines PDFs ansehen und ändern oder alle Metadaten vor dem Teilen entfernen. Läuft im Browser, kein Upload.",
+  "h1": "PDF-Metadaten bearbeiten",
+  "lede": "Sehen Sie, was ein PDF über sich selbst verrät, ändern Sie die Felder oder entfernen Sie alle, bevor Sie es teilen.",
+  "blurb": "Titel, Autor und andere Eigenschaften eines PDFs bearbeiten oder entfernen.",
+  "keywords": "pdf metadaten bearbeiten ändern aendern entfernen löschen loeschen pdf eigenschaften titel autor ersteller xmp dokumentinformationen",
+  "limits": "Ein PDF auf einmal, bis 200 MB. Passwortgeschützte PDFs können nicht bearbeitet werden.",
+  "howto_title": "So bearbeiten Sie PDF-Metadaten",
+  "howto": [
+    "Wählen Sie eine PDF-Datei aus oder ziehen Sie sie auf die Seite. Ihre aktuellen Eigenschaften erscheinen im Formular.",
+    "Ändern Sie die gewünschten Felder oder klicken Sie auf <strong>Alle Metadaten entfernen</strong>, um sie zu leeren.",
+    "Klicken Sie auf <strong>Änderungen speichern</strong> und laden Sie das aktualisierte PDF herunter."
+  ],
+  "faq": [
+    ["Wird mein PDF hochgeladen?", "Nein. Die Eigenschaften werden in Ihrem Browser mit der Open-Source-Bibliothek pdf-lib gelesen und neu geschrieben. Nichts wird an einen Server gesendet."],
+    ["Was bewirkt „Alle Metadaten entfernen“?", "Es löscht jeden Eintrag im Dokumentinformations-Wörterbuch (Titel, Autor, Betreff, Stichwörter, Ersteller, Produzent und die Datumsangaben) und entfernt den eingebetteten XMP-Metadatenstrom des Dokuments, den viele Programme als zweite Kopie derselben Informationen schreiben. Der Seiteninhalt wird nicht angetastet, sodass Text, Bilder und sichtbare Namen auf den Seiten bleiben. Manche Dateien enthalten weitere private Daten, etwa Kommentare oder Formularwerte, die dieses Tool nicht ändert."],
+    ["Hat die gespeicherte Datei denselben Namen?", "Ja. Der Download verwendet den ursprünglichen Namen, etwa report.pdf, achten Sie also darauf, dass Sie die neue Kopie öffnen. Ihre Originaldatei wird nicht verändert."],
+    ["Warum ist die XMP-Option angehakt, wenn ich Felder bearbeite?", "Viele Viewer und Suchprogramme lesen zuerst den XMP-Strom. Bleibt er in der Datei, zeigt er womöglich weiter den alten Titel oder Autor an, und die Änderung scheint wirkungslos. Mit dem Häkchen wird dieser Strom beim Speichern entfernt."],
+    ["Ändert das Speichern andere Eigenschaften?", "Nur die Felder, die Sie bearbeiten, werden geändert. Das Tool fügt keinen eigenen Produzentennamen und kein Änderungsdatum hinzu, es sei denn, Sie tragen sie selbst ein."],
+    ["Kann ich die Datumsangaben bearbeiten?", "Ja. Entfernen Sie das Häkchen bei <em>Ursprüngliche Datumsangaben behalten</em> und tragen Sie neue Werte in Ihrer Ortszeit ein. Bleibt das Häkchen gesetzt, bleiben die Datumsangaben, wie sie sind."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <dl class="stats" id="stats">
+    <div><dt>Seiten</dt><dd id="s-pages"></dd></div>
+    <div><dt>PDF-Version</dt><dd id="s-ver"></dd></div>
+    <div><dt>XMP-Strom</dt><dd id="s-xmp"></dd></div>
+  </dl>
+  <div class="opts">
+    <div class="field"><label for="m-title">Titel</label><input id="m-title" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-author">Autor</label><input id="m-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-subject">Betreff</label><input id="m-subject" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-keywords">Stichwörter</label><input id="m-keywords" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-creator">Ersteller (Programm, das es erstellt hat)</label><input id="m-creator" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-producer">Produzent (Programm, das es gespeichert hat)</label><input id="m-producer" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-created">Erstellt</label><input id="m-created" type="datetime-local" step="1"></div>
+    <div class="field"><label for="m-modified">Geändert</label><input id="m-modified" type="datetime-local" step="1"></div>
+    <div class="field opts__full">
+      <label class="check"><input type="checkbox" id="keep-dates" checked> Ursprüngliche Datumsangaben behalten</label>
+      <label class="check"><input type="checkbox" id="drop-xmp"> Auch den eingebetteten XMP-Metadatenstrom entfernen</label>
+      <span class="help" id="xmp-help"></span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Änderungen speichern</button>
+    <button class="btn" id="wipe" type="button">Alle Metadaten entfernen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <p class="help">Der Download behält den ursprünglichen Dateinamen. Leere Felder werden aus der Datei entfernt.</p>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Was PDF-Metadaten sind und warum Sie sie ändern sollten</h2>
+<p>Jedes PDF kann einige beschreibende Felder enthalten: einen Titel, einen Autor, einen Betreff, Stichwörter, das Programm, mit dem es erstellt wurde, und die Daten der Erstellung und der letzten Änderung. Sie stehen im Dokumentinformations-Wörterbuch, und viele Programme schreiben zusätzlich eine zweite Kopie als XMP-Paket, einen an die Datei angehängten XML-Block.</p>
+<p>Diese Felder erscheinen in den Dateieigenschaften, in Suchergebnissen und in Browser-Tabs. Ein falscher Titel oder ein vergessener Autorenname kann daher unangenehm sein, wenn ein Dokument Ihre Hände verlässt. Dieses Tool liest sie in Ihrem Browser, lässt Sie sie korrigieren oder leert sie. Der Seiteninhalt wird nie verändert.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie möchten stattdessen Metadaten aus Fotos entfernen? Nutzen Sie <a href="/tools/remove-exif/">EXIF-Daten entfernen</a>.</li>
+  <li>Sie kombinieren Dateien? <a href="/tools/merge-pdf/">PDF zusammenfügen</a> erstellt ein neues Dokument, setzen Sie den Titel also anschließend hier.</li>
+</ul>

@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Gerador de hash: MD5, SHA-1, SHA-256, SHA-512 | Tanod Tools",
+  "description": "Gere o hash MD5, SHA-1, SHA-256, SHA-384 e SHA-512 de texto ou arquivo, em hex ou Base64, e confira o checksum. Grátis, roda no seu navegador.",
+  "h1": "Gerador de hash",
+  "lede": "Calcule os hashes MD5, SHA-1, SHA-256, SHA-384 e SHA-512 de um texto ou arquivo e confira um download com o checksum publicado.",
+  "blurb": "Checksums MD5 e SHA de texto ou arquivos.",
+  "keywords": "gerador de hash md5 sha1 sha256 sha384 sha512 sha-2 checksum soma de verificacao hash de arquivo digest verificar integridade",
+  "limits": "Texto de até cerca de 5 MB. Arquivos de até 200 MB, lidos na memória deste dispositivo.",
+  "howto_title": "Como gerar um hash",
+  "howto": [
+    "Digite ou cole um texto, ou mude para Arquivo e escolha um arquivo. Os cinco hashes são calculados na hora.",
+    "Escolha hex minúsculo, HEX maiúsculo ou Base64 para a saída.",
+    "Para conferir um download, cole o checksum publicado em <strong>Comparar</strong>; o algoritmo correspondente fica destacado. Copie um hash ou baixe todos como arquivo .txt."
+  ],
+  "faq": [
+    ["Meu texto ou arquivo é enviado?", "Não. Os hashes são calculados no seu navegador: os SHA pelas funções Web Crypto nativas dele e o MD5 por código desta página. Nada é enviado ou armazenado, e fechar a aba apaga tudo."],
+    ["MD5 ou SHA-1 são seguros?", "Não para segurança. Os dois estão quebrados: é possível criar de propósito duas entradas diferentes com o mesmo hash MD5 ou SHA-1. Eles ainda servem para detectar corrupção acidental, como conferir se um download chegou inteiro. Para qualquer caso em que alguém possa adulterar os dados, ou para assinaturas, use SHA-256 ou algo mais forte."],
+    ["Posso usar isto para gerar hash de senhas?", "Você pode ver o hash de uma senha, mas um hash simples é a forma errada de armazenar senhas: hashes rápidos como estes podem ser testados bilhões de vezes por segundo. O armazenamento de senhas precisa de um algoritmo lento e com salt, como Argon2, scrypt ou bcrypt, executado pelo seu servidor."],
+    ["Hash é a mesma coisa que criptografia?", "Não. A criptografia pode ser revertida com a chave. Um hash é uma impressão digital de tamanho fixo que não pode ser transformada de volta na entrada; o único jeito de descobrir uma entrada é chutar e comparar. A mesma entrada sempre gera o mesmo hash, e uma mudança de um caractere gera um completamente diferente."],
+    ["Por que meu hash não bate com o da linha de comando?", "Verifique se há uma quebra de linha no final: <code>echo \"text\" | sha256sum</code> calcula o hash do texto mais uma nova linha, enquanto esta caixa calcula o hash exatamente do que você digitou. O texto é processado como UTF-8 e as quebras de linha na caixa são caracteres LF simples, então um texto copiado de um arquivo do Windows (CRLF) pode dar diferente. Para um resultado exato, gere o hash do próprio arquivo no modo Arquivo."],
+    ["O que significam hex e Base64 aqui?", "São duas formas de escrever os mesmos bytes do hash. O hex usa dois caracteres por byte (um SHA-256 tem 64 caracteres hex); o Base64 é mais curto (44 caracteres) e é usado em lugares como os atributos de Subresource Integrity. A caixa Comparar aceita os dois."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Hash</legend>
+  <div class="seg" role="radiogroup" aria-label="Entrada">
+    <label><input type="radio" name="mode" value="text" checked>Texto</label>
+    <label><input type="radio" name="mode" value="file">Arquivo</label>
+  </div>
+</fieldset>
+
+<div id="h-textpanel" class="field">
+  <label for="h-in">Texto</label>
+  <textarea id="h-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Digite ou cole o texto para gerar o hash"></textarea>
+  <span class="help" id="h-tinfo"></span>
+</div>
+
+<div id="h-filepanel" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Solte um arquivo aqui para gerar o hash</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Escolher arquivo</span></label>
+    <p class="drop__hint">Qualquer tipo, até 200 MB. O arquivo é lido neste dispositivo e não é enviado.</p>
+  </div>
+</div>
+
+<div class="opts">
+  <div class="field">
+    <span class="label" id="h-fmt-l">Saída</span>
+    <div class="seg" role="radiogroup" aria-labelledby="h-fmt-l">
+      <label><input type="radio" name="fmt" value="hex" checked>hex</label>
+      <label><input type="radio" name="fmt" value="HEX">HEX</label>
+      <label><input type="radio" name="fmt" value="b64">Base64</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="h-expect">Comparar com um hash esperado</label>
+    <input type="text" id="h-expect" class="mono" autocomplete="off" spellcheck="false" placeholder="Cole um checksum para conferir">
+  </div>
+</div>
+<p class="dv-verdict" id="h-verdict" role="status" hidden></p>
+<div class="status" id="status" role="status" hidden></div>
+<div id="h-result" hidden>
+  <p class="help" id="h-info"></p>
+  <dl class="dv-rows" id="h-rows"></dl>
+  <div class="actions">
+    <button class="btn btn--primary" id="h-copyall" type="button">{{mark:i-copy}}Copiar tudo</button>
+    <button class="btn" id="h-dl" type="button">{{mark:i-download}}Baixar .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="h-clear" type="button">Limpar</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Para que serve um hash</h2>
+<p>Um gerador de hash transforma qualquer entrada, de uma letra a um arquivo grande, em uma impressão digital curta e de tamanho fixo, usando um hash criptográfico como MD5 ou SHA-256. A mesma entrada sempre gera a mesma impressão digital, e mudar um único bit gera uma completamente diferente. Isso torna os hashes úteis para conferir se um arquivo chegou sem alterações, para encontrar arquivos duplicados e como peças básicas de assinaturas e controle de versão.</p>
+<p>Para conferir um download, encontre o checksum que o distribuidor publica ao lado dele (geralmente SHA-256), solte o arquivo aqui e cole o checksum em Comparar. Se bater, o arquivo é, byte a byte, o mesmo que o distribuidor processou. Uma correspondência só prova que o arquivo é o que ele pretendia se você confia na página de onde veio o checksum.</p>
+<p>Os hashes SHA-1 e SHA-2 (SHA-256, SHA-384, SHA-512) são calculados pelas funções Web Crypto do seu navegador. Os navegadores não oferecem MD5, então esta página inclui o próprio código de MD5, que lê os arquivos em partes e mostra o progresso nos grandes. MD5 e SHA-1 existem aqui só por compatibilidade com checksums antigos.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Precisa do conteúdo do arquivo como texto em vez de uma impressão digital? Use <a href="/tools/base64-encode-decode/">Codificar e decodificar Base64</a>.</li>
+  <li>Para criar um segredo aleatório forte em vez de calcular o hash de um, use o <a href="/tools/password-generator/">Gerador de senhas</a>.</li>
+  <li>Comparar dois textos linha por linha é mais fácil com <a href="/tools/text-diff/">Comparar textos</a> do que com dois hashes.</li>
+</ul>

@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Analizador de user agent: navegador, SO y equipo | Tanod Tools",
+  "description": "Mira qué dice el user agent de tu navegador o pega cualquier cadena: navegador, motor, SO, dispositivo y CPU, más Client Hints y por qué Chrome oculta datos.",
+  "h1": "Analizador de user agent",
+  "lede": "Separa una cadena de user agent en navegador, motor, sistema operativo, dispositivo y CPU, empezando por la de tu propio navegador.",
+  "blurb": "Analiza cualquier user agent y ve el tuyo con Client Hints.",
+  "keywords": "analizador user agent cual es mi user agent cuál es mi user agent agente de usuario ua string detectar navegador client hints useragent decodificador navigator.userAgent googlebot curl",
+  "limits": "El análisis usa ua-parser-js 1.0.41 (MIT) y se basa en patrones, así que las cadenas inusuales o falsificadas pueden interpretarse mal. Los Client Hints se muestran solo para el navegador que estás usando ahora, y solo si ese navegador los admite (los navegadores Chromium sí; Firefox y Safari no).",
+  "howto_title": "Cómo leer una cadena de user agent",
+  "howto": [
+    "El user agent de tu navegador se analiza en cuanto carga la página. Para revisar otro, pégalo en el cuadro, por ejemplo desde un log del servidor.",
+    "Lee las filas de navegador, motor, sistema operativo, dispositivo y CPU. Tómalas como lo que afirma la cadena, no como hechos comprobados.",
+    "Para tu propio navegador, compara el resultado con la sección de Client Hints, que puede mostrar datos que la cadena recortada omite."
+  ],
+  "faq": [
+    ["¿Qué es una cadena de user agent?", "Es una línea de texto que un navegador o programa envía con cada solicitud web para decir qué es. Por décadas de trucos de compatibilidad, casi todos los navegadores empiezan con <code>Mozilla/5.0</code> y mencionan varios otros navegadores, así que para leerla hace falta buscar patrones y no simplemente dividirla."],
+    ["¿Por qué Windows 11 aparece como Windows 10?", "Chrome y los demás navegadores Chromium congelan la parte de la plataforma en la cadena en \"Windows NT 10.0\", sea cual sea la versión real de Windows. Solo los Client Hints permiten distinguirlas: una versión de plataforma de 13 o más significa Windows 11. Esta página muestra ese valor para tu propio navegador cuando está disponible."],
+    ["¿Por qué mi iPad dice que es una Mac?", "Desde iPadOS 13, Safari pide por defecto los sitios web de escritorio y envía un user agent de Macintosh. La cadena por sí sola no puede distinguir una Mac de un iPad, aunque una página puede comprobar si hay pantalla táctil. Lo mismo pasa con macOS: la versión está congelada en 10_15_7 en la cadena."],
+    ["¿Qué es la reducción del User-Agent?", "Chrome ha ido quitando detalles de la cadena para reducir el rastreo pasivo: la versión menor aparece como 0.0.0, el modelo del dispositivo Android aparece como una sola letra K y la versión del sistema operativo es fija. Los sitios que necesitan esos datos tienen que pedirlos con Client Hints."],
+    ["¿Qué son los Client Hints?", "Son encabezados estructurados y una API de JavaScript (<code>navigator.userAgentData</code>) que permiten a una página pedir datos concretos, como la arquitectura o la versión completa del navegador, en lugar de leerlos de la cadena. Hoy solo los admiten los navegadores basados en Chromium."],
+    ["¿Puedo fiarme de un user agent para decisiones de seguridad?", "No. Cualquiera puede enviar cualquier cadena, y los bots a menudo se hacen pasar por Chrome. Sirve para estadísticas y para elegir un diseño, pero no para el control de acceso. Para verificar Googlebot, un sitio comprueba la dirección IP del visitante con una búsqueda DNS inversa."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">Cadena de user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Usar el de mi navegador</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Copiar resultado</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="User agent analizado"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints de tu navegador</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Lo que un user agent te dice y lo que oculta</h2>
+<p>El user agent (agente de usuario) nació como una forma de que el servidor viera qué navegador hacía la solicitud, para enviarle una página que funcionara en él. Luego los navegadores copiaron los nombres de los otros para recibir las buenas páginas, y por eso una cadena de Chrome hoy dice también Mozilla, AppleWebKit, KHTML, Gecko y Safari. Un analizador de user agent resuelve esto probando patrones en un orden cuidadoso y eligiendo la coincidencia más específica.</p>
+<p>Además, la cadena se está recortando a propósito. La reducción del User-Agent de Chrome fija la versión de Windows en NT 10.0, la de macOS en 10_15_7, el modelo de Android en K y el número de compilación en 0.0.0, para que la cadena deje de ser una buena huella digital. Los datos no han desaparecido: una página que los pide mediante Client Hints obtiene la versión de la plataforma, la arquitectura, el modelo y la versión completa del navegador, y el navegador del visitante decide si responde.</p>
+<p>Usa la cadena para decisiones generales y para logs, no para dar confianza. Los rastreadores y las herramientas de línea de comandos como curl envían sus propias cadenas cortas, y cualquier cosa se puede falsificar. Si persigues un error de diseño, detectar funciones en la página es más fiable que leer el nombre del navegador.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Un log del servidor lleno de respuestas 403 o 429 para un mismo cliente? Busca los códigos en <a href="/tools/http-status-codes/">Códigos de estado HTTP</a>.</li>
+  <li>Los user agents en URL o cadenas de consulta suelen estar codificados por porcentaje; decodifícalos con <a href="/tools/url-encode-decode/">Codificar y decodificar URL</a>.</li>
+  <li>Los encabezados copiados de una solicitud a veces llevan valores en Base64; léelos con <a href="/tools/base64-encode-decode/">Codificar y decodificar Base64</a>.</li>
+</ul>

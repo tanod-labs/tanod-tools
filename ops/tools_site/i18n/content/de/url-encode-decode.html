@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "URL kodieren und dekodieren online, mit URL-Parser | Tanod Tools",
+  "description": "URL-Encoding online: Text für URLs prozentkodieren oder dekodieren, als Komponente, ganze URL oder Formulardaten, UTF-8-sicher. Mit URL-Zerlegung.",
+  "h1": "URL kodieren und dekodieren",
+  "lede": "Prozentkodieren Sie Text für eine URL oder dekodieren Sie ihn zurück, und zerlegen Sie jede URL in ihre Bestandteile und Query-Parameter.",
+  "blurb": "URLs prozentkodieren, dekodieren und zerlegen.",
+  "keywords": "url encode decode urlencode urldecode url kodieren dekodieren enkodieren prozentkodierung percent encoding encodeuricomponent query string parameter uri escape maskieren",
+  "limits": "Text bis etwa 5 MB. Die Ergebnisse werden während der Eingabe aktualisiert.",
+  "howto_title": "So kodieren oder dekodieren Sie eine URL",
+  "howto": [
+    "Wählen Sie Kodieren oder Dekodieren und legen Sie dann fest, was der Text ist: ein einzelner Wert (Komponente), eine ganze URL oder Formulardaten.",
+    "Tippen oder fügen Sie Ihren Text ein. Das Ergebnis erscheint während der Eingabe darunter; eine fehlerhafte Escape-Sequenz wird mit ihrer Position gemeldet.",
+    "Kopieren Sie das Ergebnis, oder fügen Sie weiter unten eine vollständige URL in den Parser ein, um Host, Pfad und Query-Parameter zu sehen."
+  ],
+  "faq": [
+    ["Was ist der Unterschied zwischen Komponenten- und URL-Kodierung?", "Die Komponenten-Kodierung (<code>encodeURIComponent</code> in JavaScript) maskiert alles außer Buchstaben, Ziffern und <code>- _ . ! ~ * ' ( )</code>, sodass Zeichen wie <code>/ ? &amp; =</code> zu <code>%2F %3F %26 %3D</code> werden. Verwenden Sie sie für einen einzelnen Query-Wert oder ein Pfadsegment. Die Kodierung einer ganzen URL (<code>encodeURI</code>) lässt die Zeichen, die einer URL ihre Struktur geben, unverändert und maskiert nur Leerzeichen, Nicht-ASCII-Buchstaben und einige wenige andere, sodass eine vollständige Adresse benutzbar bleibt."],
+    ["Wann verwende ich die Formular-Kodierung?", "Die Formular-Kodierung (<code>application/x-www-form-urlencoded</code>) ist das, was ein HTML-Formular sendet und was die meisten Query-Strings verwenden. Sie schreibt ein Leerzeichen als <code>+</code> und maskiert alles außer Buchstaben, Ziffern und <code>* - . _</code>. Beim Dekodieren in diesem Modus wird ein <code>+</code> als Leerzeichen gelesen; in den anderen Modi bleibt es ein Pluszeichen."],
+    ["Wie werden Umlaute und Emojis kodiert?", "Als UTF-8-Bytes, jedes geschrieben als <code>%</code> plus zwei Hexadezimalziffern, so wie Browser und Server es erwarten. Aus é wird zum Beispiel <code>%C3%A9</code>, aus ü <code>%C3%BC</code>. Beim Dekodieren wird geprüft, ob die Bytes gültiges UTF-8 ergeben, und Sie erfahren es, wenn nicht."],
+    ["Warum meldet das Dekodieren einen Fehler?", "Auf jedes Prozentzeichen müssen zwei Hexadezimalziffern (0–9, A–F) folgen. Ein einzelnes <code>%</code>, eine abgeschnittene Sequenz wie <code>%A</code> oder Bytes, die kein gültiges UTF-8 sind, werden mit ihrer Position gemeldet, damit Sie sie finden. Enthält der Text ein echtes Prozentzeichen, sollte es als <code>%25</code> geschrieben sein."],
+    ["Ruft der URL-Parser die Adresse auf?", "Nein. Er zerlegt den Text mit dem im Browser eingebauten URL-Parser in seine Teile; nichts wird abgerufen und nichts wird irgendwohin gesendet. Der eingegebene Text bleibt in diesem Tab."],
+    ["Sollte ich eine ganze URL mehrfach kodieren?", "Nein. Wird bereits kodierter Text erneut kodiert, wird aus <code>%20</code> ein <code>%2520</code>, ein häufiger Fehler. Sehen Sie in einem Ergebnis <code>%25</code> gefolgt von zwei Hexadezimalziffern, war die Eingabe vermutlich schon kodiert; dekodieren Sie sie zuerst."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Richtung</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Kodieren</label>
+        <label><input type="radio" name="dir" value="decode">Dekodieren</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">Der Text ist</label>
+      <select id="u-kind">
+        <option value="component" selected>Ein einzelner Wert (Komponente)</option>
+        <option value="uri">Eine ganze URL</option>
+        <option value="form">Formulardaten (Leerzeichen als +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Eingabe</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Hier tippen oder einfügen, z. B. Grüße aus Köln &amp; Bonn"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Ergebnis</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Kopieren</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Ergebnis als Eingabe</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Leeren</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">URL in Bestandteile zerlegen</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Query-Parameter</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Wert (dekodiert)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Was URL-Encoding macht</h2>
+<p>Eine URL darf nur eine begrenzte Menge von ASCII-Zeichen enthalten, und einige davon haben eine Aufgabe: <code>/</code> trennt Pfadsegmente, <code>?</code> leitet die Query ein, <code>&amp;</code> und <code>=</code> teilen sie in Namen und Werte, <code>#</code> leitet das Fragment ein. Die Prozentkodierung (URL-Encoding) schreibt jedes andere Byte als <code>%</code> gefolgt von zwei Hexadezimalziffern. So kann ein Wert wie <code>R&amp;D / 2026</code> in einem Query-String stehen, ohne für Struktur gehalten zu werden: <code>R%26D%20%2F%202026</code>.</p>
+<p>Text wird zunächst in UTF-8-Bytes umgewandelt, deshalb wird ein einzelner Umlaut zu zwei Escape-Sequenzen und ein Emoji zu vier. Beim Dekodieren läuft der Vorgang rückwärts, und es wird geprüft, ob die Bytes gültiges UTF-8 ergeben. Dieses Tool dekodiert mit einem eigenen, strengen Leser: Statt einer allgemeinen Fehlermeldung wie „URI malformed“ sagt es Ihnen, welche Sequenz fehlerhaft ist und wo.</p>
+<p>Die drei Modi passen zu den drei üblichen Situationen. Kodieren Sie einen einzelnen Wert (Komponente), wenn Sie einen Query-Parameter oder ein Pfadsegment zusammenbauen. Kodieren Sie eine ganze URL nur, wenn Sie eine vollständige Adresse mit Leerzeichen oder Nicht-ASCII-Buchstaben haben. Formulardaten verwenden Sie für den Body eines Formular-POSTs oder einen Query-String, der so aufgebaut ist, wie HTML-Formulare ihn bauen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie möchten statt Escape-Sequenzen einen sauberen, lesbaren Pfad? Erstellen Sie ihn mit dem <a href="/tools/text-to-slug/">Slug-Generator</a>.</li>
+  <li>Binärdaten in einer URL sind meist Base64url, keine Prozentkodierung: Versuchen Sie <a href="/tools/base64-encode-decode/">Base64 kodieren und dekodieren</a>.</li>
+  <li>Ein Token in einem Query-String, das mit <code>eyJ</code> beginnt, ist vermutlich ein JWT. Lesen Sie es mit dem <a href="/tools/jwt-decoder/">JWT-Decoder</a>.</li>
+</ul>

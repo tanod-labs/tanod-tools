@@ -1,0 +1,106 @@
+<!--meta
+{
+  "title": "Fusionner des images côte à côte ou en grille | Tanod Tools",
+  "description": "Assemblez 2 à 20 photos en une seule image : côte à côte, empilées ou en grille, avec espacement, alignement et couleur de fond. Rien n'est envoyé.",
+  "h1": "Fusionner des images",
+  "lede": "Assemblez plusieurs images en une seule : en ligne, en colonne ou en grille, avec l'espacement et le fond de votre choix.",
+  "blurb": "Assemblez des images en ligne, colonne ou grille.",
+  "keywords": "fusionner assembler combiner joindre coller images photos cote a cote empiler verticalement horizontalement grille collage montage photo planche sprite",
+  "limits": "2 à 20 images par fusion, 50 Mo chacune. L'image fusionnée peut atteindre 100 mégapixels et 32 767 pixels par côté. Sortie en PNG, JPEG ou WebP.",
+  "howto_title": "Comment fusionner des images",
+  "howto": [
+    "Choisissez deux images ou plus, ou glissez-les sur la page. Utilisez les boutons haut et bas de la liste pour définir leur ordre.",
+    "Choisissez <strong>Côte à côte</strong>, <strong>Empilées</strong> ou <strong>Grille</strong>, puis réglez l'espacement, l'alignement, le fond et l'éventuelle mise à l'échelle des images.",
+    "Vérifiez l'aperçu, choisissez PNG, JPEG ou WebP, puis cliquez sur <strong>Fusionner les images</strong>."
+  ],
+  "faq": [
+    ["Mes images sont-elles envoyées en ligne ?", "Non. Les images sont décodées et dessinées sur un même canvas dans votre navigateur. Rien n'est envoyé à un serveur."],
+    ["Que se passe-t-il si les images n'ont pas la même taille ?", "Par défaut, chacune garde sa taille et les plus petites sont placées au début, au centre ou à la fin de la ligne ou de la colonne, selon votre choix, la couleur de fond remplissant l'espace vide. Pour les aligner, réglez « Uniformiser les tailles » afin de les mettre à l'échelle de la plus petite ou de la plus grande image de l'ensemble."],
+    ["Comment fonctionne Uniformiser les tailles selon la disposition ?", "Côte à côte donne la même hauteur à toutes les images, en conservant leurs proportions. Empilées leur donne la même largeur. En grille, chaque image est ajustée dans une cellule de même taille, sans recadrage : les formes sont conservées et l'espace restant prend la couleur de fond."],
+    ["Le fond peut-il être transparent ?", "Oui, en PNG et en WebP. Les espaces et les zones vides restent transparents. Le JPEG ne peut pas stocker de transparence : quand il est sélectionné, ces zones sont remplies avec la couleur de fond."],
+    ["Pourquoi ma fusion a-t-elle été refusée car trop grande ?", "La fusion additionne les tailles des images, et une rangée de plusieurs grandes photos devient très vite très large. Le résultat est limité à 100 mégapixels et à 32 767 pixels de chaque côté pour que votre navigateur puisse le construire. Mettez à l'échelle de la plus petite image, utilisez une grille ou retirez quelques images."],
+    ["L'ordre de la liste a-t-il de l'importance ?", "Oui. La première image se place en haut à gauche dans toutes les dispositions, et une grille remplit chaque ligne avant de passer à la suivante. Les boutons haut et bas modifient l'ordre et l'aperçu se met à jour immédiatement."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez deux images ou plus ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choisir des images</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-les n'importe où sur cette page.</p>
+</div>
+<ol class="files mrg-list" id="files" aria-label="Images à fusionner, dans l'ordre" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts mrg-opts">
+    <fieldset class="field">
+      <legend>Disposition</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="row" checked>Côte à côte</label>
+        <label><input type="radio" name="layout" value="column">Empilées</label>
+        <label><input type="radio" name="layout" value="grid">Grille</label>
+      </div>
+    </fieldset>
+    <div class="field" id="cols-field" hidden>
+      <label for="cols">Colonnes</label>
+      <input type="number" id="cols" min="1" max="20" step="1" value="2" inputmode="numeric">
+    </div>
+    <fieldset class="field">
+      <legend>Alignement</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="start">Début</label>
+        <label><input type="radio" name="align" value="center" checked>Centre</label>
+        <label><input type="radio" name="align" value="end">Fin</label>
+      </div>
+      <p class="help" id="align-help"></p>
+    </fieldset>
+    <div class="field">
+      <label for="scale">Uniformiser les tailles</label>
+      <select id="scale">
+        <option value="none" selected>Garder les tailles d'origine</option>
+        <option value="min">Ajuster à la plus petite</option>
+        <option value="max">Ajuster à la plus grande</option>
+      </select>
+      <p class="help" id="scale-help"></p>
+    </div>
+    <div class="field">
+      <label for="gap">Espacement (px)</label>
+      <input type="number" id="gap" min="0" max="10000" step="1" value="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="bg">Couleur de fond</label>
+      <input type="color" id="bg" value="#ffffff">
+      <label class="check"><input type="checkbox" id="transparent">Transparent (PNG et WebP)</label>
+    </div>
+    <fieldset class="field">
+      <legend>Format de sortie</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="png" checked>PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help" id="fmt-help">Le PNG conserve chaque pixel et toute transparence.</p>
+    </fieldset>
+  </div>
+  <p class="help">Aperçu réduit pour tenir dans la page. Le fichier enregistré est produit en taille réelle.</p>
+  <div class="preview mrg-preview"><canvas id="preview" role="img" aria-label="Aperçu de l'image fusionnée"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Fusionner les images</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tout effacer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Comment des images de tailles différentes sont assemblées</h2>
+<p>Pour fusionner des images en ligne, la hauteur d'une rangée est celle de sa plus haute image, et la largeur d'une colonne celle de sa plus large. Toute image plus petite laisse un espace libre, et le réglage d'alignement décide où elle s'y place : au début, au centre ou à la fin. Cet espace libre est rempli avec votre couleur de fond, ou laissé transparent en PNG et en WebP.</p>
+<p>La mise à l'échelle est l'autre façon de gérer des tailles différentes. Ajuster à la plus petite image n'agrandit jamais rien, donc rien ne devient flou, mais les grandes photos perdent du détail. Ajuster à la plus grande garde les grandes images nettes et étire les petites. En grille, le même principe s'applique à une forme de cellule unique dans laquelle chaque image est ajustée.</p>
+<p>Les largeurs et les hauteurs s'additionnent vite. Cinq photos de 4000 pixels de large côte à côte donnent une image de 20 000 pixels de large, ce qui peut dépasser ce qu'un navigateur sait gérer : la page vous arrête donc et vous indique la taille avant que vous cliquiez sur le bouton.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Pour un collage à imprimer ou à partager, ajoutez ensuite un cadre avec <a href="/tools/add-border-to-image/">Ajouter une bordure à une image</a>.</li>
+  <li>Si le fichier fusionné est trop lourd à envoyer, <a href="/tools/compress-image/">Compresser une image</a> ou <a href="/tools/resize-image/">Redimensionner une image</a> l'allégera.</li>
+  <li>Vous préférez mettre les images dans un document ? <a href="/tools/jpg-to-pdf/">JPG en PDF</a> place chacune sur sa propre page.</li>
+</ul>

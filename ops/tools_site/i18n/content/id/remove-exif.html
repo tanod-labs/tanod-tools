@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "Hapus data EXIF dari foto, termasuk GPS | Tanod Tools",
+  "description": "Lihat apa yang terungkap dari foto (lokasi GPS, kamera, tanggal), lalu hapus EXIF, XMP, dan IPTC tanpa kompresi ulang. Berjalan di browser; tanpa unggah.",
+  "h1": "Hapus data EXIF dari foto",
+  "lede": "Lihat lokasi, kamera, dan tanggal yang tersembunyi di dalam foto, lalu hapus tanpa mengubah gambarnya sama sekali.",
+  "blurb": "Hapus GPS, info kamera, dan metadata lain dari foto.",
+  "keywords": "hapus exif hapus metadata foto hilangkan lokasi gps privasi exif remover xmp iptc bersihkan data foto info kamera",
+  "limits": "Hingga 50 gambar per batch, masing-masing maksimal 50 MB. JPEG, PNG, dan WebP dibersihkan tanpa dikodekan ulang; GIF, BMP, dan AVIF digambar ulang dan disimpan sebagai PNG.",
+  "howto_title": "Cara menghapus data EXIF dari foto",
+  "howto": [
+    "Pilih foto Anda, atau seret ke halaman ini. Setiap foto menampilkan daftar isinya, dengan lokasi GPS yang ditandai jika ada.",
+    "Biarkan \"Pertahankan orientasi\" aktif agar foto yang bergantung padanya tidak tampil miring ke samping, atau nonaktifkan untuk menghapus semuanya.",
+    "Tekan <strong>Hapus metadata</strong>, lalu unduh salinan yang sudah bersih atau .zip. Nama file diberi akhiran \"-clean\"."
+  ],
+  "faq": [
+    ["Apakah foto saya diunggah?", "Tidak. File dibaca dan ditulis ulang di browser Anda, dan tidak ada yang dikirim ke server. Anda bisa memeriksa daftar isi setiap foto sebelum apa pun diubah."],
+    ["Apakah JPEG saya dikompresi ulang?", "Tidak. Untuk JPEG, PNG, dan WebP, alat ini menulis ulang wadah file dan membuang blok-blok metadata. Data gambarnya disalin byte demi byte, jadi tidak ada penurunan kualitas dan pikselnya tetap identik."],
+    ["Apa saja yang dihapus?", "JPEG: EXIF dan XMP (APP1), IPTC (APP13), komentar, serta blok aplikasi selain header JFIF, profil warna, dan penanda warna Adobe. PNG: potongan teks (tEXt, zTXt, iTXt, yang bisa berisi XMP), EXIF, dan waktu modifikasi. WebP: potongan EXIF dan XMP. Data yang ditempelkan setelah akhir gambar JPEG atau PNG juga dibuang."],
+    ["Apa itu \"Pertahankan orientasi\"?", "Banyak kamera menyimpan foto dalam posisi miring ke samping lalu menambahkan tag orientasi yang memberi tahu penampil untuk memutarnya. Jika tag itu dihapus, foto bisa tampil miring. Dengan opsi ini aktif (bawaan), blok EXIF kecil yang hanya berisi angka orientasi ditulis kembali jika foto aslinya tidak tegak. Blok itu tidak berisi lokasi atau detail kamera. Nonaktifkan opsi ini untuk menghapusnya juga."],
+    ["Apakah profil warnanya dihapus?", "Tidak. Profil warna ICC yang tertanam tetap dipertahankan karena menghapusnya bisa mengubah tampilan warna. Profil itu menjelaskan cara menangani warna, bukan di mana atau bagaimana foto diambil."],
+    ["Seberapa andal daftar temuan tersebut?", "Alat ini membaca kolom EXIF standar (kamera, lensa, tanggal, perangkat lunak, GPS, orientasi) dan menghitung sisanya. Produsen kamera menambahkan data pribadi dalam format mereka sendiri, yang dihitung tetapi tidak dijelaskan. File yang sudah dibersihkan diperiksa setelah ditulis untuk memastikan tidak ada lagi lokasi EXIF, info kamera, XMP, atau metadata teks yang tersisa."],
+    ["Apa yang terjadi pada file GIF, BMP, atau AVIF?", "Alat ini tidak mengedit wadah file tersebut. Gambarnya digambar ulang dan disimpan sebagai PNG, yang tidak memuat metadata. GIF menjadi frame pertamanya saja."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Letakkan foto di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Pilih foto</span></label>
+  <p class="drop__hint">JPEG, PNG, atau WebP (juga GIF, BMP, AVIF). Atau seret ke mana saja di halaman ini.</p>
+</div>
+<ol class="files" id="files" aria-label="Foto yang akan dibersihkan" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Pertahankan orientasi agar foto tidak tampil miring</label>
+      <p class="help">Menulis kembali blok EXIF kecil yang hanya berisi angka orientasi, dan hanya jika foto belum dalam posisi tegak.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Hapus metadata</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Hapus semua</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Apa saja yang bisa terungkap dari sebuah foto</h2>
+<p>Sebelum membagikan foto, sebaiknya hapus data EXIF-nya. Sebagian besar kamera dan ponsel menulis informasi tambahan ke setiap foto: merek dan model, waktu pengambilan, perangkat lunak yang mengeditnya, dan, jika lokasi aktif, koordinat GPS tempat Anda berdiri. Blok itu disebut EXIF. Program pengedit menambahkan blok XMP dan IPTC berisi keterangan, nama pembuat, dan kata kunci. Banyak situs menghapus data ini saat Anda mengunggah, tetapi tidak semuanya, dan file yang dikirim lewat email atau chat biasanya tetap menyimpan semuanya.</p>
+<p>Alat ini pertama-tama menampilkan isi setiap foto, lalu menghapusnya dengan menulis ulang wadah file. JPEG adalah rangkaian blok berlabel yang diikuti gambar terkompresi; blok-blok metadata ditinggalkan dan data gambarnya disalin tanpa perubahan. Itulah sebabnya hasilnya tidak dikompresi ulang dan terlihat identik.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Periksa daftarnya sebelum membagikan: lokasi yang ditandai berarti foto tersebut menyimpan koordinat.</li>
+  <li>Screenshot dan hasil ekspor editan masih bisa berisi metadata teks. Bersihkan juga di sini.</li>
+  <li>Untuk sekaligus memperkecil file, gunakan <a href="/tools/compress-image/">Kompres gambar</a> setelahnya; alat itu mengodekan ulang gambar dan juga membuang metadata.</li>
+</ul>

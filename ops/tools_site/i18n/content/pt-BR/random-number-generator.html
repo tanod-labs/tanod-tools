@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Gerador de números aleatórios: sorteio de números | Tanod Tools",
+  "description": "Sorteie números aleatórios entre um mínimo e um máximo, com ou sem repetição, inteiros ou decimais, com a fonte aleatória segura do navegador.",
+  "h1": "Gerador de números aleatórios",
+  "lede": "Escolha um intervalo e quantos números você quer. Cada um é sorteado de forma uniforme a partir da fonte aleatória segura do seu navegador.",
+  "blurb": "Inteiros ou decimais aleatórios em qualquer intervalo, com modo sem repetição.",
+  "keywords": "gerador de numeros aleatorios sortear numeros sorteio de numeros numero aleatorio dado loteria mega sena rifa inteiro decimal entre minimo maximo sem repeticao",
+  "limits": "Até 10.000 números por sorteio, limites de até 30 dígitos e até 10 casas decimais. Os resultados não são salvos; recarregar a página os apaga.",
+  "howto_title": "Como gerar números aleatórios",
+  "howto": [
+    "Digite o <strong>menor</strong> e o <strong>maior</strong> valor. As duas pontas podem sair, e números negativos funcionam.",
+    "Defina <strong>quantos</strong> números você quer e marque <em>Sem repetição</em> se todos os números precisarem ser diferentes.",
+    "Toque em <strong>Gerar</strong> e depois copie a lista ou baixe-a como arquivo de texto."
+  ],
+  "faq": [
+    ["Os números são realmente aleatórios?", "Eles vêm de <code>crypto.getRandomValues</code>, o mesmo gerador seguro que os navegadores usam para chaves de criptografia, e não de <code>Math.random</code>. Cada valor do seu intervalo tem a mesma chance. O gerador é bom o bastante para jogos, rifas e escolha de amostras; ele não foi auditado para loterias regulamentadas."],
+    ["O que é o viés de módulo, e esta ferramenta tem esse problema?", "Pegar um número aleatório de 32 bits e ficar com o resto da divisão pelo tamanho do intervalo torna alguns resultados um pouco mais prováveis sempre que o intervalo não divide 2<sup>32</sup> exatamente. Esta ferramenta descarta qualquer sorteio que caia na sobra desigual e sorteia de novo, então cada valor tem exatamente a mesma chance. Isso vale também para intervalos enormes, que são tratados com inteiros grandes."],
+    ["Como funciona \"Sem repetição\" e quando ele falha?", "A ferramenta sorteia cada número novo e pula os que já saíram ou, em intervalos pequenos, embaralha o intervalo inteiro e pega os primeiros. Se você pedir mais números diferentes do que o intervalo contém, como 7 de 1 a 6, ela avisa em vez de ficar em loop para sempre."],
+    ["O que acontece se o mínimo for maior que o máximo?", "Os dois valores são trocados e a linha do resultado avisa. Digitar 10 e 1 dá o mesmo sorteio que digitar 1 e 10."],
+    ["Como funcionam os decimais?", "Defina 2 casas decimais e o intervalo de 0 a 1 vira os 101 valores 0,00, 0,01 até 1,00, todos com a mesma chance. Os resultados sempre mostram todas as casas, então 0,50 continua 0,50. Os próprios limites não podem ter mais casas decimais do que você escolheu."],
+    ["Posso usar para um palpite de loteria ou para jogar um dado?", "Para um dado, use de 1 a 6. Para um jogo de loteria, marque <em>Sem repetição</em>, por exemplo 6 números de 1 a 60, do menor para o maior, como na Mega-Sena. Números sorteados ao acaso não dão chances maiores do que quaisquer outros. Os sorteios não são armazenados nem enviados para lugar nenhum."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Mínimo</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Máximo</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">Quantidade</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Casas decimais</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 gera números inteiros.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Ordem</label>
+      <select id="rn-order">
+        <option value="drawn">Na ordem do sorteio</option>
+        <option value="asc">Do menor para o maior</option>
+        <option value="desc">Do maior para o menor</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">Sem repetição</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Gerar</button>
+    <button class="btn" id="rn-copy" type="button">Copiar lista</button>
+    <button class="btn" id="rn-dl" type="button">Baixar .txt</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Resultado</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Números gerados"></pre>
+</div>
+<!--explain-->
+<h2>Por que um gerador seguro, e o que "aleatório" precisa significar aqui</h2>
+<p>Um sorteio justo significa que todo valor permitido tem a mesma chance e que um sorteio não diz nada sobre o próximo. <code>Math.random()</code> é rápido, mas é uma sequência previsível disfarçada; serve para animações, não para sortear um prêmio. O <code>crypto.getRandomValues</code> do navegador é alimentado pelo sistema operacional e é a fonte certa para gerar números aleatórios em qualquer coisa que possa virar discussão.</p>
+<p>Transformar bits aleatórios brutos num número de 1 a 6 é onde muitas ferramentas erram. Um valor de 32 bits tem 4.294.967.296 possibilidades, que 6 não divide, então usar o resto da divisão torna as faces menores um pouquinho mais prováveis. A solução é a amostragem por rejeição: o maior múltiplo do tamanho do intervalo abaixo de 2<sup>32</sup> é o limite, e um sorteio acima dele é descartado e refeito. Para intervalos maiores que 32 bits, a ferramenta sorteia exatamente os bits necessários e rejeita o que passar do intervalo, usando inteiros grandes para que valores perto de 9.007.199.254.740.991 continuem exatos.</p>
+<p>Os decimais usam a mesma ideia numa grade. Com duas casas decimais, o intervalo de 0 a 5 é tratado como os inteiros de 0 a 500; um deles é sorteado e a vírgula é recolocada, o que mantém todos os valores da grade com a mesma chance, em vez de arredondar um número contínuo.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Para sortear pessoas em vez de números, cole uma lista no <a href="/tools/random-name-picker/">sorteador de nomes</a>.</li>
+  <li>Precisa de um segredo, não de um número? O <a href="/tools/password-generator/">gerador de senhas</a> usa a mesma fonte aleatória com conjuntos de caracteres.</li>
+  <li>Quer um identificador único em vez de um número pequeno? Experimente o <a href="/tools/uuid-generator/">gerador de UUID</a>.</li>
+</ul>

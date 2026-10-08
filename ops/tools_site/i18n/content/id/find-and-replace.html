@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Cari dan ganti teks online, dengan regex | Tanod Tools",
+  "description": "Cari dan ganti teks di browser Anda dengan cocokkan huruf, kata utuh dan ekspresi reguler opsional dengan grup $1. Gratis, tidak ada yang diunggah.",
+  "h1": "Cari dan ganti teks",
+  "lede": "Ganti kata atau pola di seluruh blok teks, dan lihat berapa banyak kecocokan sebelum Anda menggantinya.",
+  "blurb": "Cari dan ganti dengan cocokkan huruf, kata utuh dan regex.",
+  "keywords": "cari dan ganti ganti teks ganti kata find replace regex ekspresi reguler ganti massal pencarian",
+  "limits": "Teks hingga sekitar 5 MB. Pola regex yang berjalan lebih dari 2 detik akan dihentikan.",
+  "howto_title": "Cara mencari dan mengganti teks",
+  "howto": [
+    "Tempel teks Anda ke kotak, atau buka file .txt.",
+    "Ketik apa yang dicari dan penggantinya. Jumlah kecocokan diperbarui saat Anda mengetik.",
+    "Tekan <strong>Ganti semua</strong>, lalu salin hasilnya atau unduh."
+  ],
+  "faq": [
+    ["Apakah pencariannya harfiah atau berupa pola?", "Harfiah secara default: yang Anda ketik dicocokkan persis, termasuk karakter seperti . dan *. Aktifkan \"Ekspresi reguler\" untuk memakai sintaks ekspresi reguler JavaScript."],
+    ["Bagaimana cara memakai grup di teks pengganti?", "Dalam mode ekspresi reguler, $1, $2 dan seterusnya menyisipkan teks yang cocok dengan grup dalam kurung pertama, kedua (dan seterusnya), $& menyisipkan seluruh kecocokan dan $&lt;name&gt; menyisipkan grup bernama. Contohnya, mencari (\\w+)@(\\w+) dan menggantinya dengan $2 at $1 mengubah bob@example menjadi example at bob. Dalam mode harfiah, teks pengganti disisipkan persis seperti yang diketik."],
+    ["Apa fungsi Kata utuh?", "Opsi ini hanya mencocokkan teks yang dicari jika tidak menjadi bagian dari kata yang lebih panjang, jadi mencari kota tidak cocok dengan kotak. Dalam mode harfiah, huruf, digit dan garis bawah dihitung sebagai karakter kata dalam aksara apa pun. Dalam mode ekspresi reguler, pola Anda dibungkus batas kata (\\b), yang hanya mengenali A-Z, digit dan garis bawah."],
+    ["Apa itu batas 2 detik?", "Beberapa pola, seperti (a+)+$, bisa memakan waktu sangat lama pada teks tertentu. Mode ekspresi reguler berjalan di worker latar belakang terpisah; jika belum selesai setelah 2 detik, pola dihentikan dan Anda diberi tahu bahwa pola itu terlalu lama, sehingga halaman tidak pernah macet."],
+    ["Apakah pola berlaku lintas baris?", "Dalam mode ekspresi reguler, ^ dan $ cocok di awal dan akhir setiap baris, dan titik tidak cocok dengan jeda baris. Huruf besar/kecil diabaikan kecuali Cocokkan huruf besar/kecil aktif."],
+    ["Apakah teks saya diunggah?", "Tidak. Semuanya berjalan di browser Anda dan tidak ada yang disimpan atau dikirim."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Teks Anda</label>
+    <textarea id="text" spellcheck="false" placeholder="Ketik atau tempel teks Anda di sini."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Cari</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Ganti dengan</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Cocokkan huruf besar/kecil</label>
+    <label class="check"><input type="checkbox" id="whole">Kata utuh</label>
+    <label class="check"><input type="checkbox" id="regex">Ekspresi reguler</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Sintaks ekspresi reguler JavaScript. Gunakan $1, $2 untuk grup dan $&amp; untuk seluruh kecocokan di teks pengganti.</p>
+  <p class="tt__report" id="info" aria-live="polite">Ketik apa yang ingin dicari.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Ganti semua</button>
+    <button class="btn btn--quiet" id="clear" type="button">Hapus teks</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Buka file .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Hasil</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Salin hasil</button>
+      <button class="btn" id="dl" type="button">Unduh .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Pakai hasil sebagai teks</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Mengganti teks secara massal</h2>
+<p>Cari dan ganti mengubah setiap kemunculan sebuah kata atau pola dalam sekali jalan. Jumlah kecocokan diperbarui saat Anda mengetik, sehingga Anda bisa melihat seberapa luas perubahan sebelum menerapkannya, dan hasilnya muncul di kotak terpisah sehingga teks asli Anda tidak pernah tertimpa sampai Anda memilih "Pakai hasil sebagai teks".</p>
+<p>Ekspresi reguler memungkinkan Anda menggambarkan bentuk, bukan string yang tetap: deretan digit, tanggal, kata yang diikuti koma. Grup dalam kurung bisa disusun ulang di teks pengganti dengan $1, $2 dan seterusnya. Karena pola yang ditulis kurang baik bisa berjalan sangat lama, pola dijalankan di worker latar belakang yang dihentikan setelah dua detik.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Susun dan uji pola terlebih dahulu di <a href="/tools/regex-tester/">Penguji regex</a>, yang menampilkan setiap kecocokan beserta grupnya.</li>
+  <li>Ubah huruf kapital dengan <a href="/tools/case-converter/">Ubah huruf besar dan kecil</a>.</li>
+  <li>Periksa hasil suntingan dengan <a href="/tools/text-diff/">Bandingkan teks</a>.</li>
+  <li>Hapus baris yang berulang dengan <a href="/tools/remove-duplicate-lines/">Hapus baris duplikat</a>.</li>
+</ul>

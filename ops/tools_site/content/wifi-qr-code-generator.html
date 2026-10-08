@@ -1,0 +1,79 @@
+<!--meta
+{
+  "category": "util",
+  "name": "Wi-Fi QR code generator",
+  "title": "Wi-Fi QR code generator: share your network | Tanod Tools",
+  "description": "Make a QR code that lets guests join your Wi-Fi by scanning it. Choose security and hidden networks, then download PNG, SVG or a printable card. Free, in-browser.",
+  "h1": "Wi-Fi QR code generator",
+  "lede": "Type your network name and password and get a QR code that phones scan to join, with the exact encoded text shown and a printable card.",
+  "blurb": "QR code to join your Wi-Fi, with a printable card.",
+  "keywords": "wifi qr code wi-fi password share network guest wpa wpa2 wpa3 wep hidden ssid scan to join printable card",
+  "limits": "Works with the common WIFI: format that iOS and Android cameras read. Other Wi-Fi types, such as enterprise logins with a username, are not covered. WPA3 networks are encoded as WPA, which phones accept.",
+  "howto_title": "How to make a Wi-Fi QR code",
+  "howto": [
+    "Enter the network name exactly as it appears on your router, and the password. Choose the security type and tick <strong>Hidden network</strong> if the name is not broadcast.",
+    "Check the encoded text in the readout and scan the preview with a phone to test it.",
+    "Download the code as PNG or SVG, or download the Wi-Fi card, which prints the network name and optionally the password under the code."
+  ],
+  "faq": [
+    ["Is my Wi-Fi password sent anywhere?", "No. The network name and password are turned into a code by this page, on your device, and are never uploaded or saved. The password exists only on this page, inside the code you download and, if you choose, on the printed card."],
+    ["Which security type should I pick for WPA3?", "Pick the WPA, WPA2 or WPA3 option. The Wi-Fi code format has one value for all WPA versions, and phones that support WPA3 join with it. Choose WEP only for old routers, and None for an open network, which writes no password."],
+    ["Why are some characters shown with a backslash?", "The format separates fields with semicolons and colons, so a backslash, semicolon, comma, colon or double quote in your name or password is escaped with a backslash. The readout shows the exact text that goes into the code."],
+    ["Will it work on iPhone and Android?", "The built-in camera apps on current iOS and Android versions offer to join the network when they scan this format. Some older Android versions need a QR scanner app. Test with a phone that is not already on the network before printing."],
+    ["Should I print the password on the card?", "Only if the card stays somewhere you trust, since anyone who sees it has the password. Leaving it off still lets people join by scanning; the code carries the password in either case."],
+    ["What if my password is longer than 63 characters or shorter than 8?", "A WPA passphrase is 8 to 63 characters, or exactly 64 hex digits for a raw key. The tool warns when the length is outside that, because the router would not have accepted such a password."]
+  ],
+  "related": ["qr-code-generator", "vcard-qr-code-generator", "password-generator", "barcode-generator", "uuid-generator"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-split gen-qr">
+  <div class="util-split__main">
+    <div class="opts">
+      <div class="field"><label for="w-ssid">Network name (SSID)</label><input type="text" id="w-ssid" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="field">
+        <label for="w-pass">Password</label>
+        <input type="password" id="w-pass" autocomplete="new-password" spellcheck="false" autocapitalize="off">
+        <label class="check"><input type="checkbox" id="w-show">Show password</label>
+      </div>
+      <div class="field"><label for="w-sec">Security</label>
+        <select id="w-sec"><option value="WPA">WPA, WPA2 or WPA3</option><option value="WEP">WEP</option><option value="nopass">None (open network)</option></select></div>
+      <div class="field"><span class="label">Network</span><label class="check"><input type="checkbox" id="w-hidden">Hidden network</label></div>
+      <div class="field"><label for="w-ec">Error correction</label>
+        <select id="w-ec"><option value="L">L: low (7%)</option><option value="M" selected>M: medium (15%)</option><option value="Q">Q: quartile (25%)</option><option value="H">H: high (30%)</option></select></div>
+      <div class="field"><label for="w-size">Image size (px)</label><input type="number" id="w-size" min="64" max="4096" step="1" value="512"></div>
+    </div>
+    <p class="gen-warn is-on" id="w-warn" hidden></p>
+    <div class="field">
+      <span class="label" id="w-payload-l">Encoded text</span>
+      <pre class="gen-readout" id="w-payload" tabindex="0" aria-labelledby="w-payload-l"></pre>
+    </div>
+    <div class="field">
+      <span class="label">Wi-Fi card</span>
+      <label class="check"><input type="checkbox" id="w-cardpass">Print the password on the card</label>
+    </div>
+  </div>
+
+  <div class="util-split__side">
+    <div class="preview" id="w-preview"><canvas id="w-canvas" width="1" height="1" role="img" aria-label="Wi-Fi QR code preview"></canvas></div>
+    <p class="help" id="w-info" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="w-png" type="button" disabled>Download PNG</button>
+      <button class="btn" id="w-svg" type="button" disabled>Download SVG</button>
+      <button class="btn" id="w-card" type="button" disabled>Download Wi-Fi card</button>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>What a Wi-Fi QR code contains</h2>
+<p>A Wi-Fi QR code is ordinary text in a fixed layout: <code>WIFI:T:WPA;S:name;P:password;;</code>. The letters before each colon are the field: <code>T</code> for the security type, <code>S</code> for the network name, <code>P</code> for the password and <code>H</code> for a hidden network. Phone cameras recognise the <code>WIFI:</code> prefix and offer to join, so the person scanning never types the password.</p>
+<p>Because fields are split on semicolons and colons, those characters, plus the backslash, comma and double quote, must be escaped with a backslash when they appear in a name or password. Getting this wrong is the usual reason a code works for a simple password and fails for a complicated one. The readout above shows the final text so you can see what was escaped. For an open network the password field is left out entirely.</p>
+<p>The printable card puts the code on a plain white background with the network name beneath it, using the same Archivo typeface as the rest of this site. It is a fixed 900 by 1100 pixel PNG, which prints sharply at about 8 by 10 cm at 280 dots per inch, and larger if you accept a softer edge on the text.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Choosing a new password for the router? Generate one with the <a href="/tools/password-generator/">password generator</a>.</li>
+  <li>Need a code for a link, email or phone number instead? Use the general <a href="/tools/qr-code-generator/">QR code generator</a>.</li>
+  <li>Sharing contact details rather than a network? See the <a href="/tools/vcard-qr-code-generator/">vCard QR code generator</a>.</li>
+</ul>

@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Konverter timestamp Unix: epoch ke tanggal | Tanod Tools",
+  "description": "Ubah timestamp Unix dalam detik, milidetik, mikrodetik atau nanodetik ke tanggal di UTC atau zona waktu mana pun, dan tanggal ke epoch. Gratis, di browser Anda.",
+  "h1": "Konverter timestamp Unix",
+  "lede": "Ubah timestamp epoch menjadi tanggal yang mudah dibaca di zona waktu mana pun, atau tanggal dan jam menjadi timestamp.",
+  "blurb": "Epoch ke tanggal dan tanggal ke timestamp, zona mana pun.",
+  "keywords": "konverter epoch unix time waktu unix posix detik sejak 1970 milidetik timestamp ke tanggal tanggal ke timestamp konversi utc zona waktu",
+  "limits": "Timestamp hingga sekitar 270.000 tahun sebelum atau sesudah 1970, rentang yang bisa ditangani browser; tanggal yang diketik dari tahun 1 hingga 9999. Aturan zona waktu berasal dari data zona waktu bawaan browser Anda.",
+  "howto_title": "Cara mengonversi timestamp Unix",
+  "howto": [
+    "Tempel timestamp ke <strong>Timestamp ke tanggal</strong>. Satuannya (detik, milidetik, mikrodetik atau nanodetik) dideteksi dari panjangnya, dan Anda bisa mengubahnya.",
+    "Pilih zona waktu untuk melihat tanggal di sana, sekaligus dalam UTC serta format ISO 8601 dan RFC 2822.",
+    "Untuk arah sebaliknya, masukkan tanggal dan jam di <strong>Tanggal ke timestamp</strong>; nilainya dibaca dalam zona waktu yang Anda pilih."
+  ],
+  "faq": [
+    ["Apa itu timestamp Unix?", "Timestamp Unix adalah jumlah detik sejak pukul 00:00:00 UTC tanggal 1 Januari 1970, tanpa menghitung detik kabisat. Nilainya sama di seluruh dunia pada saat yang sama, itulah sebabnya dipakai untuk menyimpan waktu; zona waktu baru berpengaruh ketika Anda mengubahnya menjadi tanggal untuk dibaca orang."],
+    ["Bagaimana satuannya dideteksi?", "Dari besarnya. Nilai di bawah 100 miliar dibaca sebagai detik (mencakup tanggal hingga tahun 5138), hingga 100 triliun sebagai milidetik, hingga 100 kuadriliun sebagai mikrodetik, dan yang lebih besar sebagai nanodetik. Angka 10 digit berarti detik, 13 digit milidetik, 16 digit mikrodetik dan 19 digit nanodetik. Jika tebakannya salah, pilih satuannya sendiri."],
+    ["Apa yang terjadi pada waktu yang tidak ada karena daylight saving time?", "Saat jam dimajukan, satu jam waktu lokal terlewati. Tanggal dan jam di dalam celah itu dimajukan sepanjang celah tersebut, seperti yang dilakukan kebanyakan software, dan alat ini memberi tahu Anda. Saat jam dimundurkan, satu jam terjadi dua kali; alat ini memakai kemunculan pertama dan juga menampilkan timestamp kemunculan kedua."],
+    ["Bisakah timestamp bernilai negatif?", "Bisa. Nilai negatif adalah momen sebelum 1970: -1 adalah pukul 23:59:59 UTC tanggal 31 Desember 1969. Tanggal yang jauh di masa lalu memakai kalender Gregorian proleptik, seperti ISO 8601."],
+    ["Apa itu masalah tahun 2038?", "Sistem yang menyimpan waktu Unix sebagai bilangan 32-bit bertanda hanya bisa menghitung sampai 2.147.483.647, yaitu pukul 03:14:07 UTC tanggal 19 Januari 2038. Satu detik kemudian nilainya overflow. Alat ini memberi tahu Anda jika sebuah timestamp melewati batas itu. Sebagian besar sistem saat ini memakai waktu 64-bit dan tidak terpengaruh."],
+    ["Apakah detik kabisat dihitung?", "Tidak. Waktu Unix menganggap setiap hari tepat 86.400 detik, begitu juga JavaScript, jadi 27 detik kabisat yang ditambahkan sejak 1972 tidak dihitung. Ini normal dan sesuai dengan yang dilaporkan server, database dan bahasa pemrograman."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Waktu Unix saat ini</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Detik</dt><dd id="now-s">0</dd></div>
+      <div><dt>Milidetik</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Salin detik</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Salin milidetik</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Jeda</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Zona waktu</label>
+    <select id="tz"></select>
+    <span class="help">Dipakai untuk menampilkan tanggal di bawah dan membaca tanggal yang Anda masukkan.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Timestamp ke tanggal</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Timestamp Unix</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Satuan</label>
+      <select id="ts-unit">
+        <option value="auto" selected>Deteksi dari panjang</option>
+        <option value="s">Detik</option>
+        <option value="ms">Milidetik</option>
+        <option value="us">Mikrodetik</option>
+        <option value="ns">Nanodetik</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Ketik atau tempel timestamp.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Zona waktu Anda</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>ISO 8601 dengan offset</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Relatif</dt><dd id="o-rel"></dd></div>
+    <div><dt>Detik</dt><dd id="o-s"></dd></div>
+    <div><dt>Milidetik</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Tanggal ke timestamp</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Tanggal</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Jam</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Pakai waktu sekarang</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Pilih tanggal.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Detik</dt><dd id="d-s"></dd></div>
+    <div><dt>Milidetik</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Cara kerja waktu epoch</h2>
+<p>Konverter timestamp Unix ini bekerja dengan hitungan detik sejak epoch Unix, yaitu tengah malam UTC tanggal 1 Januari 1970. Karena timestamp menunjuk sebuah momen, bukan angka di jam dinding, angka yang sama berarti saat yang sama di Jakarta, London maupun New York. Zona waktu baru berperan saat timestamp diubah menjadi tanggal: alat ini memakai database zona waktu browser Anda, aturan yang sama dengan yang dipakai sistem operasi Anda, untuk menghitung offset lokal dan daylight saving time pada saat itu.</p>
+<p>Banyak sistem memakai satuan yang lebih halus. JavaScript dan Java menghitung milidetik, sebagian database dan <code>time.time_ns()</code> di Python memakai mikrodetik atau nanodetik. Menempelkan nilai seperti itu sebagai detik akan menghasilkan tanggal puluhan ribu tahun ke depan, jadi alat ini menebak satuannya dari besar angka dan menunjukkan satuan yang dipilih. Nilai mikrodetik dan nanodetik tetap mempertahankan digit tambahannya di baris ISO 8601.</p>
+<p>Mengubah tanggal menjadi timestamp membutuhkan zona waktu, karena pukul 09:00 terjadi pada momen yang berbeda di tiap zona. Tanggal yang Anda ketik dibaca sebagai jam lokal di zona yang Anda pilih. Waktu yang jatuh di celah atau tumpang-tindih daylight saving time akan ditandai, sehingga Anda tahu momen mana yang Anda dapatkan.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Jadwal yang ditulis sebagai ekspresi cron bisa dicek dengan <a href="/tools/cron-expression-explainer/">Jelaskan ekspresi cron</a>, yang menampilkan waktu eksekusi berikutnya di zona mana pun.</li>
+  <li>Nilai UUID versi 7 memuat timestamp milidetik; <a href="/tools/uuid-generator/">Generator UUID</a> bisa membacanya.</li>
+  <li>Rapikan respons JSON yang penuh timestamp dengan <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+</ul>

@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Encode dan decode URL online, plus pengurai URL | Tanod Tools",
+  "description": "URL encode atau decode teks: mode komponen, URL lengkap atau form, aman untuk UTF-8, dengan pesan kesalahan yang jelas. Juga memecah URL menjadi bagiannya.",
+  "h1": "Encode dan decode URL",
+  "lede": "Lakukan URL encode (percent-encoding) atau decode teks, dan pecah URL apa pun menjadi bagian-bagian serta parameter query-nya.",
+  "blurb": "Encode, decode, dan urai URL.",
+  "keywords": "urlencode urldecode url encode decode percent encoding encodeuricomponent query string parameter uri escape dekode enkode",
+  "limits": "Teks hingga sekitar 5 MB. Hasil diperbarui sambil Anda mengetik.",
+  "howto_title": "Cara encode atau decode URL",
+  "howto": [
+    "Pilih Encode atau Decode, lalu tentukan jenis teksnya: satu nilai (komponen), URL lengkap, atau data form.",
+    "Ketik atau tempel teks Anda. Hasilnya muncul di bawah sambil Anda mengetik; escape yang rusak dilaporkan beserta posisinya.",
+    "Salin hasilnya, atau tempel URL lengkap ke pengurai di bawah untuk melihat host, path dan parameter query-nya."
+  ],
+  "faq": [
+    ["Apa bedanya encoding komponen dan encoding URL lengkap?", "Encoding komponen (<code>encodeURIComponent</code> di JavaScript) meng-escape semua karakter kecuali huruf, angka dan <code>- _ . ! ~ * ' ( )</code>, sehingga karakter seperti <code>/ ? &amp; =</code> menjadi <code>%2F %3F %26 %3D</code>. Gunakan untuk satu nilai query atau satu segmen path. Encoding URL lengkap (<code>encodeURI</code>) membiarkan karakter yang membentuk struktur URL dan hanya meng-escape spasi, huruf non-ASCII dan beberapa karakter lain, sehingga alamat utuh tetap bisa dipakai."],
+    ["Kapan saya sebaiknya memakai encoding form?", "Encoding form (<code>application/x-www-form-urlencoded</code>) adalah yang dikirim oleh form HTML dan dipakai oleh kebanyakan query string. Spasi ditulis sebagai <code>+</code> dan semua karakter di-escape kecuali huruf, angka dan <code>* - . _</code>. Saat decode di mode ini, <code>+</code> dibaca sebagai spasi; di mode lain tetap menjadi tanda plus."],
+    ["Bagaimana huruf beraksen dan emoji di-encode?", "Sebagai byte UTF-8, masing-masing ditulis sebagai <code>%</code> diikuti dua digit heksadesimal, sesuai yang diharapkan browser dan server. Contohnya, é menjadi <code>%C3%A9</code>. Saat decode, alat ini memeriksa apakah byte-nya membentuk UTF-8 yang valid dan memberi tahu Anda jika tidak."],
+    ["Mengapa decode melaporkan kesalahan?", "Setiap tanda persen harus diikuti dua digit heksadesimal (0-9, A-F). Tanda <code>%</code> yang tersesat, escape terpotong seperti <code>%A</code>, atau byte yang bukan UTF-8 valid dilaporkan beserta posisinya agar Anda bisa menemukannya. Jika teks berisi tanda persen literal, tulis sebagai <code>%25</code>."],
+    ["Apakah pengurai URL mengunjungi alamat tersebut?", "Tidak. Pengurai memakai parser URL bawaan browser untuk memecah teks menjadi bagian-bagian; tidak ada yang diambil dan tidak ada yang dikirim ke mana pun. Teks yang Anda ketik tetap di tab ini."],
+    ["Perlukah saya meng-encode URL lengkap lebih dari sekali?", "Tidak. Meng-encode teks yang sudah di-encode mengubah <code>%20</code> menjadi <code>%2520</code>, bug yang sering terjadi. Jika Anda melihat <code>%25</code> diikuti dua digit heksadesimal di hasil, kemungkinan input-nya sudah di-encode sebelumnya; decode dulu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Arah</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Encode</label>
+        <label><input type="radio" name="dir" value="decode">Decode</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">Teksnya berupa</label>
+      <select id="u-kind">
+        <option value="component" selected>Satu nilai (komponen)</option>
+        <option value="uri">URL lengkap</option>
+        <option value="form">Data form (spasi jadi +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Input</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Ketik atau tempel di sini, mis. café au lait &amp; teh"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Hasil</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Salin</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Jadikan hasil sebagai input</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Hapus</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">Pecah URL menjadi bagian-bagian</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Parameter query</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Nama</th><th scope="col">Nilai (hasil decode)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Apa yang dilakukan URL encoding</h2>
+<p>URL encode dan decode diperlukan karena URL hanya boleh berisi sekumpulan karakter ASCII terbatas, dan sebagian di antaranya punya tugas: <code>/</code> memisahkan segmen path, <code>?</code> memulai query, <code>&amp;</code> dan <code>=</code> membaginya menjadi nama dan nilai, <code>#</code> memulai fragmen. Percent-encoding menulis byte lain sebagai <code>%</code> diikuti dua digit heksadesimal, sehingga nilai seperti <code>R&amp;D / 2026</code> bisa dibawa di dalam query string tanpa disangka bagian dari struktur: <code>R%26D%20%2F%202026</code>.</p>
+<p>Teks diubah dulu menjadi byte UTF-8, itulah sebabnya satu huruf beraksen menjadi dua escape dan satu emoji menjadi empat. Decode membalik prosesnya dan memeriksa apakah byte-nya membentuk UTF-8 yang valid. Alat ini men-decode dengan pembaca ketatnya sendiri, jadi alih-alih pesan umum "URI malformed", alat ini memberi tahu escape mana yang rusak dan di mana letaknya.</p>
+<p>Ketiga mode sesuai dengan tiga situasi umum. Encode satu nilai (komponen) saat Anda menyusun parameter query atau segmen path. Encode URL lengkap hanya jika Anda punya alamat utuh yang berisi spasi atau huruf non-ASCII. Gunakan data form untuk isi kiriman form atau query string yang disusun seperti cara form HTML menyusunnya.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Butuh path yang bersih dan mudah dibaca, bukan deretan escape? Buat dengan <a href="/tools/text-to-slug/">Generator slug</a>.</li>
+  <li>Data biner di URL biasanya berupa Base64url, bukan percent-encoding: coba <a href="/tools/base64-encode-decode/">Encode dan decode Base64</a>.</li>
+  <li>Token di query string yang diawali <code>eyJ</code> kemungkinan besar adalah JWT. Baca dengan <a href="/tools/jwt-decoder/">Decoder JWT</a>.</li>
+</ul>

@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Générateur d'expression cron en ligne | Tanod Tools",
+  "description": "Créez une planification cron à cinq champs avec des modèles et des commandes simples, lisez-la en clair et vérifiez ses prochaines exécutions dans tout fuseau.",
+  "h1": "Générateur d'expression cron",
+  "lede": "Construisez une planification crontab à partir de choix simples, puis vérifiez ce qu'elle signifie en clair et quand elle s'exécutera.",
+  "blurb": "Créer une planification cron avec des commandes et voir les prochaines exécutions.",
+  "keywords": "generateur expression cron createur crontab generer planification cron job tache toutes les 5 minutes syntaxe cron en semaine a 9h",
+  "limits": "Cron standard à cinq champs tel qu'utilisé par Vixie cron et cronie : minute, heure, jour du mois, mois et jour de la semaine. Les formats Quartz et autres formats avec un champ des secondes ne sont pas générés, et les expressions collées que les commandes ne peuvent pas afficher sont conservées telles que saisies.",
+  "howto_title": "Comment créer une expression cron",
+  "howto": [
+    "Partez d'un modèle, ou réglez chaque champ pour s'exécuter à chaque fois, toutes les N unités à partir d'un début, sur des valeurs précises ou entre deux valeurs.",
+    "Vérifiez l'expression, sa description en clair et les prochaines exécutions dans le fuseau horaire de votre serveur.",
+    "Copiez l'expression dans votre crontab, votre planification de CI ou votre planificateur. Vous pouvez aussi coller une expression existante pour la charger dans les commandes."
+  ],
+  "faq": [
+    ["Comment exécuter une tâche toutes les 15 minutes ?", "Réglez Minute sur <em>Toutes les 15 minutes, à partir de 0</em>, ce qui écrit <code>*/15 * * * *</code>. La tâche s'exécute aux minutes 0, 15, 30 et 45 de chaque heure."],
+    ["Comment s'écrit un début autre que 0 ?", "Un début à la minute 5 avec un pas de 10 s'écrit <code>5-59/10</code>, ce qui s'exécute à 5, 15, 25, 35, 45 et 55. La forme plus courte <code>5/10</code> fonctionne dans certaines versions de cron mais est rejetée par d'autres : la forme longue est donc le choix portable."],
+    ["Pourquoi certains jours sont-ils écrits en plages et d'autres en listes ?", "Trois valeurs consécutives ou plus sont écrites sous forme de plage : du lundi au vendredi donne <code>1-5</code>, tandis que lundi, mercredi et vendredi donnent <code>1,3,5</code>. Les deux désignent exactement les valeurs que vous avez cochées."],
+    ["Que se passe-t-il si je règle à la fois le jour du mois et le jour de la semaine ?", "Le cron standard exécute la tâche quand l'un ou l'autre correspond, pas les deux. <code>0 9 1 * 1</code> s'exécute le 1er du mois et chaque lundi. L'outil ajoute une note quand vos choix tombent dans ce cas."],
+    ["Quel fuseau horaire les prochaines exécutions utilisent-elles ?", "Celui que vous choisissez sous l'expression. Cron lui-même utilise le fuseau horaire de la machine ou du conteneur qui l'exécute, sauf si la crontab définit <code>CRON_TZ</code>. Beaucoup de serveurs sont en UTC : vérifiez avant de vous fier à une heure."],
+    ["Les secondes, @daily ou la syntaxe Quartz sont-ils pris en charge ?", "L'outil ne crée que des expressions à cinq champs. Coller <code>@daily</code> ou un autre raccourci fonctionne : il est converti en ses cinq champs. Les expressions à six champs et de style Quartz sont rejetées, car leur premier champ correspond aux secondes. L'outil <a href=\"/tools/cron-expression-explainer/\">Expliquer une expression cron</a> détaille pourquoi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Expression cron</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Copier</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Modèles">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Chaque minute</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Toutes les 5 minutes</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Toutes les 15 minutes</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Chaque heure</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Tous les jours à minuit</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">En semaine à 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Chaque dimanche</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">Le 1er et le 15</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Le 1er du mois</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Chaque année</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Charger une expression existante</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Charger</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Collez une expression à cinq champs ou un raccourci comme @daily.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Prochaines exécutions</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Fuseau horaire</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">À partir du</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Laissez vide pour partir de maintenant.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Combien</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Prochaines heures d'exécution"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Vous avez déjà une expression et voulez seulement la comprendre ? Utilisez <a href="/tools/cron-expression-explainer/">Expliquer une expression cron</a>.</p>
+</div>
+<!--explain-->
+<h2>Construire une planification cron</h2>
+<p>Ce générateur d'expression cron produit cinq champs séparés par des espaces : minute, heure, jour du mois, mois et jour de la semaine. Chaque champ répond à une question sur le moment où la tâche doit s'exécuter, et la tâche s'exécute quand tous correspondent. Laisser un champ à <code>*</code> signifie toutes les valeurs, c'est pourquoi <code>0 * * * *</code> s'exécute au début de chaque heure et <code>0 0 * * *</code> une fois par jour à minuit.</p>
+<p>Le générateur propose quatre façons de remplir chaque champ. Un pas comme <code>*/15</code> signifie une valeur sur 15, une liste comme <code>1,15</code> désigne des valeurs exactes, une plage comme <code>9-17</code> couvre tout ce qui se trouve entre deux valeurs, et <code>*</code> signifie toutes les valeurs. Quand vous cochez des valeurs, les suites de trois valeurs consécutives ou plus sont écrites sous forme de plage : du lundi au vendredi donne <code>1-5</code> plutôt que <code>1,2,3,4,5</code>.</p>
+<p>Deux pièges attrapent la plupart des gens. Cron utilise l'horloge de la machine sur laquelle il tourne : une tâche prévue à 09:00 s'exécute à 09:00 heure du serveur, qui n'est peut-être pas la vôtre ; la liste des prochaines exécutions vous permet de vérifier dans plusieurs fuseaux. Et quand les champs jour du mois et jour de la semaine sont tous deux restreints, la tâche s'exécute dès que l'un des deux correspond, ce qui peut donner bien plus d'exécutions que prévu.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Pour lire une expression écrite par quelqu'un d'autre, collez-la dans <a href="/tools/cron-expression-explainer/">Expliquer une expression cron</a>.</li>
+  <li>Convertissez une heure d'exécution lue dans un journal en timestamp Unix, et inversement, avec le <a href="/tools/unix-timestamp-converter/">Convertisseur de timestamp Unix</a>.</li>
+  <li>Les scripts planifiés doivent avoir le droit d'exécution ; trouvez le bon mode avec le <a href="/tools/chmod-calculator/">Calculateur chmod</a>.</li>
+</ul>

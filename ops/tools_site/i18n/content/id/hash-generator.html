@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Generator hash MD5, SHA-1, SHA-256, SHA-512 | Tanod Tools",
+  "description": "Hitung hash MD5, SHA-1, SHA-256, SHA-384 dan SHA-512 dari teks atau file, dalam hex atau Base64, dan cocokkan dengan checksum. Gratis, di browser Anda.",
+  "h1": "Generator hash",
+  "lede": "Hitung hash MD5, SHA-1, SHA-256, SHA-384 dan SHA-512 dari teks atau file, dan cek file unduhan dengan checksum yang dipublikasikan.",
+  "blurb": "Checksum MD5 dan SHA untuk teks atau file.",
+  "keywords": "md5 sha1 sha256 sha384 sha512 sha-2 checksum cek file hash digest verifikasi generator hash hitung hash",
+  "limits": "Teks hingga sekitar 5 MB. File hingga 200 MB, dibaca ke memori di perangkat ini.",
+  "howto_title": "Cara membuat hash",
+  "howto": [
+    "Ketik atau tempel teks, atau beralih ke File dan pilih file. Kelima hash langsung dihitung.",
+    "Pilih hex huruf kecil, hex huruf besar atau Base64 untuk output-nya.",
+    "Untuk memverifikasi unduhan, tempel checksum yang dipublikasikan ke kolom <strong>Bandingkan</strong>; algoritma yang cocok akan disorot. Salin sebuah hash, atau unduh semuanya sebagai file .txt."
+  ],
+  "faq": [
+    ["Apakah teks atau file saya diunggah?", "Tidak. Hash dihitung di browser Anda: hash SHA oleh fungsi Web Crypto bawaan browser dan MD5 oleh kode di halaman ini. Tidak ada yang dikirim atau disimpan, dan menutup tab akan menghapusnya."],
+    ["Apakah MD5 atau SHA-1 aman dipakai?", "Tidak untuk keamanan. Keduanya sudah dibobol: orang bisa dengan sengaja membuat dua input berbeda yang punya hash MD5 atau SHA-1 yang sama. Keduanya masih layak untuk mendeteksi kerusakan yang tidak disengaja, misalnya memeriksa apakah file unduhan sampai dengan utuh. Untuk apa pun yang datanya mungkin diubah orang, atau untuk tanda tangan digital, gunakan SHA-256 atau yang lebih kuat."],
+    ["Bisakah saya meng-hash password dengan alat ini?", "Anda bisa melihat hash sebuah password, tetapi hash biasa adalah cara yang salah untuk menyimpan password: hash cepat seperti ini bisa ditebak miliaran kali per detik. Penyimpanan password membutuhkan algoritma lambat dengan salt seperti Argon2, scrypt atau bcrypt, yang dijalankan oleh server Anda."],
+    ["Apakah hashing sama dengan enkripsi?", "Tidak. Enkripsi bisa dibalik dengan kunci. Hash adalah sidik jari dengan panjang tetap yang tidak bisa diubah kembali menjadi input; satu-satunya cara menemukan input adalah menebak lalu membandingkan. Input yang sama selalu menghasilkan hash yang sama, dan perubahan satu karakter menghasilkan hash yang sama sekali berbeda."],
+    ["Mengapa hash saya tidak sama dengan hasil dari command line?", "Periksa apakah ada jeda baris di akhir: <code>echo \"text\" | sha256sum</code> meng-hash teks ditambah karakter newline, sedangkan kotak ini meng-hash persis apa yang Anda ketik. Teks di-hash sebagai UTF-8 dan jeda baris di kotak berupa satu karakter LF, jadi teks yang disalin dari file Windows (CRLF) bisa berbeda. Untuk hasil yang persis sama, hash file-nya langsung di mode File."],
+    ["Apa arti hex dan Base64 di sini?", "Keduanya adalah dua cara menulis byte hash yang sama. Hex memakai dua karakter per byte (SHA-256 berarti 64 karakter hex); Base64 lebih pendek (44 karakter) dan dipakai di tempat seperti atribut Subresource Integrity. Kolom Bandingkan menerima keduanya."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Hash</legend>
+  <div class="seg" role="radiogroup" aria-label="Input">
+    <label><input type="radio" name="mode" value="text" checked>Teks</label>
+    <label><input type="radio" name="mode" value="file">File</label>
+  </div>
+</fieldset>
+
+<div id="h-textpanel" class="field">
+  <label for="h-in">Teks</label>
+  <textarea id="h-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Ketik atau tempel teks yang ingin di-hash"></textarea>
+  <span class="help" id="h-tinfo"></span>
+</div>
+
+<div id="h-filepanel" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Letakkan file untuk menghitung hash-nya</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Pilih file</span></label>
+    <p class="drop__hint">Jenis apa saja, hingga 200 MB. File dibaca di perangkat ini dan tidak diunggah.</p>
+  </div>
+</div>
+
+<div class="opts">
+  <div class="field">
+    <span class="label" id="h-fmt-l">Output</span>
+    <div class="seg" role="radiogroup" aria-labelledby="h-fmt-l">
+      <label><input type="radio" name="fmt" value="hex" checked>hex</label>
+      <label><input type="radio" name="fmt" value="HEX">HEX</label>
+      <label><input type="radio" name="fmt" value="b64">Base64</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="h-expect">Bandingkan dengan hash yang diharapkan</label>
+    <input type="text" id="h-expect" class="mono" autocomplete="off" spellcheck="false" placeholder="Tempel checksum untuk mengeceknya">
+  </div>
+</div>
+<p class="dv-verdict" id="h-verdict" role="status" hidden></p>
+<div class="status" id="status" role="status" hidden></div>
+<div id="h-result" hidden>
+  <p class="help" id="h-info"></p>
+  <dl class="dv-rows" id="h-rows"></dl>
+  <div class="actions">
+    <button class="btn btn--primary" id="h-copyall" type="button">{{mark:i-copy}}Salin semua</button>
+    <button class="btn" id="h-dl" type="button">{{mark:i-download}}Unduh .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="h-clear" type="button">Hapus</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Kegunaan hash</h2>
+<p>Generator hash ini menghitung hash kriptografis, yang mengubah input apa pun, dari satu huruf hingga file besar, menjadi sidik jari pendek dengan panjang tetap. Input yang sama selalu menghasilkan sidik jari yang sama, dan mengubah satu bit saja menghasilkan sidik jari yang sama sekali berbeda. Karena itu hash berguna untuk mengecek apakah file sampai tanpa perubahan, untuk menemukan file duplikat, dan sebagai komponen dasar tanda tangan digital serta version control.</p>
+<p>Untuk mengecek file unduhan, cari checksum yang dicantumkan penerbitnya di sebelah file itu (sering kali SHA-256), letakkan file di sini dan tempel checksum-nya ke kolom Bandingkan. Jika cocok, file tersebut sama persis byte demi byte dengan yang di-hash oleh penerbit. Kecocokan itu hanya membuktikan bahwa file-nya memang yang dimaksud penerbit jika Anda memercayai halaman tempat checksum itu berasal.</p>
+<p>Hash SHA-1 dan SHA-2 (SHA-256, SHA-384, SHA-512) dihitung oleh fungsi Web Crypto di browser Anda. Browser tidak menyediakan MD5, jadi halaman ini menyertakan kode MD5 sendiri, yang membaca file per potongan dan menampilkan progres untuk file besar. MD5 dan SHA-1 disediakan hanya demi kompatibilitas dengan checksum lama.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Butuh isi file sebagai teks, bukan sidik jarinya? Gunakan <a href="/tools/base64-encode-decode/">Encode dan decode Base64</a>.</li>
+  <li>Untuk membuat rahasia acak yang kuat, bukan meng-hash-nya, gunakan <a href="/tools/password-generator/">Generator password</a>.</li>
+  <li>Membandingkan dua teks baris demi baris lebih mudah dengan <a href="/tools/text-diff/">Bandingkan teks</a> daripada dengan dua hash.</li>
+</ul>

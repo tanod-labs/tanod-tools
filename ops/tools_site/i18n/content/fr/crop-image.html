@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Recadrer une image en ligne, au pixel près, gratuit | Tanod Tools",
+  "description": "Recadrez un JPG, PNG ou WebP dans votre navigateur : déplacez le cadre, choisissez un format ou saisissez des valeurs en pixels. Rien n'est envoyé.",
+  "h1": "Recadrer une image",
+  "lede": "Faites glisser un cadre de recadrage sur votre image, ou saisissez des valeurs exactes en pixels, puis enregistrez la copie recadrée.",
+  "blurb": "Ne gardez que la partie utile d'une image.",
+  "keywords": "recadrer rogner couper image photo recadrage ratio format carre 16:9 4:3 cadre redecouper",
+  "limits": "Une image à la fois, jusqu'à 50 Mo et environ 100 mégapixels. PNG, JPEG, WebP, GIF, BMP et AVIF (si votre navigateur sait les ouvrir).",
+  "howto_title": "Comment recadrer une image",
+  "howto": [
+    "Choisissez une image ou glissez-la sur la page.",
+    "Faites glisser le cadre pour le déplacer et ses poignées d'angle pour le redimensionner. Choisissez un format si nécessaire, ou saisissez X, Y, la largeur et la hauteur en pixels.",
+    "Cliquez sur <strong>Recadrer l'image</strong>, puis téléchargez le résultat."
+  ],
+  "faq": [
+    ["Mon image est-elle envoyée en ligne ?", "Non. Le recadrage est effectué dans votre navigateur, à partir du fichier présent sur votre appareil. Rien n'est envoyé à un serveur."],
+    ["Puis-je utiliser le clavier au lieu de la souris ?", "Oui. Placez le focus sur le cadre de recadrage (avec Tab ou en cliquant dessus), puis utilisez les flèches pour le déplacer et Maj avec les flèches pour le redimensionner. Les champs X, Y, largeur et hauteur acceptent aussi des valeurs exactes en pixels."],
+    ["Le recadrage réduit-il la qualité ?", "Les pixels à l'intérieur du cadre sont copiés tels quels, en pleine résolution, et non à partir de l'aperçu réduit à l'écran. Le JPEG et le WebP sont réenregistrés en qualité 92, ce qui entraîne une légère recompression ; le PNG reste sans perte."],
+    ["Dans quel format est le résultat ?", "Le même que l'original : un PNG reste un PNG, un JPEG reste un JPEG et un WebP reste un WebP. Les GIF, BMP et AVIF sont enregistrés en PNG (un GIF devient sa première image)."],
+    ["À quoi servent les formats prédéfinis ?", "Ils verrouillent le cadre sur un rapport largeur/hauteur, comme 1:1 pour un carré ou 16:9 pour un cadre panoramique, et le conservent pendant le redimensionnement. Choisissez Libre pour recadrer selon n'importe quelle forme."],
+    ["Les données EXIF sont-elles conservées ?", "Non. Le fichier recadré est une nouvelle image, sans métadonnées d'appareil photo ni de localisation GPS, enregistrée dans l'orientation où elle s'affiche."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez une image ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Choisir une image</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-la n'importe où sur cette page.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Aperçu de l'image à recadrer" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Zone de recadrage" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Faites glisser le cadre pour le déplacer et un angle pour le redimensionner. Quand le cadre a le focus, les flèches le déplacent et Maj avec les flèches le redimensionne.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Format</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Libre</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Largeur (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Hauteur (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Recadrer l'image</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Recadrer sans perdre de résolution</h2>
+<p>Recadrer une image, c'est garder un rectangle des pixels d'origine et supprimer le reste. L'image affichée à l'écran est un aperçu réduit pour tenir dans la page ; le recadrage lui-même est effectué sur l'image en pleine résolution, d'après les valeurs X, Y, largeur et hauteur affichées dans les champs. Ces nombres sont exprimés en pixels de l'image, et non en pixels de l'écran.</p>
+<p>Utilisez un format prédéfini quand le résultat doit entrer dans un cadre : 1:1 pour un avatar carré, 16:9 pour une miniature de vidéo, 4:3 ou 3:2 pour les formats photo courants, 9:16 pour une story verticale. Le cadre garde cette forme quand vous le redimensionnez, et saisir une largeur ou une hauteur met à jour l'autre valeur.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Recadrez d'abord, puis réduisez le poids avec <a href="/tools/resize-image/">Redimensionner une image</a> et <a href="/tools/compress-image/">Compresser une image</a>.</li>
+  <li>Photo dans le mauvais sens ? <a href="/tools/rotate-image/">Faire pivoter une image</a> la remet d'aplomb.</li>
+  <li>Vous créez une icône à partir d'une partie d'image ? Recadrez en 1:1, puis utilisez le <a href="/tools/favicon-generator/">Générateur de favicon</a>.</li>
+</ul>

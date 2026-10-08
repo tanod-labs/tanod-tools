@@ -1,0 +1,101 @@
+<!--meta
+{
+  "title": "Ajouter un filigrane à un PDF en ligne, gratuit | Tanod Tools",
+  "description": "Ajoutez un filigrane texte (BROUILLON, CONFIDENTIEL…) à un PDF : taille, couleur, opacité, angle, mosaïque. Gratuit, sans inscription, rien n'est envoyé.",
+  "h1": "Ajouter un filigrane à un PDF",
+  "lede": "Placez une ligne de texte en travers de vos pages, une seule fois au centre ou répétée en motif.",
+  "blurb": "Apposer un texte comme BROUILLON sur un PDF.",
+  "keywords": "filigrane pdf ajouter filigrane tampon brouillon confidentiel texte watermark",
+  "limits": "Un PDF à la fois, jusqu'à 200 Mo. Filigranes texte uniquement, en Helvetica : les lettres des langues d'Europe occidentale fonctionnent, les autres écritures non. Les PDF protégés par mot de passe ne peuvent pas être modifiés.",
+  "howto_title": "Comment ajouter un filigrane à un PDF",
+  "howto": [
+    "Choisissez un fichier PDF ou glissez-le sur la page.",
+    "Tapez le texte du filigrane, puis réglez la taille, la couleur, l'opacité, l'angle et la disposition.",
+    "Cliquez sur <strong>Ajouter le filigrane</strong>, puis téléchargez le PDF filigrané."
+  ],
+  "faq": [
+    ["Mon PDF est-il envoyé ?", "Non. Le filigrane est dessiné dans une copie de votre PDF par la bibliothèque open source pdf-lib, dans votre navigateur. Rien n'est envoyé à un serveur."],
+    ["Quels caractères puis-je utiliser ?", "Le filigrane utilise Helvetica, une police PDF standard qui couvre l'alphabet latin d'Europe occidentale, les chiffres et la ponctuation courante. Si votre texte contient autre chose, comme du chinois, de l'arabe, du cyrillique ou la plupart des symboles, l'outil vous indique quels caractères il ne peut pas dessiner au lieu de produire un fichier défectueux."],
+    ["Le filigrane peut-il être retiré ensuite ?", "Il est dessiné comme du contenu ordinaire par-dessus la page, pas comme un calque amovible, et votre fichier d'origine n'est pas modifié. Gardez votre original si vous avez besoin d'une copie propre. Un filigrane est un moyen de dissuasion visuel, pas une mesure de sécurité."],
+    ["Puis-je ajouter le filigrane à certaines pages seulement ?", "Oui. Choisissez <em>Certaines pages</em> et indiquez des pages ou des plages, par exemple 1-3, 5. Les pages sont comptées à partir de 1."],
+    ["À quoi sert la disposition en mosaïque ?", "Le texte est répété en quinconce sur toute la page, avec l'angle et la taille choisis. Centré place un seul exemplaire au milieu de chaque page."],
+    ["Fonctionne-t-il sur les pages pivotées ou recadrées ?", "Oui. Le filigrane est placé dans la zone visible de chaque page, et les pages enregistrées avec une rotation reçoivent un filigrane tourné avec elles, pour qu'il apparaisse à l'angle choisi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Déposez un PDF ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choisir un PDF</span></label>
+  <p class="drop__hint">Ou glissez-le n'importe où sur cette page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field opts__full">
+      <label for="text">Texte du filigrane</label>
+      <input id="text" type="text" value="BROUILLON" maxlength="80" autocomplete="off" spellcheck="false">
+      <span class="help" id="text-help">Lettres, chiffres et ponctuation courante (Helvetica).</span>
+    </div>
+    <div class="field">
+      <label for="size">Taille de police (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="8" max="400" step="1" value="72">
+    </div>
+    <div class="field">
+      <label for="opacity">Opacité : <span class="num" id="opacity-v">30%</span></label>
+      <input id="opacity" type="range" min="5" max="100" step="5" value="30">
+    </div>
+    <div class="field">
+      <label for="color">Couleur</label>
+      <div class="swatches">
+        <input id="color" type="color" value="#8c9497" aria-label="Couleur du filigrane">
+        <button type="button" class="btn btn--sm" data-swatch="#8c9497">Gris</button>
+        <button type="button" class="btn btn--sm" data-swatch="#16140f">Noir</button>
+        <button type="button" class="btn btn--sm" data-swatch="#1636a3">Bleu</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="angle-l">Angle</span>
+      <div class="seg" role="radiogroup" aria-labelledby="angle-l">
+        <label><input type="radio" name="angle" value="45" checked>Diagonal</label>
+        <label><input type="radio" name="angle" value="0">Horizontal</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="place-l">Disposition</span>
+      <div class="seg" role="radiogroup" aria-labelledby="place-l">
+        <label><input type="radio" name="place" value="center" checked>Centré, une fois</label>
+        <label><input type="radio" name="place" value="tiled">Mosaïque</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Pages</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Toutes les pages</label>
+        <label><input type="radio" name="scope" value="range">Certaines pages</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Plage de pages</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Ajouter le filigrane</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ajouter un filigrane à un PDF dans votre navigateur</h2>
+<p>Un filigrane est un texte dessiné sur chaque page. Votre navigateur ouvre le PDF avec pdf-lib, détermine la zone visible de chaque page et y dessine le texte avec la couleur, l'opacité et l'angle choisis. Le résultat est un nouveau fichier ; votre original reste tel quel.</p>
+<p>Le texte utilise Helvetica, l'une des polices que toutes les visionneuses PDF possèdent déjà : le fichier final reste léger, mais les caractères sont limités au jeu latin d'Europe occidentale. La disposition en mosaïque répète le texte en quinconce pour qu'on ne puisse pas l'éliminer en recadrant un coin.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Gardez une opacité faible, autour de 20 à 35 %, pour que la page reste lisible.</li>
+  <li>Vous voulez aussi des numéros de page ? Ajoutez-les avec <a href="/tools/add-page-numbers-to-pdf/">Numéroter les pages d'un PDF</a>.</li>
+  <li>Besoin de partager une copie aplatie ? Transformez les pages en images avec <a href="/tools/pdf-to-jpg/">PDF en JPG</a>.</li>
+</ul>

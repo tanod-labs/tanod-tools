@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Proteksi PDF dengan kata sandi, gratis (AES-256) | Tanod Tools",
+  "description": "Kunci PDF dengan kata sandi agar tidak bisa dibuka tanpanya. Enkripsi AES-256 yang kuat, batasan cetak dan salin opsional. Gratis; file langsung dihapus.",
+  "h1": "Proteksi PDF dengan kata sandi",
+  "lede": "Kunci PDF dengan kata sandi sebelum Anda mengirimnya. Tanpa kata sandi, PDF tidak bisa dibuka.",
+  "blurb": "Tambahkan kata sandi ke PDF (AES-256).",
+  "keywords": "kunci pdf proteksi pdf beri password pdf kata sandi pdf enkripsi pdf amankan pdf password protect lock pdf",
+  "limits": "Satu PDF hingga 10 MB yang belum memiliki kata sandi. Diproses di server kami, lalu dihapus. 10 tugas server gratis per hari per orang, dibagi untuk semua alat server. Lebih banyak: <a href=\"/learn/password-protect-pdf-api.html\">Protect PDF API</a> (dibayar per panggilan).",
+  "howto_title": "Cara memproteksi PDF dengan kata sandi",
+  "howto": [
+    "Pilih PDF hingga 10 MB, atau seret ke halaman ini.",
+    "Ketik kata sandi dua kali. Hapus centang cetak atau salin jika pembaca tidak boleh melakukannya.",
+    "Tekan <strong>Proteksi PDF</strong>, unduh salinan yang terkunci, dan simpan kata sandinya dengan aman."
+  ],
+  "faq": [
+    ["Apakah PDF dan kata sandi saya diunggah?", "Ya. Berbeda dengan sebagian besar alat di situs ini, alat ini berjalan di server kami: PDF dan kata sandi Anda dikirim melalui HTTPS, file dienkripsi, dan salinan yang terkunci langsung dikirim kembali ke browser Anda. File dan kata sandi hanya ada di server selama tugas berjalan, di memori dan di folder sementara privat yang dihapus begitu tugas selesai. Kami tidak pernah menyimpan atau mencatat file maupun kata sandinya."],
+    ["Seberapa kuat proteksinya?", "PDF dienkripsi dengan AES-256, enkripsi PDF standar yang paling kuat, yang didukung oleh semua pembaca PDF saat ini. Kekuatan sebenarnya ada pada kata sandi Anda: gunakan kata sandi panjang yang tidak dipakai di tempat lain. <a href=\"/tools/password-generator/\">Generator password</a> kami membuatnya di browser Anda."],
+    ["Bagaimana jika saya lupa kata sandinya?", "File tidak bisa dibuka, dan kami tidak bisa membantu: kami tidak pernah menyimpan kata sandi maupun filenya. Simpan file asli Anda yang tidak diproteksi, atau simpan kata sandi di pengelola kata sandi."],
+    ["Apa fungsi pilihan cetak dan salin?", "Pilihan itu membatasi apa yang boleh dilakukan oleh orang yang mengetahui kata sandi: mencetak dokumen, atau menyalin teksnya. Sebagian besar pembaca PDF mematuhi batasan ini, tetapi batasan ini tidak sekuat kata sandinya sendiri. Batasan dijaga oleh kata sandi pemilik (owner password) terpisah yang acak dan tidak diketahui siapa pun."],
+    ["Bisakah saya memproteksi PDF yang sudah memiliki kata sandi?", "Tidak secara langsung. Hapus dulu kata sandi lama dengan <a href=\"/tools/unlock-pdf/\">Buka kunci PDF</a>, lalu proteksi salinannya dengan kata sandi baru."],
+    ["Apakah ada batasnya?", "File hingga 10 MB, dan 10 tugas server gratis per hari per orang, dibagi untuk semua alat server kami. Hanya tugas yang berhasil yang dihitung, dan hitungannya direset pada tengah malam UTC."],
+    ["Apa itu verifikasi manusia?", "Sebelum tugas berjalan, Cloudflare Turnstile memeriksa bahwa yang memakai alat ini adalah manusia, bukan bot. Biasanya tidak terlihat; kadang Anda diminta mencentang kotak."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:protect-pdf drop__mark}}
+  <p class="drop__title">Letakkan PDF di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Pilih PDF</span></label>
+  <p class="drop__hint">Atau seret ke mana saja di halaman ini. Hingga 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Kata sandi</label>
+      <input id="pw" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <div class="field">
+      <label for="pw2">Ketik ulang</label>
+      <input id="pw2" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <p class="help opts__full" id="pw-help">Gunakan kata sandi panjang yang tidak Anda pakai di tempat lain. Kami tidak bisa memulihkannya untuk Anda.</p>
+    <div class="field opts__full">
+      <span class="label">Dengan kata sandi, pembaca boleh</span>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="allow-print" checked>Mencetak</label>
+        <label class="check"><input type="checkbox" id="allow-copy" checked>Menyalin teks</label>
+        <label class="check"><input type="checkbox" id="show">Tampilkan kata sandi</label>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Proteksi PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Apa yang dilakukan proteksi kata sandi</h2>
+<p>PDF yang diproteksi kata sandi berarti dienkripsi: halamannya diacak dengan kunci yang diturunkan dari kata sandi Anda, sehingga pembaca PDF tidak menampilkan apa pun sampai kata sandi dimasukkan. Server kami mengenkripsi file dengan AES-256 menggunakan pustaka open source qpdf dan mengirim salinan yang terkunci kembali kepada Anda.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Kirim kata sandi terpisah dari filenya, misalnya lewat SMS, bukan di email yang sama.</li>
+  <li>Ingin tanda "Rahasia" yang terlihat juga? Tambahkan dulu dengan <a href="/tools/watermark-pdf/">Watermark PDF</a>; alat itu berjalan di browser Anda.</li>
+</ul>

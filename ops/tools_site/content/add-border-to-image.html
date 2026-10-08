@@ -1,0 +1,109 @@
+<!--meta
+{
+  "category": "image",
+  "name": "Add border to image",
+  "title": "Add a border or rounded corners to images | Tanod Tools",
+  "description": "Frame photos with a coloured border, inner padding and rounded corners in pixels or percent. Transparent corners for PNG and WebP. Nothing is uploaded.",
+  "h1": "Add border to image",
+  "lede": "Frame pictures with a border of any colour, add padding inside it, or just round the corners, for one image or a whole batch.",
+  "blurb": "Add borders, padding and rounded corners.",
+  "keywords": "frame outline edge stroke round corners rounded rounding padding margin mat polaroid photo border",
+  "limits": "A batch holds up to 50 pictures of at most 50 MB apiece. The framed result of each image can be up to 100 megapixels.",
+  "howto_title": "How to add a border to an image",
+  "howto": [
+    "Pick the photos to frame, or drop them anywhere on the page. The first one appears in the preview.",
+    "Set the border width and colour, and optionally the corner radius and inner padding. Choose <strong>Rounded corners only</strong> to keep the size and just round the corners.",
+    "Pick PNG, JPEG or WebP, then press <strong>Add border</strong> and download the files or a .zip."
+  ],
+  "faq": [
+    ["Are my images uploaded?", "No. Each border is drawn around your picture in your browser on your device. Nothing is sent to a server."],
+    ["Does the border go on top of the picture or around it?", "Around it. The border and any padding make the image bigger: a 100 × 80 picture with a 10 pixel border becomes 120 × 100. The picture itself is not cropped or covered. In rounded-corners-only mode the size does not change."],
+    ["What do the percent values mean?", "Border width and padding in percent are taken from the shorter side of the original picture, so 5 per cent on a 1000 × 600 picture is a 30 pixel border. Corner radius in percent is taken from the shorter side of the finished image, and 50 per cent makes a circle or a pill shape."],
+    ["What colour are the corners outside a rounded shape?", "Transparent in PNG and WebP. JPEG has no transparency, so the corners are filled with the \"Corners in JPEG\" colour instead, white unless you change it."],
+    ["What is padding for?", "It adds a band of its own colour between the picture and the border, like the white mat inside a photo frame or a Polaroid. Leave it at 0 for a plain border."],
+    ["Will my batch keep each picture's format?", "With Same selected, PNG, JPEG and WebP files stay as they are and other formats are saved as PNG. Rounded corners on a JPEG are only visible on a coloured background, so consider switching to PNG or WebP."]
+  ],
+  "related": ["merge-images", "add-text-to-image", "crop-image", "resize-image", "image-filters", "favicon-generator"],
+  "app_category": "DesignApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Drop images here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choose images</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP or AVIF. Or drag them anywhere on this page.</p>
+</div>
+<ol class="files" id="files" aria-label="Images to frame" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts brd-opts">
+    <fieldset class="field">
+      <legend>Mode</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="border" checked>Border</label>
+        <label><input type="radio" name="mode" value="round">Rounded corners only</label>
+      </div>
+    </fieldset>
+    <div class="field" data-border>
+      <label for="bw">Border width</label>
+      <div class="brd-pair"><input type="number" id="bw" min="0" max="5000" step="any" value="10" inputmode="decimal">
+        <span class="seg" role="radiogroup" aria-label="Border width unit"><label><input type="radio" name="bu" value="px" checked>px</label><label><input type="radio" name="bu" value="pct">%</label></span></div>
+      <p class="help">Percent is of the shorter side of each picture.</p>
+    </div>
+    <div class="field" data-border>
+      <label for="bc">Border colour</label>
+      <input type="color" id="bc" value="#111417">
+    </div>
+    <div class="field" data-border>
+      <label for="pw">Inner padding</label>
+      <input type="number" id="pw" min="0" max="5000" step="any" value="0" inputmode="decimal">
+      <p class="help">Same unit as the border width.</p>
+    </div>
+    <div class="field" data-border>
+      <label for="pc">Padding colour</label>
+      <input type="color" id="pc" value="#ffffff">
+    </div>
+    <div class="field">
+      <label for="rw">Corner radius</label>
+      <div class="brd-pair"><input type="number" id="rw" min="0" max="5000" step="any" value="0" inputmode="decimal">
+        <span class="seg" role="radiogroup" aria-label="Corner radius unit"><label><input type="radio" name="ru" value="px" checked>px</label><label><input type="radio" name="ru" value="pct">%</label></span></div>
+      <p class="help">Percent is of the shorter side of the finished image; 50% is a full circle or pill.</p>
+    </div>
+    <fieldset class="field">
+      <legend>Save as</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Same</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">PNG and WebP keep the corners transparent.</p>
+    </fieldset>
+    <div class="field">
+      <label for="jc">Corners in JPEG</label>
+      <input type="color" id="jc" value="#ffffff">
+      <p class="help">JPEG cannot be transparent, so the area outside rounded corners takes this colour.</p>
+    </div>
+  </div>
+  <p class="help" id="preview-label"></p>
+  <div class="preview"><canvas id="preview" role="img" aria-label="Preview of the first image with its border"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Add border</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Clear all</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Borders, padding and rounded corners</h2>
+<p>A border is drawn outside the picture, so it adds to the image size rather than covering any of it. Padding is an optional second band between the picture and the border, in its own colour. A thin dark border plus a wide white padding gives the classic photo-print look; a wide border with no padding gives a plain frame.</p>
+<p>Giving pixel values means every image gets the same border even when the images differ in size, which is handy for a set that will sit side by side. Percent values scale with each picture instead, so a small thumbnail and a large photo keep the same proportions. The preview shows the first image reduced, with the border scaled to match.</p>
+<p>Rounded corners need pixels that are not part of the picture. PNG and WebP can leave them transparent, so the picture sits cleanly on any background. JPEG has no transparency, which is why this tool asks for a colour to fill those corners with.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Make a set of pictures the same size before framing them with <a href="/tools/resize-image/">Resize image</a>.</li>
+  <li>To place framed pictures next to each other, use <a href="/tools/merge-images/">Merge images</a>.</li>
+  <li>For a round profile picture, <a href="/tools/crop-image/">crop to a square</a> first, then set the radius to 50%.</li>
+</ul>

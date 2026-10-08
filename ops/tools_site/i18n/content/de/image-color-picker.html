@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Farbe aus Bild auslesen: HEX- und RGB-Code | Tanod Tools",
+  "description": "Farben aus Bildern auslesen: Pixel anklicken und HEX-, RGB- und HSL-Code erhalten, dazu die Hauptfarben des Bildes als Palette. Läuft im Browser, kein Upload.",
+  "h1": "Farbe aus Bild auslesen",
+  "lede": "Klicken Sie auf eine beliebige Stelle eines Bildes, um die exakte Farbe dieses Pixels abzulesen, oder übernehmen Sie die Palette seiner Hauptfarben.",
+  "blurb": "HEX- und RGB-Codes aus jedem Pixel.",
+  "keywords": "farbe aus bild auslesen farbe aus foto bestimmen farbpipette pipette color picker farbwähler farbwaehler hex code rgb hsl farbcode palette extrahieren screenshot",
+  "limits": "Ein Bild nach dem anderen, 50 MB und etwa 100 Megapixel. PNG, JPEG, WebP, GIF (erstes Bild), BMP oder AVIF.",
+  "howto_title": "So lesen Sie eine Farbe aus einem Bild aus",
+  "howto": [
+    "Wählen Sie ein Bild aus, ziehen Sie es auf die Seite oder fügen Sie es ein.",
+    "Fahren Sie über das Bild, um mit der Lupe zu zielen, und klicken oder tippen Sie dann, um die Farbe auszuwählen. Mit der Tastatur setzen Sie den Fokus auf das Bild, bewegen sich mit den Pfeiltasten (mit Umschalt in größeren Schritten) und drücken die Eingabetaste.",
+    "Kopieren Sie den HEX-, RGB- oder HSL-Code oder eine Farbe aus der Palette der Hauptfarben."
+  ],
+  "faq": [
+    ["Wie genau ist die Farbe?", "Es ist der gespeicherte Wert des einzelnen Pixels unter dem Fadenkreuz, gelesen aus dem Bild in voller Größe, nicht aus der verkleinerten Vorschau. Die Lupe zeigt die umliegenden Pixel, sodass Sie auch an einer unruhigen Kante genau ein Pixel treffen."],
+    ["Warum weicht die Farbe von dem ab, was eine andere App anzeigt?", "JPEG-Komprimierung verschiebt Farben leicht, besonders an Kanten und in flachen Bereichen, sodass benachbarte Pixel um einige Werte abweichen können. Bilder mit Farbprofil wandelt Ihr Browser vor dem Auslesen in Standard-sRGB um, den Farbraum von Webseiten; ein Bildbearbeitungsprogramm, das in einem anderen Farbraum arbeitet, kann andere Zahlen anzeigen."],
+    ["Wie wird die Palette ermittelt?", "Das Bild wird an bis zu 160 × 160 Punkten abgetastet, und die Farben werden in acht Gruppen eingeteilt, indem der Farbbereich wiederholt dort geteilt wird, wo er am breitesten ist (Median-Cut-Verfahren). Jedes Farbfeld ist die Durchschnittsfarbe seiner Gruppe, mit ihrem Anteil am Bild. Ganz oder überwiegend transparente Pixel werden übersprungen."],
+    ["Was bedeuten HEX, RGB und HSL?", "Es sind drei Schreibweisen für dieselbe Farbe. HEX sind die Werte für Rot, Grün und Blau (0 bis 255) im Sechzehnersystem, wie in CSS und Designprogrammen üblich. RGB nennt sie als normale Zahlen. HSL gibt Farbton (0 bis 360 Grad), Sättigung und Helligkeit an, was sich von Hand leichter anpassen lässt."],
+    ["Wird mein Bild hochgeladen?", "Nein. Das Bild wird in Ihrem Browser auf Ihrem Gerät dekodiert und ausgelesen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Bild hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Bild auswählen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP oder AVIF. Oder hierher ziehen oder einfügen.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="Farbpipette" aria-label="Bild. Pfeiltasten bewegen das Fadenkreuz, Umschalt mit Pfeiltasten bewegt es schneller, die Eingabetaste wählt die Farbe aus." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Zum Auswählen klicken oder tippen. Tastatur: Pfeiltasten bewegen das Fadenkreuz, Umschalt bewegt es schneller, Eingabetaste wählt aus.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Unter dem Fadenkreuz</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Ausgewählte Farbe</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="HEX-Code kopieren">Kopieren</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="RGB-Code kopieren">Kopieren</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="HSL-Code kopieren">Kopieren</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Bisher ausgewählt</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Hauptfarben</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">Wählen Sie ein Farbfeld, um seinen HEX-Code zu kopieren.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Farben direkt aus den Pixeln auslesen</h2>
+<p>Eine Markenfarbe aus einem Logo übernehmen, das exakte Blau in einem Screenshot finden oder aus einem Foto eine Palette bauen: Es läuft immer darauf hinaus, die Rot-, Grün- und Blauwerte auszulesen, die für ein Pixel gespeichert sind. Dieses Tool dekodiert das Bild in Ihrem Browser und liest diese Werte aus dem Bild in voller Auflösung. Der Code, den Sie kopieren, ist also die Farbe, die tatsächlich in der Datei steht.</p>
+<p>Einzelne Pixel können bei Fotos täuschen, weil Bildrauschen und Komprimierung benachbarte Pixel variieren lassen. Zielen Sie mit der Lupe auf die Mitte einer gleichmäßigen Fläche oder nehmen Sie die Palette, die ganze Gruppen ähnlicher Pixel zu einer Handvoll repräsentativer Farben mittelt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Wandeln Sie eine ausgewählte Farbe in CMYK um oder prüfen Sie ihren Kontrast zu Text mit dem <a href="/tools/color-converter/">Farbkonverter und Kontrastprüfer</a>.</li>
+  <li>Sie möchten eine Farbe aus einem kleinen Teil eines großen Bildes auslesen? <a href="/tools/crop-image/">Schneiden Sie das Bild</a> zuerst zu, damit der Bereich den Bildschirm füllt.</li>
+</ul>

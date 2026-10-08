@@ -1,0 +1,94 @@
+<!--meta
+{
+  "title": "Timer online: contagem regressiva com alarme | Tanod Tools",
+  "description": "Timer online grátis com atalhos, som quando o tempo acaba, tempo no título da aba e um modo de contagem regressiva para qualquer data em qualquer fuso.",
+  "h1": "Timer online (contagem regressiva)",
+  "lede": "Defina uma duração e toque em iniciar, ou faça a contagem regressiva para uma data e hora no fuso que você escolher e compartilhe o link.",
+  "blurb": "Timer com atalhos e alarme, ou contagem regressiva para uma data.",
+  "keywords": "timer online temporizador contagem regressiva cronometro regressivo alarme despertador pomodoro timer de cozinha quantos dias faltam ano novo prazo evento",
+  "limits": "As durações vão até 99 horas, 59 minutos e 59 segundos. O timer só funciona enquanto esta página fica aberta numa aba; fechá-la interrompe a contagem e o som.",
+  "howto_title": "Como usar o timer online",
+  "howto": [
+    "Informe horas, minutos e segundos ou toque num <strong>atalho</strong> e depois em <strong>Iniciar</strong>. O título da aba mostra o tempo restante.",
+    "Pause e retome quantas vezes quiser, ou toque em <strong>Zerar</strong> para voltar ao tempo inicial.",
+    "Para fazer a contagem regressiva para um evento, mude para <em>Até uma data</em>, informe a data, a hora e o fuso e copie o link para compartilhar."
+  ],
+  "faq": [
+    ["Ele continua preciso se eu mudar para outra aba?", "Sim. Os navegadores deixam os timers mais lentos nas abas em segundo plano, por isso a página nunca conta os tiques. Ela compara a leitura atual do relógio com o momento em que o timer deve terminar, então o visor se atualiza assim que a aba fica visível e o horário final não se desloca. O alarme numa aba oculta pode chegar com até cerca de um segundo de atraso."],
+    ["O som vai tocar?", "O alarme é um tom curto gerado pelo mecanismo de áudio do seu navegador, sem arquivo de áudio. Os navegadores só permitem som depois que você interage com a página, então toque primeiro em Iniciar nesta página. Se o seu dispositivo estiver no silencioso ou a aba estiver sem som, você não vai ouvir, e a mensagem de fim continua na tela. Use a caixa de seleção para desligar o som."],
+    ["O timer pode manter a tela ligada?", "Há uma caixa de seleção opcional para isso. Ela usa o recurso Wake Lock do navegador, que o Chrome, o Edge e o Safari oferecem. Se o seu navegador ou a economia de bateria recusarem, a página avisa e segue em frente; a contagem em si não é afetada."],
+    ["Como compartilho uma contagem regressiva para um evento?", "Mude para o modo de data, informe a data, a hora e o fuso e use Copiar link. O destino fica guardado na parte do endereço depois do <code>#</code>, como <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. Essa parte não é enviada a nenhum servidor quando alguém abre o link, e a pessoa vê o mesmo momento no próprio relógio."],
+    ["O que acontece numa mudança de horário de verão?", "No modo de data, o horário é calculado para o fuso escolhido, com os dados de fuso horário do navegador. Se o horário do relógio for pulado, por exemplo 02:30 na noite em que os relógios são adiantados, a página passa para o momento equivalente seguinte e avisa. Se ele acontecer duas vezes, é usado o primeiro."],
+    ["Por que ele mostra um segundo inteiro antes de chegar a zero?", "O visor arredonda para cima, então 00:00:01 fica na tela durante o último segundo e o zero aparece no momento em que o tempo acaba, como num timer de cozinha."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Contagem regressiva</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>Por um tempo</label>
+      <label><input type="radio" name="ct-mode" value="date">Até uma data</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Tempo restante" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>O tempo acabou.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Horas</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minutos</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Segundos</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Atalhos">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 min</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Iniciar</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Zerar</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Data</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Hora</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Fuso horário</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Dias</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Horas</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minutos</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Segundos</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Copiar link desta contagem</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Silenciar o som quando o tempo acabar</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Manter a tela ligada durante a contagem</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Como um timer se mantém preciso, e o que uma aba oculta faz com ele</h2>
+<p>O jeito óbvio de montar uma contagem regressiva é subtrair um de um número toda vez que um timer de um segundo dispara. Também é o jeito errado. Os navegadores limitam os timers das abas em segundo plano a uma vez por segundo ou até uma vez por minuto, e uma página ocupada os atrasa ainda mais, então um timer que conta para trás vai ficando atrasado sem avisar. Este timer online guarda o momento em que deve terminar e, a cada tique, subtrai dele o horário atual, usando o relógio monotônico para durações e o relógio comum para datas. Os tiques só decidem quando a tela é redesenhada.</p>
+<p>O modo de data trabalha com o tempo do calendário, que é mais complicado. "Meia-noite de 1º de janeiro em Auckland" é um instante diferente da mesma leitura de relógio em Londres, e duas vezes por ano alguns fusos pulam ou repetem uma hora. A página pede ao banco de dados de fusos horários do navegador a diferença exata no dia de destino, então a contagem regressiva para um evento local fica correta para o lugar onde ele acontece, qualquer que seja o fuso de quem está vendo.</p>
+<p>Os anúncios para leitores de tela são propositalmente poucos: o início, cada minuto inteiro, os 10 e os 5 segundos finais e o fim. Ler cada segundo em voz alta tornaria a página inutilizável com um leitor de tela e não ajudaria ninguém que consegue ver os números.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Vai planejar um evento entre regiões diferentes? Compare os horários antes no <a href="/tools/time-zone-converter/">conversor de fuso horário</a>.</li>
+  <li>Quer o tempo decorrido em vez do tempo restante, com voltas? Use o <a href="/tools/stopwatch/">cronômetro</a>.</li>
+  <li>Precisa do intervalo entre duas datas em dias, e não de um relógio ao vivo? Experimente a ferramenta <a href="/tools/date-difference-calculator/">Dias entre datas</a>.</li>
+</ul>

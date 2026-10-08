@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Recortar imagen online gratis, al píxel exacto | Tanod Tools",
+  "description": "Recorta un JPG, PNG o WebP en tu navegador. Arrastra el recuadro, usa proporciones predefinidas o escribe píxeles exactos. No se sube nada y se mantiene el formato.",
+  "h1": "Recortar imagen",
+  "lede": "Arrastra un recuadro de recorte sobre tu imagen, o escribe valores exactos en píxeles, y guarda la copia recortada.",
+  "blurb": "Recorta una imagen a la parte que necesitas.",
+  "keywords": "recortar imagen recortar foto cortar imagen relacion de aspecto cuadrado 16:9 4:3 recorte foto",
+  "limits": "Una imagen a la vez, de hasta 50 MB y unos 100 megapíxeles. PNG, JPEG, WebP, GIF, BMP y AVIF (si tu navegador puede abrirlos).",
+  "howto_title": "Cómo recortar una imagen",
+  "howto": [
+    "Elige una imagen o arrástrala a la página.",
+    "Arrastra el recuadro para moverlo y las esquinas para cambiar su tamaño. Elige una relación de aspecto si la necesitas, o escribe X, Y, ancho y alto en píxeles.",
+    "Pulsa <strong>Recortar imagen</strong> y descarga el resultado."
+  ],
+  "faq": [
+    ["¿Se sube mi imagen?", "No. El recorte se hace en tu navegador a partir del archivo que está en tu dispositivo. No se envía nada a ningún servidor."],
+    ["¿Puedo usar el teclado en lugar del mouse?", "Sí. Selecciona el recuadro de recorte (llega a él con Tab o haz clic en él) y usa las flechas para moverlo, y Mayús con las flechas para cambiar su tamaño. Los campos X, Y, ancho y alto también aceptan valores exactos en píxeles."],
+    ["¿Recortar reduce la calidad?", "Los píxeles dentro del recuadro se copian tal cual, a resolución completa, no desde la vista previa del tamaño de la pantalla. JPEG y WebP se vuelven a guardar con calidad 92, así que hay una pequeña recompresión; PNG sigue sin pérdida."],
+    ["¿En qué formato sale el resultado?", "En el mismo que el original: PNG sigue siendo PNG, JPEG sigue siendo JPEG y WebP sigue siendo WebP. GIF, BMP y AVIF se guardan como PNG (de un GIF queda su primer fotograma)."],
+    ["¿Para qué sirven las proporciones predefinidas?", "Fijan el recuadro a una relación entre ancho y alto, como 1:1 para un cuadrado o 16:9 para un formato panorámico, y la mantienen mientras cambias el tamaño. Elige Libre para recortar con cualquier forma."],
+    ["¿Se conservan los datos EXIF?", "No. El archivo recortado es una imagen nueva sin metadatos de cámara ni de GPS, guardada en la orientación en que se muestra."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Suelta una imagen aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Elegir una imagen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. O arrástrala a cualquier parte de esta página.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Vista previa de la imagen que se va a recortar" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Zona de recorte" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Arrastra el recuadro para moverlo y una esquina para cambiar su tamaño. Con el recuadro seleccionado, las flechas lo mueven y Mayús con las flechas cambia su tamaño.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Relación de aspecto</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Libre</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Ancho (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Alto (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Recortar imagen</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Recortar sin perder resolución</h2>
+<p>Recortar una imagen conserva un rectángulo de los píxeles originales y descarta el resto. La imagen que ves en pantalla es una vista previa reducida para que quepa en la página; el recorte en sí se toma de la imagen a resolución completa, con los valores de X, Y, ancho y alto que muestran los campos. Esos números están en los píxeles de la propia imagen, no en píxeles de la pantalla.</p>
+<p>Usa una relación de aspecto cuando el resultado tenga que encajar en un marco: 1:1 para un avatar cuadrado, 16:9 para la miniatura de un video, 4:3 o 3:2 para los formatos de foto habituales, 9:16 para una historia vertical. El recuadro mantiene esa forma mientras cambias su tamaño, y al escribir el ancho o el alto se actualiza el otro valor.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Recorta primero y luego reduce el tamaño con <a href="/tools/resize-image/">Redimensionar imagen</a> y <a href="/tools/compress-image/">Comprimir imagen</a>.</li>
+  <li>¿La foto quedó girada? <a href="/tools/rotate-image/">Rotar imagen</a> lo corrige.</li>
+  <li>¿Quieres crear un ícono a partir de una parte de una imagen? Recorta en 1:1 y luego usa el <a href="/tools/favicon-generator/">Generador de favicon</a>.</li>
+</ul>

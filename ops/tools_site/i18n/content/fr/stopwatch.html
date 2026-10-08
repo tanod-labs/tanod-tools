@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Chronomètre en ligne avec tours et export CSV | Tanod Tools",
+  "description": "Chronomètre en ligne gratuit : temps au tour et intermédiaires, tours le plus rapide et le plus lent signalés, raccourcis clavier, export CSV. Au centième.",
+  "h1": "Chronomètre",
+  "lede": "Démarrez, arrêtez et enregistrez des tours, au clavier si vous le souhaitez. Les temps sont affichés au centième de seconde.",
+  "blurb": "Chronomètre avec tours, temps intermédiaires et export CSV.",
+  "keywords": "chronometre en ligne chrono stopwatch temps au tour temps intermediaire course a pied entrainement natation mesurer le temps centieme",
+  "limits": "L'affichage indique les heures, minutes, secondes et centièmes et fonctionne jusqu'à 99 heures. Les tours ne sont conservés que tant que la page est ouverte : téléchargez-les ou copiez-les avant de fermer l'onglet.",
+  "howto_title": "Comment utiliser le chronomètre",
+  "howto": [
+    "Appuyez sur <strong>Démarrer</strong>, ou sur <kbd>Espace</kbd>. Appuyez de nouveau pour arrêter ; <strong>Reprendre</strong> repart de là où vous vous étiez arrêté.",
+    "Pendant qu'il tourne, appuyez sur <strong>Tour</strong> ou sur <kbd>L</kbd> pour enregistrer un tour. Chaque ligne affiche le temps du tour et le temps intermédiaire cumulé.",
+    "Copiez les tours ou téléchargez-les en fichier CSV pour un tableur. <strong>Réinitialiser</strong> ou <kbd>R</kbd> efface tout."
+  ],
+  "faq": [
+    ["Quelle différence entre temps au tour et temps intermédiaire ?", "Le temps au tour est la durée de ce tour seul. Le temps intermédiaire est le temps total affiché au chronomètre quand vous avez appuyé sur Tour. Un tour 3 avec un temps intermédiaire de 3:10.00, et des tours de 1:00, 1:05 et 1:05, racontent la même histoire de deux façons."],
+    ["Quelle est sa précision ?", "Il lit l'horloge haute résolution du navigateur quand vous appuyez sur un bouton, puis à chaque rafraîchissement de l'affichage, et montre la différence au centième de seconde. Votre propre temps de réaction, environ un dixième de seconde ou plus, est la principale source d'erreur. Chronométrer une épreuve sportive officielle exige un véritable équipement de chronométrage."],
+    ["Continue-t-il à compter si je change d'onglet ou verrouille mon téléphone ?", "Il continue à mesurer, car il se fonde sur l'horloge et non sur un nombre de rafraîchissements : le bon temps s'affiche dès votre retour. Si un téléphone suspend complètement le navigateur, l'horloge avance toujours, mais vous ne pouvez pas appuyer sur Tour entre-temps."],
+    ["Quels sont les raccourcis clavier ?", "<kbd>Espace</kbd> démarre et arrête, <kbd>L</kbd> enregistre un tour et <kbd>R</kbd> réinitialise. Ils sont ignorés pendant la saisie dans un champ ou quand un bouton a le focus, pour ne jamais gêner l'usage normal du clavier ; cliquez sur une zone vide de la page pour les utiliser."],
+    ["Comment le tour le plus rapide et le plus lent sont-ils choisis ?", "Dès qu'il y a au moins deux tours, le temps au tour le plus court est marqué Plus rapide et le plus long Plus lent, en toutes lettres en plus de la couleur. Si tous les tours sont égaux, rien n'est marqué. Le tour en cours n'est pas pris en compte."],
+    ["Que contient le fichier CSV ?", "Une ligne d'en-tête, puis une ligne par tour avec le numéro du tour, le temps du tour et le temps intermédiaire, au format hh:mm:ss.cc. Les tableurs l'ouvrent directement. Rien n'est envoyé : le fichier est créé dans votre navigateur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack sw">
+  <div class="sw-display" id="sw-display" role="timer" aria-live="off" aria-label="Temps écoulé" data-state="idle">00:00:00.00</div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="sw-start" type="button">Démarrer</button>
+    <button class="btn btn--lg" id="sw-lap" type="button" aria-keyshortcuts="L" disabled>Tour</button>
+    <button class="btn btn--lg" id="sw-reset" type="button" aria-keyshortcuts="R" disabled>Réinitialiser</button>
+  </div>
+  <p class="help sw-keys">Clavier : <kbd>Espace</kbd> démarrer ou arrêter, <kbd>L</kbd> tour, <kbd>R</kbd> réinitialiser. Ces raccourcis fonctionnent quand aucun champ ni bouton n'a le focus.</p>
+  <div id="sw-lap-box" class="util-stack" hidden>
+    <div class="sw-head">
+      <h2 class="util-h">Tours</h2>
+      <div class="actions">
+        <button class="btn btn--sm" id="sw-copy" type="button" disabled>Copier les tours</button>
+        <button class="btn btn--sm" id="sw-csv" type="button" disabled>Télécharger le CSV</button>
+      </div>
+    </div>
+    <div class="calc-table">
+      <table class="dens sw-table">
+        <thead><tr><th scope="col">Tour</th><th scope="col">Temps du tour</th><th scope="col">Temps intermédiaire</th><th scope="col">Remarque</th></tr></thead>
+        <tbody id="sw-laps"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Temps au tour, temps intermédiaires et comment un chronomètre de navigateur les mesure</h2>
+<p>Un chronomètre en ligne enregistre deux valeurs chaque fois que vous appuyez sur Tour. Le <em>temps intermédiaire</em> est le temps total depuis le départ. Le <em>temps au tour</em> est le temps intermédiaire moins le précédent. Les coureurs et les nageurs lisent les temps au tour pour voir s'ils faiblissent ; les personnes qui chronomètrent un processus, comme les étapes d'une recette ou les tours de parole d'une réunion, veulent généralement les temps intermédiaires. Afficher les deux permet de les vérifier l'un par l'autre : la somme des temps au tour donne le dernier temps intermédiaire.</p>
+<p>La page relève l'horloge monotone du navigateur quand vous appuyez sur Démarrer, puis à chaque rafraîchissement, et affiche la différence. Elle n'additionne jamais de « tops » : c'est pourquoi le chiffre reste juste quand le navigateur ralentit un onglet en arrière-plan, et pourquoi arrêter puis reprendre ne fait pas perdre de temps, puisque le temps écoulé avant l'arrêt est conservé et que la nouvelle course s'y ajoute. L'horloge monotone ne peut pas sauter quand votre ordinateur ajuste son heure ou passe à l'heure d'été ou d'hiver.</p>
+<p>Les temps au tour sont conservés en centièmes de seconde, sous forme de nombres entiers. Cela évite le piège de l'arrondi où les tours arrondis de 1,234 et 2,345 secondes donnent une somme différente du total arrondi : ce que vous voyez s'additionne toujours correctement.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Pour une limite de temps qui décompte et sonne, utilisez le <a href="/tools/countdown-timer/">minuteur (compte à rebours)</a>.</li>
+  <li>Transformez les temps exportés en secondes ou en dates avec le <a href="/tools/unix-timestamp-converter/">convertisseur de timestamp Unix</a>.</li>
+  <li>Besoin d'un ordre de passage équitable avant de lancer le chrono ? Tirez-le avec l'outil <a href="/tools/random-name-picker/">tirage au sort de noms</a>.</li>
+</ul>

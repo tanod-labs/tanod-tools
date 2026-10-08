@@ -1,0 +1,108 @@
+<!--meta
+{
+  "title": "Farbkonverter: HEX, RGB, HSL, CMYK und Kontrast | Tanod Tools",
+  "description": "Farben zwischen HEX, RGB, HSL, HSV und CMYK umrechnen, CSS-Farbnamen nachschlagen und den WCAG-Kontrast von Text auf Hintergrund prüfen. Kostenlos, im Browser.",
+  "h1": "Farbkonverter",
+  "lede": "Rechnen Sie eine Farbe zwischen HEX, RGB, HSL, HSV und CMYK um und prüfen Sie, ob zwei Farben genug Kontrast für gut lesbaren Text haben.",
+  "blurb": "HEX, RGB, HSL, CMYK und WCAG-Kontrastprüfer.",
+  "keywords": "farbkonverter farben umrechnen farbe umwandeln hex in rgb hex zu rgb rgb in hex hsl cmyk hsv farbwähler color picker kontrast kontrastverhältnis kontrastprüfer wcag barrierefreiheit css farbnamen",
+  "limits": "Liest HEX (3, 4, 6 oder 8 Stellen), rgb(), hsl(), hsv(), cmyk() und CSS-Farbnamen; andere CSS-Farbsyntax liest Ihr Browser, soweit er kann. HSL, HSV und CMYK werden mit einer Nachkommastelle angezeigt.",
+  "howto_title": "So rechnen Sie eine Farbe um",
+  "howto": [
+    "Tippen oder fügen Sie eine Farbe in einem gängigen Format ein, etwa <code>#1636a3</code>, <code>rgb(22, 54, 163)</code>, <code>hsl(226, 76%, 36%)</code> oder <code>navy</code>, oder wählen Sie eine mit dem Farbwähler.",
+    "Kopieren Sie das benötigte Format aus der Liste. Die Werte werden während der Eingabe aktualisiert.",
+    "Geben Sie unter <strong>Kontrastprüfer</strong> eine Text- und eine Hintergrundfarbe ein, um ihr Kontrastverhältnis zu sehen und ob sie WCAG AA und AAA bestehen."
+  ],
+  "faq": [
+    ["Stimmt der CMYK-Wert für den Druck?", "Nur ungefähr. Das CMYK hier stammt aus der einfachen Formel, die Bildschirm-RGB ohne Farbprofil umrechnet, wie es die meisten Online-Konverter tun. Druckereien arbeiten mit bestimmten Farben und Papieren, beschrieben durch ein ICC-Profil; für Druckarbeiten rechnen Sie daher in einer Grafiksoftware mit dem Profil um, das Ihre Druckerei Ihnen gibt."],
+    ["Wie wird das Kontrastverhältnis berechnet?", "Mit der WCAG-2-Formel: Aus den sRGB-Werten jeder Farbe wird ihre relative Leuchtdichte berechnet, und das Verhältnis ist (hellere + 0,05) geteilt durch (dunklere + 0,05). Es reicht von 1:1 (kein Kontrast) bis 21:1 (Schwarz auf Weiß). Der aktuelle WCAG-Text verwendet in der Formel einen Schwellenwert von 0,04045; ältere Fassungen nannten 0,03928, was für jede 8-Bit-Farbe dasselbe Ergebnis liefert."],
+    ["Welche Verhältnisse verlangen AA und AAA?", "Normaler Text braucht 4,5:1 für AA und 7:1 für AAA. Großer Text, also mindestens 24 px normal oder etwa 18,7 px fett, braucht 3:1 für AA und 4,5:1 für AAA. Icons, Eingabefeldrahmen und andere Bedienelemente brauchen 3:1 (WCAG 1.4.11). Ein Verhältnis wird nicht aufgerundet: 4,49:1 besteht AA für normalen Text nicht."],
+    ["Was passiert mit transparenten Farben?", "Eine teilweise transparente Textfarbe wird zuerst mit dem Hintergrund gemischt, so wie ein Bildschirm sie zeigt, und die gemischte Farbe wird gemessen. Bei einem teilweise transparenten Hintergrund wird angenommen, dass er auf Weiß liegt. Nach dem Mischen werden die Kanäle auf ganze Zahlen gerundet, so wie ein Bildschirm sie darstellen würde."],
+    ["Warum ändern sich HSL-Werte nach dem Zurückrechnen leicht?", "Bildschirmfarben haben 256 Stufen pro Kanal, daher landen die meisten HSL- und HSV-Werte nicht genau auf einer davon. Der Konverter rechnet intern mit voller Genauigkeit und rundet nur für die Anzeige: HEX und RGB auf ganze Zahlen, HSL, HSV und CMYK auf eine Nachkommastelle."],
+    ["Kennt das Tool CSS-Farbnamen?", "Ja, alle 148 benannten Farben in CSS, etwa <code>rebeccapurple</code> und <code>cornflowerblue</code>. Geben Sie einen Namen ein, um ihn umzurechnen; entspricht eine Farbe genau einem Namen, wird der Name ebenfalls angezeigt. Manche Farben haben zwei Namen, etwa <code>aqua</code> und <code>cyan</code>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="col-top">
+    <div class="util-stack">
+      <div class="col-in">
+        <div class="field">
+          <label for="c-in">Farbe</label>
+          <input type="text" id="c-in" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+        </div>
+        <div class="field">
+          <label for="c-pick">Wähler</label>
+          <input type="color" id="c-pick" value="#1636a3">
+        </div>
+      </div>
+      <p class="tt__report" id="c-info" aria-live="polite"></p>
+    </div>
+    <div class="col-swatch" aria-hidden="true"><i id="c-swatch"></i></div>
+  </div>
+  <dl class="dv-rows" id="c-out">
+    <div><dt>HEX</dt><dd id="o-hex"></dd></div>
+    <div><dt>RGB</dt><dd id="o-rgb"></dd></div>
+    <div><dt>HSL</dt><dd id="o-hsl"></dd></div>
+    <div><dt>HSV / HSB</dt><dd id="o-hsv"></dd></div>
+    <div><dt>CMYK</dt><dd id="o-cmyk"></dd></div>
+    <div><dt>CSS-Name</dt><dd id="o-name"></dd></div>
+  </dl>
+
+  <h2 class="util-h">Kontrastprüfer</h2>
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="k-fg">Textfarbe</label>
+        <input type="text" id="k-fg" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-fg-pick">Wähler</label>
+        <input type="color" id="k-fg-pick" value="#1636a3">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="k-bg">Hintergrundfarbe</label>
+        <input type="text" id="k-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-bg-pick">Wähler</label>
+        <input type="color" id="k-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="k-swap" type="button">Farben tauschen</button>
+    <button class="btn btn--sm btn--quiet" id="k-use" type="button">Umgerechnete Farbe als Textfarbe verwenden</button>
+  </div>
+  <p class="tt__report" id="k-info" aria-live="polite"></p>
+  <div class="col-sample" id="k-sample" aria-hidden="true">
+    <span class="col-sample__big">Großer Text, 24 px</span>
+    <span class="col-sample__small">Normaler Fließtext mit 15 px, der Größe der meisten Absätze.</span>
+  </div>
+  <p>Kontrastverhältnis <span class="col-ratio" id="k-ratio" aria-live="polite">–</span></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Verwendung</th><th scope="col">Mindestens</th><th scope="col">Ergebnis</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Normaler Text, AA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Normaler Text, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Großer Text, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Großer Text, AAA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Icons und Bedienelemente, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="k-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Farbformate und Kontrast</h2>
+<p>HEX und RGB beschreiben eine Bildschirmfarbe als Anteile von Rot, Grün und Blau von 0 bis 255; HEX schreibt jeden Anteil einfach als zwei Hexadezimalziffern, optional mit einem dritten Paar für die Deckkraft. HSL und HSV beschreiben dieselben Farben über Farbton (einen Winkel auf dem Farbkreis), Sättigung und Helligkeit bzw. Hellwert; damit lässt sich leichter eine hellere oder gedecktere Variante einer Farbe wählen. Es sind verschiedene Koordinaten für dieselben sRGB-Farben, daher ist das Umrechnen von HEX in RGB oder HSL bis auf Rundung exakt.</p>
+<p>CMYK ist etwas anderes: Es beschreibt Druckfarbe, und die echte Umrechnung hängt vom Druckverfahren ab. Der angezeigte Wert stammt aus der einfachen Formel (Schwarz ist 1 minus der hellste Kanal, die anderen Farben ergeben den Rest), nützlich für grobe Arbeiten, aber kein Ersatz für ein Druckprofil.</p>
+<p>Der Kontrastprüfer wendet die Kontrastformel aus WCAG 2 an, dieselbe, die bei Barrierefreiheitsprüfungen und in den Entwicklertools der Browser verwendet wird. Er misst nur den Leuchtdichtekontrast und kann daher nichts über Farbpaare für Farbenblinde wie Rot auf Grün sagen; sehr dünne oder kleine Schriften brauchen unter Umständen mehr Kontrast als das Minimum.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie brauchen die Farbe eines Pixels in einem Foto oder Screenshot? Nutzen Sie <a href="/tools/image-color-picker/">Farbe aus Bild auslesen</a>.</li>
+  <li>Sie erstellen einen QR-Code in Markenfarben? Der <a href="/tools/qr-code-generator/">QR-Code-Generator</a> warnt, wenn der Kontrast zum Scannen zu gering ist.</li>
+  <li>Sie rechnen Hex-Zahlen um, die keine Farben sind? Probieren Sie den <a href="/tools/number-base-converter/">Zahlensystem-Umrechner</a>.</li>
+</ul>

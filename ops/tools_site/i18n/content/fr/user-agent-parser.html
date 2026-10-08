@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Analyseur de user agent : navigateur, OS, appareil | Tanod Tools",
+  "description": "Voyez ce que dit le user agent de votre navigateur, ou collez une chaîne : navigateur, moteur, OS, appareil et processeur, plus les Client Hints.",
+  "h1": "Analyseur de user agent",
+  "lede": "Décomposez une chaîne user agent en navigateur, moteur, système d'exploitation, appareil et processeur, en commençant par celle de votre navigateur.",
+  "blurb": "Analyser n'importe quel user agent, et voir le vôtre avec les Client Hints.",
+  "keywords": "analyseur user agent quel est mon user agent agent utilisateur chaine ua detection navigateur client hints useragent decodeur navigator.userAgent googlebot curl",
+  "limits": "L'analyse utilise ua-parser-js 1.0.41 (MIT) et repose sur des motifs : les chaînes inhabituelles ou falsifiées peuvent être mal interprétées. Les Client Hints ne sont affichés que pour le navigateur que vous utilisez actuellement, et seulement si ce navigateur les prend en charge (c'est le cas des navigateurs Chromium, pas de Firefox ni de Safari).",
+  "howto_title": "Comment lire une chaîne user agent",
+  "howto": [
+    "Le user agent de votre propre navigateur est analysé dès le chargement de la page. Pour en vérifier un autre, collez-le dans la zone de saisie, par exemple depuis un journal de serveur.",
+    "Lisez les lignes navigateur, moteur, système d'exploitation, appareil et processeur. Considérez-les comme ce que la chaîne affirme, pas comme des faits prouvés.",
+    "Pour votre propre navigateur, comparez le résultat avec la section Client Hints, qui peut afficher des détails que la chaîne raccourcie omet."
+  ],
+  "faq": [
+    ["Qu'est-ce qu'une chaîne user agent ?", "C'est une ligne de texte qu'un navigateur ou un programme envoie avec chaque requête web pour dire ce qu'il est. À cause de décennies d'astuces de compatibilité, presque tous les navigateurs commencent par <code>Mozilla/5.0</code> et mentionnent plusieurs autres navigateurs : la lire nécessite donc une recherche de motifs plutôt qu'un simple découpage."],
+    ["Pourquoi Windows 11 apparaît-il comme Windows 10 ?", "Chrome et les autres navigateurs Chromium figent la partie plateforme de la chaîne à \"Windows NT 10.0\", quelle que soit la vraie version de Windows. Seuls les Client Hints permettent de les distinguer : une version de plateforme de 13 ou plus signifie Windows 11. Cette page affiche cette valeur pour votre propre navigateur quand elle est disponible."],
+    ["Pourquoi mon iPad dit-il qu'il est un Mac ?", "Depuis iPadOS 13, Safari demande par défaut les versions ordinateur des sites et envoie un user agent Macintosh. La chaîne seule ne permet pas de distinguer un Mac d'un iPad, même si une page peut vérifier la présence d'un écran tactile. Il en va de même pour macOS : la version est figée à 10_15_7 dans la chaîne."],
+    ["Qu'est-ce que la réduction du User-Agent ?", "Chrome retire des détails de la chaîne pour limiter le pistage passif : la version mineure s'affiche en 0.0.0, le modèle d'appareil Android se réduit à une seule lettre K, et la version de l'OS est figée. Les sites qui ont besoin de ces détails doivent les demander via les Client Hints."],
+    ["Que sont les Client Hints ?", "Ce sont des en-têtes structurés et une API JavaScript (<code>navigator.userAgentData</code>) qui permettent à une page de demander des détails précis, comme l'architecture ou la version complète du navigateur, au lieu de les lire dans la chaîne. Seuls les navigateurs basés sur Chromium les prennent en charge aujourd'hui."],
+    ["Peut-on se fier au user agent pour des décisions de sécurité ?", "Non. N'importe qui peut envoyer n'importe quelle chaîne, et les bots se font souvent passer pour Chrome. Il convient pour les statistiques et le choix d'une mise en page, pas pour le contrôle d'accès. Pour vérifier Googlebot, un site contrôle plutôt l'adresse IP du visiteur avec une recherche DNS inverse."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">Chaîne user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Utiliser celui de mon navigateur</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Copier le résultat</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="User agent analysé"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints de votre navigateur</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Ce que dit un user agent, et ce qu'il cache</h2>
+<p>Un analyseur de user agent doit composer avec l'histoire de cette chaîne. Le user agent servait au départ à un serveur pour savoir quel navigateur l'interrogeait, afin d'envoyer une page qui y fonctionnait. Les navigateurs ont ensuite copié les noms des autres pour obtenir les bonnes pages, c'est pourquoi une chaîne Chrome mentionne aujourd'hui aussi Mozilla, AppleWebKit, KHTML, Gecko et Safari. Un analyseur contourne ce problème en testant des motifs dans un ordre soigneusement choisi et en retenant la correspondance la plus précise.</p>
+<p>La chaîne est aussi raccourcie volontairement. La réduction du User-Agent de Chrome fige la version de Windows à NT 10.0, celle de macOS à 10_15_7, le modèle Android à K et le numéro de build à 0.0.0, pour que la chaîne ne soit plus une bonne empreinte. Les détails n'ont pas disparu : une page qui les demande via les Client Hints obtient la version de la plateforme, l'architecture, le modèle et la version complète du navigateur, et c'est le navigateur du visiteur qui décide de répondre ou non.</p>
+<p>Utilisez la chaîne pour des décisions grossières et pour les journaux, pas pour accorder votre confiance. Les robots d'exploration et les outils en ligne de commande comme curl envoient leurs propres chaînes courtes, et tout peut être falsifié. Si vous traquez un bug de mise en page, la détection de fonctionnalités dans la page est plus fiable que la lecture du nom du navigateur.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Un journal de serveur rempli de réponses 403 ou 429 pour un même client ? Consultez ces codes dans la référence des <a href="/tools/http-status-codes/">Codes de statut HTTP</a>.</li>
+  <li>Les user agents présents dans des URL ou des chaînes de requête sont souvent encodés en pourcent ; décodez-les avec <a href="/tools/url-encode-decode/">Encoder et décoder une URL</a>.</li>
+  <li>Les en-têtes copiés d'une requête contiennent parfois des valeurs en Base64 ; lisez-les avec <a href="/tools/base64-encode-decode/">Encoder et décoder en Base64</a>.</li>
+</ul>

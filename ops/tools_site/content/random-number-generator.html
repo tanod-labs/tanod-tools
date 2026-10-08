@@ -1,0 +1,84 @@
+<!--meta
+{
+  "category": "util",
+  "name": "Random number generator",
+  "title": "Random number generator: integers and decimals | Tanod Tools",
+  "description": "Pick random numbers between any minimum and maximum, with or without repeats, sorted or not, as whole numbers or decimals. Uses your browser's secure random source.",
+  "h1": "Random number generator",
+  "lede": "Choose a range and how many numbers you want. Each one is drawn evenly from your browser's secure random source.",
+  "blurb": "Random integers or decimals in any range, with no-repeat mode.",
+  "keywords": "random number picker dice lottery draw raffle integer decimal between min max unique no repeat",
+  "limits": "Up to 10,000 numbers per draw, bounds of up to 30 digits and up to 10 decimal places. Results are not saved; reloading the page clears them.",
+  "howto_title": "How to generate random numbers",
+  "howto": [
+    "Type the <strong>smallest</strong> and <strong>largest</strong> value. Both ends can come up, and negative numbers work.",
+    "Set <strong>how many</strong> numbers you want, and tick <em>No repeats</em> if every number must be different.",
+    "Press <strong>Generate</strong>, then copy the list or download it as a text file."
+  ],
+  "faq": [
+    ["Are the numbers really random?", "They come from <code>crypto.getRandomValues</code>, the same secure generator browsers use for encryption keys, not from <code>Math.random</code>. Each value in your range is equally likely. The generator is good enough for games, raffles and picking a sample; it has not been audited for regulated lotteries."],
+    ["What is modulo bias, and does this tool have it?", "Taking a random 32-bit number and keeping the remainder after dividing by the range size makes some results slightly more likely whenever the range does not divide 2<sup>32</sup> evenly. This tool throws away any draw that falls in the uneven leftover and draws again, so every value has exactly the same chance. That also holds for huge ranges, which are handled with big integers."],
+    ["How does \"No repeats\" work, and when does it fail?", "The tool draws each new number and skips any that has appeared, or for small ranges shuffles the whole range and takes the first few. If you ask for more different numbers than the range holds, such as 7 from 1 to 6, it tells you instead of looping forever."],
+    ["What happens if the minimum is bigger than the maximum?", "The two values are swapped and the result line says so. Typing 10 and 1 gives the same draw as typing 1 and 10."],
+    ["How do decimals work?", "Set decimal places to 2 and the range 0 to 1 becomes the 101 values 0.00, 0.01 up to 1.00, each equally likely. The results always show the full number of places, so 0.50 stays 0.50. The bounds themselves cannot have more decimals than you chose."],
+    ["Can I use this for a lottery pick or a dice roll?", "For a dice roll use 1 to 6. For a lottery ticket tick <em>No repeats</em>, for example 6 numbers from 1 to 49 sorted smallest first. Random picks give you no better odds than any other numbers. Picks are not stored or sent anywhere."]
+  ],
+  "related": ["random-name-picker", "password-generator", "uuid-generator", "countdown-timer", "number-base-converter"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Minimum</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Maximum</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">How many</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Decimal places</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 gives whole numbers.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Order</label>
+      <select id="rn-order">
+        <option value="drawn">As drawn</option>
+        <option value="asc">Smallest first</option>
+        <option value="desc">Largest first</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">No repeats</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Generate</button>
+    <button class="btn" id="rn-copy" type="button">Copy list</button>
+    <button class="btn" id="rn-dl" type="button">Download .txt</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Result</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Generated numbers"></pre>
+</div>
+<!--explain-->
+<h2>Why a secure generator, and what "random" has to mean here</h2>
+<p>A fair draw means every allowed value is equally likely and one draw tells you nothing about the next. <code>Math.random()</code> is fast but is a predictable sequence in disguise, and it is fine for animations, not for a prize draw. The browser's <code>crypto.getRandomValues</code> is seeded from the operating system and is the right source for anything people might argue about.</p>
+<p>Turning raw random bits into a number from 1 to 6 is where many tools go wrong. A 32-bit value has 4,294,967,296 possibilities, which 6 does not divide, so using the remainder makes the low faces fractionally more likely. The fix is rejection sampling: the largest multiple of the range size below 2<sup>32</sup> is the cut-off, and a draw above it is discarded and redrawn. For ranges wider than 32 bits the tool draws exactly as many bits as needed and rejects anything over the range, using big integers so values near 9,007,199,254,740,991 stay exact.</p>
+<p>Decimals use the same idea on a grid. With two decimal places, the range 0 to 5 is treated as the integers 0 to 500, one is drawn and the point is put back, which keeps every grid value equally likely instead of rounding a continuous number.</p>
+<h3>Tips</h3>
+<ul>
+  <li>To pick people rather than numbers, paste a list into the <a href="/tools/random-name-picker/">random name picker</a>.</li>
+  <li>Need a secret, not a number? The <a href="/tools/password-generator/">password generator</a> uses the same random source with character sets.</li>
+  <li>Want a unique identifier instead of a small number? Try the <a href="/tools/uuid-generator/">UUID generator</a>.</li>
+</ul>

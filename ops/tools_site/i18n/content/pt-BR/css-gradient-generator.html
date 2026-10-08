@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Gerador de gradiente CSS: linear, radial e cônico | Tanod Tools",
+  "description": "Crie gradientes CSS lineares, radiais e cônicos com prévia ao vivo, paradas de cor editáveis e modelos, e copie a regra background. Grátis, no navegador.",
+  "h1": "Gerador de gradiente CSS",
+  "lede": "Crie um gradiente linear, radial ou cônico, veja a atualização ao vivo e copie a regra CSS de background.",
+  "blurb": "Gradientes lineares, radiais e cônicos com prévia ao vivo e CSS para copiar.",
+  "keywords": "gerador de gradiente css gradiente css degrade css degradê linear-gradient radial-gradient conic-gradient gradiente repetido background fundo paradas de cor angulo criar gradiente",
+  "limits": "As cores das paradas podem ser qualquer cor que o seu navegador entenda (HEX, nomes, rgb(), hsl(), oklch()). Até 10 paradas. As posições são porcentagens; o resultado é CSS puro, sem prefixos de navegador.",
+  "howto_title": "Como criar um gradiente CSS",
+  "howto": [
+    "Escolha <strong>Linear</strong>, <strong>Radial</strong> ou <strong>Cônico</strong>, ou comece por uma predefinição.",
+    "Defina o ângulo ou a posição e depois edite as paradas de cor: mude cada cor e posição, adicione paradas e mova-as para cima ou para baixo.",
+    "Clique em <strong>Copiar CSS</strong> e cole a regra na sua folha de estilos. Marque a opção de cor de reserva se quiser uma linha com cor sólida antes dela."
+  ],
+  "faq": [
+    ["O que significa o ângulo em um gradiente linear?", "0deg aponta para cima, então o gradiente vai da borda de baixo para cima. 90deg vai da esquerda para a direita, 180deg de cima para baixo, e 270deg da direita para a esquerda. 360deg é a mesma direção de 0deg. A ferramenta escreve o número que você digitar com a unidade deg."],
+    ["Como faço uma borda marcada em vez de uma transição suave?", "Dê a mesma posição a duas paradas vizinhas. Por exemplo, vermelho em 50% seguido de azul em 50% troca de cor na metade, sem transição. A predefinição Listras marcadas mostra isso."],
+    ["O que a opção de repetição faz?", "Ela escreve repeating-linear-gradient, repeating-radial-gradient ou repeating-conic-gradient. O padrão entre a primeira e a última parada é repetido, então só aparece quando a última parada fica antes de 100%. Experimente paradas em 0%, 10% e 20% para obter listras."],
+    ["Para que serve a linha com cor sólida de reserva?", "Um navegador que não consegue ler o gradiente ignora essa linha e fica com a anterior. Os navegadores que suportam gradientes, quase todos os que estão em uso, a substituem. A cor de reserva é a cor da sua primeira parada."],
+    ["Quais formatos de cor são aceitos?", "Qualquer coisa que a propriedade CSS <code>color</code> aceite no seu navegador: <code>#1636a3</code>, <code>tomato</code>, <code>rgb(22 54 163)</code>, <code>hsl(226 76% 36%)</code> ou <code>oklch(0.5 0.2 260)</code>. Digitar outra coisa mostra uma mensagem e mantém na tela o último gradiente válido."],
+    ["Um gradiente cônico precisa de posição?", "Ele sempre tem um centro, e esta ferramenta o escreve em porcentagens, então 50% 50% é o meio da caixa. O ângulo inicial gira o ponto onde a varredura de cores começa, medido no sentido horário a partir do topo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="gen-grad">
+  <div class="gen-grad__show">
+    <div class="gen-gpreview" id="g-preview" role="img" aria-label="Prévia do gradiente"></div>
+    <label for="g-out" class="label">CSS</label>
+    <textarea id="g-out" class="mono gen-out" rows="3" readonly spellcheck="false" aria-describedby="g-msg"></textarea>
+    <p class="tt__report" id="g-msg" role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="g-copy" type="button">Copiar CSS</button>
+    </div>
+  </div>
+
+  <div class="gen-grad__ctl util-stack">
+    <fieldset class="field">
+      <legend>Tipo</legend>
+      <div class="seg" role="radiogroup" aria-label="Tipo de gradiente">
+        <label><input type="radio" name="g-type" value="linear" checked>Linear</label>
+        <label><input type="radio" name="g-type" value="radial">Radial</label>
+        <label><input type="radio" name="g-type" value="conic">Cônico</label>
+      </div>
+    </fieldset>
+
+    <div class="opts">
+      <div class="field" id="g-angle-box">
+        <label for="g-angle" id="g-angle-l">Ângulo (graus)</label>
+        <div class="util-pair"><input type="range" id="g-angle-r" min="0" max="360" step="1" value="90" aria-label="Controle deslizante do ângulo"><input type="number" id="g-angle" min="0" max="360" step="1" value="90"></div>
+      </div>
+      <div class="field" id="g-shape-box" hidden>
+        <label for="g-shape">Forma</label>
+        <select id="g-shape"><option value="circle">Círculo</option><option value="ellipse">Elipse</option></select>
+      </div>
+      <div class="field" id="g-x-box" hidden><label for="g-x">Centro X (%)</label><input type="number" id="g-x" min="0" max="100" step="1" value="50"></div>
+      <div class="field" id="g-y-box" hidden><label for="g-y">Centro Y (%)</label><input type="number" id="g-y" min="0" max="100" step="1" value="50"></div>
+    </div>
+
+    <div class="field">
+      <span class="label">Opções</span>
+      <label class="check"><input type="checkbox" id="g-repeat">Repetir</label>
+      <label class="check"><input type="checkbox" id="g-fallback">Adicionar antes uma linha com cor sólida de reserva</label>
+    </div>
+
+    <h2 class="util-h">Paradas de cor</h2>
+    <ol class="gen-stops" id="g-stops"></ol>
+    <div class="actions">
+      <button class="btn btn--sm" id="g-add" type="button">Adicionar parada</button>
+      <button class="btn btn--sm" id="g-sort" type="button">Ordenar por posição</button>
+      <button class="btn btn--sm" id="g-rev" type="button">Inverter</button>
+    </div>
+
+    <h2 class="util-h">Predefinições</h2>
+    <div class="actions" id="g-presets"></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Como funciona um gradiente CSS</h2>
+<p>Um gerador de gradiente CSS cria uma imagem que o próprio navegador desenha, então ela se ajusta a qualquer tamanho e não custa nenhum download. Um gradiente linear mistura cores ao longo de uma linha definida por um ângulo. Um gradiente radial mistura a partir de um ponto central, em círculo ou elipse. Um gradiente cônico gira as cores em volta de um centro como o ponteiro de um relógio, o que o torna a escolha natural para gráficos de pizza e rodas de cores.</p>
+<p>Cada parada de cor é uma cor mais uma posição ao longo da linha do gradiente, escrita em porcentagem. Entre duas paradas, o navegador faz uma transição suave. Se duas paradas têm a mesma posição, a transição não tem largura e você obtém uma borda marcada. Se uma parada fica antes da anterior, os navegadores a tratam como se estivesse na posição da parada anterior, e é por isso que esta ferramenta permite reordenar e ordenar as paradas.</p>
+<p>A regra é escrita como <code>background:</code>, então funciona em qualquer elemento. Os gradientes são desenhados no fundo, então um texto sobre eles exige o mesmo cuidado com contraste que um texto sobre uma cor sólida: confira separadamente as partes mais clara e mais escura da transição.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Escolha cores de parada que combinem com o <a href="/tools/color-palette-generator/">Gerador de paleta de cores</a>.</li>
+  <li>Converta uma parada entre HEX, RGB e HSL no <a href="/tools/color-converter/">Conversor de cores e contraste</a>.</li>
+  <li>Vai publicar a folha de estilos? Reduza o tamanho dela com <a href="/tools/css-minifier/">Minificar e embelezar CSS</a>.</li>
+</ul>

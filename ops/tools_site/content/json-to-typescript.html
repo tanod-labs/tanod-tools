@@ -1,0 +1,87 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "JSON to TypeScript",
+  "title": "JSON to TypeScript interfaces converter | Tanod Tools",
+  "description": "Paste a JSON sample and get TypeScript interfaces or types, with nested objects named, optional fields detected and unions for mixed arrays. Runs in your browser.",
+  "h1": "JSON to TypeScript",
+  "lede": "Turn a sample JSON document into TypeScript interfaces or type aliases, with optional fields and unions worked out from your data.",
+  "blurb": "JSON sample to TypeScript interfaces or types.",
+  "keywords": "json to typescript json to ts interface generator type generator quicktype json2ts api response types typescript types from json",
+  "limits": "Types are inferred from the sample you paste, so they describe that sample and not a schema: a field that is a string in your example may be a number elsewhere. Numbers are all <code>number</code>, and dates stay <code>string</code>. Property order follows JSON.parse, which lists whole-number keys first.",
+  "howto_title": "How to generate TypeScript from JSON",
+  "howto": [
+    "Paste a JSON response or file into the box. Several array items make the result better, because fields missing from some items become optional.",
+    "Set the name of the top-level type, choose <code>interface</code> or <code>type</code>, and tick <strong>export</strong>, <strong>readonly</strong> or optional detection as needed.",
+    "Copy the declarations or download them as a <code>.ts</code> file. Review the names, since they come from your key names."
+  ],
+  "faq": [
+    ["How does it decide a field is optional?", "When you have an array of objects, the objects are merged into one shape. A key that appears in some items but not all gets a <code>?</code>. A key that is present but holds <code>null</code> in some items is not optional; it becomes <code>T | null</code>. Turn optional detection off if you would rather have every key marked required."],
+    ["How are nested types named?", "Each nested object is named from its key in PascalCase, so <code>billing_address</code> becomes <code>BillingAddress</code>. For an array, the item type drops a trailing \"s\" when the key is longer than 3 letters and does not end in ss, us or is: <code>users</code> gives <code>User</code>, while <code>address</code> gives <code>AddressItem</code>. If two different shapes want the same name, the second is numbered, giving <code>User</code> and <code>User2</code>."],
+    ["What happens to objects with the same shape?", "They share one declaration. If <code>billing</code> and <code>shipping</code> both hold <code>{ street, city }</code>, you get one interface, named after the first place it appears. Two objects with the same keys but different value types are different shapes and get separate names."],
+    ["Why is an empty array typed as unknown[]?", "An empty array holds no examples, so nothing can be inferred about its items. <code>unknown[]</code> is the honest answer; change it by hand once you know the item type. An array that mixes values becomes a union, such as <code>(string | number)[]</code>."],
+    ["Can the output differ from the real API?", "Yes. A sample shows only the values it contains. A field that is always present in your sample but sometimes missing in production will be required here, and an enum-like string will be plain <code>string</code>. For strict validation, use a schema; for a quick start, use this output and adjust it."],
+    ["Is my JSON uploaded?", "No. Nothing you paste is sent anywhere; the conversion runs in your browser, and you can disconnect from the network after the page loads."]
+  ],
+  "related": ["json-formatter", "json-to-yaml", "yaml-to-json", "json-to-csv", "jwt-decoder"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">JSON sample</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "name": "Ada Lovelace",
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Top-level type name</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Declare with</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Modifiers</span>
+      <label class="check"><input type="checkbox" id="t-export" checked>Add <code>export</code></label>
+      <label class="check"><input type="checkbox" id="t-readonly">Mark properties <code>readonly</code></label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Detect optional fields</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">Copy TypeScript</button>
+    <button class="btn" id="t-dl" type="button">Download .ts</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Inferring types from a JSON sample</h2>
+<p>TypeScript types describe the shape of data, and a JSON response already contains a shape: each key, the kind of value behind it, and how objects nest. A converter walks through the sample and writes that shape down as declarations, so you do not have to type out forty fields by hand before you can call an API with confidence.</p>
+<p>The step that matters most is what to do with arrays. Every item in an array of objects is read, and their shapes are merged: a key found in every item stays required, a key found in only some items becomes optional, and values that differ in kind become a union. That is why a sample with several records gives much better types than a sample with one. A value of <code>null</code> is treated differently from a missing key, because the two mean different things to code that reads the field.</p>
+<p>Inferred types are a starting point, not a contract. They cannot know that a string is always one of three values, that a number is really an integer ID, or that a field that was present in all your examples can disappear in production. Read the result, rename anything that came out awkwardly, and tighten the types that matter.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Check that your sample is well-formed first with the <a href="/tools/json-formatter/">JSON formatter</a>, which points at the exact character of a syntax error.</li>
+  <li>Working with a YAML config instead? Convert it with <a href="/tools/yaml-to-json/">YAML to JSON</a> and paste the result here.</li>
+  <li>Need to look inside a token payload before typing it? Decode it with the <a href="/tools/jwt-decoder/">JWT decoder</a>.</li>
+</ul>

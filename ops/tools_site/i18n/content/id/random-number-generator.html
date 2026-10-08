@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Generator angka acak: bilangan bulat dan desimal | Tanod Tools",
+  "description": "Ambil angka acak di antara nilai minimum dan maksimum mana pun, dengan atau tanpa pengulangan, bulat atau desimal, dari sumber acak aman browser Anda. Gratis.",
+  "h1": "Generator angka acak",
+  "lede": "Pilih rentang dan berapa angka yang Anda inginkan. Setiap angka diambil secara merata dari sumber acak aman browser Anda.",
+  "blurb": "Bilangan bulat atau desimal acak di rentang mana pun, dengan mode tanpa pengulangan.",
+  "keywords": "angka acak generator angka acak random angka acak nomor undian kocok angka dadu lotre undian doorprize bilangan bulat desimal antara min max unik tanpa pengulangan",
+  "limits": "Hingga 10.000 angka per undian, batas hingga 30 digit dan hingga 10 angka desimal. Hasil tidak disimpan; memuat ulang halaman akan menghapusnya.",
+  "howto_title": "Cara membuat angka acak",
+  "howto": [
+    "Ketik nilai <strong>terkecil</strong> dan <strong>terbesar</strong>. Kedua ujungnya bisa keluar, dan angka negatif juga bisa.",
+    "Atur <strong>berapa banyak</strong> angka yang Anda inginkan, dan centang <em>Tanpa pengulangan</em> jika setiap angka harus berbeda.",
+    "Tekan <strong>Acak</strong>, lalu salin daftarnya atau unduh sebagai file teks."
+  ],
+  "faq": [
+    ["Apakah angkanya benar-benar acak?", "Angka berasal dari <code>crypto.getRandomValues</code>, generator aman yang sama dengan yang dipakai browser untuk kunci enkripsi, bukan dari <code>Math.random</code>. Setiap nilai dalam rentang Anda punya peluang yang sama. Generator ini cukup baik untuk permainan, undian dan pengambilan sampel; generator ini belum diaudit untuk lotre yang diatur regulasi."],
+    ["Apa itu bias modulo, dan apakah alat ini mengalaminya?", "Mengambil angka acak 32-bit lalu memakai sisa pembagiannya dengan ukuran rentang membuat sebagian hasil sedikit lebih mungkin muncul setiap kali rentangnya tidak membagi 2<sup>32</sup> secara merata. Alat ini membuang setiap pengambilan yang jatuh di sisa yang tidak merata itu lalu mengambil ulang, jadi setiap nilai punya peluang yang persis sama. Hal itu juga berlaku untuk rentang yang sangat besar, yang ditangani dengan bilangan bulat besar."],
+    ["Bagaimana cara kerja \"Tanpa pengulangan\", dan kapan gagal?", "Alat ini mengambil setiap angka baru dan melewati angka yang sudah muncul, atau untuk rentang kecil, mengocok seluruh rentang lalu mengambil beberapa yang pertama. Jika Anda meminta lebih banyak angka berbeda daripada isi rentangnya, misalnya 7 angka dari 1 sampai 6, alat ini memberi tahu Anda, bukan berputar tanpa henti."],
+    ["Apa yang terjadi jika nilai minimum lebih besar dari nilai maksimum?", "Kedua nilai ditukar dan baris hasil menyebutkannya. Mengetik 10 dan 1 menghasilkan undian yang sama dengan mengetik 1 dan 10."],
+    ["Bagaimana cara kerja desimal?", "Atur jumlah desimal menjadi 2, maka rentang 0 sampai 1 menjadi 101 nilai: 0,00, 0,01 sampai 1,00, masing-masing dengan peluang yang sama. Hasil selalu menampilkan jumlah desimal lengkap, jadi 0,50 tetap 0,50. Batas rentangnya sendiri tidak boleh punya desimal lebih banyak daripada yang Anda pilih."],
+    ["Bisakah saya memakainya untuk lotre atau lempar dadu?", "Untuk lempar dadu, gunakan 1 sampai 6. Untuk tiket lotre, centang <em>Tanpa pengulangan</em>, misalnya 6 angka dari 1 sampai 49 diurutkan dari yang terkecil. Angka acak tidak memberi peluang lebih baik daripada angka lain. Hasil pengambilan tidak disimpan atau dikirim ke mana pun."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Nilai minimum</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Nilai maksimum</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">Berapa banyak</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Jumlah desimal</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 menghasilkan bilangan bulat.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Urutan</label>
+      <select id="rn-order">
+        <option value="drawn">Sesuai urutan keluar</option>
+        <option value="asc">Terkecil dulu</option>
+        <option value="desc">Terbesar dulu</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">Tanpa pengulangan</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Acak</button>
+    <button class="btn" id="rn-copy" type="button">Salin daftar</button>
+    <button class="btn" id="rn-dl" type="button">Unduh .txt</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Hasil</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Angka yang dihasilkan"></pre>
+</div>
+<!--explain-->
+<h2>Kenapa memakai generator yang aman, dan apa arti "acak" di sini</h2>
+<p>Undian yang adil berarti setiap nilai yang diizinkan punya peluang yang sama, dan satu hasil tidak memberi petunjuk apa pun tentang hasil berikutnya. Generator angka acak ini tidak memakai <code>Math.random()</code>: fungsi itu cepat, tetapi sebenarnya urutan yang bisa ditebak, dan cocok untuk animasi, bukan untuk undian berhadiah. <code>crypto.getRandomValues</code> milik browser mendapat benih dari sistem operasi dan merupakan sumber yang tepat untuk apa pun yang mungkin diperdebatkan orang.</p>
+<p>Mengubah bit acak mentah menjadi angka dari 1 sampai 6 adalah bagian yang sering salah pada banyak alat. Nilai 32-bit punya 4.294.967.296 kemungkinan, yang tidak habis dibagi 6, jadi memakai sisa pembagian membuat sisi dadu yang rendah sedikit lebih mungkin keluar. Solusinya adalah rejection sampling: kelipatan terbesar dari ukuran rentang di bawah 2<sup>32</sup> menjadi batasnya, dan hasil di atas batas itu dibuang lalu diambil ulang. Untuk rentang yang lebih lebar dari 32 bit, alat ini mengambil persis sebanyak bit yang dibutuhkan dan menolak apa pun di atas rentang, memakai bilangan bulat besar sehingga nilai di sekitar 9.007.199.254.740.991 tetap tepat.</p>
+<p>Desimal memakai gagasan yang sama pada sebuah kisi. Dengan dua angka desimal, rentang 0 sampai 5 diperlakukan sebagai bilangan bulat 0 sampai 500, satu angka diambil lalu tanda desimalnya dikembalikan, sehingga setiap nilai di kisi tetap punya peluang yang sama, alih-alih membulatkan bilangan kontinu.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Untuk mengundi orang, bukan angka, tempel daftar nama ke <a href="/tools/random-name-picker/">Undian nama acak</a>.</li>
+  <li>Perlu rahasia, bukan angka? <a href="/tools/password-generator/">Generator password</a> memakai sumber acak yang sama dengan set karakter.</li>
+  <li>Ingin pengenal unik, bukan angka kecil? Coba <a href="/tools/uuid-generator/">Generator UUID</a>.</li>
+</ul>

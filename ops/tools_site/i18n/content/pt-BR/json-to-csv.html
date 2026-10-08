@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Converter JSON para CSV online grátis | Tanod Tools",
+  "description": "Converta um array JSON para CSV no navegador. Objetos aninhados viram colunas com caminho (a.b), aspas tratadas e opção para Excel. Nada é enviado.",
+  "h1": "Converter JSON para CSV",
+  "lede": "Cole um array JSON ou abra um arquivo .json e receba um CSV que abre no Excel, no Google Planilhas ou no Numbers.",
+  "blurb": "Transforme um array JSON em CSV para planilhas.",
+  "keywords": "json para csv converter json csv excel planilha exportar achatar aninhado array de objetos",
+  "limits": "Entrada de até cerca de 10 MB, colada ou de um arquivo .json. O resultado é atualizado enquanto você digita.",
+  "howto_title": "Como converter JSON para CSV",
+  "howto": [
+    "Cole seu JSON na caixa ou abra um arquivo .json. Um array de objetos gera uma linha por objeto.",
+    "Escolha o delimitador e como os objetos aninhados são escritos. Ative a opção do Excel se o arquivo for aberto no Excel.",
+    "Copie o CSV ou baixe como arquivo .csv."
+  ],
+  "faq": [
+    ["Meu JSON é enviado para algum lugar?", "Não. Ele é lido e convertido no seu navegador, e nada é enviado para lugar nenhum nem armazenado."],
+    ["Quais formatos de JSON funcionam?", "Um array de objetos (uma linha por objeto, uma coluna por chave), um array de arrays (cada array interno é uma linha), um array de valores simples (uma coluna) ou um único objeto (uma linha). As colunas aparecem na ordem em que as chaves são vistas pela primeira vez, então um objeto que tem uma chave que os outros não têm acrescenta uma coluna, e as linhas sem ela ficam com a célula vazia."],
+    ["Como objetos e arrays aninhados são tratados?", "Com <em>Achatar em caminhos com ponto</em>, um objeto aninhado como <code>{\"address\": {\"city\": \"Lyon\"}}</code> vira uma coluna chamada <code>address.city</code>. Com <em>Manter como texto JSON</em>, o objeto aninhado inteiro vai para uma célula como JSON. Arrays são sempre escritos como texto JSON numa única célula, porque não existe um único jeito certo de espalhar uma lista por colunas."],
+    ["Por que os acentos ficam errados quando abro o arquivo no Excel?", "O Excel no Windows muitas vezes assume uma codificação regional antiga, a menos que o arquivo comece com uma marca de ordem de bytes (BOM). Ative <em>Adicionar BOM para o Excel</em> antes de baixar e o Excel vai ler o arquivo como UTF-8. O Google Planilhas e o Numbers leem UTF-8 de qualquer jeito. Se o seu Excel espera ponto e vírgula, escolha também o delimitador ponto e vírgula."],
+    ["Quando os valores ficam entre aspas?", "Só quando precisam: um valor que contém o delimitador, aspas duplas, uma quebra de linha, ou que começa ou termina com espaço é envolvido em aspas duplas, e qualquer aspa dentro dele é duplicada. Os números são escritos exatamente como aparecem no JSON, então IDs longos não são arredondados. <code>null</code> vira uma célula vazia."],
+    ["Por que ele diz que meu JSON é inválido?", "A mensagem informa a linha e a coluna em que a leitura parou. As causas mais comuns são uma vírgula sobrando no final, aspas simples em vez de duplas ou um colchete faltando. A ferramenta <a href=\"/tools/json-formatter/\">Formatar e validar JSON</a> mostra o ponto exato com um acento circunflexo (^)."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"nome": "Ana", "idade": 34}, {"nome": "Bruno", "idade": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Delimitador</label>
+      <select id="delim">
+        <option value="," selected>Vírgula ( , )</option>
+        <option value=";">Ponto e vírgula ( ; )</option>
+        <option value="&#9;">Tabulação</option>
+        <option value="|">Barra vertical ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Objetos aninhados</label>
+      <select id="nested">
+        <option value="flatten" selected>Achatar em caminhos com ponto (address.city)</option>
+        <option value="json">Manter como texto JSON numa célula</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Incluir linha de cabeçalho</label>
+    <label class="check"><input type="checkbox" id="crlf">Finais de linha do Windows (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Adicionar BOM para o Excel (só no download)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Cole o JSON para começar.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copiar CSV</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Baixar .csv</button>
+    <button class="btn btn--quiet" id="clear" type="button">Limpar</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Abrir arquivo .json</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Como transformar JSON numa planilha</h2>
+<p>APIs e exportações costumam entregar JSON, enquanto as pessoas que precisam dos dados querem uma planilha. O CSV faz a ponte entre os dois: ao converter JSON para CSV, cada objeto do array vira uma linha e cada chave vira uma coluna. Como os objetos de dados reais raramente têm todos as mesmas chaves, a ferramenta reúne todas as chaves que encontra, na ordem em que as vê pela primeira vez, e deixa a célula vazia quando um objeto não tem valor para aquela coluna.</p>
+<p>Planilhas são planas, então os dados aninhados precisam ser encaixados em colunas de algum jeito. Achatar transforma <code>user.name</code> e <code>user.email</code> em colunas separadas, o que serve para a maioria dos relatórios. Manter objetos aninhados como texto JSON reduz o número de colunas e permite reconstruir a estrutura original depois.</p>
+<p>O CSV segue as regras usuais (RFC 4180): os valores só ficam entre aspas quando necessário e as aspas dentro de um valor são duplicadas. Os números mantêm exatamente os dígitos do seu JSON, em vez de serem arredondados como os números do JavaScript seriam.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Quer fazer o contrário? Use <a href="/tools/csv-to-json/">CSV para JSON</a>.</li>
+  <li>Se o JSON não converter, encontre o problema com <a href="/tools/json-formatter/">Formatar e validar JSON</a>.</li>
+  <li>Compare duas exportações linha por linha com <a href="/tools/text-diff/">Comparar textos</a>.</li>
+</ul>

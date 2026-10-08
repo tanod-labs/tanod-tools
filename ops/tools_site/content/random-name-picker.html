@@ -1,0 +1,88 @@
+<!--meta
+{
+  "category": "util",
+  "name": "Random name picker",
+  "title": "Random name picker: spin a wheel or make teams | Tanod Tools",
+  "description": "Paste a list of names and pick one or several winners on a spinning wheel, or split everyone into balanced random teams. Fair draws, nothing uploaded.",
+  "h1": "Random name picker",
+  "lede": "Paste your names, one per line, then spin the wheel for a winner or deal everyone into teams.",
+  "blurb": "Spin a wheel to pick winners, or split names into teams.",
+  "keywords": "wheel spinner raffle giveaway draw lottery team generator random group picker choose winner classroom",
+  "limits": "The wheel prints labels for up to 100 names; with more it still picks fairly but shows unlabelled slices. The list lives only on this page and is gone when you close or reload it.",
+  "howto_title": "How to pick a random name",
+  "howto": [
+    "Type or paste the names into the box, <strong>one per line</strong>. Blank lines are ignored.",
+    "Choose <em>Pick winners</em> and how many, or <em>Split into teams</em> and how many teams.",
+    "Press the button. Tick <em>Remove picked names</em> if the same person should not win twice."
+  ],
+  "faq": [
+    ["Is the pick fair?", "Yes. The winner is chosen first, with an unbiased draw from your browser's secure random source, and the wheel is then turned to land on that name. The animation is decoration, so a long slice or a lucky spin does not change anyone's odds. Every line has the same chance."],
+    ["What happens if a name is on the list twice?", "Each line is its own entry, so a name typed twice has two chances, and the page tells you which names repeat. If that is a mistake, delete the extra line; if it is deliberate, for example two raffle tickets, leave it."],
+    ["How do I draw several winners in a row?", "Tick <em>Remove picked names from the list</em>, then press the button again for each draw. Or set the number of winners to 3 and get three different entries in one go. Winners in a single draw are always different entries."],
+    ["How are the teams made?", "The list is shuffled with an unbiased Fisher-Yates shuffle and then dealt out one name at a time, like cards. That keeps team sizes within one of each other: 10 names in 3 teams gives 4, 3 and 3."],
+    ["Can I turn the spinning off?", "If your device is set to reduce motion, the wheel jumps straight to the result with no animation, and the result is announced to screen readers either way. Results are also listed in text under the wheel."],
+    ["Is my list sent anywhere?", "No. The names are only read by the page in your browser, and nothing is stored, so closing the tab clears them. Copy the history if you need a record of who was picked."]
+  ],
+  "related": ["random-number-generator", "countdown-timer", "sort-lines-alphabetically", "remove-duplicate-lines", "stopwatch"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Names, one per line</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Amara&#10;Bruno&#10;Chen"></textarea>
+      <p class="help" id="rp-info">No names yet</p>
+    </div>
+    <fieldset class="field">
+      <legend>What to do</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Pick winners</label>
+        <label><input type="radio" name="rp-mode" value="teams">Split into teams</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">How many winners</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">How many teams</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Remove picked names from the list</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Pick</button>
+      <button class="btn" id="rp-sample" type="button">Use sample names</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Empty wheel: add names to fill it"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">History</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Clear history</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Picking fairly, and why the wheel is only for show</h2>
+<p>A fair draw gives every entry the same chance. The usual trap is to spin an animation, read off where it stops and call that the result: the physics of a drawn wheel, a slow frame or a rounding error can then favour some slices. Here the order is reversed. The winning entry is chosen first by drawing a random index with rejection sampling, which throws away the uneven remainder that a plain modulo would leave, and the wheel is then rotated to end on that slice.</p>
+<p>Picking several winners works the same way without replacement. The page runs a partial Fisher-Yates shuffle over the positions in your list and takes the first few, so a position can never be chosen twice in one draw. Teams use the full shuffle, then deal names out one by one around the teams. That guarantees sizes differ by at most one, while which people end up together stays random.</p>
+<p>For anything with stakes, such as a giveaway, keep the list visible when you draw and say how it was done. Reading the history aloud or posting it afterwards is a better audit trail than a screenshot of a wheel.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Tidy a pasted list first: <a href="/tools/remove-duplicate-lines/">remove duplicate lines</a> if every person should have one entry only.</li>
+  <li>Need numbers, not names, such as ticket 1 to 500? Use the <a href="/tools/random-number-generator/">random number generator</a>.</li>
+  <li>Running a quiz round or a talk? Give each turn a limit with the <a href="/tools/countdown-timer/">countdown timer</a>.</li>
+</ul>

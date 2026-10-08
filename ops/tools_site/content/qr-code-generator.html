@@ -1,0 +1,98 @@
+<!--meta
+{
+  "category": "util",
+  "name": "QR code generator",
+  "title": "QR code generator: text, URL, Wi-Fi | Tanod Tools",
+  "description": "Make a QR code for a link, text, Wi-Fi login, email or phone number. Choose size and colours, then download a PNG or SVG. Free, no signup, runs in your browser.",
+  "h1": "QR code generator",
+  "lede": "Turn a link, a Wi-Fi login, an email or a phone number into a QR code you can download as PNG or SVG.",
+  "blurb": "Make a QR code for a link, Wi-Fi, email or phone.",
+  "keywords": "qr wifi url link barcode png svg",
+  "limits": "Up to the QR standard's maximum: about 2,900 bytes of text at the lowest error correction (fewer at higher levels). Text is encoded as UTF-8.",
+  "howto_title": "How to make a QR code",
+  "howto": [
+    "Pick what the code should hold: text or a link, a Wi-Fi login, an email or a phone number.",
+    "Fill in the details. The preview updates as you type.",
+    "Choose error correction, size and colours if you want something other than the defaults.",
+    "Download the code as a PNG or an SVG."
+  ],
+  "faq": [
+    ["Is my text or Wi-Fi password sent anywhere?", "No. The code is drawn in your browser from what you type, and nothing is uploaded or stored. The Wi-Fi password only ever appears inside the QR code you download."],
+    ["Do the codes expire?", "No. A QR code is only an encoding of the text you gave it, so it works as long as that content is valid. A code pointing to a web address stops being useful only if that page goes away."],
+    ["Which error correction level should I choose?", "Level M (the default) restores about 15% of damaged modules and suits most uses. Choose Q or H if the code will be printed small, on a rough surface, or have a logo placed over it. Higher levels make the code denser."],
+    ["Why does the size I picked change slightly?", "A sharp QR code needs every square to be a whole number of pixels. The PNG size is rounded down to the nearest size that divides evenly by the number of squares, and the tool shows the exact pixel size. The SVG scales to any size."],
+    ["Why is there a colour warning?", "Scanners expect dark squares on a light background with strong contrast. Light-on-dark (inverted) codes and low-contrast pairs fail in some apps, so check with your own phone before printing."],
+    ["What can I put in the code?", "Any text, including accented letters and emoji (encoded as UTF-8), plus the Wi-Fi, email and phone formats that phones recognise. If the input is too long for the largest QR code, you will see an error and can shorten it or lower the error correction."]
+  ],
+  "related": ["wifi-qr-code-generator", "vcard-qr-code-generator", "barcode-generator", "color-converter", "password-generator", "uuid-generator"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-split">
+  <div class="util-split__main">
+    <fieldset class="field">
+      <legend>What is it for?</legend>
+      <div class="seg" role="radiogroup" aria-label="Content type">
+        <label><input type="radio" name="kind" value="text" checked>Text or link</label>
+        <label><input type="radio" name="kind" value="wifi">Wi-Fi</label>
+        <label><input type="radio" name="kind" value="email">Email</label>
+        <label><input type="radio" name="kind" value="phone">Phone</label>
+      </div>
+    </fieldset>
+
+    <div class="opts opts--wide" data-kind="text">
+      <div class="field">
+        <label for="q-text">Text or web address</label>
+        <textarea id="q-text" rows="4" placeholder="https://example.com" autocomplete="off" spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="opts" data-kind="wifi" hidden>
+      <div class="field"><label for="q-ssid">Network name (SSID)</label><input type="text" id="q-ssid" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="q-wpass">Password</label><input type="text" id="q-wpass" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="q-wsec">Security</label>
+        <select id="q-wsec"><option value="WPA">WPA or WPA2</option><option value="WEP">WEP</option><option value="nopass">None</option></select></div>
+      <div class="field"><span class="label">Network</span><label class="check"><input type="checkbox" id="q-whidden">Hidden network</label></div>
+    </div>
+    <div class="opts" data-kind="email" hidden>
+      <div class="field"><label for="q-to">To</label><input type="text" id="q-to" inputmode="email" autocomplete="off" placeholder="name@example.com"></div>
+      <div class="field"><label for="q-sub">Subject</label><input type="text" id="q-sub" autocomplete="off"></div>
+      <div class="field" style="grid-column: 1 / -1"><label for="q-body">Message</label><textarea id="q-body" rows="3" autocomplete="off"></textarea></div>
+    </div>
+    <div class="opts" data-kind="phone" hidden>
+      <div class="field"><label for="q-tel">Phone number</label><input type="text" id="q-tel" inputmode="tel" autocomplete="off" placeholder="+1 555 0100"></div>
+    </div>
+
+    <div class="opts">
+      <div class="field"><label for="q-ec">Error correction</label>
+        <select id="q-ec"><option value="L">L: low (7%)</option><option value="M" selected>M: medium (15%)</option><option value="Q">Q: quartile (25%)</option><option value="H">H: high (30%)</option></select></div>
+      <div class="field"><label for="q-size">Image size (px)</label><input type="number" id="q-size" min="64" max="4096" step="1" value="512"><span class="help" id="q-size-help"></span></div>
+      <div class="field"><label for="q-margin">Quiet zone (modules)</label><input type="number" id="q-margin" min="0" max="20" step="1" value="4"><span class="help">The blank border. 4 is the standard minimum.</span></div>
+      <div class="field"><label for="q-fg">Code colour</label><input type="color" id="q-fg" value="#000000"></div>
+      <div class="field"><label for="q-bg">Background colour</label><input type="color" id="q-bg" value="#ffffff"></div>
+    </div>
+    <div class="status" id="q-warn" role="note" hidden></div>
+  </div>
+
+  <div class="util-split__side">
+    <div class="preview" id="q-preview"><canvas id="q-canvas" width="1" height="1" aria-label="QR code preview" role="img"></canvas></div>
+    <p class="help" id="q-info" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="q-png" type="button" disabled>Download PNG</button>
+      <button class="btn" id="q-svg" type="button" disabled>Download SVG</button>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>How a QR code holds your text</h2>
+<p>A QR code is a square grid of dark and light squares called modules. Your text is turned into bytes (this tool uses UTF-8, so accents and emoji survive), split into blocks, and padded with extra error-correction data computed with Reed-Solomon codes. The extra data is what lets a scanner read a code that is smudged, scratched or partly covered.</p>
+<p>The grid size is chosen automatically: more text, or a higher error-correction level, means a larger grid with smaller squares. Printing small? Keep the text short and leave the quiet zone in place, because scanners use that blank border to find the code.</p>
+<p>Wi-Fi codes use a standard text layout that phones recognise and offer to join. Email and phone codes use <code>mailto:</code> and <code>tel:</code> links. Everything is generated on this page and nothing is sent anywhere.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Always scan a printed code with a real phone before you distribute it.</li>
+  <li>Picking brand colours? Check they contrast well with the <a href="/tools/color-converter/">Color converter and contrast checker</a>; dark modules on a light background scan best.</li>
+  <li>Need a random secret for the Wi-Fi network? Use the <a href="/tools/password-generator/">password generator</a>.</li>
+  <li>Building a data blob to encode? See <a href="/tools/base64-encode-decode/">Base64 encode and decode</a>.</li>
+</ul>

@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Compteur de caractères avec ou sans espaces | Tanod Tools",
+  "description": "Comptez caractères avec et sans espaces, lettres et octets UTF-8 en direct, et voyez ce qu'il reste pour un post X, un SMS, un title ou une méta-description.",
+  "h1": "Compteur de caractères",
+  "lede": "Collez ou tapez votre texte pour compter les caractères avec et sans espaces, et le comparer aux limites de longueur courantes.",
+  "blurb": "Caractères, octets et limites pour posts, SMS et balises meta.",
+  "keywords": "compteur de caracteres compter les caracteres nombre de caracteres caracteres sans espaces compter les lettres longueur tweet longueur sms longueur meta description longueur balise title nombre d'octets",
+  "limits": "Texte jusqu'à environ 5 Mo. Les compteurs se mettent à jour pendant la saisie ; pour un texte très long, la mise à jour a lieu un instant après la fin de la frappe.",
+  "howto_title": "Comment compter les caractères d'un texte",
+  "howto": [
+    "Tapez ou collez votre texte dans la zone, ou ouvrez un fichier .txt.",
+    "Lisez les compteurs à côté : caractères avec et sans espaces, lettres, mots, lignes et octets.",
+    "Consultez le tableau <strong>Limites de longueur</strong> pour voir la place qu'il reste pour un post X, un SMS, une balise title ou une méta-description."
+  ],
+  "faq": [
+    ["Qu'est-ce qui compte comme un caractère ?", "Un caractère correspond à ce que vous voyez comme un seul symbole, même quand l'ordinateur le stocke en plusieurs morceaux. Un emoji comme une famille ou un drapeau, ou une lettre dont l'accent est stocké séparément, compte pour un caractère. C'est la segmentation du texte intégrée au navigateur qui décide où chaque caractère commence et se termine. Le chiffre Points de code donne le décompte de plus bas niveau, où ces symboles combinés comptent pour deux ou plus."],
+    ["Pourquoi d'autres sites donnent-ils un résultat différent ?", "Chaque système compte à sa façon. Certains comptent les points de code ou les unités UTF-16 au lieu des caractères visibles : un emoji peut alors y compter pour 2 ou plus. Certains comptent un saut de ligne Windows comme deux caractères. Les chiffres affichés ici précisent l'unité utilisée par chacun, pour que vous puissiez retrouver le décompte qu'attend le système destinataire."],
+    ["Comment fonctionne le décompte de X (Twitter) ?", "La limite de 280 sur X est pondérée : la plupart des lettres latines, des chiffres et des signes de ponctuation comptent pour 1, tandis que les caractères chinois, japonais et coréens et les emoji comptent pour 2, et tout lien web compte pour 23 quelle que soit sa longueur. Cet outil applique ces règles, mais X peut les modifier et traite certains cas différemment : considérez le résultat comme une estimation proche et vérifiez avant de publier."],
+    ["Comment le décompte des SMS est-il calculé ?", "Un SMS qui n'utilise que le jeu de caractères GSM standard peut contenir 160 caractères ; quelques symboles comme € [ ] { } comptent pour deux. Si le message contient un autre caractère, comme un emoji ou de nombreuses lettres accentuées, tout le message est envoyé en Unicode et la limite tombe à 70. Les messages plus longs sont découpés en parties de 153 caractères chacune (ou 67 en Unicode), ce qu'indique le nombre de messages. Certains téléphones et opérateurs convertissent ou comptent les caractères différemment."],
+    ["Quelle longueur pour une balise title ou une méta-description ?", "Les moteurs de recherche tronquent les titres et les descriptions selon leur largeur à l'écran plutôt qu'à un nombre fixe de caractères. À titre indicatif, les titres d'environ 60 caractères au maximum et les descriptions d'environ 155 à 160 caractères s'affichent généralement en entier. Les lettres larges comme W et M occupent l'espace plus vite que les lettres étroites."],
+    ["Mon texte est-il envoyé en ligne ?", "Non. Le comptage s'effectue dans votre navigateur, et le texte n'est ni envoyé ni conservé. Fermer l'onglet l'efface."]
+  ]
+}
+-->
+<!--tool-->
+<div class="wc">
+  <div class="wc__bar" aria-hidden="true">
+    <span><b id="bar-chars" class="num">0</b> caractères</span>
+    <span><b id="bar-nospace" class="num">0</b> sans espaces</span>
+  </div>
+  <div class="wc__main">
+    <div class="field">
+      <label for="text">Votre texte</label>
+      <textarea id="text" class="wc__text" spellcheck="false" placeholder="Tapez ou collez votre texte ici."></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button" disabled>{{mark:i-copy}}Copier le texte</button>
+      <button class="btn btn--quiet" id="clear" type="button" disabled>Effacer</button>
+      <span class="spacer"></span>
+      <div class="drop is-compact wc__open" id="drop">
+        <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Ouvrir un fichier .txt</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="wc__side">
+    <dl class="stats" aria-label="Compteurs">
+      <div><dt>Caractères</dt><dd id="c-chars">0</dd></div>
+      <div><dt>Sans espaces</dt><dd id="c-nospace">0</dd></div>
+      <div><dt>Lettres</dt><dd id="c-letters">0</dd></div>
+      <div><dt>Chiffres</dt><dd id="c-digits">0</dd></div>
+      <div><dt>Espaces</dt><dd id="c-spaces">0</dd></div>
+      <div><dt>Mots</dt><dd id="c-words">0</dd></div>
+      <div><dt>Lignes</dt><dd id="c-lines">0</dd></div>
+      <div><dt>Points de code</dt><dd id="c-cp">0</dd></div>
+      <div><dt>Octets UTF-8</dt><dd id="c-bytes">0</dd></div>
+    </dl>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<section class="wc__more" aria-labelledby="lim-h">
+  <h2 id="lim-h" class="wc__h">Limites de longueur</h2>
+  <div class="cc-scroll" tabindex="0" role="region" aria-labelledby="lim-h">
+    <table class="dens cc-lim">
+      <thead><tr><th scope="col">Où</th><th scope="col">Limite</th><th scope="col">Utilisé</th><th scope="col">Restant</th></tr></thead>
+      <tbody id="lim-body"></tbody>
+    </table>
+  </div>
+  <p class="note">Les lignes X et SMS suivent les règles de décompte propres à ces systèmes ; les autres lignes comptent les caractères comme ci-dessus. Les limites sont indicatives : les plateformes les modifient, et certaines mesurent la largeur à l'écran plutôt que le nombre de caractères.</p>
+</section>
+<!--explain-->
+<h2>Compter les caractères comme le fait le système destinataire</h2>
+<p>Le mot « caractère » n'a pas le même sens pour tous les logiciels. Une personne voit un seul caractère dans « é » ou dans un emoji de drapeau, mais un ordinateur peut stocker l'un comme l'autre en deux morceaux ou plus. Ce compteur de caractères affiche le décompte que vous voyez (Caractères), le décompte de plus bas niveau en points de code Unicode, et le nombre d'octets qu'occupe le texte en UTF-8, l'encodage utilisé par la plupart des sites web et des bases de données. Quand un formulaire indique « 255 caractères maximum », il compte généralement l'une de ces unités, et la différence ne compte que pour les emoji, les accents stockés comme des signes séparés et les écritures non latines.</p>
+<p>Le tableau des limites de longueur compare votre texte aux endroits où la longueur est souvent plafonnée. Chaque ligne indique ce qui est utilisé et ce qui reste ; une ligne qui dépasse sa limite indique combien de caractères supprimer. Les SMS sont comptés selon les règles GSM qu'utilisent les téléphones : un seul emoji peut donc faire passer tout le message à la limite Unicode, plus courte.</p>
+<p>Tout est compté dans votre navigateur pendant la saisie. Le texte n'est ni envoyé ni conservé.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Besoin plutôt des mots, des phrases, du temps de lecture et de la densité des mots-clés ? Utilisez le <a href="/tools/word-counter/">Compteur de mots</a>.</li>
+  <li>Un texte collé depuis un PDF plein de sauts de ligne ? Nettoyez-le avec <a href="/tools/remove-line-breaks/">Supprimer les sauts de ligne</a> avant de compter.</li>
+  <li>Vous transformez un titre en adresse web ? Le <a href="/tools/text-to-slug/">Générateur de slug</a> crée un slug d'URL propre.</li>
+</ul>

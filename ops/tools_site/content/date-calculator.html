@@ -1,0 +1,87 @@
+<!--meta
+{
+  "category": "calc",
+  "name": "Date calculator",
+  "title": "Date calculator: add or subtract days and months | Tanod Tools",
+  "description": "Add or subtract years, months, weeks, days or business days from any date, and get the weekday, ISO week number and day of the year of the result.",
+  "h1": "Date calculator",
+  "lede": "Start from a date, add or subtract time, and see what date you land on, with its weekday, ISO week and day of the year.",
+  "blurb": "Add or subtract years, months, weeks, days or business days.",
+  "keywords": "date calculator add days to date subtract months from date what date is 90 days from now business days working days weekday iso week number day of year deadline",
+  "limits": "Works on calendar dates from year 1 to 9999 in the Gregorian calendar. Business days skip Saturdays and Sundays only; public holidays are not known and are not skipped. No time of day or time zone is involved.",
+  "howto_title": "How to add or subtract from a date",
+  "howto": [
+    "Pick the start date, or press <strong>Today</strong>. Choose <em>Add</em> or <em>Subtract</em>.",
+    "Type how many years, months, weeks and days to move, or switch to <em>Business days</em> to count weekdays only.",
+    "Read the resulting date with its weekday, ISO week number and day of the year. A note appears when a month-end date had to be adjusted."
+  ],
+  "faq": [
+    ["What is 31 January plus one month?", "The last day of February: 29 February in a leap year such as 2024, 28 February otherwise. When the day number doesn't exist in the target month, the calculator uses that month's last day instead of spilling into March. Years work the same way: 29 February 2024 plus one year is 28 February 2025."],
+    ["In what order are years, months, weeks and days applied?", "Years and months are added together first, as one number of months, and the day is adjusted to the end of that month if needed. Weeks and days are then added as a plain count of days. Subtracting works the same way in the other direction, so the result of adding and then subtracting the same amount can differ by a day or more at a month end."],
+    ["How are business days counted?", "Each step moves to the next weekday: Saturdays and Sundays are skipped, and public holidays are not, because they differ by country and region. Starting from a Saturday or Sunday, adding 1 business day gives the following Monday, and subtracting 1 gives the preceding Friday. Adding 0 returns the start date itself, even if it falls on a weekend."],
+    ["Will daylight saving time change the answer?", "No. The tool works with calendar dates only, using UTC date arithmetic internally, so there is no clock time that could be pushed an hour across midnight when clocks change. Adding a day to the Saturday before a clock change gives the Sunday, as expected."],
+    ["What is the ISO week number?", "ISO 8601 weeks start on Monday, and week 1 is the week containing the year's first Thursday. Dates in the last days of December can belong to week 1 of the next year, and early January dates to week 52 or 53 of the previous one. For example, 1 January 2027 is in week 53 of 2026. The result shows the ISO year when it differs from the calendar year."],
+    ["How far can I go?", "From 1 January of year 1 to 31 December of year 9999. A result outside that range is reported instead of being wrapped around. To count the days between two dates instead, use the <a href=\"/tools/date-difference-calculator/\">date difference calculator</a>."]
+  ],
+  "related": ["date-difference-calculator", "age-calculator", "time-zone-converter", "unix-timestamp-converter", "roman-numeral-converter"]
+}
+-->
+<!--tool-->
+<div class="dc">
+  <div class="opts">
+    <div class="field">
+      <label for="dc-start">Start date</label>
+      <div class="calc-pair">
+        <input type="date" id="dc-start" min="0001-01-01" max="9999-12-31">
+        <button type="button" class="btn calc-today" id="dc-today">Today</button>
+      </div>
+    </div>
+    <fieldset class="dc__op">
+      <legend>Operation</legend>
+      <div class="seg">
+        <label><input type="radio" name="dc-op" value="add" checked>Add</label>
+        <label><input type="radio" name="dc-op" value="sub">Subtract</label>
+      </div>
+    </fieldset>
+    <fieldset class="dc__kind">
+      <legend>Count in</legend>
+      <div class="seg">
+        <label><input type="radio" name="dc-kind" value="cal" checked>Years, months, weeks, days</label>
+        <label><input type="radio" name="dc-kind" value="biz">Business days</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="dc__fields" id="dc-cal">
+    <div class="field"><label for="dc-y">Years</label><input type="number" id="dc-y" min="0" max="9999" step="1" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="dc-m">Months</label><input type="number" id="dc-m" min="0" max="99999" step="1" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="dc-w">Weeks</label><input type="number" id="dc-w" min="0" max="999999" step="1" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="dc-d">Days</label><input type="number" id="dc-d" min="0" max="9999999" step="1" inputmode="numeric" placeholder="0" value="30"></div>
+  </div>
+  <div class="dc__fields dc__fields--one" id="dc-biz" hidden>
+    <div class="field"><label for="dc-b">Business days</label><input type="number" id="dc-b" min="0" max="100000" step="1" inputmode="numeric" placeholder="0" value="10">
+      <span class="help">Saturdays and Sundays are skipped. Public holidays are not.</span></div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="dc-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Result</span> <span class="calc-main__val" id="dc-main"></span></p>
+    <dl class="stats">
+      <div><dt>ISO date</dt><dd id="dc-iso"></dd></div>
+      <div><dt>Weekday</dt><dd class="calc-small" id="dc-wd"></dd></div>
+      <div><dt>ISO week</dt><dd id="dc-week"></dd></div>
+      <div><dt>Day of year</dt><dd id="dc-doy"></dd></div>
+      <div><dt>Days from start</dt><dd id="dc-span"></dd></div>
+    </dl>
+    <p class="help" id="dc-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Calendar arithmetic without surprises</h2>
+<p>Adding days is straightforward, because a day is always one step on the calendar. Adding months and years is where calendars bite: months have 28 to 31 days, so one month after the 31st may not exist. Software has to choose, and the usual choice, used here, is to clamp to the last day of the target month. That is why 31 January plus one month is 28 February (29 in a leap year), and why adding a month and then taking one away from a month-end date may not bring you back to where you began.</p>
+<p>Business days are a different count again. Skipping weekends turns 10 business days into exactly two calendar weeks when you start on a weekday, but the count shifts when you start on a Saturday or Sunday: the first business day after Saturday is Monday. Because holidays vary by country, state and employer, they are left out; if your deadline excludes them, add one business day for each holiday that falls in the range.</p>
+<p>The extra facts help when planning. The ISO week number is common in scheduling, payroll and logistics in many countries, and a year can have 52 or 53 of them. The day of the year is useful for ordinal dates, such as 2024-366 for 31 December in a leap year. All of this uses plain calendar arithmetic in UTC, so a change of clocks in your local zone cannot shift the answer by a day.</p>
+<h3>Tips</h3>
+<ul>
+  <li>To count the gap between two known dates instead, use the <a href="/tools/date-difference-calculator/">date difference calculator</a>.</li>
+  <li>Booking calls across zones? Convert a meeting time with the <a href="/tools/time-zone-converter/">time zone converter</a>.</li>
+  <li>Need to turn a timestamp from a log into a date? The <a href="/tools/unix-timestamp-converter/">Unix timestamp converter</a> does it in both directions.</li>
+</ul>

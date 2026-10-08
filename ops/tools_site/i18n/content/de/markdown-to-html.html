@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Markdown in HTML umwandeln – mit Vorschau | Tanod Tools",
+  "description": "Markdown im Browser in sauberes HTML umwandeln, mit GitHub-Tabellen, Aufgabenlisten und Live-Vorschau. Unsicheres HTML wird entfernt. Kostenlos.",
+  "h1": "Markdown in HTML umwandeln",
+  "lede": "Geben Sie Markdown ein oder fügen Sie es ein und erhalten Sie schon beim Tippen sauberes HTML, mit einer Vorschau, wie es aussehen wird.",
+  "blurb": "Markdown in HTML umwandeln, mit Vorschau.",
+  "keywords": "markdown in html umwandeln konvertieren md zu html markdown konverter gfm github tabelle vorschau rendern readme",
+  "limits": "Markdown bis etwa 5 MB, eingetippt, eingefügt oder aus einer .md- oder .txt-Datei. Das Ergebnis aktualisiert sich während der Eingabe.",
+  "howto_title": "So wandeln Sie Markdown in HTML um",
+  "howto": [
+    "Geben Sie Ihr Markdown ein, fügen Sie es ein oder öffnen Sie eine .md-Datei.",
+    "Lesen Sie das HTML rechts ab oder wechseln Sie zur Vorschau, um es gerendert zu sehen. Aktivieren Sie die Option für ein vollständiges Dokument, wenn Sie eine komplette Seite brauchen.",
+    "Kopieren Sie das HTML oder laden Sie es als .html-Datei herunter."
+  ],
+  "faq": [
+    ["Wird mein Text hochgeladen?", "Nein. Das Markdown wird in Ihrem Browser mit der Open-Source-Bibliothek marked umgewandelt, und nichts wird irgendwohin gesendet oder gespeichert."],
+    ["Welche Markdown-Syntax wird unterstützt?", "CommonMark plus die GitHub-Erweiterungen: Tabellen, Aufgabenlisten (<code>- [x] done</code>), Durchstreichen mit <code>~~</code>, umzäunte Codeblöcke und automatische Links. Einfache Zeilenumbrüche werden wie in Standard-Markdown zu einem Absatz zusammengeführt; aktivieren Sie <em>Zeilenumbrüche werden zu &lt;br&gt;</em>, um sie zu behalten, wie es GitHub-Kommentare tun."],
+    ["Kann ich das HTML gefahrlos auf einer Website verwenden?", "Es wird mit der Open-Source-Bibliothek DOMPurify bereinigt, bevor Sie es sehen. Skripte, Event-Handler wie <code>onerror</code>, <code>javascript:</code>-Links, iframes und eingebettete Objekte werden entfernt, und die Zeile unter dem Ergebnis listet auf, was herausgenommen wurde. Normales HTML innerhalb des Markdowns, etwa <code>&lt;details&gt;</code> oder <code>&lt;sup&gt;</code>, bleibt erhalten. Wie bei allen Inhalten von anderen sollten Sie die Schutzmaßnahmen Ihrer eigenen Website beibehalten."],
+    ["Warum erscheint ein Bild in der Vorschau als Platzhalter?", "Die Vorschau lädt nie etwas von einer anderen Website, damit Ihr Text dieser Website nicht preisgegeben wird und die Seite privat bleibt. Bilder von Webadressen erscheinen als beschrifteter Platzhalter mit ihrer Adresse. Der HTML-Code enthält trotzdem das normale <code>&lt;img&gt;</code>-Tag, sodass das Bild überall dort angezeigt wird, wo Sie es veröffentlichen."],
+    ["Was fügt die Option für ein vollständiges Dokument hinzu?", "Eine komplette Seite rund um das HTML: einen Doctype, einen <code>&lt;head&gt;</code> mit UTF-8-Zeichensatz, ein Viewport-Tag für Mobilgeräte und einen Titel aus der ersten Überschrift. Lassen Sie die Option aus, wenn Sie das HTML in eine bestehende Seite oder ein CMS einfügen."],
+    ["Bekommen Überschriften id-Attribute für Links?", "Nein. Überschriften werden als einfache <code>&lt;h1&gt;</code>- bis <code>&lt;h6&gt;</code>-Tags ausgegeben. Wenn Sie Anker brauchen, fügen Sie die ids in der Vorlage Ihrer Website oder von Hand hinzu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="md" class="md-label">Markdown</label>
+      <textarea id="md" class="mono md-pane" spellcheck="false" autocomplete="off" placeholder="# Eine Überschrift&#10;&#10;Etwas **fetter** Text und ein [Link](https://example.com).&#10;&#10;- [x] Erledigt&#10;- [ ] Offen"></textarea>
+    </div>
+    <div class="field md-result">
+      <div class="md-result__head">
+        <span class="label" id="view-l">Ergebnis</span>
+        <div class="seg" role="radiogroup" aria-labelledby="view-l">
+          <label><input type="radio" name="view" value="code" checked>HTML-Code</label>
+          <label><input type="radio" name="view" value="preview">Vorschau</label>
+        </div>
+      </div>
+      <textarea id="out" class="mono md-pane" readonly aria-label="HTML-Code"></textarea>
+      <div id="preview" class="md-preview md-pane" tabindex="0" role="region" aria-label="Vorschau" hidden></div>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="breaks">Zeilenumbrüche werden zu &lt;br&gt;</label>
+    <label class="check"><input type="checkbox" id="full">In ein vollständiges HTML-Dokument einbetten</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Geben Sie Markdown ein oder fügen Sie es ein, um zu beginnen.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}HTML kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.html herunterladen</button>
+    <button class="btn btn--quiet" id="clear" type="button">Leeren</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/markdown,.md,.markdown,text/plain,.txt">{{mark:i-upload}}<span>.md-Datei öffnen</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Wie aus Markdown HTML wird</h2>
+<p>Markdown ist eine Art, formatierten Text mit einfachen Zeichen zu schreiben: Ein <code>#</code> beginnt eine Überschrift, <code>**zwei Sternchen**</code> machen Text fett, eine Zeile mit einem Strich am Anfang ist ein Listeneintrag. So sind README-Dateien geschrieben, viele Notiz-Apps und die meisten Entwicklerforen. Browser, E-Mail-Vorlagen und Content-Systeme erwarten aber HTML, also muss das Markdown irgendwann in HTML umgewandelt werden.</p>
+<p>Dieser Konverter folgt CommonMark mit den Erweiterungen von GitHub Flavored Markdown, sodass Tabellen, Aufgabenlisten und Durchstreichen so funktionieren wie auf GitHub. Das erzeugte HTML durchläuft anschließend einen Sanitizer, der alles entfernt, was beim Anzeigen des HTML Code ausführen könnte, und normale Formatierung unangetastet lässt.</p>
+<p>Der Vorschau-Tab zeigt dasselbe HTML gerendert auf der Seite. Links öffnen sich in einem neuen Tab, und Bilder, die anderswo gehostet sind, werden als Platzhalter angezeigt statt abgerufen, sodass nichts, was Sie schreiben, während der Arbeit an eine andere Website gesendet wird.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie haben HTML und möchten stattdessen Markdown? Nutzen Sie <a href="/tools/html-to-markdown/">HTML in Markdown</a>.</li>
+  <li>Prüfen Sie die Länge eines Beitrags mit <a href="/tools/word-counter/">Wörter zählen</a>.</li>
+  <li>Vergleichen Sie zwei Entwürfe mit <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+</ul>

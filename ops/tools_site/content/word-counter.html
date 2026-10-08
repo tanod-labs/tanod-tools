@@ -1,0 +1,100 @@
+<!--meta
+{
+  "category": "text",
+  "name": "Word counter",
+  "title": "Word counter and character counter | Tanod Tools",
+  "description": "Count words, characters, sentences and paragraphs as you type. Reading time, keyword density and readability scores. Free, no signup, nothing is uploaded.",
+  "h1": "Word counter",
+  "lede": "Paste or type to count words, characters, sentences and paragraphs, with reading time and keyword density.",
+  "blurb": "Words, characters, reading time and keyword density.",
+  "keywords": "character count letter count sentence paragraph reading time speaking time keyword density readability flesch",
+  "limits": "Text up to about 5 MB. Counts update as you type; very long text updates a moment after you stop typing.",
+  "howto_title": "How to count words",
+  "howto": [
+    "Type or paste your text into the box, or open a .txt file.",
+    "Read the counts beside it. They update as you type.",
+    "Scroll to Keyword density to see which words and phrases repeat, and Readability for English text of 100 words or more."
+  ],
+  "faq": [
+    ["What counts as a word?", "A word is an unbroken run of letters or digits. An apostrophe or hyphen between letters keeps it as one word (don't, well-known), and a point or comma between digits keeps a number whole (3.14, 1,000). For Chinese, Japanese, Thai and other languages written without spaces, the browser's built-in word segmentation is used when it is available, so those texts count as more than one word."],
+    ["What counts as a sentence or a paragraph?", "A sentence ends at one or more of . ! ? or an ellipsis that is followed by a space, a line break or the end of the text (or at 。 ！ ？). Closing quotes and brackets stay with the sentence. Text left after the last ending counts as a sentence if it has a word in it. Abbreviations such as \"Mr. Smith\" are counted as two sentences. A paragraph is a block of text separated from the next by at least one blank line; a single line break does not start a new paragraph."],
+    ["How are characters counted?", "Characters counts every character, including spaces and line breaks, with each emoji or other symbol outside the basic plane counted once. Characters without spaces leaves out spaces, tabs and line breaks. Lines counts line breaks, so blank lines count as lines."],
+    ["How are reading and speaking time worked out?", "Reading time assumes 238 words per minute and speaking time 150 words per minute. Real speeds vary a lot with the reader, the speaker and the material, so treat both as a rough guide."],
+    ["How accurate is the readability score?", "The Flesch Reading Ease and Flesch-Kincaid grade are standard formulas for English, based on sentence length and syllables per word. Syllables here are estimated with a simple rule set, so scores are approximate, and they only appear for English text of at least 100 words."],
+    ["Is my text sent anywhere?", "No. The counting runs in your browser and the text is not uploaded or stored. Closing the tab clears it."]
+  ],
+  "related": ["character-counter", "text-to-speech", "case-converter", "remove-line-breaks", "remove-duplicate-lines", "find-and-replace"]
+}
+-->
+<!--tool-->
+<div class="wc">
+  <div class="wc__bar" aria-hidden="true">
+    <span><b id="bar-words" class="num">0</b> words</span>
+    <span><b id="bar-chars" class="num">0</b> characters</span>
+    <span>read in <b id="bar-read" class="num">0s</b></span>
+  </div>
+  <div class="wc__main">
+    <div class="field">
+      <label for="text">Your text</label>
+      <textarea id="text" class="wc__text" spellcheck="false" placeholder="Type or paste your text here."></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button" disabled>{{mark:i-copy}}Copy text</button>
+      <button class="btn btn--quiet" id="clear" type="button" disabled>Clear</button>
+      <span class="spacer"></span>
+      <div class="drop is-compact wc__open" id="drop">
+        <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Open a .txt file</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="wc__side">
+    <dl class="stats" aria-label="Counts">
+      <div><dt>Words</dt><dd id="c-words">0</dd></div>
+      <div><dt>Characters</dt><dd id="c-chars">0</dd></div>
+      <div><dt>No spaces</dt><dd id="c-nospace">0</dd></div>
+      <div><dt>Sentences</dt><dd id="c-sent">0</dd></div>
+      <div><dt>Paragraphs</dt><dd id="c-para">0</dd></div>
+      <div><dt>Lines</dt><dd id="c-lines">0</dd></div>
+      <div><dt>Reading time</dt><dd id="c-read">0s</dd></div>
+      <div><dt>Speaking time</dt><dd id="c-speak">0s</dd></div>
+      <div><dt>Avg word length</dt><dd id="c-avg">0</dd></div>
+    </dl>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<section class="wc__more" aria-labelledby="dens-h">
+  <h2 id="dens-h" class="wc__h">Keyword density</h2>
+  <div class="actions">
+    <fieldset>
+      <legend class="visually-hidden">Length of keyword</legend>
+      <div class="seg">
+        <label><input type="radio" name="ngram" value="1" checked>Words</label>
+        <label><input type="radio" name="ngram" value="2">2-word phrases</label>
+        <label><input type="radio" name="ngram" value="3">3-word phrases</label>
+      </div>
+    </fieldset>
+    <label class="check"><input type="checkbox" id="stop" checked>Skip common English words</label>
+  </div>
+  <table class="dens">
+    <thead><tr><th scope="col">Keyword</th><th scope="col">Count</th><th scope="col">Density</th></tr></thead>
+    <tbody id="dens-body"></tbody>
+  </table>
+  <h2 class="wc__h">Readability</h2>
+  <dl class="stats" id="read-box" hidden>
+    <div><dt>Flesch reading ease</dt><dd><span id="r-ease">0</span> <small id="r-ease-l"></small></dd></div>
+    <div><dt>Flesch-Kincaid grade</dt><dd id="r-grade">0</dd></div>
+  </dl>
+  <p class="note" id="read-note">Readability scores need at least 100 words of English text. They are approximate: syllables are estimated with a simple rule set.</p>
+</section>
+<!--explain-->
+<h2>How this word counter works</h2>
+<p>The counts are recalculated in your browser each time the text changes, so there is no button to press and nothing leaves your device. Words are found by looking for runs of letters and digits; for languages that don't put spaces between words, the browser's own word-boundary rules are used instead, which is why a Chinese or Japanese sentence counts as several words rather than one.</p>
+<p>Keyword density shows how often each word or two- and three-word phrase appears, as a share of all the words in the text. Switching on "Skip common English words" hides words such as "the" and "and" so the topic words stand out. Phrases are listed only if they appear at least twice.</p>
+<p>Word limits are usually set by whoever receives the text, and each system counts a little differently. If a limit is tight, leave yourself a small margin.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Tidy a draft before counting with <a href="/tools/remove-duplicate-lines/">Remove duplicate lines</a> or <a href="/tools/find-and-replace/">Find and replace</a>.</li>
+  <li>Changed a draft and want to see what moved? Use <a href="/tools/text-diff/">Compare text</a>.</li>
+  <li>Fix capitalisation with the <a href="/tools/case-converter/">Case converter</a>.</li>
+  <li>Checking a post, text message or meta description against a character limit? The <a href="/tools/character-counter/">Character counter</a> shows what is left.</li>
+</ul>

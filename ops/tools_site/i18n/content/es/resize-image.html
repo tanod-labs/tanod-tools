@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Redimensionar imagen online en píxeles o porcentaje | Tanod Tools",
+  "description": "Cambia el ancho y el alto de imágenes JPG, PNG y WebP en tu navegador. Mantén la proporción, redimensiona un lote a la vez y descarga. No se sube nada.",
+  "h1": "Redimensionar imagen",
+  "lede": "Define un nuevo ancho y alto en píxeles, o escala por porcentaje, para una imagen o un lote completo.",
+  "blurb": "Cambia las dimensiones de una imagen en píxeles o porcentaje.",
+  "keywords": "redimensionar cambiar tamaño de imagen escalar dimensiones ancho alto pixeles reducir agrandar achicar foto miniatura",
+  "limits": "Hasta 50 imágenes por lote, de 50 MB cada una y unos 100 megapíxeles de entrada o de salida. La ampliación está limitada a 4 veces el tamaño original.",
+  "howto_title": "Cómo redimensionar una imagen",
+  "howto": [
+    "Elige tus imágenes o arrástralas a la página.",
+    "Escribe un ancho o un alto en píxeles (el otro se ajusta solo si la proporción está bloqueada), o cambia a porcentaje.",
+    "Pulsa <strong>Redimensionar</strong> y descarga el resultado o un .zip con todo el lote."
+  ],
+  "faq": [
+    ["¿Se suben mis imágenes?", "No. El cambio de tamaño se hace en tu navegador, en tu dispositivo. No se envía nada a ningún servidor."],
+    ["¿Cómo funciona el bloqueo de proporción con varias imágenes?", "Los campos parten del tamaño de la primera imagen. Con el bloqueo activado, el último valor que cambiaste (ancho o alto) se aplica a todas las imágenes y el otro lado sigue las proporciones de cada imagen. Con el bloqueo desactivado, todas las imágenes se estiran exactamente al ancho y alto que escribiste."],
+    ["¿Puedo agrandar una imagen?", "Sí, hasta 4 veces el ancho y el alto originales. Agrandar no puede agregar detalle, así que el resultado se ve más suave. Más allá de 4 veces, la herramienta se niega en lugar de crear un archivo borroso."],
+    ["¿Con qué calidad se guardan los archivos JPEG y WebP?", "Con calidad 92 sobre 100, que mantiene los archivos visualmente cerca del original. Si además quieres un archivo más liviano, pasa el resultado por <a href=\"/tools/compress-image/\">Comprimir imagen</a>."],
+    ["¿Cómo se reduce la imagen?", "Las reducciones grandes se hacen en varios pasos, cada uno a la mitad, y luego un dibujo final al tamaño exacto con el suavizado de alta calidad del navegador. Así se evita el aspecto dentado y pixelado que puede dejar una sola reducción enorme."],
+    ["¿Se conservan los datos EXIF?", "No. La imagen se vuelve a codificar, así que los metadatos, como el GPS y los detalles de la cámara, no se trasladan, y la imagen se guarda en la orientación en que se muestra."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Suelta las imágenes aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Elegir imágenes</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. O arrástralas a cualquier parte de esta página.</p>
+</div>
+<ol class="files" id="files" aria-label="Imágenes que se van a redimensionar" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Redimensionar por</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="pixels" checked>Píxeles</label>
+        <label><input type="radio" name="mode" value="percent">Porcentaje</label>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Formato de salida</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Mantener</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">JPEG y WebP se guardan con calidad 92. GIF, BMP y AVIF pasan a PNG con la opción Mantener.</p>
+    </fieldset>
+  </div>
+  <div id="pane-px">
+    <div class="opts">
+      <div class="field"><label for="width">Ancho (px)</label><input type="number" id="width" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><label for="height">Alto (px)</label><input type="number" id="height" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><span class="label">Proporción</span><label class="check"><input type="checkbox" id="lock" checked>Bloquear proporción</label></div>
+    </div>
+  </div>
+  <div id="pane-pct" hidden>
+    <div class="opts">
+      <div class="field"><label for="percent">Escala (%)</label><input type="number" id="percent" min="1" max="400" value="50" inputmode="numeric"><p class="help">100 mantiene el tamaño. 50 reduce a la mitad el ancho y el alto.</p></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Redimensionar</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Borrar todo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Redimensionar imágenes en tu navegador</h2>
+<p>Cambiar el tamaño de una imagen significa calcular una nueva cuadrícula de píxeles a partir de la anterior. Al reducir, se promedian grupos de píxeles, por eso una buena reducción se ve suave y una descuidada se ve dentada. Esta herramienta reduce la imagen a la mitad una y otra vez mientras siga siendo más del doble del tamaño final, y luego hace un dibujo final al tamaño exacto con suavizado de alta calidad.</p>
+<p>La proporción (relación de aspecto) es el ancho dividido entre el alto. Si la mantienes bloqueada, una foto de 1200 × 800 ajustada a 600 píxeles de ancho queda en 600 × 400, sin estirarse. Desactiva el bloqueo solo cuando quieras un tamaño exacto y aceptes la deformación.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Para páginas web, redimensiona al tamaño más grande al que realmente se muestra la imagen y luego reduce aún más el peso del archivo con <a href="/tools/compress-image/">Comprimir imagen</a>.</li>
+  <li>Si lo que quieres es cortar una parte de la imagen, usa <a href="/tools/crop-image/">Recortar imagen</a>.</li>
+  <li>¿Necesitas íconos cuadrados para un sitio web? El <a href="/tools/favicon-generator/">Generador de favicon</a> crea todos los tamaños a la vez.</li>
+</ul>

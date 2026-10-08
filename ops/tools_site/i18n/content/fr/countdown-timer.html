@@ -1,0 +1,94 @@
+<!--meta
+{
+  "title": "Minuteur en ligne et compte à rebours | Tanod Tools",
+  "description": "Minuteur en ligne gratuit : préréglages, alarme sonore, temps restant dans l'onglet, et compte à rebours jusqu'à une date dans n'importe quel fuseau.",
+  "h1": "Minuteur (compte à rebours)",
+  "lede": "Réglez une durée et appuyez sur Démarrer, ou lancez un compte à rebours jusqu'à une date et une heure dans le fuseau de votre choix, puis partagez le lien.",
+  "blurb": "Minuteur avec préréglages et alarme, ou compte à rebours jusqu'à une date.",
+  "keywords": "minuteur en ligne compte a rebours timer chrono alarme minuterie pomodoro minuteur cuisine compte a rebours evenement jours avant nouvel an echeance",
+  "limits": "Les durées vont jusqu'à 99 heures, 59 minutes et 59 secondes. Le minuteur ne fonctionne que tant que cette page reste ouverte dans un onglet ; la fermer arrête le compte à rebours et le son.",
+  "howto_title": "Comment utiliser le minuteur",
+  "howto": [
+    "Saisissez les heures, minutes et secondes ou appuyez sur un <strong>préréglage</strong>, puis appuyez sur <strong>Démarrer</strong>. Le titre de l'onglet affiche le temps restant.",
+    "Mettez en pause et reprenez autant de fois que vous voulez, ou appuyez sur <strong>Réinitialiser</strong> pour revenir à la durée de départ.",
+    "Pour un compte à rebours jusqu'à un événement, passez à <em>Jusqu'à une date</em>, saisissez la date, l'heure et le fuseau, puis copiez le lien pour le partager."
+  ],
+  "faq": [
+    ["Reste-t-il précis si je passe à un autre onglet ?", "Oui. Les navigateurs ralentissent les minuteries des onglets en arrière-plan, c'est pourquoi la page ne compte jamais les tops. Elle compare l'heure actuelle avec l'instant où le minuteur doit se terminer : l'affichage se remet à jour dès que l'onglet redevient visible et l'heure de fin ne dérive pas. Dans un onglet masqué, l'alarme peut arriver avec environ une seconde de retard."],
+    ["Le son va-t-il se déclencher ?", "L'alarme est un bref signal produit par le moteur audio de votre navigateur, sans fichier audio. Les navigateurs n'autorisent le son qu'après une interaction avec la page : appuyez donc d'abord sur Démarrer sur cette page. Si votre appareil est en mode silencieux ou l'onglet coupé, vous ne l'entendrez pas, et le message de fin reste affiché. Utilisez la case à cocher pour couper le son."],
+    ["Le minuteur peut-il garder mon écran allumé ?", "Une case facultative le permet. Elle utilise la fonction Wake Lock du navigateur, proposée par Chrome, Edge et Safari. Si votre navigateur ou l'économiseur de batterie refuse, la page le signale et continue ; le compte à rebours lui-même n'est pas affecté."],
+    ["Comment partager un compte à rebours jusqu'à un événement ?", "Passez au mode date, saisissez la date, l'heure et le fuseau, puis utilisez Copier le lien. La cible est stockée dans la partie de l'adresse après le <code>#</code>, par exemple <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. Cette partie n'est envoyée à aucun serveur quand quelqu'un ouvre le lien, et cette personne voit le même instant sur sa propre heure."],
+    ["Que se passe-t-il lors d'un changement d'heure ?", "En mode date, l'heure est calculée pour le fuseau choisi, à partir des données de fuseaux horaires du navigateur. Si l'heure indiquée est sautée, par exemple 02:30 la nuit du passage à l'heure d'été, la page passe à l'instant équivalent plus tard et vous le signale. Si elle existe deux fois, c'est la première qui est utilisée."],
+    ["Pourquoi affiche-t-il une seconde entière avant d'atteindre zéro ?", "L'affichage arrondit au supérieur : 00:00:01 reste à l'écran pendant la dernière seconde et le zéro apparaît au moment où le temps est écoulé, comme sur un minuteur de cuisine."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Compte à rebours</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>Pour une durée</label>
+      <label><input type="radio" name="ct-mode" value="date">Jusqu'à une date</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Temps restant" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>Temps écoulé.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Heures</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minutes</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Secondes</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Préréglages">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 min</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Démarrer</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Réinitialiser</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Date</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Heure</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Fuseau horaire</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Jours</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Heures</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minutes</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Secondes</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Copier le lien de ce compte à rebours</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Couper le son quand le temps est écoulé</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Garder l'écran allumé pendant le décompte</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Comment un minuteur reste précis, et ce que lui fait un onglet masqué</h2>
+<p>La façon évidente de construire un compte à rebours consiste à retirer un d'un nombre chaque fois qu'une minuterie d'une seconde se déclenche. C'est aussi la mauvaise. Les navigateurs brident les minuteries des onglets en arrière-plan à une fois par seconde, voire une fois par minute, et une page chargée les retarde encore : un minuteur qui décompte ainsi prend du retard sans prévenir. Ce minuteur en ligne enregistre l'instant où il doit se terminer et, à chaque top, en soustrait l'heure actuelle, en utilisant l'horloge monotone pour les durées et l'horloge murale pour les dates. Les tops ne décident que du moment où l'écran est redessiné.</p>
+<p>Le mode date travaille avec l'heure du calendrier, plus compliquée. « Minuit le 1er janvier à Auckland » est un instant différent de la même heure à Londres, et deux fois par an certains fuseaux sautent ou répètent une heure. La page demande à la base de données des fuseaux horaires du navigateur le décalage exact du jour cible : un compte à rebours vers un événement local est donc juste pour l'endroit où il a lieu, quel que soit le fuseau de la personne qui le consulte.</p>
+<p>Les annonces pour les lecteurs d'écran sont volontairement rares : le départ, chaque minute entière, 10 et 5 secondes, et la fin. Énoncer chaque seconde rendrait la page inutilisable avec un lecteur d'écran et n'aiderait pas ceux qui voient les chiffres.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Vous organisez un événement dans plusieurs régions ? Comparez d'abord les heures dans le <a href="/tools/time-zone-converter/">convertisseur de fuseau horaire</a>.</li>
+  <li>Vous voulez le temps écoulé plutôt que le temps restant, avec des tours ? Utilisez le <a href="/tools/stopwatch/">chronomètre</a>.</li>
+  <li>Besoin de l'écart en jours entre deux dates plutôt que d'une horloge en direct ? Essayez l'outil <a href="/tools/date-difference-calculator/">jours entre deux dates</a>.</li>
+</ul>

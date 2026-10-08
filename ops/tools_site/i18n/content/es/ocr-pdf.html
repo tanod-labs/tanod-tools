@@ -1,0 +1,67 @@
+<!--meta
+{
+  "title": "OCR de PDF online: hacer un PDF escaneado buscable | Tanod Tools",
+  "description": "Haz buscable un PDF escaneado: el OCR agrega una capa de texto invisible para buscar, seleccionar y copiar. Gratis, sin registro; el archivo se elimina después.",
+  "h1": "OCR de PDF: hacer un PDF escaneado buscable",
+  "lede": "Agrega una capa de texto oculta a las páginas escaneadas para poder buscar, seleccionar y copiar su texto. Las páginas se ven exactamente igual.",
+  "blurb": "Haz que los PDF escaneados se puedan buscar y copiar con OCR.",
+  "keywords": "ocr pdf reconocer texto pdf escaneado a texto pdf buscable editable seleccionar copiar texto escaneo",
+  "limits": "Un PDF de hasta 10 MB, hasta 10 páginas por tarea, texto en inglés. Se procesa en nuestro servidor y luego se elimina. 10 tareas gratuitas en el servidor al día por persona, compartidas por todas las herramientas de servidor. Para tareas más grandes: la <a href=\"/learn/pdf-ocr-api.html\">API de OCR de PDF</a> (de pago por llamada).",
+  "howto_title": "Cómo hacer que un PDF se pueda buscar",
+  "howto": [
+    "Elige un PDF escaneado de hasta 10 MB o arrástralo a la página.",
+    "Revisa las páginas que se van a leer: todas en archivos cortos, o hasta 10 a la vez.",
+    "Pulsa <strong>Hacer buscable</strong> y descarga el PDF. También puedes copiar o guardar el texto reconocido."
+  ],
+  "faq": [
+    ["¿Se sube mi PDF?", "Sí. A diferencia de la mayoría de las herramientas de este sitio, esta funciona en nuestro servidor: tu PDF se envía por HTTPS, el motor de OCR lo lee y la copia buscable vuelve directamente a tu navegador. El archivo solo existe en el servidor mientras dura la tarea, en memoria y en una carpeta temporal privada que se elimina en cuanto la tarea termina. No guardamos el PDF, el resultado ni el texto reconocido, y nunca registramos el contenido de los archivos."],
+    ["¿Qué cambia el OCR en mi PDF?", "Nada que puedas ver. Cada página la lee el motor de OCR de código abierto Tesseract, y las palabras que encuentra se colocan sobre la página como texto invisible en el lugar correcto. La página original queda debajo, intacta, así que el PDF se ve igual pero ahora se puede buscar, seleccionar y copiar."],
+    ["¿Por qué solo 10 páginas a la vez?", "Leer una página toma unos segundos de tiempo de servidor, y cada tarea tiene que terminar en un minuto aproximadamente. Para un documento más largo, vuelve a usar la herramienta con el archivo descargado y las páginas siguientes, por ejemplo 11-20. Las páginas ya procesadas se mantienen como están."],
+    ["¿Qué idiomas funcionan?", "Inglés, y otros idiomas escritos con las mismas letras latinas sin acentos, con menor precisión. Las letras con tilde (como á, é o ñ) y otros alfabetos todavía no se reconocen de forma fiable."],
+    ["Mis páginas ya tienen texto. ¿Qué pasa?", "Las páginas que ya contienen texto se omiten, así que un PDF creado con un procesador de textos se queda como está. Marca <em>Leer páginas que ya tienen texto</em> para aplicarles OCR de todos modos, por ejemplo cuando un escaneo tiene una capa de texto defectuosa."],
+    ["¿Qué tan preciso es?", "Los escaneos limpios, derechos y con resolución normal dan muy buenos resultados. Las fotos tomadas en ángulo, la impresión tenue o borrosa, la escritura a mano y las tablas complejas producen más errores. Revisa los nombres y los números antes de confiar en ellos."],
+    ["¿Hay algún límite?", "Archivos de hasta 10 MB, hasta 10 páginas por tarea y 10 tareas gratuitas en el servidor al día por persona, compartidas por todas nuestras herramientas de servidor. Solo cuentan las tareas que terminan bien, y el contador se reinicia a la medianoche UTC. Para tareas más grandes: la <a href=\"/learn/pdf-ocr-api.html\">API de OCR de PDF</a>, de pago por llamada."],
+    ["¿Qué es la verificación humana?", "Antes de ejecutar una tarea, Cloudflare Turnstile comprueba que quien usa la herramienta es una persona y no un bot. Normalmente es invisible; a veces te pide marcar una casilla."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:ocr-pdf drop__mark}}
+  <p class="drop__title">Suelta un PDF escaneado aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Elegir un PDF</span></label>
+  <p class="drop__hint">O arrástralo a cualquier parte de esta página. Hasta 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="range">Páginas que se van a leer</label>
+      <input id="range" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Opciones</span>
+      <label class="check"><input type="checkbox" id="redo">Leer páginas que ya tienen texto</label>
+      <span class="help">Idioma: inglés.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Hacer buscable</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Qué hace el OCR con un PDF escaneado</h2>
+<p>Un escáner o una app del celular guarda cada página como una imagen. Tú puedes leerla, pero tu computadora no: la búsqueda no encuentra nada y no puedes copiar ni una frase. El reconocimiento óptico de caracteres (OCR) analiza la imagen, encuentra las letras y las palabras, y las escribe en el PDF como texto invisible colocado exactamente sobre las palabras que ves.</p>
+<p>Nuestro servidor renderiza cada página elegida a entre 200 y 300 dpi, la lee con el motor de código abierto Tesseract y coloca el texto sobre la página original sin modificarla. El texto reconocido también se muestra aquí, para que puedas copiarlo de inmediato.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Escanea a 300 dpi en blanco y negro o en escala de grises para obtener la mejor precisión.</li>
+  <li>¿Páginas al revés o de lado? Gíralas primero con <a href="/tools/rotate-pdf/">Rotar PDF</a> (en tu navegador).</li>
+  <li>¿Tienes una foto o una captura de pantalla en lugar de un PDF? Usa <a href="/tools/image-to-text/">Imagen a texto (OCR)</a>.</li>
+</ul>

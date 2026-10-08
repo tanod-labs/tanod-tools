@@ -1,0 +1,57 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "User agent parser",
+  "title": "User agent parser: browser, OS and device | Tanod Tools",
+  "description": "See what your browser's user agent says, or paste any string, and get the browser, engine, OS, device and CPU, plus Client Hints and why Chrome hides detail.",
+  "h1": "User agent parser",
+  "lede": "Break a user agent string into browser, engine, operating system, device and CPU, starting with your own browser's.",
+  "blurb": "Parse any user agent string, and see your own with Client Hints.",
+  "keywords": "user agent parser what is my user agent ua string browser detection client hints useragent decoder navigator.userAgent googlebot curl",
+  "limits": "Parsing uses ua-parser-js 1.0.41 (MIT) and is based on patterns, so unusual or spoofed strings can be misread. Client Hints are shown only for the browser you are using now, and only where that browser supports them (Chromium browsers do; Firefox and Safari do not).",
+  "howto_title": "How to read a user agent string",
+  "howto": [
+    "Your own browser's user agent is parsed as soon as the page loads. To check another one, paste it into the box, for example from a server log.",
+    "Read the browser, engine, operating system, device and CPU rows. Treat them as what the string claims, not as proven facts.",
+    "For your own browser, compare the result with the Client Hints section, which can show details the shortened string leaves out."
+  ],
+  "faq": [
+    ["What is a user agent string?", "It is a line of text that a browser or program sends with every web request to say what it is. Because of decades of compatibility tricks, nearly every browser starts with <code>Mozilla/5.0</code> and mentions several other browsers, so reading one needs pattern matching rather than a simple split."],
+    ["Why does Windows 11 show as Windows 10?", "Chrome and other Chromium browsers freeze the platform part of the string at \"Windows NT 10.0\", whatever the real Windows version. Only Client Hints can tell them apart: a platform version of 13 or higher means Windows 11. This page shows that value for your own browser when it is available."],
+    ["Why does my iPad say it is a Mac?", "Since iPadOS 13, Safari asks for desktop websites by default and sends a Macintosh user agent. The string alone cannot separate a Mac from an iPad, though a page can check for a touch screen. The same applies to macOS: the version is frozen at 10_15_7 in the string."],
+    ["What is User-Agent reduction?", "Chrome has been removing detail from the string to reduce passive tracking: the minor version shows as 0.0.0, the Android device model shows as a single letter K, and the OS version is fixed. Sites that need the details have to ask for them with Client Hints."],
+    ["What are Client Hints?", "They are structured headers and a JavaScript API (<code>navigator.userAgentData</code>) that let a page request specific details, such as architecture or the full browser version, instead of reading them from the string. Only Chromium-based browsers support them today."],
+    ["Can I trust a user agent for security decisions?", "No. Anyone can send any string, and bots often pretend to be Chrome. It is fine for statistics and for choosing a layout, but not for access control. To verify Googlebot, a site checks the visitor's IP address with a reverse DNS lookup instead."]
+  ],
+  "related": ["http-status-codes", "url-encode-decode", "base64-encode-decode", "json-formatter", "subnet-calculator"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">User agent string</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Use my browser's</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Copy result</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="Parsed user agent"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints from your browser</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>What a user agent tells you, and what it hides</h2>
+<p>The user agent started as a way for a server to see which browser was asking, so it could send a page that worked there. Browsers then copied each other's names to get the good pages, which is why a Chrome string today says Mozilla, AppleWebKit, KHTML, Gecko and Safari as well. A parser works around this by testing patterns in a careful order and picking the most specific match.</p>
+<p>The string is also being shortened on purpose. Chrome's User-Agent reduction fixes the Windows version at NT 10.0, the macOS version at 10_15_7, the Android model at K and the build number at 0.0.0, so that the string is no longer a good fingerprint. The details have not gone away: a page that asks for them through Client Hints gets the platform version, architecture, model and full browser version, and the visitor's browser decides whether to answer.</p>
+<p>Use the string for coarse decisions and logs, not for trust. Crawlers and command-line tools such as curl send their own short strings, and anything can be spoofed. If you are chasing a layout bug, feature detection in the page is more reliable than reading the browser name.</p>
+<h3>Tips</h3>
+<ul>
+  <li>A server log full of 403 or 429 responses to one client? Look the codes up in the <a href="/tools/http-status-codes/">HTTP status code reference</a>.</li>
+  <li>User agents in URLs or query strings are often percent-encoded; decode them with <a href="/tools/url-encode-decode/">URL encode and decode</a>.</li>
+  <li>Headers copied from a request sometimes carry Base64 values; read them with the <a href="/tools/base64-encode-decode/">Base64 encoder and decoder</a>.</li>
+</ul>

@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Regex-Tester für reguläre Ausdrücke in JavaScript | Tanod Tools",
+  "description": "Regex online testen: Treffer werden beim Tippen hervorgehoben, Gruppen und benannte Gruppen aufgelistet, mit Vorschau für Ersetzen. Kostenlos, im Browser.",
+  "h1": "Regex-Tester",
+  "lede": "Testen Sie einen regulären Ausdruck an Beispieltext und sehen Sie jeden Treffer, seine Gruppen und das Ergebnis einer Ersetzung.",
+  "blurb": "JavaScript-Regex mit Hervorhebung und Gruppen testen.",
+  "keywords": "regex tester regex testen online regulärer ausdruck regulaerer ausdruck reguläre ausdrücke regexp test javascript treffer gruppen benannte gruppen ersetzen flags",
+  "limits": "Regex-Syntax von JavaScript (ECMAScript), so wie Ihr Browser sie unterstützt. Text bis 5 MB; die ersten 1.000 Treffer werden aufgelistet und hervorgehoben. Ein Muster, das länger als 2 Sekunden läuft, wird gestoppt.",
+  "howto_title": "So testen Sie einen regulären Ausdruck",
+  "howto": [
+    "Geben Sie das Muster zwischen den Schrägstrichen ein und haken Sie die benötigten Flags an, etwa <code>g</code> für alle Treffer oder <code>i</code>, um Groß- und Kleinschreibung zu ignorieren.",
+    "Fügen Sie Ihren Testtext ein. Treffer werden während der Eingabe hervorgehoben, und die Tabelle listet jeden Treffer mit Position und Gruppen auf.",
+    "Um eine Ersetzung zu prüfen, geben Sie einen Ersatz wie <code>$2-$1</code> oder <code>$&lt;year&gt;</code> ein und lesen das Ergebnis darunter."
+  ],
+  "faq": [
+    ["Welche Regex-Variante wird verwendet?", "Die von JavaScript, ausgeführt von der Engine Ihres eigenen Browsers; die Ergebnisse sind also genau das, was <code>RegExp</code> in Ihrem Browser oder in Node.js liefert. Die meiste alltägliche Syntax ist mit PCRE, Python und Java gleich, einige Funktionen unterscheiden sich aber: Possessive Quantoren und atomare Gruppen werden nicht unterstützt, und Lookbehind, benannte Gruppen und das Flag <code>v</code> brauchen einen aktuellen Browser."],
+    ["Warum wird nur ein Treffer angezeigt?", "Ohne das Flag <code>g</code> (global) findet ein regulärer Ausdruck in JavaScript nur den ersten Treffer, und Ersetzen ändert nur das erste Vorkommen. Haken Sie <code>g</code> an, um alle zu finden. Der Tester hält sich genau an die Sprache, damit Sie sehen, was Ihr Code tun wird."],
+    ["Was bewirken die Flags?", "<code>g</code> findet alle Treffer, <code>i</code> ignoriert Groß- und Kleinschreibung, <code>m</code> lässt <code>^</code> und <code>$</code> an Zeilenumbrüchen greifen, <code>s</code> lässt <code>.</code> auch Zeilenumbrüche erfassen, <code>u</code> schaltet volle Unicode-Verarbeitung ein, <code>v</code> ist der neuere Unicode-Modus mit Mengenoperationen, <code>y</code> (sticky) trifft nur an der aktuellen Position, und <code>d</code> speichert den Anfang jeder Gruppe, was der Tester für die Gruppenpositionen ohnehin nutzt."],
+    ["Wie verwende ich Gruppen im Ersatz?", "<code>$1</code>, <code>$2</code> und so weiter fügen nummerierte Gruppen ein, <code>$&lt;name&gt;</code> eine benannte Gruppe, <code>$&amp;</code> den ganzen Treffer, <code>$`</code> und <code>$'</code> den Text davor und danach, und <code>$$</code> schreibt ein echtes Dollarzeichen."],
+    ["Warum wurde mein Muster wegen zu langer Laufzeit gestoppt?", "Manche Muster, etwa <code>^(a+)+$</code> auf einer langen Folge von a, die nicht so endet wie erwartet, zwingen die Engine, eine enorme Zahl von Möglichkeiten durchzuprobieren. Das nennt man katastrophales Backtracking. Der Tester führt jedes Muster in einem Hintergrund-Worker aus und stoppt es nach 2 Sekunden, damit die Seite benutzbar bleibt. Schreiben Sie verschachtelte Wiederholungen wie <code>(a+)+</code> als <code>a+</code>."],
+    ["Wird mein Text irgendwohin gesendet?", "Nein. Muster und Text bleiben in Ihrem Browser; die Suche findet auf Ihrem Gerät statt, und nichts wird hochgeladen oder gespeichert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="r-pattern">Regulärer Ausdruck</label>
+    <div class="rx-pattern">
+      <span aria-hidden="true">/</span>
+      <input type="text" id="r-pattern" class="mono" value="(?&lt;year&gt;\d{4})-(\d{2})-(\d{2})" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="r-info">
+      <span aria-hidden="true" id="r-flagtext">/g</span>
+    </div>
+  </div>
+  <fieldset>
+    <legend>Flags</legend>
+    <div class="rx-flags">
+      <label class="check"><input type="checkbox" data-flag="g" checked><code>g</code>&nbsp;global</label>
+      <label class="check"><input type="checkbox" data-flag="i"><code>i</code>&nbsp;Groß/klein egal</label>
+      <label class="check"><input type="checkbox" data-flag="m"><code>m</code>&nbsp;mehrzeilig</label>
+      <label class="check"><input type="checkbox" data-flag="s"><code>s</code>&nbsp;Punkt trifft Zeilenumbruch</label>
+      <label class="check"><input type="checkbox" data-flag="u"><code>u</code>&nbsp;Unicode</label>
+      <label class="check"><input type="checkbox" data-flag="v"><code>v</code>&nbsp;Unicode-Sets</label>
+      <label class="check"><input type="checkbox" data-flag="y"><code>y</code>&nbsp;sticky</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="r-text">Testtext</label>
+    <textarea id="r-text" class="mono" rows="6" spellcheck="false">Versionen: 2024-03-31, 2025-12-01 und 2026-10-08.</textarea>
+  </div>
+  <p class="tt__report" id="r-info" aria-live="polite"></p>
+  <div class="field">
+    <span class="label" id="r-view-l">Treffer im Text</span>
+    <pre class="out rx-view" id="r-view" tabindex="0" aria-labelledby="r-view-l"></pre>
+  </div>
+  <div class="rx-table-wrap" tabindex="0" role="region" aria-label="Trefferliste">
+    <table class="rx-table">
+      <thead><tr><th scope="col">#</th><th scope="col">Position</th><th scope="col">Treffer</th><th scope="col">Gruppen</th></tr></thead>
+      <tbody id="r-list"></tbody>
+    </table>
+  </div>
+  <div class="field">
+    <label for="r-repl">Ersetzen durch (optional)</label>
+    <input type="text" id="r-repl" class="mono" autocomplete="off" spellcheck="false" placeholder="$&lt;year&gt;/$2/$3">
+  </div>
+  <div class="field" id="r-out-wrap" hidden>
+    <span class="label" id="r-out-l">Ergebnis der Ersetzung</span>
+    <pre class="out" id="r-out" tabindex="0" aria-labelledby="r-out-l"></pre>
+    <div class="actions"><button class="btn btn--sm" id="r-copy" type="button">{{mark:i-copy}}Ergebnis kopieren</button></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Muster sicher testen</h2>
+<p>Der Regex-Tester baut aus Ihrem Muster und den Flags ein JavaScript-<code>RegExp</code> und führt es in einem Hintergrund-Worker aus, mit derselben Engine, die Ihr Code in diesem Browser verwendet. Die Treffer kommen mit ihrer Startposition und jeder Gruppe zurück, und die Seite zeichnet sie mit abwechselnden Hervorhebungen über Ihren Text, damit benachbarte Treffer unterscheidbar bleiben. Ein leerer Treffer, wie ihn <code>\b</code> oder <code>a*</code> erzeugen kann, erscheint als schmaler Balken.</p>
+<p>Die Ausführung in einem Worker ist wichtig, weil ein regulärer Ausdruck exponentiell lange brauchen kann. Läuft ein Muster nach 2 Sekunden noch, wird der Worker gestoppt, und Sie erhalten eine Meldung statt eines eingefrorenen Tabs. Dieselbe Schutzmaßnahme gilt für <a href="/tools/find-and-replace/">Suchen und Ersetzen</a>.</p>
+<p>Positionen werden in UTF-16-Codeeinheiten gezählt, so wie JavaScript-Strings zählen: Ein Emoji oder ein anderes Zeichen außerhalb der Basisebene belegt zwei. Die Liste zeigt die ersten 1.000 Treffer; die Gesamtzahl darüber umfasst jeden Treffer.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Wenn ein Muster funktioniert, wenden Sie es mit <a href="/tools/find-and-replace/">Suchen und Ersetzen</a> auf ein ganzes Dokument an.</li>
+  <li>Vergleichen Sie den Text vor und nach einer Ersetzung mit <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Sie suchen Datumsangaben in einem Log? Machen Sie Zeitstempel mit <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> zu lesbaren Zeiten.</li>
+</ul>

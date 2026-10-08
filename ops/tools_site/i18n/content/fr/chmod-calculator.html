@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Calculateur chmod : octal, symbolique et commandes | Tanod Tools",
+  "description": "Cochez lecture, écriture et exécution pour obtenir le nombre octal chmod, la forme rwxr-xr-x et les commandes, ou tapez un mode. Gère setuid et sticky bit.",
+  "h1": "Calculateur chmod",
+  "lede": "Définissez les permissions de fichiers Unix avec des cases à cocher, un nombre octal comme 755 ou le texte rwxr-xr-x, et obtenez les commandes chmod correspondantes.",
+  "blurb": "Permissions Unix en cases à cocher, octal, texte rwx et commandes chmod.",
+  "keywords": "calculateur chmod calculatrice permissions unix linux droits fichiers octal rwx 755 644 setuid setgid sticky bit umask generateur chmod",
+  "limits": "Gère les neuf bits de permission plus setuid, setgid et sticky, comme le chmod POSIX. L'outil ne lit pas de vrais fichiers, n'affiche pas les propriétaires et ne couvre ni les ACL, ni les attributs de fichiers, ni l'umask. Les modes octaux doivent avoir 3 ou 4 chiffres.",
+  "howto_title": "Comment calculer un mode chmod",
+  "howto": [
+    "Cochez les cases pour le propriétaire, le groupe et les autres, ou choisissez un mode courant comme 644 ou 755. Vous pouvez aussi taper un nombre octal ou le texte de neuf lettres, et les cases suivent.",
+    "Lisez le résumé en clair de ce que chaque catégorie peut faire sur un fichier et sur un répertoire, ainsi que les éventuels avertissements.",
+    "Copiez la commande <code>chmod</code> numérique ou symbolique. Changez d'abord le nom du fichier si vous voulez une commande prête à coller."
+  ],
+  "faq": [
+    ["Comment fonctionne le nombre octal ?", "Chaque chiffre additionne lecture (4), écriture (2) et exécution (1) pour une catégorie, dans l'ordre propriétaire, groupe, autres. Ainsi, 7 signifie lecture, écriture et exécution, 5 lecture et exécution, et 4 lecture seule. 755 donne tous les droits au propriétaire, et la lecture et l'exécution à tous les autres. Un quatrième chiffre facultatif placé devant contient setuid (4), setgid (2) et sticky (1)."],
+    ["Que signifient les lettres s, S, t et T ?", "Elles remplacent le x à la position du propriétaire, du groupe ou des autres. Une minuscule signifie que le bit spécial est activé et que l'exécution l'est aussi ; une majuscule signifie que le bit spécial est activé mais que l'exécution ne l'est pas, ce qui est généralement une erreur. Ainsi, 4755 donne <code>rwsr-xr-x</code> et 4644 donne <code>rwSr--r--</code>."],
+    ["Quelle différence entre 644 et 755 ?", "644 est le mode habituel des fichiers ordinaires : le propriétaire peut lire et écrire, tous les autres peuvent seulement lire. 755 ajoute l'exécution pour tous, nécessaire aux programmes, aux scripts et aux répertoires. Les répertoires ont besoin du bit d'exécution pour qu'on puisse y entrer."],
+    ["Pourquoi 777 est-il considéré comme dangereux ?", "Ce mode permet à n'importe quel utilisateur de la machine, et à tout programme exécuté sous son nom, de modifier ou de remplacer le fichier. Un serveur web qui doit écrire quelque part n'en a pas besoin : attribuer le bon utilisateur ou groupe propriétaire et utiliser 775 ou 770 résout la plupart des erreurs de permission sans ouvrir le fichier à tout le monde."],
+    ["À quoi sert le sticky bit ?", "Sur un répertoire, il empêche les utilisateurs de supprimer ou de renommer les fichiers qui ne leur appartiennent pas, même s'ils peuvent écrire dans le répertoire. C'est pourquoi les dossiers partagés comme <code>/tmp</code> sont en mode 1777. Sur un Linux moderne, il n'a aucun effet sur les fichiers ordinaires."],
+    ["L'outil modifie-t-il quelque chose sur mon ordinateur ?", "Non. Il calcule seulement le nombre et les commandes. Rien de ce que vous saisissez n'est envoyé nulle part, et c'est vous qui exécutez les commandes dans un terminal."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Permissions</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Propriétaire</th><th scope="col">Groupe</th><th scope="col">Autres</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Lecture <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Propriétaire : lecture"></td><td><input type="checkbox" id="m-g-r" aria-label="Groupe : lecture"></td><td><input type="checkbox" id="m-o-r" aria-label="Autres : lecture"></td></tr>
+          <tr><th scope="row">Écriture <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Propriétaire : écriture"></td><td><input type="checkbox" id="m-g-w" aria-label="Groupe : écriture"></td><td><input type="checkbox" id="m-o-w" aria-label="Autres : écriture"></td></tr>
+          <tr><th scope="row">Exécution <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Propriétaire : exécution"></td><td><input type="checkbox" id="m-g-x" aria-label="Groupe : exécution"></td><td><input type="checkbox" id="m-o-x" aria-label="Autres : exécution"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Set user ID (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Set group ID (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Sticky bit <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Octal</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Symbolique</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Modes courants">
+    <button class="btn btn--sm" type="button" data-mode="644">644 fichier</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 programme ou répertoire</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 fichier privé</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 répertoire privé</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 groupe partagé</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 tout le monde</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Nom du fichier ou du répertoire dans les commandes</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Commandes">
+    <div><dt>Numérique</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Copier la commande numérique">Copier</button></div>
+    <div><dt>Symbolique</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Copier la commande symbolique">Copier</button></div>
+  </dl>
+  <h2 class="util-h">Ce que ce mode autorise</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Qui</th><th scope="col">Sur un fichier</th><th scope="col">Sur un répertoire</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment les permissions de fichiers Unix sont stockées</h2>
+<p>Ce calculateur chmod repose sur un principe simple : chaque fichier et répertoire d'un système de type Unix porte un mode court, composé de trois bits de permission (lecture, écriture, exécution) pour chacune des trois catégories (l'utilisateur propriétaire, le groupe propriétaire, tous les autres), plus trois bits spéciaux. Cela fait douze bits, et le nombre octal n'est rien d'autre que ces bits écrits trois par trois, c'est pourquoi les chiffres ne dépassent pas 7. La forme à neuf lettres affichée par <code>ls -l</code> montre les mêmes bits sous forme de lettres.</p>
+<p>Lecture, écriture et exécution n'ont pas le même sens sur un répertoire. La lecture permet de lister les noms qu'il contient, l'écriture permet d'ajouter, de renommer et de supprimer des entrées, et l'exécution permet d'entrer dans le répertoire et d'accéder aux éléments par leur nom. Un répertoire avec la lecture mais sans l'exécution affiche ses noms mais refuse l'accès à tout ce qu'il contient, une source fréquente d'erreurs de permission déroutantes.</p>
+<p>Les bits spéciaux modifient le comportement d'un mode. Setuid et setgid font tourner un programme avec les droits du propriétaire ou du groupe du fichier au lieu de ceux de l'appelant, ce qui est puissant et donc ignoré pour les scripts shell sur la plupart des systèmes. Setgid sur un répertoire fait hériter son groupe aux nouveaux fichiers, et le sticky bit sur un répertoire empêche les utilisateurs de supprimer les fichiers des autres. Si vous ne savez pas quel mode il faut à un fichier, commencez restrictif et n'ajoutez que ce qu'un message d'erreur réclame.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Binaire et octal sont les mêmes bits écrits différemment ; le <a href="/tools/number-base-converter/">Convertisseur de base numérique</a> affiche 755 sous la forme 111 101 101.</li>
+  <li>Vous planifiez une tâche cron qui lance un script que vous venez de rendre exécutable ? Créez la planification avec le <a href="/tools/cron-expression-generator/">Générateur d'expression cron</a>.</li>
+  <li>Prochaine étape, des plages réseau ? Essayez le <a href="/tools/subnet-calculator/">Calculateur de sous-réseau</a>.</li>
+</ul>

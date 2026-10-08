@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "SQL formatieren und verschönern – online | Tanod Tools",
+  "description": "SQL formatieren für PostgreSQL, MySQL, SQL Server, Oracle, SQLite, BigQuery und mehr. Schreibweise und Einrückung wählbar. Kostenlos im Browser.",
+  "h1": "SQL formatieren",
+  "lede": "Fügen Sie eine Abfrage ein, wählen Sie Ihre Datenbank und erhalten Sie sie eingerückt zurück, mit einer Klausel pro Zeile.",
+  "blurb": "SQL verschönern, für 20 Dialekte.",
+  "keywords": "sql formatieren formatter verschönern verschoenern beautifier abfrage formatieren query postgres postgresql mysql mariadb sqlite tsql sql server oracle plsql bigquery snowflake schlüsselwörter großschreiben einrücken",
+  "limits": "Eingabe bis etwa 10 MB. Nur das Layout ändert sich: Ihr SQL wird weder ausgeführt noch gegen ein Schema geprüft oder optimiert.",
+  "howto_title": "So formatieren Sie eine SQL-Abfrage",
+  "howto": [
+    "Fügen Sie die Abfrage in das Feld ein oder klicken Sie auf <strong>Beispiel einfügen</strong>, um zu sehen, wie es funktioniert.",
+    "Wählen Sie Ihre Datenbank unter <strong>Dialekt</strong> und legen Sie dann die Schreibweise der Schlüsselwörter und die Einrückung fest.",
+    "Die formatierte Abfrage erscheint während der Eingabe darunter. Kopieren Sie sie oder laden Sie sie als <code>.sql</code>-Datei herunter."
+  ],
+  "faq": [
+    ["Wird mein SQL hochgeladen?", "Nein. Der Formatierungscode ist ein Skript, das von dieser Website ausgeliefert und beim ersten Einfügen einer Abfrage geladen wird; die Abfrage selbst bleibt in Ihrem Browser und wird an keinen Server gesendet."],
+    ["Warum spielt der Dialekt eine Rolle?", "Datenbanken bringen ihre eigene Syntax mit. PostgreSQL hat <code>::</code>-Casts und <code>$1</code>-Parameter, SQL Server hat <code>[bracketed]</code>-Namen und <code>TOP</code>, MySQL und MariaDB setzen Namen in Backticks, und BigQuery hat eigene Formen für Arrays und Structs. Mit dem richtigen Dialekt akzeptiert der Parser Ihre Abfrage. Standard-SQL ist die sichere Wahl, wenn Sie unsicher sind, ist aber strenger bei herstellerspezifischen Extras."],
+    ["Warum erhalte ich einen Fehler bei einer Abfrage, die in meiner Datenbank problemlos läuft?", "Der Formatierer liest die gesamte Anweisung, statt nur Zeilen neu einzurücken. Eine nicht geschlossene Klammer oder ein nicht geschlossenes Anführungszeichen hält ihn deshalb auf, ebenso Syntax aus einem anderen Dialekt. Die Meldung nennt Zeile und Spalte, an der er aufgegeben hat, und meist hilft es, den passenden Dialekt zu wählen."],
+    ["Ändert das Formatieren, was die Abfrage tut?", "Nur Leerraum und, wenn Sie es wünschen, die Schreibweise der Schlüsselwörter. String-Literale, Namen in Anführungszeichen und Zahlen behalten ihren Text, sodass <code>'select'</code> in Anführungszeichen kleingeschrieben bleibt, wenn Sie GROSSBUCHSTABEN wählen."],
+    ["Kann ich mehrere Anweisungen auf einmal formatieren?", "Ja. Durch Semikolons getrennte Anweisungen werden einzeln formatiert, mit einer Leerzeile dazwischen."],
+    ["Welche Schreibweise für Schlüsselwörter sollte ich verwenden?", "Beide funktionieren; es ist eine Stilfrage, und Datenbanken ignorieren sie. Großgeschriebene Schlüsselwörter sind die ältere Konvention und heben Klauseln in reinem Text hervor. Kleinschreibung ist in Codebasen üblich, die bereits einen Linter oder ORM-Ausgaben in diesem Stil verwenden. Wie eingegeben lässt Ihre Schreibweise unverändert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">SQL</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Beispiel einfügen</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Leeren</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="select id, name from users where active = 1 order by name"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <label for="o-dialect">Dialekt</label>
+    <select id="o-dialect"><option value="sql">Standard-SQL</option><option value="postgresql">PostgreSQL</option><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option><option value="sqlite">SQLite</option><option value="transactsql">SQL Server (T-SQL)</option><option value="plsql">Oracle (PL/SQL)</option><option value="bigquery">BigQuery</option><option value="snowflake">Snowflake</option><option value="redshift">Amazon Redshift</option><option value="spark">Spark SQL</option><option value="hive">Hive</option><option value="db2">IBM Db2</option><option value="db2i">IBM Db2 for i</option><option value="trino">Trino und Presto</option><option value="duckdb">DuckDB</option><option value="clickhouse">ClickHouse</option><option value="tidb">TiDB</option><option value="singlestoredb">SingleStore</option><option value="n1ql">Couchbase N1QL</option></select>
+  </div>
+  <div class="field">
+    <label for="o-case">Schlüsselwörter</label>
+    <select id="o-case"><option value="upper" selected>GROSSBUCHSTABEN</option><option value="lower">kleinbuchstaben</option><option value="preserve">Wie eingegeben</option></select>
+  </div>
+  <div class="field">
+    <span class="label" id="o-ind-l">Einrückung</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 Leerzeichen</label>
+      <label><input type="radio" name="indent" value="4">4 Leerzeichen</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Eingabe</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Ausgabe</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Änderung</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Ergebnis</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Kopieren</button>
+    <button class="btn" id="f-dl" type="button">.sql herunterladen</button>
+  </div>
+</div>
+<!--explain-->
+<h2>SQL lesbar machen</h2>
+<p>Eine Datenbank liest eine Abfrage gleich, ob sie in einer Zeile steht oder in vierzig. Deshalb kommen Abfragen aus Logs, ORMs und Monitoring-Tools so oft als ein einziger ununterbrochener String an. Wenn Sie SQL formatieren, steht jede Hauptklausel (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>GROUP BY</code>, <code>ORDER BY</code>) in einer eigenen Zeile, und Spalten, Bedingungen und Unterabfragen werden darunter eingerückt. So erkennen Sie die Struktur der Abfrage auf einen Blick und bemerken etwa eine fehlende Join-Bedingung.</p>
+<p>Das Layout richtet sich nach dem gewählten Dialekt, denn Wörter und Symbole unterscheiden sich zwischen Datenbanken. Ein PostgreSQL-Cast wie <code>price::numeric</code>, ein nummerierter Parameter wie <code>$1</code>, ein MySQL-Name in Backticks, eine Oracle-Klausel <code>CONNECT BY</code> und ein SQL-Server-<code>TOP 10</code> sind jeweils in einem Dialekt gültig und in einem anderen ein Syntaxfehler. Platzhalter für gebundene Parameter (<code>?</code>, <code>$1</code>, <code>:name</code>, <code>@name</code>) werden erkannt und nicht verändert.</p>
+<p>Die Schreibweise der Schlüsselwörter hat keinen Einfluss darauf, wie eine Abfrage läuft; sie ist reine Stilfrage. Ein Formatierer, der die Grammatik versteht, kann sie gefahrlos ändern, weil er weiß, welche Wörter Schlüsselwörter sind und welche Spaltennamen oder Text in Anführungszeichen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie vergleichen eine Abfrage vor und nach einer Änderung? Formatieren Sie beide mit denselben Einstellungen und vergleichen Sie sie mit <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Liefert die Abfrage JSON-Spalten? Fügen Sie einen Wert in <a href="/tools/json-formatter/">JSON formatieren und validieren</a> ein, um ihn zu lesen.</li>
+  <li>Sie müssen eine Tabelle in einem langen Skript umbenennen? <a href="/tools/find-and-replace/">Suchen und Ersetzen</a> erledigt das vor dem Formatieren.</li>
+</ul>

@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Conversor de timestamp Unix: epoch para data | Tanod Tools",
+  "description": "Converta timestamp Unix em segundos, milissegundos, microssegundos ou nanossegundos para data em UTC ou qualquer fuso, e data para epoch. Grátis, no navegador.",
+  "h1": "Conversor de timestamp Unix",
+  "lede": "Transforme um timestamp epoch em uma data legível em qualquer fuso horário, ou uma data e hora em timestamp.",
+  "blurb": "Epoch para data e data para timestamp, em qualquer fuso.",
+  "keywords": "conversor timestamp unix epoch converter tempo unix posix time segundos desde 1970 milissegundos timestamp para data data para timestamp utc fuso horario",
+  "limits": "Timestamps de até cerca de 270.000 anos antes ou depois de 1970, o intervalo que um navegador consegue representar; datas digitadas do ano 1 ao 9999. As regras de fuso horário vêm dos dados de fuso horário nativos do seu navegador.",
+  "howto_title": "Como converter um timestamp Unix",
+  "howto": [
+    "Cole um timestamp em <strong>Timestamp para data</strong>. A unidade (segundos, milissegundos, microssegundos ou nanossegundos) é detectada pelo tamanho, e você pode alterá-la.",
+    "Escolha um fuso horário para ver a data nele, além de UTC, ISO 8601 e RFC 2822.",
+    "Para o caminho inverso, informe uma data e hora em <strong>Data para timestamp</strong>; ela é lida no fuso horário que você escolheu."
+  ],
+  "faq": [
+    ["O que é um timestamp Unix?", "É o número de segundos desde 00:00:00 UTC de 1º de janeiro de 1970, sem contar os segundos bissextos. Ele é o mesmo no mundo inteiro em um dado momento, e por isso é usado para armazenar horários; o fuso horário só importa quando você o transforma em uma data para alguém ler."],
+    ["Como a unidade é detectada?", "Pelo tamanho. Um valor abaixo de 100 bilhões é lido como segundos (o que cobre datas até o ano 5138), até 100 trilhões como milissegundos, até 100 quatrilhões como microssegundos, e qualquer valor maior como nanossegundos. Um número de 10 dígitos é em segundos, 13 dígitos em milissegundos, 16 em microssegundos e 19 em nanossegundos. Se o palpite estiver errado, escolha a unidade você mesmo."],
+    ["E um horário que não existe por causa do horário de verão?", "Quando os relógios são adiantados, uma hora do horário local é pulada. Uma data e hora dentro desse intervalo é movida para frente pela duração do intervalo, que é o que a maioria dos programas faz, e a ferramenta avisa. Quando os relógios são atrasados, uma hora acontece duas vezes; a ferramenta usa a primeira ocorrência e também mostra o timestamp da segunda."],
+    ["Timestamps podem ser negativos?", "Sim. Valores negativos são momentos antes de 1970: -1 é 23:59:59 UTC de 31 de dezembro de 1969. Datas muito antigas usam o calendário gregoriano proléptico, como faz a ISO 8601."],
+    ["O que é o problema do ano 2038?", "Sistemas que armazenam o tempo Unix como número de 32 bits com sinal só conseguem contar até 2.147.483.647, que corresponde a 03:14:07 UTC de 19 de janeiro de 2038. Um segundo depois, o valor estoura. A ferramenta avisa quando um timestamp está além desse limite. A maioria dos sistemas atuais usa tempo de 64 bits e não é afetada."],
+    ["Os segundos bissextos são incluídos?", "Não. O tempo Unix considera todo dia com exatamente 86.400 segundos, e o JavaScript também, então os 27 segundos bissextos adicionados desde 1972 não são contados. Isso é normal e corresponde ao que servidores, bancos de dados e linguagens de programação informam."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Tempo Unix atual</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Segundos</dt><dd id="now-s">0</dd></div>
+      <div><dt>Milissegundos</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Copiar segundos</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Copiar milissegundos</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Pausar</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Fuso horário</label>
+    <select id="tz"></select>
+    <span class="help">Usado para mostrar as datas abaixo e para ler a data que você digitar.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Timestamp para data</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Timestamp Unix</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Unidade</label>
+      <select id="ts-unit">
+        <option value="auto" selected>Detectar pelo tamanho</option>
+        <option value="s">Segundos</option>
+        <option value="ms">Milissegundos</option>
+        <option value="us">Microssegundos</option>
+        <option value="ns">Nanossegundos</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Digite ou cole um timestamp.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Seu fuso horário</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>ISO 8601 com offset</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Relativo</dt><dd id="o-rel"></dd></div>
+    <div><dt>Segundos</dt><dd id="o-s"></dd></div>
+    <div><dt>Milissegundos</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Data para timestamp</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Data</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Hora</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Usar o horário atual</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Escolha uma data.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Segundos</dt><dd id="d-s"></dd></div>
+    <div><dt>Milissegundos</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Como funciona o tempo epoch</h2>
+<p>Um timestamp Unix conta os segundos desde a época Unix (epoch), meia-noite UTC de 1º de janeiro de 1970. Como ele indica um momento e não a leitura de um relógio, o mesmo número representa o mesmo instante em São Paulo, Lisboa e Nova York. É na conversão para data que entram os fusos horários: o conversor de timestamp Unix usa o banco de dados de fusos do seu navegador, as mesmas regras do seu sistema operacional, para calcular o deslocamento local e o horário de verão naquele momento.</p>
+<p>Muitos sistemas usam unidades menores. JavaScript e Java contam milissegundos; alguns bancos de dados e o <code>time.time_ns()</code> do Python usam microssegundos ou nanossegundos. Colar um valor desses como segundos dá uma data dezenas de milhares de anos distante, então a ferramenta deduz a unidade pelo tamanho do número e mostra qual escolheu. Valores em microssegundos e nanossegundos mantêm os dígitos extras na linha ISO 8601.</p>
+<p>Ir de uma data para um timestamp exige um fuso horário, porque 09:00 acontece em um momento diferente em cada fuso. A data que você digita é lida como a leitura do relógio no fuso escolhido. Leituras que caem em um intervalo pulado ou repetido pelo horário de verão são sinalizadas, para você saber qual instante obteve.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Agendamentos escritos como expressões cron podem ser conferidos com <a href="/tools/cron-expression-explainer/">Explicar expressão cron</a>, que lista as próximas execuções em qualquer fuso.</li>
+  <li>Valores de UUID versão 7 carregam um timestamp em milissegundos; o <a href="/tools/uuid-generator/">Gerador de UUID</a> consegue lê-lo.</li>
+  <li>Organize uma resposta JSON cheia de timestamps com <a href="/tools/json-formatter/">Formatar e validar JSON</a>.</li>
+</ul>

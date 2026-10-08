@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "EXIF-Daten entfernen – inklusive GPS-Standort | Tanod Tools",
+  "description": "Sehen, was ein Foto verrät (GPS-Standort, Kamera, Datum), und dann EXIF-, XMP- und IPTC-Daten ohne Neukodierung entfernen. Läuft im Browser; kein Upload.",
+  "h1": "EXIF-Daten aus Fotos entfernen",
+  "lede": "Sehen Sie, welcher Standort, welche Kamera und welches Datum in einem Foto stecken, und entfernen Sie diese Daten, ohne das Bild selbst anzutasten.",
+  "blurb": "GPS-, Kamera- und andere Metadaten aus Fotos löschen.",
+  "keywords": "exif daten entfernen exif löschen loeschen metadaten entfernen foto metadaten gps standort entfernen datenschutz xmp iptc bereinigen",
+  "limits": "Bis zu 50 Bilder pro Stapel, je 50 MB. JPEG, PNG und WebP werden ohne Neukodierung bereinigt; GIF, BMP und AVIF werden neu gezeichnet und als PNG gespeichert.",
+  "howto_title": "So entfernen Sie EXIF-Daten aus einem Foto",
+  "howto": [
+    "Wählen Sie Ihre Fotos aus oder ziehen Sie sie auf die Seite. Zu jedem wird aufgelistet, was es enthält; ein GPS-Standort wird hervorgehoben.",
+    "Lassen Sie „Ausrichtung beibehalten“ eingeschaltet, damit Fotos, die darauf angewiesen sind, nicht seitlich erscheinen, oder schalten Sie es aus, um alles zu entfernen.",
+    "Klicken Sie auf <strong>Metadaten entfernen</strong> und laden Sie dann die bereinigten Kopien oder eine .zip herunter. Die Dateinamen erhalten den Zusatz „-clean“."
+  ],
+  "faq": [
+    ["Werden meine Fotos hochgeladen?", "Nein. Die Datei wird in Ihrem Browser gelesen und neu geschrieben, und nichts wird an einen Server gesendet. Sie können die Liste mit dem Inhalt jedes Fotos prüfen, bevor irgendetwas geändert wird."],
+    ["Wird mein JPEG erneut komprimiert?", "Nein. Bei JPEG, PNG und WebP schreibt das Tool den Datei-Container neu und lässt die Metadatenblöcke weg. Die Bilddaten werden Byte für Byte kopiert, es gibt also keinen Qualitätsverlust, und die Pixel bleiben identisch."],
+    ["Was genau wird entfernt?", "JPEG: EXIF und XMP (APP1), IPTC (APP13), Kommentare und Anwendungsblöcke außer dem JFIF-Header, dem Farbprofil und dem Adobe-Farbflag. PNG: Textblöcke (tEXt, zTXt, iTXt, die XMP enthalten können), EXIF und die Änderungszeit. WebP: EXIF- und XMP-Blöcke. Daten, die nach dem Ende eines JPEG- oder PNG-Bildes angehängt sind, werden ebenfalls verworfen."],
+    ["Was bedeutet „Ausrichtung beibehalten“?", "Viele Kameras speichern ein Foto seitlich und fügen ein Ausrichtungs-Tag hinzu, das Anzeigeprogrammen sagt, wie sie es drehen sollen. Wird dieses Tag entfernt, kann das Foto seitlich erscheinen. Mit dieser Option (standardmäßig eingeschaltet) wird ein winziger EXIF-Block, der nur die Ausrichtungsnummer enthält, zurückgeschrieben, wenn das Original nicht aufrecht war. Er enthält keine Standort- oder Kameradaten. Schalten Sie die Option aus, um auch ihn zu entfernen."],
+    ["Wird das Farbprofil entfernt?", "Nein. Ein eingebettetes ICC-Farbprofil bleibt erhalten, weil sein Entfernen die Darstellung der Farben verändern kann. Es beschreibt die Farbverarbeitung, nicht wo oder wie das Foto aufgenommen wurde."],
+    ["Wie zuverlässig ist die Liste der gefundenen Daten?", "Sie liest die Standard-EXIF-Felder (Kamera, Objektiv, Datum, Software, GPS, Ausrichtung) und zählt den Rest. Kamerahersteller fügen private Daten in eigenen Formaten hinzu; diese werden gezählt, aber nicht beschrieben. Die bereinigte Datei wird nach dem Schreiben geprüft, um sicherzustellen, dass keine EXIF-Standort-, Kamera-, XMP- oder Textmetadaten übrig sind."],
+    ["Was passiert mit GIF-, BMP- oder AVIF-Dateien?", "Dieses Tool bearbeitet diese Container nicht. Es zeichnet das Bild neu und speichert es als PNG, das keine Metadaten enthält. Aus einem GIF wird sein erstes Bild."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Fotos hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Fotos auswählen</span></label>
+  <p class="drop__hint">JPEG, PNG oder WebP (auch GIF, BMP, AVIF). Oder ziehen Sie sie an eine beliebige Stelle dieser Seite.</p>
+</div>
+<ol class="files" id="files" aria-label="Zu bereinigende Fotos" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Ausrichtung beibehalten, damit Fotos nicht seitlich erscheinen</label>
+      <p class="help">Schreibt einen winzigen EXIF-Block zurück, der nur die Ausrichtungsnummer enthält, und nur dann, wenn das Foto nicht schon aufrecht ist.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Metadaten entfernen</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Alle entfernen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Was ein Foto verraten kann</h2>
+<p>Die meisten Kameras und Smartphones schreiben zusätzliche Informationen in jedes Foto: Hersteller und Modell, den Aufnahmezeitpunkt, die Software, mit der es bearbeitet wurde, und bei aktivierter Ortung die GPS-Koordinaten Ihres Standorts. Dieser Block heißt EXIF. Bildbearbeitungsprogramme fügen XMP- und IPTC-Blöcke mit Bildunterschriften, Autorennamen und Stichwörtern hinzu. Viele Websites entfernen das beim Hochladen, aber nicht alle, und eine per E-Mail oder Chat verschickte Datei behält meist alles. Deshalb lohnt es sich, EXIF-Daten vorher zu entfernen.</p>
+<p>Dieses Tool zeigt zuerst, was jedes Foto enthält, und entfernt es dann, indem es den Container der Datei neu schreibt. Ein JPEG ist eine Folge beschrifteter Blöcke, gefolgt vom komprimierten Bild; die Metadatenblöcke werden weggelassen und die Bilddaten unverändert kopiert. Deshalb wird das Ergebnis nicht erneut komprimiert und sieht identisch aus.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Prüfen Sie die Liste vor dem Teilen: Ein hervorgehobener Standort bedeutet, dass das Foto Koordinaten enthält.</li>
+  <li>Auch Screenshots und bearbeitete Exporte können Textmetadaten enthalten. Bereinigen Sie sie ebenfalls hier.</li>
+  <li>Um die Datei zusätzlich zu verkleinern, nutzen Sie danach <a href="/tools/compress-image/">Bild komprimieren</a>; dabei wird neu kodiert, und die Metadaten fallen ebenfalls weg.</li>
+</ul>

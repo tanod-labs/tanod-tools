@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Cron-Ausdruck erklären und nächste Ausführungen | Tanod Tools",
+  "description": "Cron-Ausdruck einfügen, in Klartext lesen und die nächsten Ausführungszeiten in Ihrer Zeitzone, UTC oder jeder anderen sehen. Prüft jedes Feld, erklärt Fehler.",
+  "h1": "Cron-Ausdruck erklären",
+  "lede": "Lesen Sie einen Crontab-Zeitplan in Klartext und lassen Sie sich die nächsten Ausführungszeiten auflisten, in jeder Zeitzone.",
+  "blurb": "Cron-Zeitplan in Klartext, mit den nächsten Ausführungen.",
+  "keywords": "cron ausdruck erklären erklaeren crontab cron zeitplan cronjob cron job nächste ausführung naechste ausfuehrung crontab guru alle 5 minuten cron syntax prüfen pruefen checker",
+  "limits": "Standard-Cron mit fünf Feldern (Minute, Stunde, Tag des Monats, Monat, Wochentag), wie in Vixie cron, cronie und den meisten Linux-Systemen, dazu Abkürzungen im Stil von @daily. Quartz und andere Formate mit Sekundenfeld werden erkannt, aber nicht erklärt.",
+  "howto_title": "So prüfen Sie einen Cron-Ausdruck",
+  "howto": [
+    "Tippen oder fügen Sie die fünf Zeitplanfelder ein, etwa <code>*/15 9-17 * * 1-5</code>, oder wählen Sie ein Beispiel. Eine vollständige Crontab-Zeile funktioniert auch; der Befehl nach dem fünften Feld wird ignoriert.",
+    "Lesen Sie die Zusammenfassung in Klartext und die Aufschlüsselung der einzelnen Felder. Ein Fehler wird in dem Feld angezeigt, in dem er steckt.",
+    "Prüfen Sie die Liste der nächsten Ausführungszeiten. Wählen Sie die Zeitzone, in der der Server läuft, und bei Bedarf einen anderen Startzeitpunkt, um weiter vorauszuschauen."
+  ],
+  "faq": [
+    ["Was bedeuten die fünf Felder?", "Der Reihe nach: Minute (0–59), Stunde (0–23), Tag des Monats (1–31), Monat (1–12 oder JAN–DEC) und Wochentag (0–7 oder SUN–SAT, wobei sowohl 0 als auch 7 Sonntag ist). Jedes Feld nimmt einen einzelnen Wert, eine Liste wie <code>1,15</code>, einen Bereich wie <code>9-17</code>, eine Schrittweite wie <code>*/15</code> oder <code>0-30/10</code> oder <code>*</code> für jeden Wert."],
+    ["Warum läuft mein Job an mehr Tagen als erwartet?", "Wenn sowohl das Feld „Tag des Monats“ als auch das Feld „Wochentag“ eingeschränkt sind, läuft Cron an Tagen, die zu einem der beiden passen, nicht zu beiden. <code>0 9 1 * 1</code> läuft am 1. jedes Monats und an jedem Montag. So verhalten sich Vixie cron und cronie. Eine Eigenheit derselben Regel: Ein Feld, das mit <code>*</code> beginnt, etwa <code>*/2</code>, gilt als uneingeschränkt, dann müssen beide Felder passen."],
+    ["Welche Zeitzone verwendet Cron?", "Die Zeitzone des Rechners oder Containers, auf dem es läuft, sofern die Crontab nicht <code>CRON_TZ</code> oder <code>TZ</code> setzt. Viele Server laufen in UTC; prüfen Sie das, bevor Sie sich auf die angezeigten Zeiten verlassen. Wählen Sie in der Liste die Zeitzone des Servers, um seine Ausführungszeiten zu sehen."],
+    ["Was passiert bei der Zeitumstellung?", "Die Liste folgt der Uhr in der gewählten Zone: Eine Zeit, die beim Vorstellen der Uhren übersprungen wird, entfällt, und eine Zeit, die es beim Zurückstellen zweimal gibt, wird einmal aufgeführt. Vixie cron und cronie führen einen Job, der in einer übersprungenen Stunde geplant ist, kurz nach der Umstellung aus und wiederholen Jobs in der doppelten Stunde nicht; andere Scheduler verhalten sich unterschiedlich. Enthält ein aufgelisteter Zeitraum eine Umstellung, erscheint ein Hinweis."],
+    ["Werden Sekunden oder die Quartz-Syntax unterstützt?", "Nein. Ausdrücke mit sechs oder sieben Feldern oder mit <code>?</code>, <code>L</code>, <code>W</code> oder <code>#</code> stammen aus Quartz, Spring und ähnlichen Schedulern, bei denen das erste Feld Sekunden sind. Das Tool sagt das, statt zu raten, denn als Standard-Cron gelesen ergäben sie einen falschen Zeitplan."],
+    ["Was bedeuten @daily, @hourly und die anderen Abkürzungen?", "<code>@hourly</code> ist <code>0 * * * *</code>, <code>@daily</code> und <code>@midnight</code> sind <code>0 0 * * *</code>, <code>@weekly</code> ist <code>0 0 * * 0</code>, <code>@monthly</code> ist <code>0 0 1 * *</code>, und <code>@yearly</code> und <code>@annually</code> sind <code>0 0 1 1 *</code>. <code>@reboot</code> läuft einmal, wenn der Cron-Dienst startet, daher gibt es keine Zeiten aufzulisten."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="c-in">Cron-Ausdruck</label>
+    <input type="text" id="c-in" class="mono cron-in" value="*/15 9-17 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Beispiele">
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Alle 5 Minuten</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Jede Stunde</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Täglich um Mitternacht</button>
+    <button class="btn btn--sm" type="button" data-cron="0 9 * * 1-5">Werktags um 09:00</button>
+    <button class="btn btn--sm" type="button" data-cron="30 2 * * 0">Sonntags um 02:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Am Monatsersten</button>
+  </div>
+  <p class="tt__report" id="c-info" aria-live="polite"></p>
+  <p class="cron-say" id="c-say" aria-live="polite"></p>
+  <dl class="cron-fields" id="c-fields" aria-label="Felder">
+    <div><dt>Minute</dt><dd></dd></div>
+    <div><dt>Stunde</dt><dd></dd></div>
+    <div><dt>Tag des Monats</dt><dd></dd></div>
+    <div><dt>Monat</dt><dd></dd></div>
+    <div><dt>Wochentag</dt><dd></dd></div>
+  </dl>
+  <p class="note" id="c-note" hidden></p>
+
+  <h2 class="util-h">Nächste Ausführungen</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="c-tz">Zeitzone</label>
+      <select id="c-tz"></select>
+    </div>
+    <div class="field">
+      <label for="c-from">Ab</label>
+      <input type="datetime-local" id="c-from" step="60">
+      <span class="help">Leer lassen, um ab jetzt zu beginnen.</span>
+    </div>
+    <div class="field">
+      <label for="c-count">Anzahl</label>
+      <select id="c-count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="c-runs-info"></p>
+  <ol class="cron-runs" id="c-runs" aria-label="Nächste Ausführungszeiten"></ol>
+  <p class="note" id="c-runs-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Einen Cron-Zeitplan lesen</h2>
+<p>Cron prüft seine Tabelle einmal pro Minute und führt jeden Job aus, dessen fünf Felder alle zur aktuellen Zeit passen, mit einer Ausnahme für die beiden Tagesfelder, die unten beschrieben ist. Der Cron-Ausdruck <code>*/15 9-17 * * 1-5</code> bedeutet also: in den Minuten 0, 15, 30 und 45, in den Stunden 9 bis 17, an jedem Tag des Monats, in jedem Monat, Montag bis Freitag. Die letzte Ausführung des Tages ist um 17:45 Uhr, weil das Stundenfeld die ganze Stunde 17 umfasst.</p>
+<p>Das Tool liest jedes Feld so, wie Vixie cron und cronie es tun, die in den meisten Linux-Distributionen enthalten sind. Namen von Monaten und Wochentagen werden in beliebiger Groß- und Kleinschreibung akzeptiert, und 7 gilt als Sonntag. Eine Schrittweite nach einer einzelnen Zahl, etwa <code>5/10</code>, wird wie in vielen Cron-Versionen als <code>5-59/10</code> gelesen; manche ältere lehnen das ab, daher erinnert das Tool Sie daran, den Bereich auszuschreiben. Bereiche müssen von klein nach groß laufen: <code>FRI-MON</code> wird als Fehler markiert, statt umgebrochen zu werden, weil Standard-Cron Bereiche nicht umbricht.</p>
+<p>Die nächsten Ausführungszeiten werden berechnet, indem der Kalender in der gewählten Zeitzone durchlaufen wird. So findet ein Ausdruck, der nur am 29. Februar passen kann, sofort das nächste Schaltjahr, und einer, der nie passen kann, etwa <code>0 0 31 2 *</code>, wird als „läuft nie“ gemeldet.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Rechnen Sie eine Ausführungszeit aus einem Log mit <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> in einen Unix-Zeitstempel um oder umgekehrt.</li>
+  <li>Sie testen das Muster, mit dem ein Job sein Log filtert? Probieren Sie den <a href="/tools/regex-tester/">Regex-Tester</a>.</li>
+  <li>Prüfen Sie mit <a href="/tools/json-formatter/">JSON formatieren und validieren</a>, wie eine JSON-Konfiguration mit Zeitplänen aussieht.</li>
+</ul>

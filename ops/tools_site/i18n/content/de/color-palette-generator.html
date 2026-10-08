@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Farbpaletten-Generator: Harmonien aus einer Farbe | Tanod Tools",
+  "description": "Basisfarbe wählen und analoge, komplementäre, triadische, tetradische und monochrome Farbpaletten mit Kontrastwerten und Export erhalten. Kostenlos, im Browser.",
+  "h1": "Farbpaletten-Generator",
+  "lede": "Starten Sie mit einer Farbe und erhalten Sie passende Paletten, jedes Farbfeld mit HEX- und RGB-Wert und seinem Kontrast zu Weiß und Schwarz.",
+  "blurb": "Farbharmonien aus einer Basisfarbe, mit Kontrastwerten.",
+  "keywords": "farbpalette erstellen farbpaletten generator farbschema farbkombination farbharmonie analog komplementär komplementaer triadisch tetradisch monochrom abtönungen oklch zufällige palette farbfelder css variablen",
+  "limits": "Die Paletten werden im Farbraum OKLCH erzeugt und als sRGB-HEX angezeigt; Farben, die für einen Bildschirm zu kräftig sind, werden in der Buntheit (Chroma) abgeschwächt. Die Kontrastwerte verwenden die WCAG-2-Formel, die nur den Helligkeitskontrast misst.",
+  "howto_title": "So erstellen Sie eine Farbpalette",
+  "howto": [
+    "Wählen Sie eine Basisfarbe mit dem Farbwähler oder geben Sie einen Wert wie <code>#1636a3</code> oder <code>f60</code> in das HEX-Feld ein.",
+    "Sehen Sie sich die Harmonie-Paletten darunter an. Jedes Farbfeld zeigt HEX, RGB und ob schwarzer oder weißer Text darauf WCAG AA oder AAA besteht.",
+    "Wählen Sie unter <strong>Export</strong> eine Palette und kopieren oder laden Sie sie als CSS Custom Properties, JSON-Array oder einfache Liste herunter. Mit <strong>Zufällige Palette</strong> und den Sperr-Schaltflächen können Sie experimentieren."
+  ],
+  "faq": [
+    ["Warum OKLCH statt HSL?", "In HSL wirken ein Gelb und ein Blau mit demselben Helligkeitswert sehr unterschiedlich hell. OKLCH ist so aufgebaut, dass gleiche Helligkeitsschritte gleich aussehen, wodurch die Farbfelder einer Palette gleichmäßig gewichtet bleiben. Der Farbton ist der Winkel, der für die Harmonien verwendet wird; eine Komplementärfarbe liegt also in OKLCH 180 Grad von Ihrer Basis entfernt, nicht in HSL."],
+    ["Was passiert, wenn sich eine Farbe auf einem Bildschirm nicht darstellen lässt?", "Wird ein Farbton bei gleicher Helligkeit und Buntheit gedreht, landet er manchmal außerhalb des sRGB-Bereichs, den ein normales Display zeigen kann. Das Tool senkt dann die Buntheit, bei gleicher Helligkeit und gleichem Farbton, bis die Farbe hineinpasst. Deshalb kann ein gedrehtes Farbfeld etwas weniger kräftig wirken als die Basis."],
+    ["Was bedeuten die Kennzeichnungen AA und AAA?", "Sie geben das WCAG-2-Kontrastverhältnis von weißem oder schwarzem Text auf diesem Farbfeld an. Ein Verhältnis von 4,5 oder mehr ist AA für normalen Text, 7 oder mehr ist AAA, und 3 bis 4,5 besteht AA nur für großen Text. Ein Farbfeld, das weder mit Schwarz noch mit Weiß besteht, ist ein schlechter Hintergrund für Text."],
+    ["Wie funktioniert die zufällige Palette?", "Fünf Farben werden mit dem sicheren Zufallszahlengenerator des Browsers gezogen: Die Farbtöne verteilen sich über den Farbkreis, mit zufälliger Helligkeit und Buntheit in einem Bereich, der fast Schwarz und fast Weiß vermeidet. Sperren Sie ein Farbfeld, um es zu behalten, und drücken Sie dann auf Zufällige Palette oder die Leertaste, um die anderen zu ersetzen."],
+    ["Welches Exportformat sollte ich verwenden?", "CSS Custom Properties lassen sich direkt in den <code>:root</code>-Block eines Stylesheets einfügen. Das JSON-Array eignet sich für Design-Tokens oder Skripte, und die einfache Liste enthält einen HEX-Wert pro Zeile für Tools, die eingefügte Farben annehmen. Alle drei verwenden die angezeigten HEX-Werte."],
+    ["Versteht das Tool Kurzschreibweise und Großbuchstaben?", "Ja. <code>#abc</code>, <code>abc</code>, <code>#AABBCC</code> und <code>aabbcc</code> werden alle gelesen. Werte mit einem Alpha-Paar, etwa mit acht Stellen, werden hier nicht akzeptiert; entfernen Sie den Alphawert zuerst mit dem <a href=\"/tools/color-converter/\">Farbkonverter und Kontrastprüfer</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack gen-pal">
+  <div class="gen-base">
+    <div class="field">
+      <label for="cp-pick">Basisfarbe</label>
+      <input type="color" id="cp-pick" value="#1636a3">
+    </div>
+    <div class="field gen-base__hex">
+      <label for="cp-hex">HEX-Wert</label>
+      <input type="text" id="cp-hex" class="mono" value="#1636a3" maxlength="9" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="cp-msg">
+    </div>
+    <p class="tt__report gen-base__info" id="cp-msg" aria-live="polite"></p>
+  </div>
+
+  <div id="cp-harmonies" class="util-stack"></div>
+
+  <h2 class="util-h">Zufällige Palette</h2>
+  <p class="help" id="cp-rand-help">Fünf Farben aus dem Zufallszahlengenerator Ihres Browsers. Sperren Sie die, die Sie behalten möchten, und ziehen Sie erneut. Drücken Sie die Leertaste zum Ziehen, wenn kein Textfeld den Fokus hat.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="cp-random" type="button">Zufällige Palette</button>
+  </div>
+  <div id="cp-random-out" data-scheme="random"></div>
+
+  <h2 class="util-h">Export</h2>
+  <div class="opts">
+    <div class="field"><label for="cp-which">Palette</label><select id="cp-which"></select></div>
+    <fieldset class="field">
+      <legend>Format</legend>
+      <div class="seg" role="radiogroup" aria-label="Exportformat">
+        <label><input type="radio" name="cp-fmt" value="css" checked>CSS-Variablen</label>
+        <label><input type="radio" name="cp-fmt" value="json">JSON</label>
+        <label><input type="radio" name="cp-fmt" value="list">Liste</label>
+      </div>
+    </fieldset>
+  </div>
+  <label class="visually-hidden" for="cp-out">Exportierte Palette</label>
+  <textarea id="cp-out" class="mono gen-out" rows="7" readonly spellcheck="false"></textarea>
+  <div class="actions">
+    <button class="btn" id="cp-copy" type="button">Kopieren</button>
+    <button class="btn" id="cp-dl" type="button">Herunterladen</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Wie die Farbharmonien entstehen</h2>
+<p>Eine Farbharmonie ist eine Gruppe von Farben, deren Farbtöne in festen Winkeln auf dem Farbkreis liegen. Analoge Farben sind Nachbarn, 30 Grad voneinander entfernt. Eine Komplementärfarbe liegt 180 Grad entfernt, ein geteilt komplementäres Paar bei 150 und 210 Grad, eine Triade hat 120 Grad Abstand, und eine Tetrade verwendet vier Farbtöne im Abstand von 90 Grad. Die monochrome Palette behält den Farbton und stuft die Helligkeit von zarten Aufhellungen bis zu dunklen Abtönungen ab.</p>
+<p>Der hier verwendete Farbkreis ist OKLCH, die zylindrische Form des OKLab-Farbraums von Björn Ottosson. Die Umrechnung führt von sRGB zu linearem Licht, dann durch die OKLab-Matrizen und mit einer Farbraumprüfung wieder zurück. Fällt eine gedrehte Farbe aus dem Bereich, den sRGB zeigen kann, wird ihre Buntheit in kleinen Schritten verringert, bis sie hineinpasst; so bleiben die gewählte Helligkeit und der Farbton erhalten.</p>
+<p>Der Kontrast wird für jedes Farbfeld gegenüber Weiß und Schwarz angegeben, denn die erste Frage zu einer Palettenfarbe ist meist, welcher Text darauf stehen kann. Das Verhältnis und die Angabe AA oder AAA werden immer ausgeschrieben, damit die Information nicht davon abhängt, Farbe sehen zu können.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie brauchen dieselbe Farbe als HSL, CMYK oder CSS-Namen? Nutzen Sie den <a href="/tools/color-converter/">Farbkonverter und Kontrastprüfer</a>.</li>
+  <li>Machen Sie aus zwei Palettenfarben einen Hintergrund mit dem <a href="/tools/css-gradient-generator/">CSS-Farbverlauf-Generator</a>.</li>
+  <li>Sie möchten eine Farbe aus einem Foto statt vom Farbkreis? Probieren Sie <a href="/tools/image-color-picker/">Farbe aus Bild auslesen</a>.</li>
+</ul>

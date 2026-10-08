@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Testador de regex online para JavaScript | Tanod Tools",
+  "description": "Teste uma expressão regular JavaScript no seu texto: correspondências destacadas ao digitar, grupos de captura e nomeados, e prévia de substituição. Grátis.",
+  "h1": "Testador de regex",
+  "lede": "Teste uma expressão regular em um texto de exemplo e veja cada correspondência, os grupos de captura e o resultado de uma substituição.",
+  "blurb": "Teste regex JavaScript com destaque e grupos.",
+  "keywords": "testador de regex testar regex expressao regular online regexp javascript regex match correspondencia grupos grupos nomeados substituir flags",
+  "limits": "Sintaxe de regex do JavaScript (ECMAScript), conforme o seu navegador a suporta. Texto de até 5 MB; as primeiras 1.000 correspondências são listadas e destacadas. Um padrão que roda por mais de 2 segundos é interrompido.",
+  "howto_title": "Como testar uma expressão regular",
+  "howto": [
+    "Digite o padrão entre as barras e marque as flags de que precisa, como <code>g</code> para todas as correspondências ou <code>i</code> para ignorar maiúsculas e minúsculas.",
+    "Cole o texto de teste. As correspondências são destacadas enquanto você digita, e a tabela lista cada uma com a posição e os grupos de captura.",
+    "Para conferir uma substituição, digite um texto de substituição como <code>$2-$1</code> ou <code>$&lt;year&gt;</code> e leia o resultado logo abaixo."
+  ],
+  "faq": [
+    ["Qual sabor (flavor) de regex é usado?", "O do JavaScript, executado pelo motor do seu próprio navegador, então os resultados são exatamente os que o <code>RegExp</code> do seu navegador ou do Node.js retorna. A maior parte da sintaxe do dia a dia é igual à do PCRE, do Python e do Java, mas alguns recursos mudam: quantificadores possessivos e grupos atômicos não são suportados, e lookbehind, grupos nomeados e a flag <code>v</code> exigem um navegador atual."],
+    ["Por que só aparece uma correspondência?", "Sem a flag <code>g</code> (global), uma regex JavaScript encontra só a primeira correspondência, e o replace troca só a primeira ocorrência. Marque <code>g</code> para encontrar todas. O testador segue a linguagem à risca, então o que você vê é o que o seu código vai fazer."],
+    ["O que as flags fazem?", "<code>g</code> encontra todas as correspondências, <code>i</code> ignora maiúsculas e minúsculas, <code>m</code> faz <code>^</code> e <code>$</code> corresponderem em quebras de linha, <code>s</code> deixa o <code>.</code> corresponder a quebras de linha, <code>u</code> ativa o tratamento completo de Unicode, <code>v</code> é o modo Unicode mais novo com operações de conjunto, <code>y</code> (sticky) só corresponde na posição atual, e <code>d</code> registra o início de cada grupo, algo que o testador já usa para as posições dos grupos de qualquer forma."],
+    ["Como uso grupos na substituição?", "<code>$1</code>, <code>$2</code> e assim por diante inserem grupos numerados, <code>$&lt;name&gt;</code> insere um grupo nomeado, <code>$&amp;</code> insere a correspondência inteira, <code>$`</code> e <code>$'</code> inserem o texto antes e depois dela, e <code>$$</code> escreve um cifrão literal."],
+    ["Por que meu padrão parou com \"demorou demais\"?", "Alguns padrões, como <code>^(a+)+$</code> em uma longa sequência de letras a que não termina como ele espera, fazem o motor testar um número enorme de formas de corresponder. Isso se chama backtracking catastrófico. O testador executa cada padrão em um worker em segundo plano e o interrompe após 2 segundos, para a página continuar utilizável. Reescreva repetições aninhadas como <code>(a+)+</code> como <code>a+</code>."],
+    ["Meu texto é enviado para algum lugar?", "Não. O padrão e o texto ficam no seu navegador; a busca acontece no seu dispositivo, e nada é enviado ou armazenado."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="r-pattern">Expressão regular</label>
+    <div class="rx-pattern">
+      <span aria-hidden="true">/</span>
+      <input type="text" id="r-pattern" class="mono" value="(?&lt;year&gt;\d{4})-(\d{2})-(\d{2})" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="r-info">
+      <span aria-hidden="true" id="r-flagtext">/g</span>
+    </div>
+  </div>
+  <fieldset>
+    <legend>Flags</legend>
+    <div class="rx-flags">
+      <label class="check"><input type="checkbox" data-flag="g" checked><code>g</code>&nbsp;global</label>
+      <label class="check"><input type="checkbox" data-flag="i"><code>i</code>&nbsp;ignorar maiúsculas</label>
+      <label class="check"><input type="checkbox" data-flag="m"><code>m</code>&nbsp;multilinha</label>
+      <label class="check"><input type="checkbox" data-flag="s"><code>s</code>&nbsp;ponto inclui quebra de linha</label>
+      <label class="check"><input type="checkbox" data-flag="u"><code>u</code>&nbsp;unicode</label>
+      <label class="check"><input type="checkbox" data-flag="v"><code>v</code>&nbsp;conjuntos unicode</label>
+      <label class="check"><input type="checkbox" data-flag="y"><code>y</code>&nbsp;sticky</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="r-text">Texto de teste</label>
+    <textarea id="r-text" class="mono" rows="6" spellcheck="false">Lançamentos: 2024-03-31, 2025-12-01 e 2026-10-08.</textarea>
+  </div>
+  <p class="tt__report" id="r-info" aria-live="polite"></p>
+  <div class="field">
+    <span class="label" id="r-view-l">Correspondências no texto</span>
+    <pre class="out rx-view" id="r-view" tabindex="0" aria-labelledby="r-view-l"></pre>
+  </div>
+  <div class="rx-table-wrap" tabindex="0" role="region" aria-label="Lista de correspondências">
+    <table class="rx-table">
+      <thead><tr><th scope="col">#</th><th scope="col">Posição</th><th scope="col">Correspondência</th><th scope="col">Grupos</th></tr></thead>
+      <tbody id="r-list"></tbody>
+    </table>
+  </div>
+  <div class="field">
+    <label for="r-repl">Substituir por (opcional)</label>
+    <input type="text" id="r-repl" class="mono" autocomplete="off" spellcheck="false" placeholder="$&lt;year&gt;/$2/$3">
+  </div>
+  <div class="field" id="r-out-wrap" hidden>
+    <span class="label" id="r-out-l">Resultado da substituição</span>
+    <pre class="out" id="r-out" tabindex="0" aria-labelledby="r-out-l"></pre>
+    <div class="actions"><button class="btn btn--sm" id="r-copy" type="button">{{mark:i-copy}}Copiar resultado</button></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Como testar padrões com segurança</h2>
+<p>Este testador de regex monta um <code>RegExp</code> JavaScript com o seu padrão e as suas flags e o executa em um worker em segundo plano, o mesmo motor que o seu código vai usar neste navegador. As correspondências voltam com a posição inicial e todos os grupos de captura, e a página as desenha sobre o seu texto com destaques alternados, para que correspondências vizinhas continuem distinguíveis. Uma correspondência vazia, como a que <code>\b</code> ou <code>a*</code> podem produzir, aparece como uma barra fina.</p>
+<p>Executar o padrão em um worker é importante porque uma expressão regular pode levar tempo exponencial. Se um padrão ainda estiver rodando após 2 segundos, o worker é interrompido e você recebe uma mensagem em vez de uma aba travada. A mesma proteção vale para <a href="/tools/find-and-replace/">Localizar e substituir</a>.</p>
+<p>As posições são contadas em unidades de código UTF-16, que é como as strings do JavaScript contam: um emoji ou outro caractere fora do plano básico ocupa duas. A lista mostra as primeiras 1.000 correspondências; a contagem total acima dela inclui todas.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Quando o padrão funcionar, aplique-o a um documento inteiro com <a href="/tools/find-and-replace/">Localizar e substituir</a>.</li>
+  <li>Compare o texto antes e depois de uma substituição com <a href="/tools/text-diff/">Comparar textos</a>.</li>
+  <li>Buscando datas em um log? Transforme timestamps em horários legíveis com o <a href="/tools/unix-timestamp-converter/">Conversor de timestamp Unix</a>.</li>
+</ul>

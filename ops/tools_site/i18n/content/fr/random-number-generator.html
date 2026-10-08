@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Générateur de nombres aléatoires en ligne | Tanod Tools",
+  "description": "Tirez des nombres aléatoires entre un minimum et un maximum, avec ou sans doublons, triés ou non, entiers ou décimaux. Source aléatoire sécurisée, gratuit.",
+  "h1": "Générateur de nombres aléatoires",
+  "lede": "Choisissez un intervalle et le nombre de tirages. Chaque nombre est tiré uniformément à partir de la source aléatoire sécurisée de votre navigateur.",
+  "blurb": "Entiers ou décimaux aléatoires dans n'importe quel intervalle, sans doublons si besoin.",
+  "keywords": "nombre aleatoire generateur tirage au sort chiffre au hasard nombre au hasard entre 1 et 100 de loto tombola dé entier decimal min max sans doublon sans repetition",
+  "limits": "Jusqu'à 10 000 nombres par tirage, des bornes de 30 chiffres au maximum et jusqu'à 10 décimales. Les résultats ne sont pas enregistrés ; recharger la page les efface.",
+  "howto_title": "Comment générer des nombres aléatoires",
+  "howto": [
+    "Saisissez la valeur <strong>la plus petite</strong> et <strong>la plus grande</strong>. Les deux bornes peuvent sortir, et les nombres négatifs fonctionnent.",
+    "Indiquez <strong>combien</strong> de nombres vous voulez, et cochez <em>Sans doublons</em> si tous les nombres doivent être différents.",
+    "Appuyez sur <strong>Générer</strong>, puis copiez la liste ou téléchargez-la sous forme de fichier texte."
+  ],
+  "faq": [
+    ["Les nombres sont-ils vraiment aléatoires ?", "Ils proviennent de <code>crypto.getRandomValues</code>, le même générateur sécurisé que les navigateurs utilisent pour les clés de chiffrement, et non de <code>Math.random</code>. Chaque valeur de votre intervalle a la même probabilité. Le générateur convient aux jeux, aux tombolas et au tirage d'échantillons ; il n'a pas été audité pour les loteries réglementées."],
+    ["Qu'est-ce que le biais du modulo, et cet outil en souffre-t-il ?", "Prendre un nombre aléatoire de 32 bits et garder le reste de sa division par la taille de l'intervalle rend certains résultats légèrement plus probables dès que l'intervalle ne divise pas 2<sup>32</sup> exactement. Cet outil rejette tout tirage qui tombe dans le reliquat inégal et tire à nouveau : chaque valeur a donc exactement la même chance. C'est vrai aussi pour les très grands intervalles, gérés avec des entiers de grande taille."],
+    ["Comment fonctionne « Sans doublons », et quand échoue-t-il ?", "L'outil tire chaque nouveau nombre et ignore ceux déjà sortis, ou, pour les petits intervalles, mélange tout l'intervalle et prend les premiers. Si vous demandez plus de nombres différents que l'intervalle n'en contient, par exemple 7 entre 1 et 6, il vous le signale au lieu de tourner en boucle."],
+    ["Que se passe-t-il si le minimum est plus grand que le maximum ?", "Les deux valeurs sont inversées et la ligne de résultat le signale. Saisir 10 et 1 donne le même tirage que saisir 1 et 10."],
+    ["Comment fonctionnent les décimaux ?", "Réglez les décimales sur 2 et l'intervalle de 0 à 1 devient les 101 valeurs 0,00, 0,01 jusqu'à 1,00, toutes équiprobables. Les résultats affichent toujours le nombre complet de décimales : 0,50 reste 0,50. Les bornes elles-mêmes ne peuvent pas avoir plus de décimales que le nombre choisi."],
+    ["Puis-je l'utiliser pour une grille de loto ou un lancer de dé ?", "Pour un lancer de dé, utilisez 1 à 6. Pour une grille de loto, cochez <em>Sans doublons</em>, par exemple 5 nombres de 1 à 49 triés par ordre croissant. Un tirage aléatoire ne vous donne pas plus de chances que n'importe quels autres numéros. Les tirages ne sont ni conservés ni envoyés nulle part."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Minimum</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Maximum</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">Nombre de tirages</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Décimales</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 donne des nombres entiers.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Ordre</label>
+      <select id="rn-order">
+        <option value="drawn">Ordre du tirage</option>
+        <option value="asc">Croissant</option>
+        <option value="desc">Décroissant</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">Sans doublons</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Générer</button>
+    <button class="btn" id="rn-copy" type="button">Copier la liste</button>
+    <button class="btn" id="rn-dl" type="button">Télécharger le .txt</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Résultat</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Nombres générés"></pre>
+</div>
+<!--explain-->
+<h2>Pourquoi un générateur sécurisé, et ce que « aléatoire » doit signifier ici</h2>
+<p>Un tirage équitable signifie que chaque valeur autorisée a la même probabilité et qu'un tirage ne dit rien du suivant. <code>Math.random()</code> est rapide, mais c'est une suite prévisible déguisée : il convient pour des animations, pas pour un tirage au sort avec un lot à la clé. Le <code>crypto.getRandomValues</code> du navigateur est alimenté par le système d'exploitation, et c'est la bonne source pour un générateur de nombres aléatoires dont le résultat pourrait être contesté.</p>
+<p>C'est en transformant des bits aléatoires bruts en un nombre de 1 à 6 que beaucoup d'outils se trompent. Une valeur de 32 bits a 4 294 967 296 possibilités, un nombre que 6 ne divise pas : utiliser le reste rend les petites faces très légèrement plus probables. La solution est l'échantillonnage avec rejet : le plus grand multiple de la taille de l'intervalle inférieur à 2<sup>32</sup> sert de seuil, et un tirage au-dessus est écarté et refait. Pour les intervalles de plus de 32 bits, l'outil tire exactement le nombre de bits nécessaire et rejette tout ce qui dépasse l'intervalle, avec des entiers de grande taille pour que les valeurs proches de 9 007 199 254 740 991 restent exactes.</p>
+<p>Les décimaux reposent sur la même idée, appliquée à une grille. Avec deux décimales, l'intervalle de 0 à 5 est traité comme les entiers de 0 à 500 : l'un d'eux est tiré, puis la virgule est remise à sa place. Chaque valeur de la grille reste ainsi équiprobable, au lieu d'arrondir un nombre continu.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Pour tirer au sort des personnes plutôt que des nombres, collez une liste dans l'outil <a href="/tools/random-name-picker/">tirage au sort de noms</a>.</li>
+  <li>Besoin d'un secret, pas d'un nombre ? Le <a href="/tools/password-generator/">générateur de mot de passe</a> utilise la même source aléatoire avec des jeux de caractères.</li>
+  <li>Vous voulez un identifiant unique plutôt qu'un petit nombre ? Essayez le <a href="/tools/uuid-generator/">générateur d'UUID</a>.</li>
+</ul>

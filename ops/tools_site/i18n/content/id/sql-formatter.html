@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Format SQL online (SQL formatter dan beautifier) | Tanod Tools",
+  "description": "Format dan rapikan SQL untuk PostgreSQL, MySQL, SQL Server, Oracle, SQLite, BigQuery dan lainnya. Pilih huruf keyword dan indentasi. Gratis, di browser Anda.",
+  "h1": "Format SQL",
+  "lede": "Tempel query, pilih database Anda, dan dapatkan kembali query yang terindentasi dengan satu klausa per baris.",
+  "blurb": "Rapikan SQL untuk 20 dialek.",
+  "keywords": "format sql rapikan sql sql formatter beautify pretty print format query postgres postgresql mysql mariadb sqlite tsql sql server oracle plsql bigquery snowflake keyword huruf besar indentasi",
+  "limits": "Input hingga sekitar 10 MB. Alat ini hanya mengubah tata letak: tidak menjalankan SQL Anda, tidak memeriksanya terhadap skema, dan tidak mengoptimalkannya.",
+  "howto_title": "Cara memformat query SQL",
+  "howto": [
+    "Tempel query ke kotak, atau tekan <strong>Sisipkan contoh</strong> untuk melihat cara kerjanya.",
+    "Pilih database Anda di <strong>Dialek</strong>, lalu atur huruf keyword dan ukuran indentasi.",
+    "Query yang sudah diformat muncul di bawah saat Anda mengetik. Salin, atau unduh sebagai file <code>.sql</code>."
+  ],
+  "faq": [
+    ["Apakah SQL saya diunggah?", "Tidak. Kode pemformat adalah skrip yang disajikan dari situs ini dan dimuat saat pertama kali Anda menempel query; query-nya sendiri tetap di browser Anda dan tidak dikirim ke server mana pun."],
+    ["Mengapa dialek itu penting?", "Setiap database menambahkan sintaksnya sendiri. PostgreSQL punya cast <code>::</code> dan parameter <code>$1</code>, SQL Server punya nama <code>[dalam kurung siku]</code> dan <code>TOP</code>, MySQL dan MariaDB mengutip nama dengan backtick, dan BigQuery punya bentuk array dan struct sendiri. Memilih dialek yang tepat membuat parser menerima query Anda. Standard SQL adalah pilihan aman jika Anda ragu, tetapi lebih ketat terhadap tambahan khusus vendor."],
+    ["Mengapa muncul error untuk query yang berjalan lancar di database saya?", "Pemformat membaca seluruh pernyataan, bukan sekadar mengatur ulang indentasi baris, jadi tanda kurung atau tanda kutip yang belum ditutup akan menghentikannya, begitu juga sintaks dari dialek lain. Pesan menyebutkan baris dan kolom tempat pemformat berhenti, dan perbaikan yang paling umum adalah memilih dialek yang sesuai."],
+    ["Apakah pemformatan mengubah apa yang dilakukan query?", "Hanya spasi kosong dan, jika Anda memilih, huruf besar/kecil keyword. Literal string, nama dalam tanda kutip dan angka mempertahankan teksnya, jadi <code>'select'</code> di dalam tanda kutip tetap huruf kecil saat Anda memilih HURUF BESAR."],
+    ["Bisakah saya memformat beberapa pernyataan sekaligus?", "Bisa. Pernyataan yang dipisahkan titik koma masing-masing diformat, dengan satu baris kosong di antaranya."],
+    ["Huruf keyword mana yang sebaiknya saya pakai?", "Keduanya sama-sama bisa; ini soal gaya dan database mengabaikannya. Keyword huruf besar adalah konvensi yang lebih lama dan membuat klausa menonjol di teks biasa. Huruf kecil umum di basis kode yang sudah memakai linter atau output ORM dengan gaya itu. Pertahankan seperti diketik membiarkan huruf kapital Anda apa adanya."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">SQL</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Sisipkan contoh</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Hapus</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="select id, name from users where active = 1 order by name"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <label for="o-dialect">Dialek</label>
+    <select id="o-dialect"><option value="sql">Standard SQL</option><option value="postgresql">PostgreSQL</option><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option><option value="sqlite">SQLite</option><option value="transactsql">SQL Server (T-SQL)</option><option value="plsql">Oracle (PL/SQL)</option><option value="bigquery">BigQuery</option><option value="snowflake">Snowflake</option><option value="redshift">Amazon Redshift</option><option value="spark">Spark SQL</option><option value="hive">Hive</option><option value="db2">IBM Db2</option><option value="db2i">IBM Db2 for i</option><option value="trino">Trino dan Presto</option><option value="duckdb">DuckDB</option><option value="clickhouse">ClickHouse</option><option value="tidb">TiDB</option><option value="singlestoredb">SingleStore</option><option value="n1ql">Couchbase N1QL</option></select>
+  </div>
+  <div class="field">
+    <label for="o-case">Huruf keyword</label>
+    <select id="o-case"><option value="upper" selected>HURUF BESAR</option><option value="lower">huruf kecil</option><option value="preserve">Pertahankan seperti diketik</option></select>
+  </div>
+  <div class="field">
+    <span class="label" id="o-ind-l">Indentasi</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spasi</label>
+      <label><input type="radio" name="indent" value="4">4 spasi</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Perubahan</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Hasil</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Salin</button>
+    <button class="btn" id="f-dl" type="button">Unduh .sql</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Membuat SQL mudah dibaca</h2>
+<p>Database membaca query dengan cara yang sama baik ditulis dalam satu baris maupun empat puluh baris, karena itu query yang ditempel dari log, ORM, dan alat monitoring sering datang sebagai satu string panjang tanpa jeda. Alat format SQL ini menaruh setiap klausa utama (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>GROUP BY</code>, <code>ORDER BY</code>) di barisnya sendiri dan mengindentasi kolom, kondisi, dan subquery di bawahnya, sehingga Anda bisa melihat bentuk query sekilas dan menemukan kondisi join yang terlewat.</p>
+<p>Tata letaknya mengikuti dialek yang Anda pilih, karena kata dan simbol berbeda di setiap database. Cast PostgreSQL seperti <code>price::numeric</code>, parameter bernomor seperti <code>$1</code>, nama dengan backtick di MySQL, klausa <code>CONNECT BY</code> di Oracle, dan <code>TOP 10</code> di SQL Server semuanya valid di satu dialek dan menjadi error sintaks di dialek lain. Placeholder untuk parameter terikat (<code>?</code>, <code>$1</code>, <code>:name</code>, <code>@name</code>) dikenali dan dibiarkan apa adanya.</p>
+<p>Huruf besar/kecil keyword tidak berpengaruh pada cara query berjalan, jadi ini murni soal gaya penulisan. Pemformat yang memahami tata bahasanya bisa mengubahnya dengan aman, karena tahu kata mana yang merupakan keyword dan mana yang nama kolom atau teks di dalam tanda kutip.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Membandingkan query sebelum dan sesudah diubah? Format keduanya dengan pengaturan yang sama dan bandingkan di <a href="/tools/text-diff/">Bandingkan teks</a>.</li>
+  <li>Query mengembalikan kolom JSON? Tempel nilainya ke <a href="/tools/json-formatter/">Format dan validasi JSON</a> untuk membacanya.</li>
+  <li>Perlu mengganti nama tabel di skrip yang panjang? <a href="/tools/find-and-replace/">Cari dan ganti</a> bisa melakukannya sebelum Anda memformat.</li>
+</ul>

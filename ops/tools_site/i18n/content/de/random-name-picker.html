@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Namen auslosen: Glücksrad drehen oder Teams bilden | Tanod Tools",
+  "description": "Namen einfügen und einen oder mehrere Gewinner per Glücksrad auslosen oder alle zufällig in ausgeglichene Teams aufteilen. Faire Ziehung, nichts hochgeladen.",
+  "h1": "Namen auslosen",
+  "lede": "Fügen Sie Ihre Namen ein, einen pro Zeile, und drehen Sie dann das Glücksrad für einen Gewinner oder teilen Sie alle in Teams auf.",
+  "blurb": "Gewinner per Glücksrad auslosen oder Namen in Teams aufteilen.",
+  "keywords": "namen auslosen zufallsgenerator namen glücksrad gluecksrad online drehen verlosung gewinnspiel auslosung ziehung teamgenerator teams einteilen gruppen zufällig zufaellig gewinner ziehen schule klasse",
+  "limits": "Das Glücksrad beschriftet bis zu 100 Namen; bei mehr lost es weiterhin fair aus, zeigt aber unbeschriftete Segmente. Die Liste existiert nur auf dieser Seite und ist weg, wenn Sie sie schließen oder neu laden.",
+  "howto_title": "So losen Sie einen Namen aus",
+  "howto": [
+    "Tippen oder fügen Sie die Namen in das Feld ein, <strong>einen pro Zeile</strong>. Leere Zeilen werden ignoriert.",
+    "Wählen Sie <em>Gewinner auslosen</em> und wie viele oder <em>In Teams aufteilen</em> und wie viele Teams.",
+    "Klicken Sie auf die Schaltfläche. Aktivieren Sie <em>Ausgeloste Namen entfernen</em>, wenn dieselbe Person nicht zweimal gewinnen soll."
+  ],
+  "faq": [
+    ["Ist die Auslosung fair?", "Ja. Der Gewinner wird zuerst bestimmt, mit einer unverzerrten Ziehung aus der sicheren Zufallsquelle Ihres Browsers, und das Rad wird dann so gedreht, dass es auf diesem Namen landet. Die Animation ist nur Dekoration, ein langes Segment oder ein glücklicher Dreh ändert also niemandes Chancen. Jede Zeile hat dieselbe Chance."],
+    ["Was passiert, wenn ein Name zweimal auf der Liste steht?", "Jede Zeile ist ein eigener Eintrag, ein doppelt eingegebener Name hat also zwei Chancen, und die Seite zeigt Ihnen, welche Namen sich wiederholen. Ist das ein Versehen, löschen Sie die überzählige Zeile; ist es Absicht, etwa bei zwei Losen, lassen Sie sie stehen."],
+    ["Wie ziehe ich mehrere Gewinner nacheinander?", "Aktivieren Sie <em>Ausgeloste Namen aus der Liste entfernen</em> und klicken Sie für jede Ziehung erneut auf die Schaltfläche. Oder stellen Sie die Zahl der Gewinner auf 3 und erhalten Sie drei verschiedene Einträge auf einmal. Die Gewinner einer einzelnen Ziehung sind immer verschiedene Einträge."],
+    ["Wie werden die Teams gebildet?", "Die Liste wird mit einem unverzerrten Fisher-Yates-Mischverfahren gemischt und dann Name für Name ausgeteilt, wie Spielkarten. So unterscheiden sich die Teamgrößen um höchstens eins: 10 Namen in 3 Teams ergeben 4, 3 und 3."],
+    ["Kann ich das Drehen abschalten?", "Wenn Ihr Gerät auf reduzierte Bewegung eingestellt ist, springt das Rad ohne Animation direkt zum Ergebnis, und das Ergebnis wird in jedem Fall für Screenreader angesagt. Die Ergebnisse stehen außerdem als Text unter dem Rad."],
+    ["Wird meine Liste irgendwohin gesendet?", "Nein. Die Namen werden nur von der Seite in Ihrem Browser gelesen, und nichts wird gespeichert; wenn Sie den Tab schließen, sind sie gelöscht. Kopieren Sie den Verlauf, wenn Sie festhalten möchten, wer ausgelost wurde."]
+  ]
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Namen, einer pro Zeile</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Amara&#10;Bruno&#10;Chen"></textarea>
+      <p class="help" id="rp-info">Noch keine Namen</p>
+    </div>
+    <fieldset class="field">
+      <legend>Was soll passieren?</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Gewinner auslosen</label>
+        <label><input type="radio" name="rp-mode" value="teams">In Teams aufteilen</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">Anzahl Gewinner</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">Anzahl Teams</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Ausgeloste Namen aus der Liste entfernen</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Auslosen</button>
+      <button class="btn" id="rp-sample" type="button">Beispielnamen verwenden</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Leeres Glücksrad: Fügen Sie Namen hinzu, um es zu füllen"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">Verlauf</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Verlauf leeren</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Fair auslosen, und warum das Rad nur Schau ist</h2>
+<p>Wer Namen auslosen will, braucht eine faire Ziehung, bei der jeder Eintrag dieselbe Chance hat. Die übliche Falle: eine Animation drehen lassen, ablesen, wo sie stehen bleibt, und das zum Ergebnis erklären. Dann können die Physik eines gezeichneten Rads, ein langsamer Frame oder ein Rundungsfehler einzelne Segmente bevorzugen. Hier ist die Reihenfolge umgekehrt. Der Gewinnereintrag wird zuerst bestimmt, indem ein zufälliger Index per Verwerfungsmethode gezogen wird, die den ungleichmäßigen Rest verwirft, den ein einfaches Modulo hinterlassen würde, und das Rad wird dann so gedreht, dass es auf diesem Segment endet.</p>
+<p>Mehrere Gewinner werden auf dieselbe Weise ohne Zurücklegen gezogen. Die Seite führt ein teilweises Fisher-Yates-Mischen über die Positionen Ihrer Liste aus und nimmt die ersten, sodass eine Position in einer Ziehung nie zweimal gewählt werden kann. Für Teams wird vollständig gemischt und dann reihum Name für Name auf die Teams verteilt. Das garantiert, dass sich die Größen um höchstens eins unterscheiden, während zufällig bleibt, wer zusammen landet.</p>
+<p>Bei allem, wo etwas auf dem Spiel steht, etwa einem Gewinnspiel, lassen Sie die Liste während der Ziehung sichtbar und sagen Sie, wie gelost wurde. Den Verlauf laut vorzulesen oder hinterher zu veröffentlichen ist ein besserer Nachweis als ein Screenshot eines Glücksrads.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Bereinigen Sie eine eingefügte Liste zuerst: <a href="/tools/remove-duplicate-lines/">Doppelte Zeilen entfernen</a>, wenn jede Person nur einen Eintrag haben soll.</li>
+  <li>Sie brauchen Zahlen statt Namen, etwa Los 1 bis 500? Nutzen Sie den <a href="/tools/random-number-generator/">Zufallszahlen-Generator</a>.</li>
+  <li>Sie leiten eine Quizrunde oder einen Vortrag? Geben Sie jeder Runde ein Zeitlimit mit dem <a href="/tools/countdown-timer/">Countdown-Timer</a>.</li>
+</ul>

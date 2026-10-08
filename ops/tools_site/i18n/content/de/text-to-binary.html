@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Text in Binärcode umwandeln und Binär in Text | Tanod Tools",
+  "description": "Text in Binärcode umwandeln und Binärcode zurück in Text, mit UTF-8, sodass Umlaute und Emojis funktionieren. Auch Hex, Dezimal und Oktal. Kostenlos im Browser.",
+  "h1": "Text in Binärcode umwandeln",
+  "lede": "Verwandeln Sie Text in Binärcode oder dekodieren Sie Binärcode zurück in lesbaren Text. Funktioniert mit jeder Sprache und mit Emojis.",
+  "blurb": "Text in Binärcode und zurück, dazu Hex und Dezimal.",
+  "keywords": "text in binär binaer binärcode binaercode übersetzer binär in text ascii in binär 01 binär dekodieren utf-8 bytes text in hex hex in text dezimal",
+  "limits": "Text bis 1 MB zum Kodieren; Binärcode bis 5 MB zum Dekodieren. Das Ergebnis aktualisiert sich während der Eingabe.",
+  "howto_title": "So wandeln Sie Text in Binärcode um",
+  "howto": [
+    "Wählen Sie <strong>Text in Binär</strong> oder <strong>Binär in Text</strong>.",
+    "Geben Sie Text in das Feld ein oder fügen Sie ihn ein. Das Ergebnis erscheint während der Eingabe.",
+    "Kopieren Sie das Ergebnis oder laden Sie es als .txt-Datei herunter. Mit <strong>Tauschen</strong> wandeln Sie das Ergebnis zurück."
+  ],
+  "faq": [
+    ["Wie wird Text in Binärcode umgewandelt?", "Jedes Zeichen wird zuerst mit UTF-8, der Kodierung des Webs, in Bytes umgewandelt, und jedes Byte wird als acht Binärziffern geschrieben. Der Buchstabe A ist das Byte 65, also 01000001. Einfache englische Buchstaben belegen je ein Byte; Buchstaben mit Akzent oder Umlaut zwei Bytes, die meisten Emojis vier."],
+    ["Ist das dasselbe wie ASCII in Binär?", "Für einfache englische Buchstaben, Ziffern und Satzzeichen ja: UTF-8 gibt diesen Zeichen dieselben Bytewerte wie ASCII. Der Unterschied zeigt sich nur bei anderen Zeichen, etwa ä, ö, ü oder ß, die ASCII überhaupt nicht darstellen kann."],
+    ["Welche Binäreingaben kann das Tool dekodieren?", "Gruppen aus bis zu acht Nullen und Einsen, getrennt durch Leerzeichen, Kommas oder Zeilenumbrüche, eine Gruppe pro Byte, oder eine ununterbrochene Ziffernfolge, deren Länge ein Vielfaches von acht ist. Alles andere, etwa eine 2 oder ein Buchstabe, wird mit seiner Position gemeldet, damit Sie es korrigieren können."],
+    ["Warum meldet das Dekodieren, die Bytes seien kein gültiges UTF-8?", "Nicht jede Bytefolge ist gültiger Text. Ein Byte kann fehlen oder zu viel sein, oder der Binärcode stammt aus einer älteren Kodierung oder aus einer Datei, die kein Text ist. Die Meldung zeigt auf das erste Byte, das nicht gelesen werden kann. Prüfen Sie, ob beim Kopieren des Binärcodes eine Gruppe verloren gegangen ist."],
+    ["Was bedeuten die Optionen Hex, Dezimal und Oktal?", "Sie schreiben dieselben Bytes in einem anderen Zahlensystem: Hex verwendet zwei Ziffern 0–9 und a–f pro Byte (A ist 41), Dezimal 0 bis 255 (A ist 65) und Oktal 0 bis 377 (A ist 101). Beim Dekodieren wird dasselbe Zahlensystem erwartet, das Sie gewählt haben."],
+    ["Wird mein Text hochgeladen?", "Nein. Die Umwandlung läuft in Ihrem Browser, und der Text wird weder hochgeladen noch gespeichert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Umwandeln</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="encode" checked>Text in Binär</label>
+        <label><input type="radio" name="dir" value="decode">Binär in Text</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="base">Bytes schreiben als</label>
+      <select id="base">
+        <option value="2" selected>Binär (01000001)</option>
+        <option value="16">Hex (41)</option>
+        <option value="10">Dezimal (65)</option>
+        <option value="8">Oktal (101)</option>
+      </select>
+    </div>
+    <div class="field" id="sep-field">
+      <label for="sep">Zwischen Bytes</label>
+      <select id="sep">
+        <option value=" " selected>Ein Leerzeichen</option>
+        <option value="">Nichts</option>
+        <option value="\n">Eine neue Zeile</option>
+      </select>
+    </div>
+  </div>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Text</label>
+      <textarea id="text" spellcheck="false" placeholder="Geben Sie hier Text ein."></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">Binär</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Geben Sie Text ein, um zu beginnen.</p>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Ergebnis kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>.txt herunterladen</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Tauschen: Ergebnis zurückwandeln</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Leeren</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Wie aus Text Einsen und Nullen werden</h2>
+<p>Computer speichern Text als Zahlen. Eine Kodierung legt fest, welche Zahl jedes Zeichen bekommt; dieses Tool verwendet UTF-8, das fast jede Webseite, E-Mail und moderne Datei nutzt. Wenn Sie Text in Binärcode umwandeln, speichert UTF-8 die ersten 128 Zeichen (das englische Alphabet, Ziffern und gängige Satzzeichen) in je einem Byte, mit denselben Werten wie der ältere ASCII-Code. Andere Zeichen belegen zwei bis vier Bytes: é ist 11000011 10101001, und das Emoji 😀 besteht aus vier Bytes.</p>
+<p>Ein Byte hat acht Bit, daher wird jedes Byte als acht Binärziffern angezeigt, mit führenden Nullen, damit jede Gruppe gleich breit ist. So lässt sich die Ausgabe leicht zurücklesen: Jede Achtergruppe ist ein Byte.</p>
+<p>Zum Dekodieren liest das Tool jede Gruppe als Byte und dann die Bytes als UTF-8-Text. Bilden die Bytes kein gültiges UTF-8, zeigt es an, wo das Problem beginnt, statt verstümmelte Zeichen auszugeben.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für eine kürzere, standardisierte Art, Bytes als Text zu transportieren, nutzen Sie <a href="/tools/base64-encode-decode/">Base64 kodieren und dekodieren</a>.</li>
+  <li>Sie wollen eine einzelne Zahl zwischen Binär, Dezimal und Hex umrechnen? Nutzen Sie den <a href="/tools/number-base-converter/">Zahlensystem-Umrechner</a>.</li>
+  <li>Lieber Punkte und Striche? Probieren Sie den <a href="/tools/morse-code-translator/">Morsecode-Übersetzer</a>.</li>
+</ul>

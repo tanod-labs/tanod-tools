@@ -1,0 +1,83 @@
+<!--meta
+{
+  "category": "util",
+  "name": "Barcode generator",
+  "title": "Barcode generator: EAN, UPC, Code 128, Code 39 | Tanod Tools",
+  "description": "Make barcodes in Code 128, EAN-13, EAN-8, UPC-A, UPC-E, Code 39, ITF-14, Codabar and more, with check digits calculated. Download SVG or PNG. Free, in your browser.",
+  "h1": "Barcode generator",
+  "lede": "Choose a barcode format, type the number or text, and download the barcode as SVG or PNG. Check digits are calculated for you.",
+  "blurb": "Code 128, EAN, UPC, Code 39 and more, with check digits.",
+  "keywords": "barcode generator ean13 ean-13 ean8 upc-a upc-e code128 code 128 code39 itf-14 itf codabar msi pharmacode check digit gtin svg png",
+  "limits": "Barcodes are drawn with the JsBarcode library. The tool checks the digits and check digit but cannot tell whether a number is registered to you; real EAN and UPC product codes come from GS1.",
+  "howto_title": "How to make a barcode",
+  "howto": [
+    "Pick the format your scanner or retailer asks for. If you are unsure and the content is ordinary text or numbers, Code 128 is the usual choice.",
+    "Type the value. For EAN-13, EAN-8, UPC-A and ITF-14, leave the check digit off and it is added, or type it and it is verified.",
+    "Adjust bar width, height and colours if needed, then download the barcode as SVG or PNG."
+  ],
+  "faq": [
+    ["What is a check digit?", "The last digit of an EAN, UPC or ITF-14 number is calculated from the others, so a scanner can catch a typo. Each digit counting from the right is multiplied by 3 and 1 alternately, the products are added, and the check digit is whatever brings the total up to a multiple of 10."],
+    ["What happens if I type the wrong check digit?", "The tool does not quietly change it. It shows what the check digit should be and does not draw a barcode until you correct the number or delete the last digit so it can be calculated."],
+    ["Can I use these for products I sell in shops?", "Retail systems expect numbers allocated to you by GS1 or your national GS1 office. This tool draws any valid number, but a number you invented may clash with someone else's product. Use it for internal labels, tests and artwork."],
+    ["Code 39 has no lowercase letters. What happens to them?", "Lowercase letters are converted to capitals and the tool says so. Code 39 can encode digits, capital letters, space and the symbols <code>- . $ / + %</code>; anything else is reported instead of being dropped."],
+    ["Which format fits which job?", "Code 128 packs any ASCII text compactly. EAN-13 and EAN-8 are for retail products worldwide, UPC-A and UPC-E for North American retail. ITF-14 labels shipping cartons, Code 39 and Codabar appear in logistics, libraries and blood banks, and Pharmacode is used in pharmaceutical packing."],
+    ["Should I download SVG or PNG?", "Use SVG for print or anything that must stay sharp at any size. Use PNG for documents and web pages that need a bitmap; choose a larger scale to avoid soft edges when the image is enlarged."]
+  ],
+  "related": ["qr-code-generator", "wifi-qr-code-generator", "uuid-generator", "number-base-converter", "random-number-generator"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-split gen-bc">
+  <div class="util-split__main">
+    <div class="opts">
+      <div class="field"><label for="b-fmt">Format</label>
+        <select id="b-fmt">
+          <option value="CODE128">Code 128 (any text)</option>
+          <option value="EAN13">EAN-13</option>
+          <option value="EAN8">EAN-8</option>
+          <option value="UPC">UPC-A</option>
+          <option value="UPCE">UPC-E</option>
+          <option value="CODE39">Code 39</option>
+          <option value="ITF14">ITF-14</option>
+          <option value="ITF">ITF (Interleaved 2 of 5)</option>
+          <option value="codabar">Codabar</option>
+          <option value="MSI">MSI</option>
+          <option value="pharmacode">Pharmacode</option>
+        </select></div>
+      <div class="field"><label for="b-val">Value</label><input type="text" id="b-val" class="mono" value="Tanod 2026" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="b-msg"></div>
+    </div>
+    <p class="tt__report" id="b-msg" aria-live="polite"></p>
+    <div class="opts">
+      <div class="field"><label for="b-w">Bar width (px per unit)</label><input type="number" id="b-w" min="1" max="8" step="1" value="2"></div>
+      <div class="field"><label for="b-h">Bar height (px)</label><input type="number" id="b-h" min="20" max="400" step="1" value="100"></div>
+      <div class="field"><label for="b-m">Margin (px)</label><input type="number" id="b-m" min="0" max="60" step="1" value="10"></div>
+      <div class="field"><label for="b-fg">Bar colour</label><input type="color" id="b-fg" value="#000000"></div>
+      <div class="field"><label for="b-bg">Background colour</label><input type="color" id="b-bg" value="#ffffff"></div>
+      <div class="field"><span class="label">Text</span><label class="check"><input type="checkbox" id="b-text" checked>Show value under bars</label></div>
+      <div class="field"><label for="b-scale">PNG scale</label>
+        <select id="b-scale"><option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option><option value="4">4x</option></select></div>
+    </div>
+  </div>
+
+  <div class="util-split__side">
+    <div class="preview gen-bc__prev"><svg id="b-svg" role="img" aria-label="Barcode preview" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <p class="help" id="b-info" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="b-dlsvg" type="button" disabled>Download SVG</button>
+      <button class="btn" id="b-dlpng" type="button" disabled>Download PNG</button>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>How linear barcodes encode data</h2>
+<p>A linear barcode is a row of bars and spaces whose widths stand for characters. EAN-13 and UPC-A are fixed-length numeric codes for retail products: twelve digits for EAN-13 or eleven for UPC-A identify the product, and a final check digit protects against misreads. Code 128 is the flexible one, encoding any ASCII character by switching between character sets, which makes it dense and the default for shipping labels and internal asset tags.</p>
+<p>The check digit for the GS1 family (EAN, UPC and ITF-14) is a weighted sum. Starting from the rightmost data digit, the digits are weighted 3, 1, 3, 1 and so on, and the check digit tops the sum up to the next multiple of 10. UPC-E is a compressed form of UPC-A, so its check digit is calculated on the expanded twelve-digit number. This tool computes all of these and refuses a number whose check digit does not match, rather than printing a code that would fail.</p>
+<p>Print size matters more than format. Scanners need a quiet zone of blank space on both sides, which is the margin setting here, and bars that are not too thin for your printer. A bar width of 2 pixels at 300 dots per inch is far finer than at screen resolution, so test a printed sample before a full run.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need a code that holds a link or Wi-Fi login instead? Use the <a href="/tools/qr-code-generator/">QR code generator</a>.</li>
+  <li>Creating unique identifiers to encode? The <a href="/tools/uuid-generator/">UUID generator</a> makes random ones.</li>
+  <li>Converting a code from hexadecimal or binary? Try the <a href="/tools/number-base-converter/">Number base converter</a>.</li>
+</ul>

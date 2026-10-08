@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Generator ekspresi cron online dan jadwal eksekusi | Tanod Tools",
+  "description": "Buat jadwal cron lima kolom dengan preset dan kontrol klik, baca artinya dalam bahasa sehari-hari dan cek eksekusi berikutnya di zona waktu mana pun. Gratis.",
+  "h1": "Generator ekspresi cron",
+  "lede": "Susun jadwal crontab dari pilihan sederhana, lalu cek artinya dan kapan jadwal itu berjalan berikutnya.",
+  "blurb": "Buat jadwal cron dengan kontrol dan lihat eksekusi berikutnya.",
+  "keywords": "generator ekspresi cron cron generator cron builder pembuat cron crontab generator jadwal cron cron job setiap 5 menit sintaks cron hari kerja jam 9",
+  "limits": "Cron standar lima kolom seperti yang dipakai Vixie cron dan cronie: menit, jam, tanggal, bulan dan hari dalam seminggu. Format Quartz dan format lain yang memakai kolom detik tidak dibuat, dan ekspresi tempelan yang tidak bisa ditampilkan oleh kontrol dipertahankan seperti yang diketik.",
+  "howto_title": "Cara membuat ekspresi cron",
+  "howto": [
+    "Mulai dari preset, atau atur setiap kolom agar berjalan setiap saat, setiap N satuan dari titik awal tertentu, pada nilai tertentu, atau di antara dua nilai.",
+    "Periksa ekspresinya, penjelasannya dalam bahasa sehari-hari, dan waktu eksekusi berikutnya di zona waktu yang dipakai server Anda.",
+    "Salin ekspresinya ke crontab, jadwal CI atau scheduler Anda. Anda juga bisa menempel ekspresi yang sudah ada untuk memuatnya ke dalam kontrol."
+  ],
+  "faq": [
+    ["Bagaimana cara menjalankan job setiap 15 menit?", "Atur Menit ke <em>Setiap 15 menit, mulai dari 0</em>, yang menghasilkan <code>*/15 * * * *</code>. Job berjalan pada menit 0, 15, 30 dan 45 setiap jam."],
+    ["Bagaimana menulis titik awal selain 0?", "Titik awal seperti menit 5 dengan langkah 10 ditulis <code>5-59/10</code>, yang berjalan pada menit 5, 15, 25, 35, 45 dan 55. Bentuk pendek <code>5/10</code> berfungsi di sebagian versi cron tetapi ditolak oleh versi lain, jadi bentuk panjang adalah pilihan yang aman di mana saja."],
+    ["Mengapa sebagian hari ditulis sebagai rentang dan sebagian sebagai daftar?", "Tiga nilai berurutan atau lebih ditulis sebagai rentang, jadi Senin sampai Jumat menjadi <code>1-5</code>, sedangkan Senin, Rabu dan Jumat menjadi <code>1,3,5</code>. Keduanya berarti persis nilai yang Anda centang."],
+    ["Apa yang terjadi jika saya mengatur tanggal dan hari dalam seminggu sekaligus?", "Cron standar menjalankan job jika salah satunya cocok, bukan keduanya. <code>0 9 1 * 1</code> berjalan setiap tanggal 1 dan setiap hari Senin. Alat ini menambahkan catatan jika pilihan Anda termasuk kasus tersebut."],
+    ["Zona waktu apa yang dipakai untuk eksekusi berikutnya?", "Zona yang Anda pilih di bawah ekspresi. Cron sendiri memakai zona waktu mesin atau container yang menjalankannya, kecuali crontab mengatur <code>CRON_TZ</code>. Banyak server memakai UTC, jadi periksa dulu sebelum memercayai sebuah waktu."],
+    ["Apakah alat ini mendukung detik, @daily atau sintaks Quartz?", "Alat ini hanya membuat ekspresi lima kolom. Menempel <code>@daily</code> atau pintasan lain bisa, dan pintasan itu diubah menjadi lima kolomnya. Ekspresi enam kolom dan gaya Quartz ditolak, karena kolom pertamanya adalah detik. <a href=\"/tools/cron-expression-explainer/\">Jelaskan ekspresi cron</a> menerangkan hal ini secara rinci."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Ekspresi cron</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Salin</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Preset">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Setiap menit</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Setiap 5 menit</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Setiap 15 menit</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Setiap jam</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Setiap hari tengah malam</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">Hari kerja pukul 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Setiap hari Minggu</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">Tanggal 1 dan 15</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Tanggal 1 setiap bulan</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Setiap tahun</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Muat ekspresi yang sudah ada</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Muat</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Tempel ekspresi lima kolom atau pintasan seperti @daily.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Eksekusi berikutnya</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Zona waktu</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">Mulai dari</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Biarkan kosong untuk mulai dari sekarang.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Jumlah</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Waktu eksekusi berikutnya"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Sudah punya ekspresi dan hanya ingin penjelasannya? Gunakan <a href="/tools/cron-expression-explainer/">Jelaskan ekspresi cron</a>.</p>
+</div>
+<!--explain-->
+<h2>Menyusun jadwal cron</h2>
+<p>Generator ekspresi cron ini menyusun lima kolom yang dipisahkan spasi: menit, jam, tanggal, bulan dan hari dalam seminggu. Setiap kolom menjawab satu pertanyaan tentang kapan job harus berjalan, dan job berjalan jika semuanya cocok. Membiarkan kolom berisi <code>*</code> berarti semua nilai, itulah sebabnya <code>0 * * * *</code> berjalan di awal setiap jam dan <code>0 0 * * *</code> berjalan sekali sehari pada tengah malam.</p>
+<p>Pembuat jadwal ini memberi setiap kolom empat cara untuk menyatakan keinginan Anda. Langkah seperti <code>*/15</code> berarti setiap nilai ke-15, daftar seperti <code>1,15</code> memilih nilai yang persis, rentang seperti <code>9-17</code> mencakup semua nilai di antara dua nilai, dan <code>*</code> berarti semua nilai. Saat Anda mencentang nilai, tiga nilai berurutan atau lebih ditulis sebagai rentang, jadi Senin sampai Jumat menjadi <code>1-5</code>, bukan <code>1,2,3,4,5</code>.</p>
+<p>Ada dua jebakan yang menjerat kebanyakan orang. Cron memakai jam mesin tempat ia berjalan, jadi job yang diatur pukul 09:00 berjalan pukul 09:00 waktu server, yang belum tentu waktu Anda; daftar eksekusi berikutnya memungkinkan Anda mengeceknya di beberapa zona. Dan jika kolom tanggal dan hari dalam seminggu sama-sama dibatasi, job berjalan jika salah satunya cocok, yang bisa berarti jauh lebih banyak eksekusi dari yang Anda kira.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Untuk membaca ekspresi yang ditulis orang lain, tempel ke <a href="/tools/cron-expression-explainer/">Jelaskan ekspresi cron</a>.</li>
+  <li>Ubah waktu eksekusi dari log ke timestamp Unix dan sebaliknya dengan <a href="/tools/unix-timestamp-converter/">Konverter timestamp Unix</a>.</li>
+  <li>Skrip terjadwal butuh bit eksekusi (execute); tentukan mode yang tepat dengan <a href="/tools/chmod-calculator/">Kalkulator chmod</a>.</li>
+</ul>

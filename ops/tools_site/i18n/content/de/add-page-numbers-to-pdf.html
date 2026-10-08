@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Seitenzahlen in PDF einfügen – kostenlos online | Tanod Tools",
+  "description": "PDF-Seiten im Browser nummerieren: Position, Format und Startnummer wählen, Deckblatt auslassen, herunterladen. Kostenlos, ohne Anmeldung, kein Upload.",
+  "h1": "Seitenzahlen in PDF einfügen",
+  "lede": "Setzen Sie Seitenzahlen auf jede Seite oder nur auf ausgewählte Seiten, und bestimmen Sie, wo sie stehen.",
+  "blurb": "Die Seiten eines PDFs nummerieren.",
+  "keywords": "pdf seitenzahlen einfügen einfuegen hinzufügen nummerieren paginieren seitennummerierung fußzeile fusszeile kopfzeile seite x von y",
+  "limits": "Ein PDF auf einmal, bis 200 MB. Passwortgeschützte PDFs können nicht bearbeitet werden. Die Zahlen werden in Helvetica gesetzt.",
+  "howto_title": "So fügen Sie Seitenzahlen in ein PDF ein",
+  "howto": [
+    "Wählen Sie eine PDF-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Wählen Sie Position, Zahlenformat und Startnummer. Lassen Sie bei Bedarf das Deckblatt aus oder beschränken Sie die Nummerierung auf bestimmte Seiten.",
+    "Klicken Sie auf <strong>Seitenzahlen einfügen</strong> und laden Sie das nummerierte PDF herunter."
+  ],
+  "faq": [
+    ["Wird mein PDF hochgeladen?", "Nein. Die Zahlen werden von der Open-Source-Bibliothek pdf-lib in Ihrem Browser in eine Kopie Ihres PDFs gezeichnet. Nichts wird an einen Server gesendet."],
+    ["Wie lasse ich das Deckblatt ohne Seitenzahl?", "Setzen Sie ein Häkchen bei <em>Erste Seite auslassen</em>. Die Startnummer gilt dann für die erste nummerierte Seite, also erhält die zweite Seite die eingestellte Startnummer. Soll auf Seite 2 „2“ stehen, setzen Sie die Startnummer auf 2."],
+    ["Was steht bei „Seite 1 von N“ für N?", "N ist die letzte verwendete Zahl. Wenn jede Seite nummeriert wird und Sie bei 1 beginnen, ist das die Gesamtzahl der Seiten. Lassen Sie das Deckblatt aus oder nummerieren Sie nur einige Seiten, ist es die Startnummer plus die Anzahl der nummerierten Seiten minus eins."],
+    ["Stehen die Zahlen auf gedrehten Seiten aufrecht?", "Ja. Ist eine Seite mit einer Drehung von 90, 180 oder 270 Grad gespeichert, wird die Zahl so platziert, wie die Seite erscheint, und mitgedreht, sodass sie an der gewählten Position aufrecht lesbar ist. Die Zahl liegt innerhalb des sichtbaren Bereichs der Seite (ihrer CropBox, falls vorhanden)."],
+    ["Kann ich die Schriftart ändern?", "In diesem Tool nicht. Die Zahlen werden in Helvetica gesetzt, einer Standard-PDF-Schrift. So funktionieren sie überall und vergrößern die Datei kaum."],
+    ["Verändert das Tool den Rest des PDFs?", "Der vorhandene Seiteninhalt bleibt, wie er ist, und die Zahlen werden darübergelegt. Dokumentinformationen wie Titel und Autor werden nicht geändert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pos">Position</label>
+      <select id="pos">
+        <option value="bc" selected>Unten, Mitte</option>
+        <option value="br">Unten, rechts</option>
+        <option value="bl">Unten, links</option>
+        <option value="tc">Oben, Mitte</option>
+        <option value="tr">Oben, rechts</option>
+        <option value="tl">Oben, links</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fmt">Format</label>
+      <select id="fmt">
+        <option value="n" selected>1</option>
+        <option value="page">Seite 1</option>
+        <option value="of">Seite 1 von N</option>
+        <option value="slash">1 / N</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Beginnen mit Nummer</label>
+      <input id="start" type="number" inputmode="numeric" min="0" max="99999" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Schriftgröße (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="6" max="48" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="margin">Abstand zum Rand (pt)</label>
+      <input id="margin" type="number" inputmode="numeric" min="0" max="200" step="1" value="28">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Zu nummerierende Seiten</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Alle Seiten</label>
+        <label><input type="radio" name="scope" value="range">Bestimmte</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Seiten</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+      <span class="help">Seiten werden ab 1 gezählt.</span>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="skip"> Erste Seite auslassen (Deckblatt)</label>
+    </div>
+  </div>
+  <p class="help" id="sample" aria-live="polite"></p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Seitenzahlen einfügen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Seitenzahlen einfügen, ohne das PDF hochzuladen</h2>
+<p>Seitenzahlen sind nur kleine Textstücke, die über jede Seite gezeichnet werden. Ihr Browser kann das direkt: Er öffnet das PDF mit pdf-lib, fügt jeder gewählten Seite eine Zeile Text in Helvetica hinzu und schreibt eine neue Datei. Der ursprüngliche Seiteninhalt bleibt unangetastet.</p>
+<p>Jede Seite kann ihre eigene Größe, CropBox und Drehung haben, deshalb wird die Position für jede Seite einzeln berechnet. Die Ränder werden ab der Kante des sichtbaren Bereichs gemessen, und auf einer quer gespeicherten Seite wird die Zahl mitgedreht, sodass sie dort aufrecht steht, wo Sie sie erwarten.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie möchten zuerst mehrere Dateien zusammenführen? Nutzen Sie <a href="/tools/merge-pdf/">PDF zusammenfügen</a> und nummerieren Sie dann das Ergebnis, damit die Zahlen durchlaufen.</li>
+  <li>Sie brauchen eher eine Markierung quer über die Seite als eine Zahl? Probieren Sie <a href="/tools/watermark-pdf/">PDF-Wasserzeichen</a>.</li>
+  <li>Seiten in falscher Reihenfolge? Korrigieren Sie das vor dem Nummerieren mit <a href="/tools/reorder-pdf-pages/">PDF-Seiten sortieren</a>.</li>
+</ul>

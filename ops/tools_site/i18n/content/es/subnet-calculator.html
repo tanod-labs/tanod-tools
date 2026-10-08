@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Calculadora de subredes IPv4 e IPv6 (CIDR) | Tanod Tools",
+  "description": "Ingresa una dirección IPv4 o IPv6 con prefijo o máscara y obtén red, broadcast, rango de hosts, máscara wildcard y vista binaria, y divídela en subredes.",
+  "h1": "Calculadora de subredes",
+  "lede": "Calcula la red, el rango de hosts y los totales de cualquier subred IPv4 o IPv6, y luego divídela en subredes más pequeñas.",
+  "blurb": "Calculadora CIDR para IPv4 e IPv6 con rangos de hosts y división en subredes.",
+  "keywords": "calculadora de subredes calculadora subnet calculadora cidr calculadora ip mascara de red máscara de subred netmask mascara wildcard dirección broadcast direccion hosts utilizables ipv6 prefijo subnetting subneteo rfc 1918",
+  "limits": "Solo IPv4 e IPv6, una subred a la vez. El tipo de dirección se obtiene de los rangos de uso especial de IANA incluidos en la página, así que no sabe nada de quién es el dueño de una dirección pública. Las tablas de división en subredes se detienen en 256 filas.",
+  "howto_title": "Cómo calcular una subred",
+  "howto": [
+    "Escribe una dirección con su longitud de prefijo, como <code>192.168.1.10/24</code> o <code>2001:db8::/32</code>. También funciona una dirección IPv4 con máscara en notación decimal con puntos, como <code>192.168.1.10 255.255.255.0</code>.",
+    "Lee la dirección de red, el rango de hosts y los totales. Si la dirección tenía bits de host activados, la página te indica a qué red se normalizó.",
+    "Para planificar redes más pequeñas, escribe un prefijo más largo en <strong>Dividir en</strong> y lee la tabla de subredes."
+  ],
+  "faq": [
+    ["¿Por qué hay dos hosts utilizables menos que direcciones?", "En una subred IPv4 común, la primera dirección identifica la red y la última es la dirección de broadcast, así que ninguna de las dos se puede asignar a un dispositivo. Una /24 tiene 256 direcciones y 254 hosts utilizables. Hay dos excepciones: una /31 tiene dos direcciones y ambas se pueden usar en un enlace punto a punto (RFC 3021), y una /32 es un solo host."],
+    ["¿Qué muestra una máscara wildcard?", "Es la máscara de red invertida: los bits en 0 deben coincidir y los bits en 1 se ignoran. Para 255.255.255.0, la wildcard es 0.0.0.255. Las listas de acceso de los equipos Cisco y las sentencias network de OSPF usan esta forma."],
+    ["¿Por qué se rechaza 010.0.0.1?", "Un cero a la izquierda hace que algunos sistemas lean esa parte como octal, así que 010 significaría 8, mientras que otros la leen como el decimal 10. El mismo texto puede apuntar a dos máquinas distintas, así que la página te pide escribir el número sin el cero."],
+    ["¿En qué se diferencia IPv6 al calcular una subred?", "IPv6 no tiene dirección de broadcast, así que todas las direcciones de un prefijo se pueden asignar y el total es simplemente 2 elevado a (128 menos el prefijo). Las subredes LAN normales son /64. La página muestra la dirección en la forma comprimida de RFC 5952 y completa, con los ocho grupos de 4 dígitos."],
+    ["¿Cuál es la forma comprimida de una dirección IPv6?", "Se quitan los ceros a la izquierda de cada grupo, y la serie más larga de dos o más grupos en cero se reemplaza por <code>::</code>, tomando la de más a la izquierda si hay empate. Un solo grupo en cero nunca se comprime, así que <code>2001:db8:0:1:1:1:1:1</code> conserva su 0."],
+    ["¿Esto envía mis direcciones a algún lado?", "No. Los cálculos se hacen en tu navegador con enteros grandes, nada de lo que escribes se envía a ningún lado y funciona sin conexión una vez que la página cargó."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Dirección IP con prefijo o máscara</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Ejemplos">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + máscara</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Detalles de la subred"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Dividir en subredes más pequeñas</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Dividir en longitud de prefijo /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="por ejemplo 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Déjalo vacío para no dividir. Debe ser más largo que el prefijo de arriba.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Subredes</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Subredes y notación CIDR</h2>
+<p>Para calcular una subred hay que partir de esto: una dirección IP tiene dos partes; los bits iniciales identifican la red y los restantes identifican el host dentro de ella. La longitud de prefijo después de la barra indica cuántos bits iniciales pertenecen a la red, así que <code>192.168.1.10/24</code> significa que los primeros 24 de 32 bits son la red y los últimos 8 identifican una de 256 direcciones. Poner todos los bits de host en 0 da la dirección de red; ponerlos todos en 1 da la dirección de broadcast, y por eso normalmente no se asignan a dispositivos.</p>
+<p>La máscara de red es la misma información escrita como dirección: 24 bits en uno seguidos de 8 bits en cero es 255.255.255.0. Solo son válidas las máscaras contiguas, así que algo como 255.0.255.0 se rechaza. IPv6 funciona igual con 128 bits, pero sin dirección de broadcast y con un rango mucho mayor: una subred LAN estándar /64 contiene 2<sup>64</sup> direcciones, unos 18 trillones.</p>
+<p>Algunos rangos tienen un significado especial dondequiera que aparezcan. 10.0.0.0/8, 172.16.0.0/12 y 192.168.0.0/16 son privados y no se enrutan en internet pública, 100.64.0.0/10 es espacio de direcciones compartido para el CGNAT de los operadores, 169.254.0.0/16 es de enlace local, y los bloques 192.0.2.0, 198.51.100.0 y 203.0.113.0 están reservados para documentación. La página etiqueta el rango en el que cae tu dirección.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Convierte un octeto o una dirección completa entre binario y decimal con el <a href="/tools/number-base-converter/">Conversor de bases numéricas</a>.</li>
+  <li>¿También configuras permisos de archivos en un servidor? La <a href="/tools/chmod-calculator/">Calculadora chmod</a> convierte 755 en rwxr-xr-x y viceversa.</li>
+  <li>Consulta el código de estado de un health check que falla en <a href="/tools/http-status-codes/">Códigos de estado HTTP</a>.</li>
+</ul>

@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Calculateur de sous-réseau IPv4 et IPv6 (CIDR) | Tanod Tools",
+  "description": "Adresse IPv4 ou IPv6 avec préfixe ou masque : réseau, broadcast, plage et nombre d'hôtes, masque inverse, vue binaire et découpage en sous-réseaux.",
+  "h1": "Calculateur de sous-réseau",
+  "lede": "Calculez le réseau, la plage d'hôtes et le nombre d'adresses de n'importe quel sous-réseau IPv4 ou IPv6, puis découpez-le en sous-réseaux plus petits.",
+  "blurb": "Calculateur CIDR IPv4 et IPv6 avec plages d'hôtes et découpage.",
+  "keywords": "calculateur sous-reseau sous reseau subnet calculatrice cidr calcul ip masque de sous-reseau netmask masque inverse wildcard adresse de diffusion broadcast hotes utilisables ipv6 prefixe subnetting rfc 1918",
+  "limits": "IPv4 et IPv6 uniquement, un sous-réseau à la fois. Le type d'adresse est déduit des plages à usage spécial de l'IANA intégrées à la page : l'outil ne sait rien du propriétaire d'une adresse publique. Les tableaux de découpage s'arrêtent à 256 lignes.",
+  "howto_title": "Comment calculer un sous-réseau",
+  "howto": [
+    "Tapez une adresse avec sa longueur de préfixe, comme <code>192.168.1.10/24</code> ou <code>2001:db8::/32</code>. Une adresse IPv4 avec un masque en notation décimale pointée, comme <code>192.168.1.10 255.255.255.0</code>, fonctionne aussi.",
+    "Lisez l'adresse réseau, la plage d'hôtes et le nombre d'adresses. Si des bits d'hôte étaient définis dans l'adresse, la page indique le réseau vers lequel elle a été normalisée.",
+    "Pour planifier des réseaux plus petits, saisissez un préfixe plus long sous <strong>Découper en</strong> et lisez le tableau des sous-réseaux."
+  ],
+  "faq": [
+    ["Pourquoi y a-t-il deux hôtes utilisables de moins que d'adresses ?", "Dans un sous-réseau IPv4 ordinaire, la première adresse désigne le réseau et la dernière est l'adresse de broadcast : aucune des deux ne peut être attribuée à un appareil. Un /24 compte 256 adresses et 254 hôtes utilisables. Il y a deux exceptions : un /31 a deux adresses, toutes deux utilisables sur une liaison point à point (RFC 3021), et un /32 est un hôte unique."],
+    ["À quoi sert un masque inverse (wildcard) ?", "C'est le masque de sous-réseau inversé : les bits à 0 doivent correspondre et les bits à 1 sont ignorés. Pour 255.255.255.0, le masque inverse est 0.0.0.255. Les listes d'accès des équipements Cisco et les instructions network d'OSPF utilisent cette forme."],
+    ["Pourquoi 010.0.0.1 est-il refusé ?", "Un zéro en tête fait lire cette partie en octal par certains systèmes, si bien que 010 vaudrait 8, alors que d'autres la lisent en décimal comme 10. Le même texte pourrait désigner deux machines différentes : la page vous demande donc d'écrire le nombre sans le zéro."],
+    ["En quoi IPv6 diffère-t-il dans un calcul de sous-réseau ?", "IPv6 n'a pas d'adresse de broadcast : chaque adresse d'un préfixe peut être attribuée, et le nombre d'adresses vaut simplement 2 puissance (128 moins le préfixe). Les sous-réseaux LAN normaux sont en /64. La page affiche l'adresse sous la forme compressée de la RFC 5952 et en entier, avec les huit groupes de 4 chiffres."],
+    ["Qu'est-ce que la forme compressée d'une adresse IPv6 ?", "Les zéros en tête de chaque groupe sont supprimés, et la plus longue suite d'au moins deux groupes entièrement nuls est remplacée par <code>::</code>, en prenant la plus à gauche en cas d'égalité. Un groupe nul isolé n'est jamais compressé : <code>2001:db8:0:1:1:1:1:1</code> garde donc son 0."],
+    ["Mes adresses sont-elles envoyées quelque part ?", "Non. Les calculs sont faits dans votre navigateur avec de grands entiers, rien de ce que vous tapez n'est envoyé nulle part, et l'outil fonctionne hors ligne une fois la page chargée."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Adresse IP avec préfixe ou masque</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Exemples">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + masque</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Détails du sous-réseau"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Découper en sous-réseaux plus petits</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Découper en longueur de préfixe /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="par exemple 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Laissez vide pour ne pas découper. Doit être plus long que le préfixe ci-dessus.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Sous-réseaux</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Sous-réseaux et notation CIDR</h2>
+<p>Pour calculer un sous-réseau, il faut savoir qu'une adresse IP a deux parties : les premiers bits désignent le réseau et les bits restants désignent l'hôte à l'intérieur de ce réseau. La longueur de préfixe après la barre oblique indique combien de bits de tête appartiennent au réseau : <code>192.168.1.10/24</code> signifie que les 24 premiers bits sur 32 forment le réseau et que les 8 derniers identifient l'une des 256 adresses. Mettre tous les bits d'hôte à 0 donne l'adresse réseau ; les mettre tous à 1 donne l'adresse de broadcast, c'est pourquoi elles ne sont normalement pas attribuées aux appareils.</p>
+<p>Le masque de sous-réseau exprime la même information sous forme d'adresse : 24 bits à 1 suivis de 8 bits à 0 donnent 255.255.255.0. Seuls les masques contigus sont valides : un masque comme 255.0.255.0 est donc refusé. IPv6 fonctionne de la même façon avec 128 bits, mais sans adresse de broadcast et avec une plage bien plus grande : un sous-réseau LAN standard en /64 contient 2<sup>64</sup> adresses, soit environ 18 trillions.</p>
+<p>Certaines plages ont un sens particulier où qu'elles apparaissent. 10.0.0.0/8, 172.16.0.0/12 et 192.168.0.0/16 sont privées et ne sont pas routées sur l'internet public, 100.64.0.0/10 est un espace d'adresses partagé pour le NAT des opérateurs (CGNAT), 169.254.0.0/16 est en lien local, et les blocs 192.0.2.0, 198.51.100.0 et 203.0.113.0 sont réservés à la documentation. La page indique la plage dans laquelle se trouve votre adresse.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Convertissez un octet ou une adresse entière entre binaire et décimal avec le <a href="/tools/number-base-converter/">Convertisseur de base numérique</a>.</li>
+  <li>Vous réglez aussi des permissions de fichiers sur un serveur ? Le <a href="/tools/chmod-calculator/">Calculateur chmod</a> transforme 755 en rwxr-xr-x et inversement.</li>
+  <li>Lisez le code de statut d'un contrôle de santé en échec dans la référence des <a href="/tools/http-status-codes/">Codes de statut HTTP</a>.</li>
+</ul>

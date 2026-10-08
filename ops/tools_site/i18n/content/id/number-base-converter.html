@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Konversi bilangan biner, oktal, desimal, hex | Tanod Tools",
+  "description": "Konversi bilangan bulat antara biner, oktal, desimal, heksadesimal dan basis 2 sampai 36, sebesar apa pun, dengan komplemen dua untuk 8, 16, 32 dan 64 bit.",
+  "h1": "Konverter basis bilangan",
+  "lede": "Ubah bilangan bulat antara biner, oktal, desimal, hex dan basis apa pun hingga 36, dan lihat pola bit komplemen duanya.",
+  "blurb": "Biner, oktal, desimal, hex dan basis 2 sampai 36.",
+  "keywords": "konversi bilangan biner ke desimal desimal ke biner hex ke desimal desimal ke hex heksadesimal oktal konverter basis bilangan radix basis 36 komplemen dua two's complement signed unsigned bit",
+  "limits": "Bilangan bulat hingga 4.096 digit, positif atau negatif. Pecahan tidak dikonversi.",
+  "howto_title": "Cara mengonversi antar basis bilangan",
+  "howto": [
+    "Pilih basis tempat bilangan Anda ditulis, atau pilih Basis lain dan masukkan basis dari 2 sampai 36.",
+    "Ketik bilangannya. Tanda minus diperbolehkan, dan awalan <code>0x</code>, <code>0b</code> atau <code>0o</code> yang sesuai diterima; spasi dan garis bawah diabaikan.",
+    "Baca hasilnya di setiap basis di bawah, salin yang Anda butuhkan, dan periksa tabel komplemen dua untuk bilangan bulat dengan lebar tetap."
+  ],
+  "faq": [
+    ["Seberapa besar bilangan yang bisa dikonversi?", "Hingga 4.096 digit dalam basis input. Konversi memakai aritmetika bilangan bulat yang eksak (BigInt), jadi nilai yang sangat besar seperti 2⁶⁴ + 1 = 18446744073709551617 dikonversi tanpa pembulatan, tidak seperti kalkulator yang beralih ke floating point di atas sekitar 9 kuadriliun."],
+    ["Bisakah alat ini mengonversi pecahan seperti 0,1?", "Tidak. Hanya bilangan bulat yang dikonversi, dan titik desimal dilaporkan sebagai kesalahan, bukan dibuang diam-diam. Banyak pecahan tidak punya bentuk eksak di basis lain: 0,1 dalam desimal menjadi pola berulang dalam biner, itulah sebabnya <code>0.1 + 0.2</code> tidak persis <code>0.3</code> di sebagian besar bahasa pemrograman."],
+    ["Apa yang ditunjukkan komplemen dua?", "Komplemen dua (two's complement) adalah cara komputer menyimpan bilangan bulat bertanda dalam jumlah bit yang tetap. Bilangan negatif −n disimpan sebagai 2 pangkat jumlah bit, dikurangi n, jadi −1 dalam 8 bit adalah 11111111 (FF). Tabel menampilkan pola bit untuk 8, 16, 32 dan 64 bit, serta arti pola itu jika dibaca sebagai bilangan bulat bertanda dan tanpa tanda. Jika bilangan tidak muat dalam sebuah lebar, barisnya menyebutkan hal itu alih-alih memotongnya."],
+    ["Digit apa yang dipakai di atas basis 10?", "Huruf, seperti di kebanyakan bahasa pemrograman: A adalah 10, B adalah 11 dan seterusnya hingga Z untuk 35, itulah sebabnya basis 36 adalah yang tertinggi. Input diterima dalam huruf besar atau kecil; opsi huruf kapital mengatur output-nya."],
+    ["Mengapa sebuah digit dilaporkan tidak valid?", "Setiap basis hanya mengizinkan digit di bawah nilainya: biner mengizinkan 0 dan 1, oktal 0 sampai 7, hex 0 sampai 9 dan A sampai F. Pesan kesalahan menyebutkan karakter dan posisinya agar Anda bisa menemukan salah ketik, atau beralih ke basis tempat bilangan itu sebenarnya ditulis."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Bilangan dalam</label>
+      <select id="nb-from">
+        <option value="10" selected>Desimal (basis 10)</option>
+        <option value="2">Biner (basis 2)</option>
+        <option value="8">Oktal (basis 8)</option>
+        <option value="16">Heksadesimal (basis 16)</option>
+        <option value="other">Basis lain…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Basis (2 sampai 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Bilangan</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Kelompokkan digit</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Huruf kapital</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Komplemen dua</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bit</th><th scope="col">Pola bit (hex, biner)</th><th scope="col">Dibaca sebagai</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Cara kerja basis bilangan</h2>
+<p>Konversi bilangan biner, desimal dan hex bergantung pada basis, atau radix, yaitu banyaknya digit berbeda yang dipakai sebuah sistem bilangan. Dalam desimal, setiap posisi bernilai sepuluh kali posisi di sebelah kanannya; dalam biner, setiap posisi bernilai dua kali, jadi 1101 berarti 8 + 4 + 0 + 1 = 13. Heksadesimal memakai enam belas digit, 0 sampai 9 lalu A sampai F, dan setiap digit hex mewakili tepat empat digit biner, itulah sebabnya programmer memakainya sebagai cara ringkas menulis byte: 255 adalah FF, atau 11111111.</p>
+<p>Oktal mengelompokkan digit biner per tiga dan masih muncul dalam izin file Unix (755 berarti rwxr-xr-x). Basis 36 memakai semua angka dan huruf, dan sering muncul di ID pendek dan layanan pemendek URL.</p>
+<p>Komputer menyimpan bilangan bulat bertanda dalam jumlah bit yang tetap dengan komplemen dua, di mana bit teratas membawa bobot negatif. Karena itu, bit yang sama bisa berarti dua bilangan berbeda: 11001000 adalah 200 jika dibaca tanpa tanda dan −56 jika dibaca bertanda. Tabel di bawah hasil menampilkan kedua cara baca untuk ukuran bilangan bulat yang umum.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ingin mengubah teks menjadi byte biner, bukan sebuah bilangan? Gunakan <a href="/tools/text-to-binary/">Teks ke biner</a>.</li>
+  <li>Kode warna seperti <code>#1636A3</code> adalah tiga byte hex: baca dengan <a href="/tools/color-converter/">Konverter warna dan kontras</a>.</li>
+  <li>Timestamp Unix adalah detik dalam desimal biasa; konversikan dengan <a href="/tools/unix-timestamp-converter/">Konverter timestamp Unix</a>.</li>
+</ul>

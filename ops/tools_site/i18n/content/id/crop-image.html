@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Potong gambar online gratis, presisi per piksel | Tanod Tools",
+  "description": "Potong (crop) gambar JPG, PNG, atau WebP di browser Anda. Seret kotak, pakai preset rasio, atau ketik nilai piksel. Tanpa unggah, format tetap sama.",
+  "h1": "Potong gambar",
+  "lede": "Seret kotak pemotongan di atas gambar Anda, atau ketik nilai piksel yang tepat, lalu simpan salinan hasil potongan.",
+  "blurb": "Potong gambar sesuai bagian yang Anda perlukan.",
+  "keywords": "potong crop gambar foto pangkas rasio aspek persegi 16:9 4:3 kotak potong",
+  "limits": "Satu gambar setiap kali, hingga 50 MB dan sekitar 100 megapiksel. PNG, JPEG, WebP, GIF, BMP, dan AVIF (jika browser Anda bisa membukanya).",
+  "howto_title": "Cara memotong gambar",
+  "howto": [
+    "Pilih gambar, atau seret ke halaman ini.",
+    "Seret kotak untuk memindahkannya dan pegangan sudut untuk mengubah ukurannya. Pilih rasio aspek jika perlu, atau ketik X, Y, lebar, dan tinggi dalam piksel.",
+    "Tekan <strong>Potong gambar</strong>, lalu unduh hasilnya."
+  ],
+  "faq": [
+    ["Apakah gambar saya diunggah?", "Tidak. Pemotongan dilakukan di browser Anda dari file yang ada di perangkat Anda. Tidak ada yang dikirim ke server."],
+    ["Bisakah saya memakai keyboard alih-alih mouse?", "Bisa. Fokuskan kotak pemotongan (tekan Tab hingga sampai ke kotak, atau klik kotaknya), lalu gunakan tombol panah untuk memindahkannya dan Shift dengan tombol panah untuk mengubah ukurannya. Kolom X, Y, lebar, dan tinggi juga menerima nilai piksel yang tepat."],
+    ["Apakah memotong menurunkan kualitas?", "Piksel di dalam kotak disalin apa adanya, dalam resolusi penuh, bukan dari pratinjau seukuran layar. JPEG dan WebP disimpan ulang dengan kualitas 92, jadi ada sedikit kompresi ulang; PNG tetap lossless."],
+    ["Apa format hasilnya?", "Sama dengan aslinya: PNG tetap PNG, JPEG tetap JPEG, dan WebP tetap WebP. GIF, BMP, dan AVIF disimpan sebagai PNG (GIF menjadi frame pertamanya)."],
+    ["Apa fungsi preset rasio aspek?", "Preset mengunci kotak pada perbandingan lebar dan tinggi tertentu, seperti 1:1 untuk persegi atau 16:9 untuk bingkai layar lebar, dan menjaganya tetap begitu saat Anda mengubah ukuran. Pilih Bebas untuk memotong dalam bentuk apa pun."],
+    ["Apakah data EXIF tetap ada?", "Tidak. File hasil potongan adalah gambar baru tanpa metadata kamera atau GPS, disimpan dalam orientasi seperti yang ditampilkan."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Letakkan gambar di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Pilih gambar</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, atau AVIF. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Pratinjau gambar yang sedang dipotong" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Area pemotongan" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Seret kotak untuk memindahkannya dan sudutnya untuk mengubah ukuran. Saat kotak dalam fokus, tombol panah memindahkannya dan Shift dengan tombol panah mengubah ukurannya.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Rasio aspek</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Bebas</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Lebar (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Tinggi (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Potong gambar</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Memotong gambar tanpa kehilangan resolusi</h2>
+<p>Memotong gambar (crop) berarti menyimpan satu persegi panjang dari piksel asli dan membuang sisanya. Gambar yang Anda lihat di layar adalah pratinjau yang diperkecil agar muat di halaman; pemotongannya sendiri diambil dari gambar beresolusi penuh, memakai X, Y, lebar, dan tinggi yang tertera di kolom. Angka-angka itu dalam piksel gambar itu sendiri, bukan piksel layar.</p>
+<p>Gunakan rasio aspek saat hasilnya harus pas dengan bingkai: 1:1 untuk avatar persegi, 16:9 untuk thumbnail video, 4:3 atau 3:2 untuk bentuk foto yang umum, 9:16 untuk story vertikal. Kotak tetap mempertahankan bentuk itu saat Anda mengubah ukurannya, dan mengetik lebar atau tinggi akan memperbarui nilai lainnya.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Potong dulu, lalu perkecil ukurannya dengan <a href="/tools/resize-image/">Ubah ukuran gambar</a> dan <a href="/tools/compress-image/">Kompres gambar</a>.</li>
+  <li>Foto terbalik atau miring? <a href="/tools/rotate-image/">Putar gambar</a> bisa memperbaikinya.</li>
+  <li>Membuat ikon dari bagian sebuah gambar? Potong ke 1:1, lalu gunakan <a href="/tools/favicon-generator/">Generator favicon</a>.</li>
+</ul>

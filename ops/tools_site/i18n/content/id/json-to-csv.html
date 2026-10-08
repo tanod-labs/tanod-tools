@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Konversi JSON ke CSV online gratis | Tanod Tools",
+  "description": "Konversi array JSON ke CSV di browser Anda. Objek bersarang menjadi kolom dot.path, tanda kutip ditangani, dan ada opsi untuk Excel. Tidak ada yang diunggah.",
+  "h1": "Konverter JSON ke CSV",
+  "lede": "Tempel array JSON atau buka file .json dan dapatkan CSV yang bisa dibuka di Excel, Google Sheets, atau Numbers.",
+  "blurb": "Ubah array JSON menjadi CSV untuk spreadsheet.",
+  "keywords": "json ke csv konversi json ubah json ke csv excel spreadsheet ekspor ratakan bersarang array objek konverter",
+  "limits": "Input hingga sekitar 10 MB, ditempel atau dari file .json. Hasil diperbarui saat Anda mengetik.",
+  "howto_title": "Cara mengonversi JSON ke CSV",
+  "howto": [
+    "Tempel JSON Anda ke kotak, atau buka file .json. Array berisi objek menghasilkan satu baris per objek.",
+    "Pilih pemisah dan cara objek bersarang ditulis. Aktifkan opsi Excel jika file akan dibuka di Excel.",
+    "Salin CSV atau unduh sebagai file .csv."
+  ],
+  "faq": [
+    ["Apakah JSON saya diunggah?", "Tidak. JSON diurai dan dikonversi di browser Anda, dan tidak ada yang dikirim ke mana pun atau disimpan."],
+    ["Bentuk JSON apa saja yang didukung?", "Array berisi objek (satu baris per objek, satu kolom per kunci), array berisi array (setiap array di dalamnya menjadi satu baris), array berisi nilai biasa (satu kolom), atau satu objek (satu baris). Kolom muncul sesuai urutan kunci pertama kali ditemukan, jadi objek yang memiliki kunci yang tidak dimiliki objek lain menambah satu kolom, dan baris tanpa kunci itu mendapat sel kosong."],
+    ["Bagaimana objek dan array bersarang ditangani?", "Dengan <em>Ratakan menjadi dot path</em>, objek bersarang seperti <code>{\"address\": {\"city\": \"Lyon\"}}</code> menjadi kolom bernama <code>address.city</code>. Dengan <em>Simpan sebagai teks JSON</em>, seluruh objek bersarang masuk ke satu sel sebagai JSON. Array selalu ditulis sebagai teks JSON dalam satu sel, karena tidak ada satu cara yang benar untuk menyebar daftar ke beberapa kolom."],
+    ["Mengapa huruf beraksen tampak salah saat file dibuka di Excel?", "Excel di Windows sering menganggap file memakai encoding regional lama kecuali file diawali byte-order mark. Aktifkan <em>Tambahkan byte-order mark untuk Excel</em> sebelum mengunduh dan Excel akan membaca file sebagai UTF-8. Google Sheets dan Numbers membaca UTF-8 dalam kedua kasus. Jika Excel Anda mengharapkan titik koma, pilih juga pemisah titik koma."],
+    ["Kapan nilai diberi tanda kutip?", "Hanya jika perlu: nilai yang berisi pemisah, tanda kutip ganda, jeda baris, atau diawali atau diakhiri spasi dibungkus tanda kutip ganda, dan setiap tanda kutip di dalamnya ditulis dua kali. Angka ditulis persis seperti di JSON, jadi ID yang panjang tidak dibulatkan. <code>null</code> menjadi sel kosong."],
+    ["Mengapa JSON saya dibilang tidak valid?", "Pesan menyebutkan baris dan kolom tempat pembacaan berhenti. Penyebab yang paling umum adalah koma di akhir, tanda kutip tunggal alih-alih tanda kutip ganda, atau kurung yang hilang. <a href=\"/tools/json-formatter/\">Format dan validasi JSON</a> menunjukkan lokasi persisnya dengan tanda sisipan (^)."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Pemisah</label>
+      <select id="delim">
+        <option value="," selected>Koma ( , )</option>
+        <option value=";">Titik koma ( ; )</option>
+        <option value="&#9;">Tab</option>
+        <option value="|">Garis vertikal ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Objek bersarang</label>
+      <select id="nested">
+        <option value="flatten" selected>Ratakan menjadi dot path (address.city)</option>
+        <option value="json">Simpan sebagai teks JSON dalam satu sel</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Sertakan baris header</label>
+    <label class="check"><input type="checkbox" id="crlf">Akhir baris Windows (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Tambahkan byte-order mark untuk Excel (hanya saat unduh)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Tempel JSON untuk memulai.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Salin CSV</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Unduh .csv</button>
+    <button class="btn btn--quiet" id="clear" type="button">Hapus</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Buka file .json</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Mengubah JSON menjadi spreadsheet</h2>
+<p>API dan hasil ekspor sering memberi Anda JSON, sementara orang yang membutuhkan datanya menginginkan spreadsheet. CSV menjembatani keduanya: setiap objek dalam array menjadi baris dan setiap kunci menjadi kolom. Karena objek dalam data nyata jarang memiliki kunci yang persis sama, konverter JSON ke CSV ini mengumpulkan setiap kunci yang ditemukannya, sesuai urutan pertama kali ditemukan, dan mengosongkan sel jika sebuah objek tidak punya nilai untuk kolom itu.</p>
+<p>Spreadsheet itu datar, jadi data bersarang harus dimasukkan ke kolom dengan cara tertentu. Perataan mengubah <code>user.name</code> dan <code>user.email</code> menjadi kolom terpisah, cocok untuk sebagian besar laporan. Menyimpan objek bersarang sebagai teks JSON membuat jumlah kolom tetap sedikit dan memungkinkan Anda menyusun ulang struktur aslinya nanti.</p>
+<p>CSV yang dihasilkan mengikuti aturan umum (RFC 4180): nilai hanya diberi tanda kutip jika perlu dan tanda kutip di dalam nilai ditulis dua kali. Angka mempertahankan digit persis dari JSON Anda, tidak dibulatkan seperti angka JavaScript.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ingin sebaliknya? Gunakan <a href="/tools/csv-to-json/">CSV ke JSON</a>.</li>
+  <li>Jika JSON tidak bisa dikonversi, temukan masalahnya dengan <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+  <li>Bandingkan dua hasil ekspor baris demi baris dengan <a href="/tools/text-diff/">Bandingkan teks</a>.</li>
+</ul>

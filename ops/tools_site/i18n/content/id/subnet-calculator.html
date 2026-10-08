@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Kalkulator subnet IPv4 dan IPv6 (CIDR) online | Tanod Tools",
+  "description": "Masukkan alamat IPv4 atau IPv6 dengan prefix atau mask untuk melihat jaringan, broadcast, rentang host, jumlah, wildcard mask, biner, dan pembagian subnet.",
+  "h1": "Kalkulator subnet",
+  "lede": "Hitung alamat jaringan, rentang host dan jumlah alamat untuk subnet IPv4 atau IPv6 mana pun, lalu bagi menjadi subnet yang lebih kecil.",
+  "blurb": "Kalkulator CIDR IPv4 dan IPv6 dengan rentang host dan pembagian subnet.",
+  "keywords": "kalkulator subnet hitung subnet subnetting kalkulator cidr kalkulator ip netmask subnet mask wildcard mask alamat broadcast host yang bisa dipakai prefix ipv6 rfc 1918",
+  "limits": "Hanya IPv4 dan IPv6, satu subnet sekali hitung. Jenis alamat dibaca dari rentang khusus IANA yang tertanam di halaman, jadi alat ini tidak tahu siapa pemilik sebuah alamat publik. Tabel pembagian subnet berhenti di 256 baris.",
+  "howto_title": "Cara menghitung subnet",
+  "howto": [
+    "Ketik alamat beserta panjang prefix-nya, misalnya <code>192.168.1.10/24</code> atau <code>2001:db8::/32</code>. Alamat IPv4 dengan mask bertitik, seperti <code>192.168.1.10 255.255.255.0</code>, juga bisa.",
+    "Baca alamat jaringan, rentang host dan jumlahnya. Jika alamat tersebut berisi bit host, halaman memberi tahu ke jaringan mana alamat itu dinormalkan.",
+    "Untuk merencanakan jaringan yang lebih kecil, masukkan prefix yang lebih panjang di <strong>Bagi menjadi</strong> dan baca tabel subnetnya."
+  ],
+  "faq": [
+    ["Mengapa jumlah host yang bisa dipakai dua lebih sedikit dari jumlah alamat?", "Pada subnet IPv4 biasa, alamat pertama adalah nama jaringan dan alamat terakhir adalah alamat broadcast, jadi keduanya tidak bisa diberikan ke perangkat. /24 punya 256 alamat dan 254 host yang bisa dipakai. Ada dua pengecualian: /31 punya dua alamat dan keduanya bisa dipakai pada link point-to-point (RFC 3021), dan /32 adalah satu host tunggal."],
+    ["Apa yang ditunjukkan wildcard mask?", "Wildcard mask adalah netmask yang dibalik: bit 0 harus cocok dan bit 1 diabaikan. Untuk 255.255.255.0, wildcard-nya 0.0.0.255. Access list di perangkat Cisco dan pernyataan network OSPF memakai bentuk ini."],
+    ["Mengapa 010.0.0.1 ditolak?", "Angka nol di depan membuat sebagian sistem membaca bagian itu sebagai oktal, jadi 010 berarti 8, sementara sistem lain membacanya sebagai desimal 10. Teks yang sama bisa menunjuk ke dua mesin berbeda, jadi halaman ini meminta Anda menulis angkanya tanpa nol di depan."],
+    ["Apa bedanya IPv6 dalam perhitungan subnet?", "IPv6 tidak punya alamat broadcast, jadi setiap alamat dalam sebuah prefix bisa diberikan, dan jumlahnya cukup 2 pangkat (128 dikurangi prefix). Subnet LAN normal adalah /64. Halaman menampilkan alamat dalam bentuk ringkas sesuai RFC 5952 dan dalam bentuk lengkap, dengan kedelapan grup 4 digit."],
+    ["Apa bentuk ringkas alamat IPv6?", "Nol di depan pada setiap grup dibuang, dan deretan terpanjang berisi dua grup nol atau lebih diganti dengan <code>::</code>, mengambil deretan paling kiri jika ada dua yang sama panjang. Satu grup nol tunggal tidak pernah diringkas, jadi <code>2001:db8:0:1:1:1:1:1</code> tetap mempertahankan 0-nya."],
+    ["Apakah alamat saya dikirim ke suatu tempat?", "Tidak. Perhitungannya dilakukan di browser Anda dengan bilangan bulat besar, apa pun yang Anda ketik tidak dikirim ke mana pun, dan alat ini bekerja offline setelah halaman dimuat."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Alamat IP dengan prefix atau mask</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Contoh">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + mask</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Detail subnet"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Bagi menjadi subnet yang lebih kecil</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Bagi menjadi panjang prefix /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="misalnya 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Biarkan kosong jika tidak ingin membagi. Harus lebih panjang dari prefix di atas.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Subnet</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Subnet dan notasi CIDR</h2>
+<p>Kalkulator subnet ini berangkat dari fakta bahwa alamat IP terdiri dari dua bagian: bit-bit awal menamai jaringan dan bit sisanya menamai host di dalamnya. Panjang prefix setelah garis miring menyatakan berapa bit awal yang menjadi milik jaringan, jadi <code>192.168.1.10/24</code> berarti 24 dari 32 bit pertama adalah jaringan dan 8 bit terakhir menunjuk salah satu dari 256 alamat. Mengisi semua bit host dengan 0 menghasilkan alamat jaringan; mengisinya semua dengan 1 menghasilkan alamat broadcast, itulah sebabnya keduanya biasanya tidak diberikan ke perangkat.</p>
+<p>Netmask adalah informasi yang sama yang ditulis sebagai alamat: 24 bit bernilai satu diikuti 8 bit bernilai nol adalah 255.255.255.0. Hanya mask yang berurutan yang valid, jadi mask seperti 255.0.255.0 ditolak. IPv6 bekerja dengan cara yang sama dengan 128 bit, tetapi tanpa alamat broadcast dan dengan rentang yang jauh lebih besar: subnet LAN standar /64 berisi 2<sup>64</sup> alamat, sekitar 18 kuintiliun.</p>
+<p>Beberapa rentang punya arti khusus di mana pun ia muncul. 10.0.0.0/8, 172.16.0.0/12 dan 192.168.0.0/16 bersifat privat dan tidak dirutekan di internet publik, 100.64.0.0/10 adalah ruang alamat bersama untuk carrier-grade NAT, 169.254.0.0/16 adalah link-local, dan blok 192.0.2.0, 198.51.100.0 dan 203.0.113.0 dicadangkan untuk dokumentasi. Halaman ini memberi label rentang tempat alamat Anda berada.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ubah satu oktet atau seluruh alamat antara biner dan desimal dengan <a href="/tools/number-base-converter/">Konverter basis bilangan</a>.</li>
+  <li>Sekalian mengatur izin file di server? <a href="/tools/chmod-calculator/">Kalkulator chmod</a> mengubah 755 menjadi rwxr-xr-x dan sebaliknya.</li>
+  <li>Baca arti kode status dari health check yang gagal di <a href="/tools/http-status-codes/">Kode status HTTP</a>.</li>
+</ul>

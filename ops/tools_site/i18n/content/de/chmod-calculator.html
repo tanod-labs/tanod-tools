@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "chmod-Rechner: Oktal, symbolisch und Befehle | Tanod Tools",
+  "description": "Lesen, Schreiben, Ausführen anhaken und chmod-Oktalzahl, rwxr-xr-x-Form und fertige Befehle erhalten, oder Modus eingeben. Mit setuid, setgid und Sticky-Bit.",
+  "h1": "chmod-Rechner",
+  "lede": "Setzen Sie Unix-Dateirechte per Checkbox, als Oktalzahl wie 755 oder als rwxr-xr-x-Text und erhalten Sie die passenden chmod-Befehle.",
+  "blurb": "Unix-Rechte als Checkboxen, Oktalzahl, rwx-Text und chmod-Befehl.",
+  "keywords": "chmod rechner chmod calculator unix rechte linux dateirechte dateiberechtigungen zugriffsrechte oktal rwx 755 644 setuid setgid sticky bit umask chmod generator",
+  "limits": "Arbeitet mit den neun Rechte-Bits plus setuid, setgid und Sticky-Bit, wie POSIX-chmod. Echte Dateien werden nicht gelesen, Eigentümer nicht angezeigt, und ACLs, Dateiattribute oder umask sind nicht abgedeckt. Oktale Modi brauchen 3 oder 4 Ziffern.",
+  "howto_title": "So ermitteln Sie einen chmod-Modus",
+  "howto": [
+    "Haken Sie die Kästchen für Eigentümer, Gruppe und Andere an oder wählen Sie eine gängige Vorgabe wie 644 oder 755. Sie können auch eine Oktalzahl oder den neunstelligen Text eingeben, und die Kästchen passen sich an.",
+    "Prüfen Sie die Zusammenfassung in Klartext, was jede Klasse mit einer Datei und einem Verzeichnis tun darf, und lesen Sie eventuelle Warnungen.",
+    "Kopieren Sie den numerischen oder symbolischen <code>chmod</code>-Befehl. Ändern Sie vorher den Dateinamen, wenn der Befehl direkt zum Einfügen bereit sein soll."
+  ],
+  "faq": [
+    ["Wie funktioniert die Oktalzahl?", "Jede Ziffer addiert Lesen (4), Schreiben (2) und Ausführen (1) für eine Klasse, in der Reihenfolge Eigentümer, Gruppe, Andere. 7 bedeutet also Lesen, Schreiben und Ausführen, 5 Lesen und Ausführen, 4 nur Lesen. 755 gibt dem Eigentümer alle Rechte und allen anderen Lesen und Ausführen. Eine optionale vierte Ziffer davor enthält setuid (4), setgid (2) und Sticky (1)."],
+    ["Was bedeuten die Buchstaben s, S, t und T?", "Sie ersetzen das x an der Position von Eigentümer, Gruppe oder Anderen. Ein Kleinbuchstabe bedeutet, dass das Sonderbit gesetzt und Ausführen ebenfalls aktiv ist; ein Großbuchstabe bedeutet, dass das Sonderbit gesetzt, Ausführen aber aus ist, was meist ein Versehen ist. 4755 ist also <code>rwsr-xr-x</code> und 4644 ist <code>rwSr--r--</code>."],
+    ["Was ist der Unterschied zwischen 644 und 755?", "644 ist der übliche Modus für gewöhnliche Dateien: Der Eigentümer darf lesen und schreiben, alle anderen nur lesen. 755 ergänzt Ausführen für alle, was Programme, Skripte und Verzeichnisse brauchen. Ein Verzeichnis kann nur betreten, wer dafür das Ausführen-Bit hat."],
+    ["Warum gilt 777 als gefährlich?", "Damit kann jeder Benutzer auf dem Rechner, und jedes Programm, das als ein solcher läuft, die Datei ändern oder ersetzen. Ein Webserver, der irgendwo schreiben soll, braucht das nicht: Den richtigen Benutzer oder die richtige Gruppe als Eigentümer zu setzen und 775 oder 770 zu verwenden, behebt die meisten Rechtefehler, ohne die Datei für alle zu öffnen."],
+    ["Was bewirkt das Sticky-Bit?", "Bei einem Verzeichnis verhindert es, dass Benutzer Dateien löschen oder umbenennen, die ihnen nicht gehören, selbst wenn sie in das Verzeichnis schreiben dürfen. Deshalb haben gemeinsame Ordner wie <code>/tmp</code> den Modus 1777. Unter modernem Linux hat es auf gewöhnliche Dateien keine Wirkung."],
+    ["Ändert das Tool etwas auf meinem Computer?", "Nein. Es berechnet nur die Zahl und die Befehle. Nichts von dem, was Sie eingeben, wird irgendwohin gesendet, und die Befehle führen Sie selbst in einem Terminal aus."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Rechte</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Eigentümer</th><th scope="col">Gruppe</th><th scope="col">Andere</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Lesen <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Eigentümer lesen"></td><td><input type="checkbox" id="m-g-r" aria-label="Gruppe lesen"></td><td><input type="checkbox" id="m-o-r" aria-label="Andere lesen"></td></tr>
+          <tr><th scope="row">Schreiben <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Eigentümer schreiben"></td><td><input type="checkbox" id="m-g-w" aria-label="Gruppe schreiben"></td><td><input type="checkbox" id="m-o-w" aria-label="Andere schreiben"></td></tr>
+          <tr><th scope="row">Ausführen <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Eigentümer ausführen"></td><td><input type="checkbox" id="m-g-x" aria-label="Gruppe ausführen"></td><td><input type="checkbox" id="m-o-x" aria-label="Andere ausführen"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Set User ID (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Set Group ID (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Sticky-Bit <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Oktal</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Symbolisch</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Gängige Modi">
+    <button class="btn btn--sm" type="button" data-mode="644">644 Datei</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 Programm oder Verzeichnis</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 private Datei</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 privates Verzeichnis</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 gemeinsame Gruppe</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 alle</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Datei- oder Verzeichnisname in den Befehlen</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Befehle">
+    <div><dt>Numerisch</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Numerischen Befehl kopieren">Kopieren</button></div>
+    <div><dt>Symbolisch</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Symbolischen Befehl kopieren">Kopieren</button></div>
+  </dl>
+  <h2 class="util-h">Was dieser Modus erlaubt</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Wer</th><th scope="col">Bei einer Datei</th><th scope="col">Bei einem Verzeichnis</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Wie Unix-Dateirechte gespeichert werden</h2>
+<p>Jede Datei und jedes Verzeichnis auf einem Unix-ähnlichen System trägt einen kurzen Modus: drei Rechte-Bits (Lesen, Schreiben, Ausführen) für jede von drei Klassen (der besitzende Benutzer, die besitzende Gruppe, alle anderen), dazu drei Sonderbits. Das sind zwölf Bits, und die chmod-Oktalzahl ist einfach diese Bits in Dreiergruppen geschrieben, deshalb reichen die Ziffern nur bis 7. Die neunstellige Form aus <code>ls -l</code> zeigt dieselben Bits als Buchstaben.</p>
+<p>Lesen, Schreiben und Ausführen bedeuten bei einem Verzeichnis etwas anderes. Lesen erlaubt, die enthaltenen Namen aufzulisten, Schreiben erlaubt, Einträge hinzuzufügen, umzubenennen und zu entfernen, und Ausführen erlaubt, das Verzeichnis zu betreten und Dinge darin über ihren Namen zu erreichen. Ein Verzeichnis mit Lesen, aber ohne Ausführen zeigt seine Namen, verweigert aber den Zugriff auf alles darin, eine häufige Ursache verwirrender Rechtefehler.</p>
+<p>Die Sonderbits verändern, wie sich ein Modus verhält. Setuid und setgid lassen ein Programm mit den Rechten des Dateieigentümers oder der Gruppe laufen statt mit denen des Aufrufers; das ist mächtig und wird daher auf den meisten Systemen bei Shell-Skripten ignoriert. Setgid auf einem Verzeichnis lässt neue Dateien dessen Gruppe erben, und das Sticky-Bit auf einem Verzeichnis verhindert, dass Benutzer die Dateien anderer löschen. Wenn Sie unsicher sind, welchen Modus eine Datei braucht, beginnen Sie restriktiv und ergänzen nur, was eine Fehlermeldung verlangt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Binär und oktal sind dieselben Bits, nur anders geschrieben; der <a href="/tools/number-base-converter/">Zahlensystem-Umrechner</a> zeigt 755 als 111 101 101.</li>
+  <li>Sie planen einen Cronjob, der ein gerade ausführbar gemachtes Skript startet? Erstellen Sie den Zeitplan mit <a href="/tools/cron-expression-generator/">Cron-Ausdruck erstellen</a>.</li>
+  <li>Als Nächstes Netzbereiche berechnen? Probieren Sie den <a href="/tools/subnet-calculator/">Subnetzrechner</a>.</li>
+</ul>

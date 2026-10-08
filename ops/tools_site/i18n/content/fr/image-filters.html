@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Filtres photo en ligne : noir et blanc, sépia, flou | Tanod Tools",
+  "description": "Réglez luminosité, contraste, saturation et teinte, ou passez une photo en noir et blanc, sépia, négatif ou flou. Aperçu en direct, dans votre navigateur.",
+  "h1": "Filtres photo",
+  "lede": "Ajustez une photo avec des curseurs ou des préréglages en un clic, comparez-la avec l'original et enregistrez le résultat en taille réelle.",
+  "blurb": "Noir et blanc, sépia, luminosité, flou et plus.",
+  "keywords": "filtre photo filtres image effet photo noir et blanc niveaux de gris sepia vintage negatif inverser couleurs luminosite contraste saturation teinte flou retouche photo en ligne instagram",
+  "limits": "Fonctionne sur une seule image de 50 Mo maximum et d'environ 100 mégapixels. Les très grandes images prennent quelques secondes ; la page reste utilisable pendant le traitement.",
+  "howto_title": "Comment appliquer des filtres à une image",
+  "howto": [
+    "Choisissez une image. L'aperçu s'affiche en taille réduite pour que les curseurs réagissent immédiatement.",
+    "Partez d'un préréglage comme <strong>Noir et blanc</strong> ou <strong>Éclatant</strong>, puis ajustez les curseurs. Activez <strong>Afficher l'original</strong> pour comparer.",
+    "Cliquez sur <strong>Appliquer et enregistrer</strong>. Les filtres sont appliqués à nouveau à l'image en taille réelle, que vous téléchargez."
+  ],
+  "faq": [
+    ["Ma photo est-elle envoyée en ligne ?", "Non. Chaque filtre est calculé dans votre navigateur, sur votre appareil, pixel par pixel. Rien n'est envoyé à un serveur."],
+    ["Les filtres donnent-ils le même résultat que le CSS de mon navigateur ?", "Ils suivent les mêmes formules que la spécification CSS Filter Effects : la luminosité multiplie, le contraste pivote autour du gris moyen, et la saturation, la rotation de teinte, les niveaux de gris et le sépia utilisent les matrices de couleur de la spécification. Faire les calculs dans cette page plutôt que via la fonction de filtre du navigateur permet aussi à l'outil de fonctionner dans les navigateurs où cette fonction manque."],
+    ["Dans quel ordre les filtres sont-ils appliqués ?", "Luminosité, contraste, saturation, rotation de teinte, niveaux de gris, sépia, négatif, puis flou. L'ordre est fixe : les mêmes positions de curseurs donnent donc toujours la même image."],
+    ["Pourquoi le flou est-il identique dans l'aperçu et dans le fichier enregistré ?", "L'intensité du flou est une fraction de la largeur de l'image, et non un nombre de pixels. Une photo de 4000 pixels affichée en aperçu à 800 pixels est floutée cinq fois moins en pixels d'aperçu, ce qui paraît identique quand on la regarde à la même échelle."],
+    ["Que devient la transparence ?", "Elle n'est pas modifiée. Le canal alpha n'est jamais changé, et le flou pondère les couleurs selon l'opacité pour que les bords adoucis d'un détourage ne s'assombrissent pas. Enregistrez en PNG ou en WebP pour la conserver ; le JPEG remplit les zones transparentes de blanc."],
+    ["Puis-je annuler un préréglage ?", "Choisissez Réinitialiser, ou ramenez les curseurs à leur place. Les préréglages ne font que déplacer les curseurs, que vous pouvez ajuster ensuite. Rien ne modifie votre fichier d'origine."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez une image ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Choisir une image</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-la n'importe où sur cette page.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Aperçu avec les filtres appliqués"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Afficher l'original</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Préréglages</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Noir et blanc</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sépia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Éclatant</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Délavé</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Négatif</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Réinitialiser</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Luminosité : <span class="num" id="o-brightness">100</span> %</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Contraste : <span class="num" id="o-contrast">100</span> %</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Saturation : <span class="num" id="o-saturation">100</span> %</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Niveaux de gris : <span class="num" id="o-grayscale">0</span> %</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sépia : <span class="num" id="o-sepia">0</span> %</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Négatif : <span class="num" id="o-invert">0</span> %</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Rotation de teinte : <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Flou : <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Enregistrer en</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Identique</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Avec le format identique, les PNG, JPEG et WebP restent tels quels ; les GIF, BMP et AVIF deviennent des PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Appliquer et enregistrer</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ce que chaque filtre fait aux pixels</h2>
+<p>Ces filtres photo en ligne travaillent directement sur les pixels. Chaque pixel est formé de trois nombres de 0 à 255, pour le rouge, le vert et le bleu. La luminosité multiplie ces nombres : à 150 %, une valeur de 100 devient 150, et tout ce qui dépasse 255 est écrêté en blanc. Le contraste éloigne les nombres du gris moyen (128) ou les en rapproche, ce qui explique pourquoi un contraste à 0 % donne une image grise uniforme. La saturation et la rotation de teinte mélangent les trois canaux à l'aide de matrices de couleur fixes : c'est ainsi qu'une photo glisse vers le gris ou fait le tour de la roue chromatique.</p>
+<p>Les niveaux de gris remplacent chaque pixel par sa luminance, une somme pondérée qui compte surtout le vert (environ 72 %), puis le rouge (21 %) et enfin le bleu (7 %), car l'œil est plus sensible au vert. Le sépia utilise une matrice qui donne la teinte brune et chaude des anciens tirages. Le négatif soustrait chaque valeur de 255. Le flou fait la moyenne de chaque pixel avec ses voisins, trois fois dans chaque direction, ce qui s'approche de très près d'un flou gaussien.</p>
+<p>Les petits aperçus rendent les curseurs rapides, mais le fichier enregistré est traité en pleine résolution par morceaux : la page reste donc réactive et affiche la progression. Une fois l'image enregistrée, le fichier d'origine reste intact.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Pour lire une couleur exacte dans le résultat, utilisez la <a href="/tools/image-color-picker/">Pipette de couleur pour image</a>.</li>
+  <li>Appliquer les filtres avant d'ajouter une légende garde le texte net : procédez dans cet ordre avec <a href="/tools/add-text-to-image/">Ajouter du texte à une image</a>.</li>
+  <li>Une image floutée ou très contrastée se compresse très différemment : vérifiez ensuite son poids avec <a href="/tools/compress-image/">Compresser une image</a>.</li>
+</ul>

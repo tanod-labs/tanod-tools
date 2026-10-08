@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Rechercher et remplacer du texte, avec regex | Tanod Tools",
+  "description": "Recherchez et remplacez du texte dans votre navigateur : respect de la casse, mot entier et expressions régulières avec groupes $1. Gratuit, rien n'est envoyé.",
+  "h1": "Rechercher et remplacer du texte",
+  "lede": "Remplacez des mots ou des motifs dans tout un bloc de texte, et voyez le nombre de correspondances avant de remplacer.",
+  "blurb": "Rechercher et remplacer, avec casse, mot entier et regex.",
+  "keywords": "rechercher remplacer chercher remplacer texte remplacer mot regex expression reguliere expression régulière substituer remplacement en masse",
+  "limits": "Texte jusqu'à environ 5 Mo. Les expressions régulières qui tournent plus de 2 secondes sont arrêtées.",
+  "howto_title": "Comment rechercher et remplacer du texte",
+  "howto": [
+    "Collez votre texte dans le champ, ou ouvrez un fichier .txt.",
+    "Tapez ce qu'il faut rechercher et par quoi le remplacer. Le nombre de correspondances se met à jour pendant la saisie.",
+    "Cliquez sur <strong>Tout remplacer</strong>, puis copiez le résultat ou téléchargez-le."
+  ],
+  "faq": [
+    ["La recherche est-elle littérale ou par motif ?", "Littérale par défaut : ce que vous tapez est recherché tel quel, y compris les caractères comme . et *. Activez « Expression régulière » pour utiliser la syntaxe des expressions régulières JavaScript."],
+    ["Comment utiliser des groupes dans le remplacement ?", "En mode expression régulière, $1, $2, etc. insèrent le texte capturé par le premier, le deuxième (etc.) groupe entre parenthèses, $& insère la correspondance entière et $&lt;nom&gt; insère un groupe nommé. Par exemple, rechercher (\\w+)@(\\w+) et remplacer par $2 at $1 transforme bob@example en example at bob. En mode littéral, le remplacement est inséré exactement tel que vous l'avez tapé."],
+    ["À quoi sert Mot entier ?", "Le texte recherché n'est trouvé que s'il ne fait pas partie d'un mot plus long : rechercher chat ne trouve donc pas château. En mode littéral, les lettres, chiffres et le tiret bas comptent comme caractères de mot, quelle que soit l'écriture. En mode expression régulière, le motif est entouré de limites de mot (\\b), qui ne reconnaissent que A-Z, les chiffres et le tiret bas."],
+    ["Qu'est-ce que la limite de 2 secondes ?", "Certains motifs, comme (a+)+$, peuvent prendre un temps extrêmement long sur certains textes. Le mode expression régulière s'exécute dans un processus d'arrière-plan séparé ; s'il n'a pas fini au bout de 2 secondes, il est arrêté et vous êtes averti que le motif a pris trop de temps : la page ne se fige donc jamais."],
+    ["Le motif s'applique-t-il sur plusieurs lignes ?", "En mode expression régulière, ^ et $ correspondent au début et à la fin de chaque ligne, et le point ne correspond pas à un saut de ligne. La casse est ignorée sauf si Respecter la casse est activé."],
+    ["Mon texte est-il envoyé en ligne ?", "Non. Tout se passe dans votre navigateur et rien n'est conservé ni envoyé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Votre texte</label>
+    <textarea id="text" spellcheck="false" placeholder="Tapez ou collez votre texte ici."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Rechercher</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Remplacer par</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Respecter la casse</label>
+    <label class="check"><input type="checkbox" id="whole">Mot entier</label>
+    <label class="check"><input type="checkbox" id="regex">Expression régulière</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Syntaxe des expressions régulières JavaScript. Dans le remplacement, utilisez $1, $2 pour les groupes et $&amp; pour la correspondance entière.</p>
+  <p class="tt__report" id="info" aria-live="polite">Tapez ce qu'il faut rechercher.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Tout remplacer</button>
+    <button class="btn btn--quiet" id="clear" type="button">Effacer le texte</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Ouvrir un fichier .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Résultat</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Copier le résultat</button>
+      <button class="btn" id="dl" type="button">Télécharger .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Reprendre le résultat comme texte</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Remplacer du texte en masse</h2>
+<p>Rechercher et remplacer modifie toutes les occurrences d'un mot ou d'un motif en une seule passe. Le nombre de correspondances se met à jour pendant la saisie : vous voyez l'étendue d'une modification avant de l'appliquer. Le résultat s'affiche dans un champ séparé, si bien que votre texte d'origine n'est jamais écrasé tant que vous ne choisissez pas « Reprendre le résultat comme texte ».</p>
+<p>Les expressions régulières permettent de décrire une forme plutôt qu'une chaîne fixe : une suite de chiffres, une date, un mot suivi d'une virgule. Les groupes entre parenthèses peuvent être réorganisés dans le remplacement avec $1, $2, etc. Comme un motif mal écrit peut tourner très longtemps, les motifs sont exécutés dans un processus d'arrière-plan arrêté au bout de deux secondes.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Construisez et testez d'abord votre motif dans le <a href="/tools/regex-tester/">Testeur de regex</a>, qui liste chaque correspondance et ses groupes.</li>
+  <li>Changez les majuscules et minuscules avec <a href="/tools/case-converter/">Convertir majuscules et minuscules</a>.</li>
+  <li>Vérifiez la modification avec <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+  <li>Retirez les lignes répétées avec <a href="/tools/remove-duplicate-lines/">Supprimer les lignes en double</a>.</li>
+</ul>

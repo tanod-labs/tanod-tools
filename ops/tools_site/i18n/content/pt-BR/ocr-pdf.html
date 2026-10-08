@@ -1,0 +1,67 @@
+<!--meta
+{
+  "title": "OCR de PDF online grátis: PDF pesquisável | Tanod Tools",
+  "description": "Torne um PDF digitalizado pesquisável: o OCR adiciona uma camada de texto invisível para buscar e copiar. Grátis, sem cadastro; o arquivo é excluído depois.",
+  "h1": "OCR de PDF: tornar um PDF digitalizado pesquisável",
+  "lede": "Adicione uma camada de texto oculta às páginas digitalizadas para poder buscar, selecionar e copiar o texto. As páginas ficam com a mesma aparência.",
+  "blurb": "Torne PDFs digitalizados pesquisáveis e copiáveis com OCR.",
+  "keywords": "ocr pdf pdf pesquisavel pdf digitalizado para texto reconhecer texto selecionar copiar texto escaneado scanner",
+  "limits": "Um PDF de até 10 MB, até 10 páginas por tarefa, texto em inglês. Processado no nosso servidor e depois excluído. 10 tarefas gratuitas no servidor por dia por pessoa, compartilhadas por todas as ferramentas de servidor. Tarefas maiores: a <a href=\"/learn/pdf-ocr-api.html\">API de OCR de PDF</a> (em inglês, paga por chamada).",
+  "howto_title": "Como tornar um PDF pesquisável",
+  "howto": [
+    "Escolha um PDF digitalizado de até 10 MB ou arraste-o para a página.",
+    "Confira as páginas a ler: todas, em arquivos curtos, ou até 10 por vez.",
+    "Clique em <strong>Tornar pesquisável</strong> e baixe o PDF. Você também pode copiar ou salvar o texto reconhecido."
+  ],
+  "faq": [
+    ["Meu PDF é enviado?", "Sim. Ao contrário da maioria das ferramentas deste site, esta funciona no nosso servidor: seu PDF é enviado por HTTPS, lido pelo mecanismo de OCR, e a cópia pesquisável volta direto para o seu navegador. O arquivo só existe no servidor enquanto a tarefa é executada, na memória e em uma pasta temporária privada que é excluída assim que a tarefa termina. Não armazenamos o PDF, o resultado nem o texto reconhecido, e nunca registramos o conteúdo dos arquivos."],
+    ["O que o OCR muda no meu PDF?", "Nada que você consiga ver. Cada página é lida pelo mecanismo de OCR de código aberto Tesseract, e as palavras encontradas são colocadas sobre a página como texto invisível, nos lugares certos. A página original fica por baixo, intacta, então o PDF continua com a mesma aparência, mas passa a ser pesquisável, selecionável e copiável."],
+    ["Por que só 10 páginas por vez?", "Ler uma página leva alguns segundos de processamento no servidor, e cada tarefa precisa terminar em cerca de um minuto. Para um documento mais longo, use a ferramenta de novo no arquivo baixado com as páginas seguintes, por exemplo 11-20. As páginas já processadas ficam como estão."],
+    ["Quais idiomas funcionam?", "Inglês e, com menor precisão, outros idiomas escritos com as mesmas letras latinas sem acentos. Letras acentuadas, como as do português, e outros sistemas de escrita ainda não são reconhecidos de forma confiável."],
+    ["Minhas páginas já têm texto. O que acontece?", "Páginas que já contêm texto são puladas, então um PDF criado por um editor de texto fica como está. Marque <em>Ler páginas que já têm texto</em> para aplicar o OCR mesmo assim, por exemplo quando uma digitalização tem uma camada de texto ruim."],
+    ["Qual é a precisão?", "Digitalizações limpas, retas e em resolução normal saem muito bem. Fotos tiradas em ângulo, impressão fraca ou borrada, escrita à mão e tabelas complexas geram mais erros. Confira nomes e números antes de confiar neles."],
+    ["Existe algum limite?", "Arquivos de até 10 MB, até 10 páginas por tarefa e 10 tarefas gratuitas no servidor por dia por pessoa, compartilhadas por todas as nossas ferramentas de servidor. Só contam as tarefas concluídas com sucesso, e a contagem reinicia à meia-noite UTC. Tarefas maiores: a <a href=\"/learn/pdf-ocr-api.html\">API de OCR de PDF</a> (em inglês), paga por chamada."],
+    ["O que é a verificação humana?", "Antes de uma tarefa ser executada, o Cloudflare Turnstile verifica se é uma pessoa, e não um robô, que está usando a ferramenta. Em geral é invisível; às vezes pede para você marcar uma caixa."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:ocr-pdf drop__mark}}
+  <p class="drop__title">Solte um PDF digitalizado aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Escolher PDF</span></label>
+  <p class="drop__hint">Ou arraste para qualquer lugar desta página. Até 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="range">Páginas a ler</label>
+      <input id="range" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Opções</span>
+      <label class="check"><input type="checkbox" id="redo">Ler páginas que já têm texto</label>
+      <span class="help">Idioma: inglês.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Tornar pesquisável</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>O que o OCR faz com um PDF digitalizado</h2>
+<p>Um scanner ou aplicativo de celular salva cada página como uma imagem. Você consegue ler, mas o computador não: a busca não encontra nada e não dá para copiar uma frase. O reconhecimento óptico de caracteres (OCR) analisa a imagem, encontra as letras e palavras e as grava no PDF como texto invisível, posicionado exatamente sobre as palavras que você vê.</p>
+<p>Nosso servidor renderiza cada página escolhida a 200 a 300 dpi, lê com o mecanismo de código aberto Tesseract e coloca o texto sobre a página original sem alterá-la. O texto reconhecido também aparece aqui, para você copiar na hora.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Digitalize a 300 dpi em preto e branco ou tons de cinza para ter a melhor precisão.</li>
+  <li>Páginas de cabeça para baixo ou de lado? Gire-as antes com <a href="/tools/rotate-pdf/">Girar PDF</a> (no seu navegador).</li>
+  <li>Tem uma foto ou captura de tela em vez de um PDF? Use <a href="/tools/image-to-text/">Imagem para texto (OCR)</a>.</li>
+</ul>

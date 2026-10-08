@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Convertir CSV en JSON en ligne, gratuit | Tanod Tools",
+  "description": "Convertissez du CSV en JSON dans le navigateur : guillemets, sauts de ligne dans les cellules, point-virgule, tabulation, en-têtes. Gratuit, sans envoi.",
+  "h1": "Convertir CSV en JSON",
+  "lede": "Collez du CSV ou ouvrez un fichier .csv et obtenez un tableau JSON d'objets ou de lignes, avec détection automatique du séparateur.",
+  "blurb": "Transformez des lignes CSV en tableau JSON.",
+  "keywords": "csv en json convertir csv json convertisseur csv json tableur excel export tsv point-virgule point virgule tableau d'objets",
+  "limits": "Données jusqu'à environ 10 Mo, collées ou ouvertes depuis un fichier .csv ou .tsv. Le résultat se met à jour pendant la saisie.",
+  "howto_title": "Comment convertir du CSV en JSON",
+  "howto": [
+    "Collez votre CSV dans le champ, ou ouvrez un fichier .csv.",
+    "Vérifiez le séparateur (il est détecté automatiquement) et si la première ligne contient les noms de colonnes. Activez la conversion des nombres et de true/false si vous voulez des valeurs typées.",
+    "Copiez le JSON ou téléchargez-le en fichier .json."
+  ],
+  "faq": [
+    ["Mes données sont-elles envoyées en ligne ?", "Non. Le CSV est lu et converti dans votre navigateur, et rien n'est envoyé nulle part ni conservé. Fermer l'onglet l'efface."],
+    ["Quels formats CSV l'outil lit-il ?", "Le CSV standard décrit dans la RFC 4180 : champs séparés par un séparateur, champs contenant le séparateur, des guillemets ou des sauts de ligne entourés de guillemets doubles, et guillemet à l'intérieur d'un champ entre guillemets écrit deux fois (<code>\"\"</code>). Les fins de ligne Windows (CRLF), Unix (LF) et ancien Mac (CR) fonctionnent toutes, et une marque d'ordre des octets (BOM) au début est ignorée. Les séparateurs virgule, point-virgule, tabulation et barre verticale sont pris en charge."],
+    ["Comment le séparateur est-il détecté ?", "L'outil essaie la virgule, le point-virgule, la tabulation et la barre verticale sur les premières lignes, et choisit celui qui découpe le plus de lignes en un même nombre de champs. Les fichiers enregistrés par Excel dans de nombreuses langues européennes, dont le français, utilisent le point-virgule : c'est pourquoi c'est important. Si la détection se trompe, choisissez vous-même le séparateur."],
+    ["Pourquoi mes nombres sont-ils entre guillemets ?", "Par défaut, chaque valeur reste du texte, exactement comme dans le CSV, car le CSV n'a pas de types et deviner peut abîmer des données comme des codes postaux ou des identifiants. Activez <em>Convertir les nombres, true/false et null</em> pour obtenir des valeurs typées. Même dans ce cas, les valeurs commençant par un zéro (007) et les nombres de plus de 15 chiffres restent du texte, pour ne pas être modifiés ou arrondis."],
+    ["Que se passe-t-il avec des noms de colonnes répétés ou vides, ou des lignes inégales ?", "Les noms de colonnes vides deviennent column_1, column_2, etc., et un nom répété reçoit _2, _3 en suffixe : aucune valeur n'en écrase une autre. Les lignes qui ont moins de champs que l'en-tête reçoivent des valeurs vides ; celles qui en ont plus reçoivent des clés column_N supplémentaires. Les deux cas sont signalés au-dessus du résultat pour que vous puissiez vérifier la source."],
+    ["Puis-je obtenir des tableaux plutôt que des objets ?", "Oui. Désactivez <em>La première ligne est l'en-tête</em> et chaque ligne devient un tableau de valeurs, y compris la première."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="nom,email,age&#10;Ana,ana@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Séparateur</label>
+      <select id="delim">
+        <option value="auto" selected>Détection automatique</option>
+        <option value=",">Virgule ( , )</option>
+        <option value=";">Point-virgule ( ; )</option>
+        <option value="&#9;">Tabulation</option>
+        <option value="|">Barre verticale ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Mise en forme</label>
+      <select id="indent">
+        <option value="2" selected>Indenté, 2 espaces</option>
+        <option value="4">Indenté, 4 espaces</option>
+        <option value="min">Minifié</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>La première ligne est l'en-tête (tableau d'objets)</label>
+    <label class="check"><input type="checkbox" id="types">Convertir les nombres, true/false et null</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Collez du CSV pour commencer.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le JSON</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Télécharger .json</button>
+    <button class="btn btn--quiet" id="clear" type="button">Effacer</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>Ouvrir un fichier .csv</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Des lignes CSV au JSON</h2>
+<p>Le CSV est le plus petit dénominateur commun des données : tous les tableurs et toutes les bases de données savent l'exporter. Le JSON est ce qu'attendent la plupart des API web, des scripts et des fichiers de configuration. Pour convertir le CSV en JSON, cet outil le lit avec un analyseur qui respecte la norme CSV : une virgule dans une adresse entre guillemets ou un saut de ligne dans un commentaire entre guillemets reste dans sa cellule au lieu de couper la ligne.</p>
+<p>Avec une ligne d'en-tête, chaque ligne devient un objet dont les clés sont les noms de colonnes, dans l'ordre des colonnes. Sans en-tête, chaque ligne devient un tableau. Les valeurs restent du texte, sauf si vous demandez la conversion des nombres et de true/false, car un fichier CSV ne contient aucun type et une détection automatique peut discrètement transformer un code postal comme 02134 en nombre 2134.</p>
+<p>La ligne sous les options indique combien de lignes et de colonnes ont été lues et quel séparateur a été utilisé. Si certaines lignes ont plus ou moins de champs que l'en-tête, une note indique lesquelles, ce qui révèle en général un séparateur en trop ou un guillemet non fermé dans la source.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Dans l'autre sens ? Utilisez <a href="/tools/json-to-csv/">JSON en CSV</a>.</li>
+  <li>Pour vérifier ou remettre en forme le résultat, collez-le dans <a href="/tools/json-formatter/">Formater et valider du JSON</a>.</li>
+  <li>Retirez d'abord les lignes répétées avec <a href="/tools/remove-duplicate-lines/">Supprimer les lignes en double</a>.</li>
+</ul>

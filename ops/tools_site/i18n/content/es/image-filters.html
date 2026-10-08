@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Filtros de imagen online: blanco y negro, sepia | Tanod Tools",
+  "description": "Ajusta brillo, contraste, saturación y tono, o pon una foto en blanco y negro, sepia, negativo o desenfocada. Vista previa al instante, en tu navegador.",
+  "h1": "Filtros de imagen",
+  "lede": "Ajusta una foto con controles deslizantes o filtros de un clic, compárala con el original y guarda el resultado a tamaño completo.",
+  "blurb": "Blanco y negro, sepia, brillo, desenfoque y más.",
+  "keywords": "filtros para fotos editor de fotos efectos blanco y negro escala de grises sepia vintage invertir negativo brillo contraste saturacion tono desenfocar instagram",
+  "limits": "Funciona con una sola imagen de hasta 50 MB y unos 100 megapíxeles. Las imágenes muy grandes tardan unos segundos; la página se puede seguir usando mientras trabaja.",
+  "howto_title": "Cómo aplicar filtros a una imagen",
+  "howto": [
+    "Elige una imagen. La vista previa aparece en tamaño reducido para que los controles respondan al instante.",
+    "Empieza con un filtro predefinido como <strong>Blanco y negro</strong> o <strong>Intenso</strong> y luego ajusta los controles. Activa <strong>Mostrar el original</strong> para comparar.",
+    "Pulsa <strong>Aplicar y guardar</strong>. Los filtros se vuelven a aplicar a la imagen a tamaño completo y la descargas."
+  ],
+  "faq": [
+    ["¿Se sube mi foto?", "No. Cada filtro se calcula en tu navegador, en tu dispositivo, píxel por píxel. No se envía nada a ningún servidor."],
+    ["¿Los filtros dan el mismo resultado que el CSS de mi navegador?", "Siguen las mismas fórmulas que la especificación CSS Filter Effects: el brillo multiplica, el contraste pivota alrededor del gris medio, y la saturación, la rotación de tono, la escala de grises y el sepia usan las matrices de color de la especificación. Hacer los cálculos en esta página, en lugar de usar la función de filtros del navegador, hace que también funcione en navegadores que no la tienen."],
+    ["¿En qué orden se aplican los filtros?", "Brillo, contraste, saturación, rotación de tono, escala de grises, sepia, invertir y, por último, desenfoque. El orden es fijo, así que las mismas posiciones de los controles siempre dan la misma imagen."],
+    ["¿Por qué el desenfoque se ve igual en la vista previa y en el archivo guardado?", "La cantidad de desenfoque es una fracción del ancho de la imagen, no un número de píxeles. Una foto de 4000 píxeles que se previsualiza a 800 píxeles se desenfoca cinco veces menos en los píxeles de la vista previa, y se ve idéntica cuando la miras a la misma escala."],
+    ["¿Qué pasa con la transparencia?", "No se toca. El canal alfa nunca cambia, y el desenfoque pondera los colores según su opacidad para que los bordes suaves de un recorte no se oscurezcan. Guarda como PNG o WebP para conservarla; JPEG rellena las zonas transparentes con blanco."],
+    ["¿Puedo deshacer un filtro predefinido?", "Elige Restablecer o vuelve a mover los controles. Los filtros predefinidos solo mueven los controles, y puedes ajustarlos después. Nada modifica tu archivo original."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Suelta una imagen aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Elegir una imagen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. O arrástrala a cualquier parte de esta página.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Vista previa con los filtros aplicados"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Mostrar el original</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Filtros predefinidos</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Blanco y negro</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Intenso</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Desvanecido</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Negativo</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Restablecer</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Brillo: <span class="num" id="o-brightness">100</span> %</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Contraste: <span class="num" id="o-contrast">100</span> %</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Saturación: <span class="num" id="o-saturation">100</span> %</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Escala de grises: <span class="num" id="o-grayscale">0</span> %</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepia: <span class="num" id="o-sepia">0</span> %</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Invertir: <span class="num" id="o-invert">0</span> %</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Rotar tono: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Desenfoque: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Guardar como</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Igual</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Con el mismo formato, PNG, JPEG y WebP se devuelven tal como llegaron; GIF, BMP y AVIF pasan a PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Aplicar y guardar</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Qué hace cada filtro con los píxeles</h2>
+<p>Estos filtros de imagen trabajan sobre números: cada píxel son tres valores de 0 a 255, para rojo, verde y azul. El brillo multiplica esos valores, así que un 150 por ciento convierte un valor de 100 en 150, y todo lo que pase de 255 se recorta a blanco. El contraste aleja los valores del gris medio (128) o los acerca a él, por eso un contraste del 0 por ciento da una imagen gris plana. La saturación y la rotación de tono mezclan los tres canales con matrices de color fijas, y así una foto se va hacia el gris o gira por la rueda de colores.</p>
+<p>La escala de grises reemplaza cada píxel por su luminancia, una suma ponderada que da más peso al verde (alrededor del 72 por ciento), luego al rojo (21 por ciento) y por último al azul (7 por ciento), porque el ojo es más sensible al verde. El sepia usa una matriz que da el tono marrón cálido de las fotos antiguas. Invertir resta cada valor de 255 para crear un negativo. El desenfoque promedia cada píxel con sus vecinos, tres veces en cada dirección, lo que se aproxima mucho a un desenfoque gaussiano.</p>
+<p>Las vistas previas pequeñas hacen que los controles respondan rápido, pero el archivo guardado se procesa a resolución completa por partes, así que la página sigue respondiendo y muestra el progreso. Después de guardar, el archivo original queda intacto.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Para leer un color exacto del resultado, usa el <a href="/tools/image-color-picker/">Selector de color de imagen</a>.</li>
+  <li>Aplicar los filtros antes de agregar un texto lo mantiene nítido: hazlo en ese orden con <a href="/tools/add-text-to-image/">Agregar texto a una imagen</a>.</li>
+  <li>Una imagen desenfocada o con mucho contraste se comprime de forma muy distinta, así que revisa el tamaño después en <a href="/tools/compress-image/">Comprimir imagen</a>.</li>
+</ul>

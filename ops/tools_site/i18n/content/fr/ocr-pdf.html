@@ -1,0 +1,67 @@
+<!--meta
+{
+  "title": "OCR PDF en ligne : rendre un PDF scanné consultable | Tanod Tools",
+  "description": "Rendez un PDF scanné consultable : l'OCR ajoute un texte invisible à rechercher et copier. Gratuit, sans inscription ; le fichier est supprimé aussitôt.",
+  "h1": "Rendre un PDF scanné consultable (OCR)",
+  "lede": "Ajoutez une couche de texte cachée aux pages scannées pour pouvoir rechercher, sélectionner et copier leur texte. Les pages restent visuellement identiques.",
+  "blurb": "Rendre un PDF scanné consultable et copiable grâce à l'OCR.",
+  "keywords": "ocr pdf reconnaissance de texte pdf scanne en texte pdf consultable recherche selectionner copier texte scan numerisation",
+  "limits": "Un PDF jusqu'à 10 Mo, 10 pages maximum par tâche, texte en anglais. Traité sur notre serveur, puis supprimé. 10 tâches gratuites sur le serveur par jour et par personne, partagées entre tous les outils serveur. Pour des tâches plus grosses : l'<a href=\"/learn/pdf-ocr-api.html\">API OCR PDF</a> (payante à l'appel).",
+  "howto_title": "Comment rendre un PDF consultable",
+  "howto": [
+    "Choisissez un PDF scanné de 10 Mo maximum ou glissez-le sur la page.",
+    "Vérifiez les pages à lire : toutes pour les fichiers courts, ou jusqu'à 10 à la fois.",
+    "Cliquez sur <strong>Rendre consultable</strong>, puis téléchargez le PDF. Vous pouvez aussi copier ou enregistrer le texte reconnu."
+  ],
+  "faq": [
+    ["Mon PDF est-il envoyé sur un serveur ?", "Oui. Contrairement à la plupart des outils de ce site, celui-ci fonctionne sur notre serveur : votre PDF est envoyé via HTTPS, lu par le moteur OCR, et la copie consultable est renvoyée directement à votre navigateur. Le fichier n'existe sur le serveur que pendant la tâche, en mémoire et dans un dossier temporaire privé qui est supprimé dès la fin de la tâche. Nous ne conservons ni le PDF, ni le résultat, ni le texte reconnu, et nous ne journalisons jamais le contenu des fichiers."],
+    ["Que change l'OCR dans mon PDF ?", "Rien de visible. Chaque page est lue par le moteur OCR open source Tesseract, et les mots trouvés sont placés par-dessus la page sous forme de texte invisible, aux bons endroits. La page d'origine reste dessous, intacte : le PDF a le même aspect, mais devient consultable, sélectionnable et copiable."],
+    ["Pourquoi seulement 10 pages à la fois ?", "Lire une page prend quelques secondes de temps serveur, et chaque tâche doit se terminer en une minute environ. Pour un document plus long, relancez l'outil sur le fichier téléchargé avec les pages suivantes, par exemple 11-20. Les pages déjà traitées sont conservées telles quelles."],
+    ["Quelles langues sont prises en charge ?", "L'anglais, ainsi que les autres langues écrites avec les mêmes lettres latines sans accents, avec une précision moindre. Les lettres accentuées (donc la plupart des textes en français) et les autres écritures ne sont pas encore reconnues de façon fiable."],
+    ["Mes pages contiennent déjà du texte. Que se passe-t-il ?", "Les pages qui contiennent déjà du texte sont ignorées : un PDF créé par un traitement de texte reste donc tel quel. Cochez <em>Lire aussi les pages qui ont déjà du texte</em> pour les passer quand même à l'OCR, par exemple quand un scan a une mauvaise couche de texte."],
+    ["Quelle est la précision ?", "Les scans propres et droits, à une résolution normale, donnent de très bons résultats. Les photos prises de biais, l'impression pâle ou floue, l'écriture manuscrite et les tableaux complexes entraînent plus d'erreurs. Vérifiez les noms et les chiffres avant de vous y fier."],
+    ["Y a-t-il une limite ?", "Des fichiers jusqu'à 10 Mo, 10 pages maximum par tâche, et 10 tâches gratuites sur le serveur par jour et par personne, partagées entre tous nos outils serveur. Seules les tâches réussies sont comptées, et le compteur est remis à zéro à minuit UTC. Pour des tâches plus grosses : l'<a href=\"/learn/pdf-ocr-api.html\">API OCR PDF</a>, payante à l'appel."],
+    ["Qu'est-ce que la vérification anti-robot ?", "Avant chaque tâche, Cloudflare Turnstile vérifie que c'est une personne, et non un robot, qui utilise l'outil. Elle est généralement invisible ; parfois, elle vous demande de cocher une case."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:ocr-pdf drop__mark}}
+  <p class="drop__title">Déposez un PDF scanné ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choisir un PDF</span></label>
+  <p class="drop__hint">Ou glissez-le n'importe où sur cette page. Jusqu'à 10 Mo.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="range">Pages à lire</label>
+      <input id="range" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Options</span>
+      <label class="check"><input type="checkbox" id="redo">Lire aussi les pages qui ont déjà du texte</label>
+      <span class="help">Langue : anglais.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Rendre consultable</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ce que fait l'OCR sur un PDF scanné</h2>
+<p>Un scanner ou une application de numérisation sur téléphone enregistre chaque page comme une image. Vous pouvez la lire, mais pas votre ordinateur : la recherche ne trouve rien et vous ne pouvez pas copier une phrase. La reconnaissance optique de caractères (OCR) analyse l'image, repère les lettres et les mots, et les écrit dans le PDF sous forme de texte invisible placé exactement par-dessus les mots que vous voyez.</p>
+<p>Notre serveur rend chaque page choisie entre 200 et 300 dpi, la lit avec le moteur open source Tesseract et place le texte par-dessus la page d'origine sans la modifier. Le texte reconnu s'affiche aussi ici, pour que vous puissiez le copier tout de suite.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Numérisez à 300 dpi en noir et blanc ou en niveaux de gris pour une précision optimale.</li>
+  <li>Des pages à l'envers ou couchées ? Redressez-les d'abord avec <a href="/tools/rotate-pdf/">Faire pivoter un PDF</a> (dans votre navigateur).</li>
+  <li>Vous avez une photo ou une capture d'écran plutôt qu'un PDF ? Utilisez <a href="/tools/image-to-text/">Image en texte (OCR)</a>.</li>
+</ul>

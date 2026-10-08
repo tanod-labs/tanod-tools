@@ -1,0 +1,83 @@
+<!--meta
+{
+  "category": "text",
+  "name": "Text to speech",
+  "title": "Text to speech: read text aloud with your browser | Tanod Tools",
+  "description": "Paste text and have it read aloud with the voices already on your device. Choose a voice, speed, pitch and volume, and follow along word by word. Free, no sign-up.",
+  "h1": "Text to speech",
+  "lede": "Paste or type text and hear it read aloud, using the voices built into your browser and operating system.",
+  "blurb": "Read text aloud with voices built into your device.",
+  "keywords": "tts speak read aloud speech synthesis voice reader narrator text reader listen proofread",
+  "limits": "Speech comes from your browser's own voices, so what is available depends on your device. Text up to 100,000 characters is read in sentence-sized parts. Audio cannot be saved from this tool.",
+  "local_text": "Speaks with your device's built-in voices",
+  "howto_title": "How to make your browser read text aloud",
+  "howto": [
+    "Paste or type the text. The page shows how many characters it has and how many parts it will be read in.",
+    "Pick a <strong>voice</strong> and set the speed, pitch and volume. Voices marked <em>(online)</em> use a speech service run by your browser's maker.",
+    "Press <strong>Play</strong>. Use <strong>Pause</strong>, <strong>Resume</strong> and <strong>Stop</strong> as needed; the word being spoken is highlighted when your voice reports it."
+  ],
+  "faq": [
+    ["Where does the voice come from?", "From your own browser and operating system, through the Web Speech API. This page does not contain a speech engine and has no voices of its own, which is why the list differs between a Windows laptop, a Mac, an Android phone and a Linux machine."],
+    ["Is my text sent anywhere?", "That depends on the voice you choose. Voices without the <em>(online)</em> mark run on your device, and the text stays there. Some voices, such as the Google voices in Chrome or the Online (Natural) voices in Edge, are online voices: your browser sends the text to the browser maker's speech service to get audio back. This page cannot see or control that. The tool picks an on-device voice by default; choose an online voice only if you are happy for that text to go to that company."],
+    ["Why is the voice list empty, or why does it take a moment?", "Some browsers fill the list a moment after the page loads, and the page updates when they do. If it stays empty, the device has no speech voices installed, which is common on minimal Linux setups and some work-managed machines. Installing a text-to-speech voice in the system language settings fixes it."],
+    ["Can I save the speech as an MP3 or WAV?", "No. The Web Speech API plays sound straight to your speakers and gives pages no access to the audio, so no website can record it through the browser. To make an audio file you need a desktop speech tool or a service that renders audio on its own servers."],
+    ["Why is the text read in parts?", "Chrome and some other browsers cut off a single long utterance after roughly 15 seconds. The page splits your text at sentence ends into pieces of about 200 characters and speaks them one after another, so long articles read through. You may hear a tiny gap between parts."],
+    ["Why does the word highlight not move for some voices?", "Not every voice tells the browser which word it is on. When it does, the current word is highlighted; when it does not, the sentence being read is highlighted instead. Changing speed, pitch or volume while reading applies from the next part."]
+  ],
+  "related": ["word-counter", "character-counter", "morse-code-translator", "text-to-binary", "case-converter"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack tts">
+  <p class="note tts-note">Speech uses the voices built into your browser and operating system. Voices marked <strong>(online)</strong> send the text to the browser maker's speech service; all other voices run on this device.</p>
+  <div class="field">
+    <label for="tts-text">Text to read</label>
+    <textarea id="tts-text" class="tts-text" rows="8" maxlength="100000" spellcheck="true" placeholder="Paste or type something to hear it read aloud."></textarea>
+    <div class="tts-meta">
+      <span id="tts-count" aria-live="polite">0 characters</span>
+      <span id="tts-parts" data-parts="0">Nothing to read yet.</span>
+      <button class="btn btn--quiet btn--sm" id="tts-clear" type="button">Clear text</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tts-voice">Voice</label>
+    <select id="tts-voice" aria-describedby="tts-voice-status"></select>
+    <p class="help" id="tts-voice-status" role="status" data-state="loading">Looking for voices...</p>
+    <p class="help tts-online" id="tts-online" hidden>This is an online voice. The text you read with it is sent to the browser maker's speech service. Choose a voice without the (online) mark to keep the text on this device.</p>
+  </div>
+  <div class="tts-sliders">
+    <div class="field">
+      <label for="tts-rate">Speed <output id="tts-rate-v" for="tts-rate"></output></label>
+      <input type="range" id="tts-rate" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-pitch">Pitch <output id="tts-pitch-v" for="tts-pitch"></output></label>
+      <input type="range" id="tts-pitch" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-vol">Volume <output id="tts-vol-v" for="tts-vol"></output></label>
+      <input type="range" id="tts-vol" min="0" max="1" step="0.05" value="1">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="tts-play" type="button" disabled>Play</button>
+    <button class="btn" id="tts-pause" type="button" disabled>Pause</button>
+    <button class="btn" id="tts-resume" type="button" disabled>Resume</button>
+    <button class="btn" id="tts-stop" type="button" disabled>Stop</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="out tts-follow" id="tts-follow" aria-hidden="true" hidden></div>
+  <p class="help">Audio cannot be saved with this tool: the browser plays speech straight to your speakers and does not hand it to web pages.</p>
+</div>
+<!--explain-->
+<h2>What happens when a web page speaks</h2>
+<p>Text to speech in a browser is a hand-off. The page gives your text, a voice name, a speed and a pitch to the browser, and the browser asks the operating system, or in some cases the browser maker's servers, to turn it into sound. That is why two people on the same page hear different voices, and why there is nothing here to download: the page itself never receives audio.</p>
+<p>On-device voices are the ones your system ships with, such as those installed with Windows, macOS, iOS or Android, and they work offline. Network voices usually sound more natural, which is why browsers offer them, but the text has to travel to a server to be spoken. That difference matters for private material, so check the <em>(online)</em> mark before you paste anything sensitive.</p>
+<p>Listening is a good proofreading trick. Tired eyes slide over a repeated word or a missing full stop, but a voice reads exactly what is written and stumbles where the sentence does. Slow the speed a little and follow the highlighted word.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Check how long a passage will take to read first with the <a href="/tools/word-counter/">word counter</a>, which gives a speaking-time estimate.</li>
+  <li>Strip stray line breaks from copied text with <a href="/tools/remove-line-breaks/">remove line breaks</a> so sentences are not read in fragments.</li>
+  <li>Make sure the right symbols and capitals are in place using the <a href="/tools/case-converter/">case converter</a> before listening.</li>
+</ul>

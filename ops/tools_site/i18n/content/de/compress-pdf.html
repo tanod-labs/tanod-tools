@@ -1,0 +1,65 @@
+<!--meta
+{
+  "title": "PDF komprimieren – PDF verkleinern, kostenlos | Tanod Tools",
+  "description": "PDF verkleinern für E-Mail oder Upload: Fotos werden herunterskaliert und neu kodiert. Kostenlos, ohne Anmeldung; die Datei wird danach sofort gelöscht.",
+  "h1": "PDF komprimieren",
+  "lede": "Verkleinern Sie ein PDF, damit es in eine E-Mail oder ein Upload-Formular passt. Scans und Fotos werden herunterskaliert und neu kodiert, Text bleibt scharf.",
+  "blurb": "PDF verkleinern: Fotos herunterskaliert und neu kodiert.",
+  "keywords": "pdf komprimieren verkleinern dateigröße dateigroesse reduzieren pdf kleiner machen optimieren email verkleinerer kompressor",
+  "limits": "Ein PDF bis 10 MB. Auf unserem Server verarbeitet, danach gelöscht. 10 kostenlose Server-Aufträge pro Tag und Person, gemeinsam für alle Server-Tools. Passwortgeschützte PDFs müssen zuerst entsperrt werden. Größere Dateien: die <a href=\"/learn/compress-pdf-api.html\">PDF-Komprimierungs-API</a> (auf Englisch, Bezahlung pro Aufruf).",
+  "howto_title": "So komprimieren Sie ein PDF",
+  "howto": [
+    "Wählen Sie ein PDF bis 10 MB aus oder ziehen Sie es auf die Seite.",
+    "Wählen Sie <strong>Empfohlen</strong> für die meisten Dateien, <strong>Stark</strong> für die kleinste Datei oder <strong>Verlustfrei</strong>, um Bilder unverändert zu lassen.",
+    "Klicken Sie auf <strong>PDF komprimieren</strong>, prüfen Sie die neue Größe und laden Sie die kleinere Datei herunter."
+  ],
+  "faq": [
+    ["Wird mein PDF hochgeladen?", "Ja. Anders als die meisten Tools auf dieser Website läuft dieses auf unserem Server: Ihr PDF wird über HTTPS gesendet, komprimiert, und das Ergebnis geht direkt an Ihren Browser zurück. Die Datei existiert auf dem Server nur, solange der Auftrag läuft, im Arbeitsspeicher und in einem privaten temporären Ordner, der in dem Moment gelöscht wird, in dem der Auftrag endet. Wir speichern weder das PDF noch das Ergebnis, und wir protokollieren nie Dateiinhalte."],
+    ["Warum braucht dieses Tool einen Server?", "Echte PDF-Komprimierung bedeutet, jedes Bild in der Datei zu dekodieren, auf die Seitengröße herunterzuskalieren, neu zu kodieren und dann die ganze Datei neu zu schreiben. Dafür braucht es PDF- und Bildbibliotheken, die im Browser langsam sind oder fehlen. Deshalb läuft dieses Tool auf unserem Server statt auf Ihrem Gerät."],
+    ["Wie viel kleiner wird mein PDF?", "Das hängt vom Inhalt ab. Scans und PDFs voller Fotos schrumpfen oft um die Hälfte oder mehr. PDFs, die überwiegend Text enthalten, sind meist schon klein und verlieren vielleicht nur ein paar Prozent. Wenn wir die Datei nicht verkleinern können, sagen wir es Ihnen, und es ändert sich nichts."],
+    ["Was bewirken die drei Stufen?", "<em>Empfohlen</em> kodiert Fotos als JPEG mit Qualität 75 neu und skaliert jedes Bild herunter, das in seiner gedruckten Größe schärfer als 150 dpi ist. <em>Stark</em> nutzt Qualität 50 und 96 dpi für die kleinste Datei, mit sichtbar weicheren Fotos. <em>Verlustfrei</em> lässt die Bilder unangetastet und schreibt nur die Struktur der Datei neu. Text und Vektorgrafiken werden nie gerastert."],
+    ["Wird etwas aus meinem PDF entfernt?", "Eingebettetes JavaScript, angehängte Dateien und andere aktive Inhalte werden aus Sicherheitsgründen entfernt, ungenutzte Objekte fallen weg. Seiten, Text, Bilder, Links und Lesezeichen bleiben erhalten."],
+    ["Gibt es ein Limit?", "Dateien bis 10 MB und 10 kostenlose Server-Aufträge pro Tag und Person, gemeinsam für alle unsere Server-Tools. Nur erfolgreiche Aufträge zählen, und der Zähler wird um Mitternacht UTC zurückgesetzt. Für größere Dateien oder mehr Aufträge gibt es die <a href=\"/learn/compress-pdf-api.html\">PDF-Komprimierungs-API</a> (auf Englisch), bezahlt pro Aufruf."],
+    ["Was ist die Mensch-Prüfung?", "Bevor ein Auftrag läuft, prüft Cloudflare Turnstile, dass ein Mensch und kein Bot das Tool benutzt. Meist ist das unsichtbar; manchmal sollen Sie ein Kästchen anklicken. So verbraucht automatisierter Traffic nicht die kostenlose Kapazität."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:compress-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite. Bis 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts opts--wide">
+    <div class="field">
+      <span class="label" id="level-l">Komprimierung</span>
+      <div class="seg" role="radiogroup" aria-labelledby="level-l">
+        <label><input type="radio" name="level" value="recommended" checked>Empfohlen</label>
+        <label><input type="radio" name="level" value="extreme">Stark</label>
+        <label><input type="radio" name="level" value="lossless">Verlustfrei</label>
+      </div>
+      <span class="help">Empfohlen passt für die meisten Dateien. Stark ergibt die kleinste Datei mit weicheren Fotos. Verlustfrei lässt Bilder unverändert.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>PDF komprimieren</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>So funktioniert die PDF-Komprimierung</h2>
+<p>Den Großteil der Dateigröße eines großen PDFs machen Bilder aus: gescannte Seiten, Fotos, Screenshots. Unser Server öffnet die Datei, findet jedes fotoähnliche Bild und prüft, wie scharf es in der Größe ist, in der es auf der Seite erscheint. Alles, was schärfer ist als die Grenze der gewählten Stufe, wird herunterskaliert und erneut als JPEG gespeichert. Ein Bild wird nur ersetzt, wenn das mindestens 10 Prozent spart, und die Struktur der Datei wird neu geschrieben, wobei jeder Datenstrom so stark wie möglich komprimiert wird.</p>
+<p>Das Ergebnis ist nie größer als Ihr Original. Lässt sich nichts einsparen, erfahren Sie das und behalten Ihre bisherige Datei.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für E-Mails probieren Sie zuerst Empfohlen; wechseln Sie nur zu Stark, wenn die Datei noch zu groß ist.</li>
+  <li>Sie brauchen nur einige Seiten? Holen Sie sie zuerst mit <a href="/tools/extract-pdf-pages/">PDF-Seiten extrahieren</a> heraus; weniger Seiten bedeuten eine kleinere Datei. Dieses Tool läuft in Ihrem Browser.</li>
+  <li>Sie möchten Fotos statt eines PDFs verkleinern? <a href="/tools/compress-image/">Bild komprimieren</a> arbeitet auf Ihrem Gerät, ohne Upload.</li>
+</ul>

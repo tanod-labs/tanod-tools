@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "JSON a TypeScript: generar interfaces online | Tanod Tools",
+  "description": "Pega un ejemplo de JSON y obtén interfaces o types de TypeScript, con objetos anidados con nombre, campos opcionales y uniones. Funciona en tu navegador.",
+  "h1": "JSON a TypeScript",
+  "lede": "Convierte un documento JSON de ejemplo en interfaces o alias de tipo de TypeScript, con campos opcionales y uniones deducidos de tus datos.",
+  "blurb": "De un ejemplo JSON a interfaces o types de TypeScript.",
+  "keywords": "json a typescript json a ts convertir json typescript generador de interfaces generar tipos types quicktype json2ts tipos respuesta api tipos typescript desde json",
+  "limits": "Los tipos se deducen del ejemplo que pegas, así que describen ese ejemplo y no un esquema: un campo que es una cadena en tu ejemplo puede ser un número en otro lugar. Todos los números son <code>number</code> y las fechas quedan como <code>string</code>. El orden de las propiedades sigue a JSON.parse, que lista primero las claves que son números enteros.",
+  "howto_title": "Cómo generar TypeScript a partir de JSON",
+  "howto": [
+    "Pega una respuesta o un archivo JSON en el cuadro. Varios elementos en un arreglo mejoran el resultado, porque los campos que faltan en algunos elementos pasan a ser opcionales.",
+    "Escribe el nombre del tipo de nivel superior, elige <code>interface</code> o <code>type</code> y marca <strong>export</strong>, <strong>readonly</strong> o la detección de opcionales según necesites.",
+    "Copia las declaraciones o descárgalas como archivo <code>.ts</code>. Revisa los nombres, ya que salen de los nombres de tus claves."
+  ],
+  "faq": [
+    ["¿Cómo decide que un campo es opcional?", "Cuando tienes un arreglo de objetos, los objetos se combinan en una sola forma. Una clave que aparece en algunos elementos pero no en todos recibe un <code>?</code>. Una clave que está presente pero vale <code>null</code> en algunos elementos no es opcional; se convierte en <code>T | null</code>. Desactiva la detección de opcionales si prefieres que todas las claves sean obligatorias."],
+    ["¿Cómo se nombran los tipos anidados?", "Cada objeto anidado recibe el nombre de su clave en PascalCase, así que <code>billing_address</code> pasa a ser <code>BillingAddress</code>. En un arreglo, el tipo de los elementos pierde la \"s\" final cuando la clave tiene más de 3 letras y no termina en ss, us o is: <code>users</code> da <code>User</code>, mientras que <code>address</code> da <code>AddressItem</code>. Si dos formas distintas quieren el mismo nombre, la segunda se numera, y obtienes <code>User</code> y <code>User2</code>. Estas reglas siguen el plural del inglés."],
+    ["¿Qué pasa con los objetos que tienen la misma forma?", "Comparten una sola declaración. Si <code>billing</code> y <code>shipping</code> contienen ambos <code>{ street, city }</code>, obtienes una sola interfaz, con el nombre del primer lugar donde aparece. Dos objetos con las mismas claves pero con tipos de valor distintos son formas diferentes y reciben nombres separados."],
+    ["¿Por qué un arreglo vacío se tipa como unknown[]?", "Un arreglo vacío no contiene ejemplos, así que no se puede deducir nada sobre sus elementos. <code>unknown[]</code> es la respuesta honesta; cámbialo a mano cuando sepas el tipo de los elementos. Un arreglo que mezcla valores se convierte en una unión, como <code>(string | number)[]</code>."],
+    ["¿Puede el resultado diferir de la API real?", "Sí. Un ejemplo solo muestra los valores que contiene. Un campo que siempre está en tu ejemplo pero a veces falta en producción será obligatorio aquí, y una cadena tipo enum será un simple <code>string</code>. Para una validación estricta, usa un esquema; para empezar rápido, usa este resultado y ajústalo."],
+    ["¿Se sube mi JSON a algún servidor?", "No. Nada de lo que pegas se envía a ningún lado; la conversión se ejecuta en tu navegador y puedes desconectarte de la red después de que cargue la página."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">Ejemplo de JSON</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "name": "Ada Lovelace",
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Nombre del tipo principal</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Declarar con</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Modificadores</span>
+      <label class="check"><input type="checkbox" id="t-export" checked>Agregar <code>export</code></label>
+      <label class="check"><input type="checkbox" id="t-readonly">Marcar propiedades como <code>readonly</code></label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Detectar campos opcionales</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">Copiar TypeScript</button>
+    <button class="btn" id="t-dl" type="button">Descargar .ts</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Deducir tipos a partir de un ejemplo JSON</h2>
+<p>Pasar de JSON a TypeScript a mano es tedioso. Los tipos de TypeScript describen la forma de los datos, y una respuesta JSON ya contiene una forma: cada clave, el tipo de valor que tiene y cómo se anidan los objetos. Un convertidor recorre el ejemplo y escribe esa forma como declaraciones, para que no tengas que teclear cuarenta campos antes de llamar a una API con confianza.</p>
+<p>El paso más importante es qué hacer con los arreglos. Se lee cada elemento de un arreglo de objetos y sus formas se combinan: una clave presente en todos los elementos sigue siendo obligatoria, una clave presente solo en algunos pasa a ser opcional y los valores de tipos distintos se convierten en una unión. Por eso un ejemplo con varios registros da tipos mucho mejores que uno con un solo registro. Un valor <code>null</code> se trata distinto de una clave ausente, porque significan cosas diferentes para el código que lee el campo.</p>
+<p>Los tipos deducidos son un punto de partida, no un contrato. No pueden saber que una cadena siempre es uno de tres valores, que un número es en realidad un ID entero ni que un campo presente en todos tus ejemplos puede desaparecer en producción. Lee el resultado, cambia el nombre de lo que haya quedado raro y ajusta los tipos que importan.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Comprueba primero que tu ejemplo esté bien formado con <a href="/tools/json-formatter/">Formatear y validar JSON</a>, que señala el carácter exacto de un error de sintaxis.</li>
+  <li>¿Trabajas con una configuración en YAML? Conviértela con <a href="/tools/yaml-to-json/">Convertir YAML a JSON</a> y pega aquí el resultado.</li>
+  <li>¿Necesitas ver el contenido de un token antes de tiparlo? Decodifícalo con el <a href="/tools/jwt-decoder/">Decodificador de JWT</a>.</li>
+</ul>

@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Formater et valider du JSON en ligne | Tanod Tools",
+  "description": "Formatez, minifiez et validez du JSON dans le navigateur. Les erreurs indiquent la ligne et la colonne exactes avec un repère. Tri des clés. Gratuit et privé.",
+  "h1": "Formater et valider du JSON",
+  "lede": "Collez du JSON pour le remettre en forme, le compacter ou le vérifier, avec la ligne et la colonne exactes de chaque erreur.",
+  "blurb": "Formatez, minifiez et validez du JSON.",
+  "keywords": "formater json formateur json json formatter valider json validateur json indenter json beautify json minifier json json pretty print verifier json trier les cles",
+  "limits": "Données jusqu'à environ 10 Mo, collées ou ouvertes depuis un fichier .json.",
+  "howto_title": "Comment formater et valider du JSON",
+  "howto": [
+    "Collez votre JSON dans le champ, ou déposez un fichier .json sur la page.",
+    "Choisissez la mise en forme : 2 espaces, 4 espaces, tabulations ou minifié. Activez Trier les clés si vous les voulez par ordre alphabétique.",
+    "Si le JSON n'est pas valide, vous voyez la ligne et la colonne avec un repère sous le problème. Sinon, copiez ou téléchargez le résultat."
+  ],
+  "faq": [
+    ["Mon JSON est-il envoyé en ligne ?", "Non. Il est analysé et formaté dans votre navigateur et n'est jamais envoyé ni conservé : vous pouvez donc coller sans crainte une configuration ou des données que vous ne voudriez pas partager."],
+    ["Qu'est-ce qu'un JSON valide ?", "Le format standard : clés et chaînes entre guillemets doubles, pas de commentaires, pas de virgules finales, pas d'apostrophes à la place des guillemets, pas de <code>undefined</code> ni de <code>NaN</code>. Beaucoup de fichiers qui ressemblent à du JSON, comme les littéraux d'objet JavaScript ou les fichiers de configuration avec commentaires, ne sont pas strictement valides et seront signalés."],
+    ["Le formatage modifie-t-il mes données ?", "Non. Les nombres sont conservés exactement tels qu'écrits (même les très longs, que JavaScript ne pourrait pas représenter précisément), les chaînes gardent leurs séquences d'échappement et les clés gardent leur ordre, sauf si vous activez Trier les clés. Seuls les espaces et retours à la ligne changent."],
+    ["Comment fonctionne Trier les clés ?", "Les clés de chaque objet, à tous les niveaux, sont triées par ordre alphabétique de leurs caractères. Les tableaux gardent leur ordre, car l'ordre des éléments d'un tableau compte en général."],
+    ["Que montrent les statistiques ?", "La taille en octets de l'entrée et de la sortie, le nombre total de clés d'objet à tous les niveaux et la profondeur d'imbrication maximale, un objet plat ayant une profondeur de 1."],
+    ["Quelle taille peut faire le JSON ?", "Environ 10 Mo. Au-delà, il est refusé plutôt que de risquer de figer l'onglet. La zone de résultat affiche jusqu'aux deux premiers millions de caractères ; Copier et Télécharger incluent toujours la totalité."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop is-compact" id="drop">
+  <label class="btn btn--sm"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Ouvrir un fichier .json</span></label>
+  <span class="drop__hint">Ou collez ci-dessous, ou déposez un fichier n'importe où sur cette page.</span>
+</div>
+<div class="field">
+  <label for="j-in">JSON</label>
+  <textarea id="j-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder='{"name": "example", "tags": [1, 2, 3]}'></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="j-lay-l">Mise en forme</span>
+    <div class="seg" role="radiogroup" aria-labelledby="j-lay-l">
+      <label><input type="radio" name="layout" value="2" checked>2 espaces</label>
+      <label><input type="radio" name="layout" value="4">4 espaces</label>
+      <label><input type="radio" name="layout" value="tab">Tabulation</label>
+      <label><input type="radio" name="layout" value="min">Minifier</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Clés</span>
+    <label class="check"><input type="checkbox" id="j-sort">Trier les clés (tous les niveaux)</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="j-err" hidden></pre>
+<div id="j-result" hidden>
+  <dl class="stats" id="j-stats">
+    <div><dt>Entrée</dt><dd id="j-s-in">0</dd></div>
+    <div><dt>Sortie</dt><dd id="j-s-out">0</dd></div>
+    <div><dt>Clés</dt><dd id="j-s-keys">0</dd></div>
+    <div><dt>Profondeur</dt><dd id="j-s-depth">0</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="j-out-l">Résultat</span>
+    <pre class="out util-json" id="j-out" tabindex="0" aria-labelledby="j-out-l"></pre>
+    <span class="help" id="j-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="j-copy" type="button">Copier</button>
+    <button class="btn" id="j-dl" type="button">Télécharger .json</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="j-clear" type="button">Effacer</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Formater et vérifier du JSON</h2>
+<p>Le JSON est un petit format texte strict pour les données : des objets entre accolades, des tableaux entre crochets, et des valeurs qui sont des chaînes, des nombres, <code>true</code>, <code>false</code> ou <code>null</code>. Les machines se moquent des espaces, mais pas les humains : un formateur JSON ajoute indentation et retours à la ligne pour rendre les données imbriquées lisibles, et un minificateur les retire pour gagner de la place.</p>
+<p>Cet outil lit votre texte avec son propre analyseur : il peut donc pointer le caractère exact où quelque chose ne va pas. Les erreurs les plus courantes sont une virgule après le dernier élément, des apostrophes au lieu de guillemets doubles, une clé sans guillemets, un commentaire ou un crochet manquant à la fin. L'erreur indique la ligne et la colonne, une copie de cette ligne et un repère sous la position.</p>
+<p>Le formatage ne change que les espaces et retours à la ligne. Les nombres et les échappements de chaînes restent tels qu'écrits : un long identifiant comme 12345678901234567890 n'est pas arrondi, comme il le serait si les données étaient lues en nombres JavaScript.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vous comparez deux versions d'une configuration ? Formatez-les avec les mêmes options, puis utilisez <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+  <li>Une valeur en Base64 dans votre JSON ? Décodez-la avec <a href="/tools/base64-encode-decode/">Encoder et décoder en Base64</a>.</li>
+  <li>Besoin des données dans un tableur ? Utilisez <a href="/tools/json-to-csv/">JSON en CSV</a>, ou <a href="/tools/csv-to-json/">CSV en JSON</a> pour l'inverse.</li>
+</ul>

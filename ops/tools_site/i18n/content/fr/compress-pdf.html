@@ -1,0 +1,65 @@
+<!--meta
+{
+  "title": "Compresser PDF en ligne gratuit : réduire la taille | Tanod Tools",
+  "description": "Réduisez la taille d'un PDF pour l'envoyer par e-mail. Vraie compression : photos réduites et réencodées. Gratuit, sans inscription ; fichier supprimé aussitôt.",
+  "h1": "Compresser un PDF",
+  "lede": "Réduisez la taille d'un PDF pour qu'il passe dans un e-mail ou un formulaire d'envoi. Les pages scannées et les photos sont réduites et réencodées ; le texte reste net.",
+  "blurb": "Réduire la taille d'un PDF : photos réduites et réencodées.",
+  "keywords": "compresser reduire alleger diminuer taille poids pdf plus leger optimiser pdf email mail compresseur",
+  "limits": "Un PDF jusqu'à 10 Mo. Traité sur notre serveur, puis supprimé. 10 tâches gratuites sur le serveur par jour et par personne, partagées entre tous les outils serveur. Les PDF protégés par mot de passe doivent d'abord être déverrouillés. Fichiers plus gros : l'<a href=\"/learn/compress-pdf-api.html\">API Compresser un PDF</a> (payante à l'appel).",
+  "howto_title": "Comment compresser un PDF",
+  "howto": [
+    "Choisissez un PDF de 10 Mo maximum ou glissez-le sur la page.",
+    "Choisissez <strong>Recommandée</strong> pour la plupart des fichiers, <strong>Forte</strong> pour le fichier le plus léger ou <strong>Sans perte</strong> pour ne pas toucher aux images.",
+    "Cliquez sur <strong>Compresser le PDF</strong>, vérifiez la nouvelle taille, puis téléchargez le fichier allégé."
+  ],
+  "faq": [
+    ["Mon PDF est-il envoyé sur un serveur ?", "Oui. Contrairement à la plupart des outils de ce site, celui-ci fonctionne sur notre serveur : votre PDF est envoyé via HTTPS, compressé, et le résultat est renvoyé directement à votre navigateur. Le fichier n'existe sur le serveur que pendant la tâche, en mémoire et dans un dossier temporaire privé qui est supprimé dès la fin de la tâche. Nous ne conservons ni le PDF ni le résultat, et nous ne journalisons jamais le contenu des fichiers."],
+    ["Pourquoi cet outil a-t-il besoin d'un serveur ?", "Une vraie compression de PDF consiste à décoder chaque image du fichier, à la réduire à la taille de la page, à la réencoder, puis à réécrire tout le fichier. Il faut pour cela des bibliothèques PDF et image lentes ou absentes dans un navigateur : cet outil fonctionne donc sur notre serveur et non sur votre appareil."],
+    ["De combien mon PDF va-t-il diminuer ?", "Cela dépend de son contenu. Les scans et les PDF remplis de photos diminuent souvent de moitié ou plus. Les PDF composés surtout de texte sont généralement déjà légers et ne perdront peut-être que quelques pour cent. Si nous ne parvenons pas à réduire le fichier, vous en êtes informé et rien ne change."],
+    ["Que font les trois niveaux ?", "<em>Recommandée</em> réencode les photos en JPEG en qualité 75 et réduit toute image plus nette que 150 dpi à sa taille imprimée. <em>Forte</em> utilise la qualité 50 et 96 dpi, pour le fichier le plus léger, avec des photos visiblement plus douces. <em>Sans perte</em> ne touche pas aux images et réécrit seulement la structure du fichier. Le texte et les graphiques vectoriels ne sont jamais rastérisés."],
+    ["Retire-t-il quelque chose de mon PDF ?", "Le JavaScript intégré, les fichiers joints et les autres contenus actifs sont retirés par sécurité, et les objets inutilisés sont supprimés. Les pages, le texte, les images, les liens et les signets sont conservés."],
+    ["Y a-t-il une limite ?", "Des fichiers jusqu'à 10 Mo, et 10 tâches gratuites sur le serveur par jour et par personne, partagées entre tous nos outils serveur. Seules les tâches réussies sont comptées, et le compteur est remis à zéro à minuit UTC. Pour des fichiers plus gros ou plus de tâches, l'<a href=\"/learn/compress-pdf-api.html\">API Compresser un PDF</a> est payante à l'appel."],
+    ["Qu'est-ce que la vérification anti-robot ?", "Avant chaque tâche, Cloudflare Turnstile vérifie que c'est une personne, et non un robot, qui utilise l'outil. Elle est généralement invisible ; parfois, elle vous demande de cocher une case. Elle empêche le trafic automatisé d'épuiser la capacité gratuite."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:compress-pdf drop__mark}}
+  <p class="drop__title">Déposez un PDF ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choisir un PDF</span></label>
+  <p class="drop__hint">Ou glissez-le n'importe où sur cette page. Jusqu'à 10 Mo.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts opts--wide">
+    <div class="field">
+      <span class="label" id="level-l">Compression</span>
+      <div class="seg" role="radiogroup" aria-labelledby="level-l">
+        <label><input type="radio" name="level" value="recommended" checked>Recommandée</label>
+        <label><input type="radio" name="level" value="extreme">Forte</label>
+        <label><input type="radio" name="level" value="lossless">Sans perte</label>
+      </div>
+      <span class="help">Recommandée convient à la plupart des fichiers. Forte donne le fichier le plus léger, avec des photos plus douces. Sans perte ne touche pas aux images.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Compresser le PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Comment fonctionne la compression d'un PDF</h2>
+<p>L'essentiel du poids d'un gros PDF vient des images : pages scannées, photos, captures d'écran. Pour compresser le PDF, notre serveur ouvre le fichier, repère chaque image de type photo et mesure sa netteté à la taille où elle est imprimée sur la page. Tout ce qui dépasse la limite du niveau choisi est réduit, puis réenregistré en JPEG. Une image n'est remplacée que si cela fait gagner au moins 10 pour cent, et la structure du fichier est réécrite avec chaque flux compressé au maximum.</p>
+<p>Le résultat n'est jamais plus lourd que l'original. Quand rien ne peut être gagné, vous en êtes informé et vous gardez votre fichier tel quel.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Pour un e-mail, essayez d'abord Recommandée ; passez à Forte seulement si le fichier est encore trop lourd.</li>
+  <li>Vous n'avez besoin que de certaines pages ? Sortez-les d'abord avec <a href="/tools/extract-pdf-pages/">Extraire des pages d'un PDF</a> : moins de pages, c'est un fichier plus léger. Cet outil-là fonctionne dans votre navigateur.</li>
+  <li>Vous voulez alléger des photos plutôt qu'un PDF ? <a href="/tools/compress-image/">Compresser une image</a> fonctionne sur votre appareil, sans rien envoyer.</li>
+</ul>

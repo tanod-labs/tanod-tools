@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Comprimir imagem online: JPG, PNG e WebP menores | Tanod Tools",
+  "description": "Comprima imagens JPEG, PNG e WebP no navegador. Ajuste a qualidade, reduza as cores do PNG se quiser e veja quanto economizou. Nada é enviado.",
+  "h1": "Comprimir imagem",
+  "lede": "Diminua o tamanho de arquivos JPEG, PNG e WebP e veja exatamente quanto espaço você economiza, sem enviar nada.",
+  "blurb": "Deixe fotos e gráficos menores, no seu navegador.",
+  "keywords": "comprimir imagem reduzir tamanho de foto diminuir compactar otimizar jpg jpeg png webp tamanho do arquivo qualidade tinypng",
+  "limits": "Até 50 imagens por lote, de até 50 MB e cerca de 100 megapixels cada. PNG, JPEG, WebP, GIF, BMP e AVIF (quando o seu navegador consegue abri-los).",
+  "howto_title": "Como comprimir uma imagem",
+  "howto": [
+    "Escolha suas imagens ou arraste-as para a página.",
+    "Escolha um formato de saída e uma qualidade. Para PNG, você também pode reduzir o número de cores.",
+    "Clique em <strong>Comprimir</strong>, confira os tamanhos e baixe os arquivos ou um .zip."
+  ],
+  "faq": [
+    ["Minhas imagens são enviadas?", "Não. A compressão acontece no seu navegador: a imagem é decodificada, redesenhada e salva de novo no seu dispositivo. Nada é enviado a um servidor."],
+    ["Qual qualidade devo escolher?", "Para fotos, 70 a 85 geralmente gera um arquivo bem menor que parece igual no tamanho normal de visualização. Valores mais baixos economizam mais espaço, mas mostram blocos nas bordas e em céus lisos. Para uma única imagem, a página mostra o centro do original e o resultado lado a lado a 100%, para você avaliar."],
+    ["O que faz \"Reduzir cores\"?", "Regrava um PNG com uma paleta de 256, 128, 64 ou 32 cores em vez de milhões. Logotipos, capturas de tela e ilustrações chapadas muitas vezes diminuem muito sem diferença visível. Fotos e degradês suaves podem mostrar faixas, então confira a pré-visualização. É com perdas e só vale quando a saída é PNG."],
+    ["Por que um arquivo mostrou \"já otimizada\"?", "Se a versão salva de novo não ficar menor que o original, a ferramenta mantém o seu arquivo original intacto em vez de entregar algo maior."],
+    ["Os metadados são mantidos?", "Não. A imagem é recodificada, então dados EXIF como informações da câmera e localização GPS não são levados junto, e nenhum perfil de cor é incorporado. A imagem é salva na orientação em que aparece. Para remover metadados sem recodificar, use <a href=\"/tools/remove-exif/\">Remover dados EXIF</a>."],
+    ["O que acontece com arquivos GIF, BMP e AVIF?", "Com \"Manter\", eles são salvos como PNG (um GIF vira o primeiro quadro). Se isso não ficar menor, o original é mantido. Você também pode escolher JPEG ou WebP como saída."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Solte as imagens aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Escolher imagens</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou arraste para qualquer lugar desta página.</p>
+</div>
+<ol class="files" id="files" aria-label="Imagens para comprimir" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Formato de saída</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Manter</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Manter salva JPEG, WebP e PNG no próprio formato; outros formatos viram PNG.</p>
+    </fieldset>
+    <div class="field">
+      <label for="quality">Qualidade: <span class="num" id="quality-out">80</span></label>
+      <input type="range" id="quality" min="10" max="100" value="80">
+      <p class="help">Vale para saída em JPEG e WebP. O JPEG não tem transparência, então as áreas transparentes ficam brancas.</p>
+    </div>
+    <div class="field">
+      <label for="colours">Reduzir cores (saída PNG)</label>
+      <select id="colours">
+        <option value="0" selected>Desativado: manter todas as cores</option>
+        <option value="256">256 cores</option>
+        <option value="128">128 cores</option>
+        <option value="64">64 cores</option>
+        <option value="32">32 cores</option>
+      </select>
+      <p class="help">Com perdas. Ideal para logotipos, capturas de tela e arte chapada.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Comprimir</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Limpar tudo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="compare" class="compare" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Como funciona a compressão de imagem aqui</h2>
+<p>Quase todo o tamanho de um arquivo de imagem são os dados dos pixels. Para comprimir a imagem, JPEG e WebP descartam os detalhes que o olho tem menos chance de notar; a configuração de qualidade decide quanto é descartado. O PNG é sem perdas, então o tamanho dele depende de quão previsíveis são os pixels. Reduzir um PNG a uma paleta de no máximo 256 cores deixa os dados muito mais fáceis de comprimir, ao custo da cor exata.</p>
+<p>Esta ferramenta decodifica cada imagem com o seu navegador, desenha-a em um canvas e a salva de novo, usando os codificadores JPEG e WebP do próprio navegador. Para PNGs com paleta, ela escolhe as cores com o quantizador de código aberto UPNG.js e grava o arquivo PNG por conta própria. Se o resultado não ficar menor que o arquivo enviado à ferramenta, você recebe o seu original de volta.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Fotos grandes diminuem mais quando você também reduz as dimensões: experimente <a href="/tools/resize-image/">Redimensionar imagem</a> primeiro e depois comprima.</li>
+  <li>Precisa de outro formato? <a href="/tools/convert-image/">Converter imagem</a> trabalha com PNG, JPEG e WebP.</li>
+  <li>Para tirar a localização e os dados da câmera sem recomprimir, use <a href="/tools/remove-exif/">Remover dados EXIF</a>.</li>
+</ul>

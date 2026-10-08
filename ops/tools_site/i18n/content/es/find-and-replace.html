@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Buscar y reemplazar texto online, con regex | Tanod Tools",
+  "description": "Busca y reemplaza texto en tu navegador, distinguiendo mayúsculas, por palabra completa y con expresiones regulares y grupos $1. Gratis, no se sube nada.",
+  "h1": "Buscar y reemplazar texto",
+  "lede": "Reemplaza palabras o patrones en todo un bloque de texto y ve cuántas coincidencias hay antes de reemplazar.",
+  "blurb": "Busca y reemplaza con mayúsculas, palabra completa y regex.",
+  "keywords": "buscar reemplazar remplazar sustituir texto cambiar palabras regex expresion regular reemplazo masivo buscar y reemplazar online",
+  "limits": "Texto de hasta unos 5 MB. Los patrones regex que tardan más de 2 segundos se detienen.",
+  "howto_title": "Cómo buscar y reemplazar texto",
+  "howto": [
+    "Pega tu texto en el cuadro o abre un archivo .txt.",
+    "Escribe lo que quieres buscar y por qué reemplazarlo. El número de coincidencias se actualiza mientras escribes.",
+    "Presiona <strong>Reemplazar todo</strong> y luego copia el resultado o descárgalo."
+  ],
+  "faq": [
+    ["¿La búsqueda es literal o por patrón?", "Literal de forma predeterminada: lo que escribes se busca tal cual, incluidos caracteres como . y *. Activa \"Expresión regular\" para usar la sintaxis de expresiones regulares de JavaScript."],
+    ["¿Cómo uso grupos en el reemplazo?", "En el modo de expresión regular, $1, $2, etc. insertan el texto capturado por el primer, segundo (y siguientes) grupo entre paréntesis, $& inserta la coincidencia completa y $&lt;nombre&gt; inserta un grupo con nombre. Por ejemplo, buscar (\\w+)@(\\w+) y reemplazar por $2 at $1 convierte bob@example en example at bob. En el modo literal, el reemplazo se inserta exactamente como lo escribiste."],
+    ["¿Qué hace Palabra completa?", "Solo encuentra el texto buscado cuando no forma parte de una palabra más larga, así que buscar sol no encuentra soldado. En el modo literal, las letras, los dígitos y el guion bajo cuentan como caracteres de palabra en cualquier alfabeto. En el modo de expresión regular, envuelve tu patrón en límites de palabra (\\b), que solo reconocen A-Z, dígitos y guion bajo, así que las letras con acento o la ñ no cuentan como parte de la palabra."],
+    ["¿Qué es el límite de 2 segundos?", "Algunos patrones, como (a+)+$, pueden tardar muchísimo con ciertos textos. El modo de expresión regular se ejecuta en un proceso aparte en segundo plano; si no termina en 2 segundos, se detiene y se te avisa que el patrón tardó demasiado, así la página nunca se congela."],
+    ["¿El patrón funciona en varias líneas?", "En el modo de expresión regular, ^ y $ coinciden al inicio y al final de cada línea, y el punto no coincide con un salto de línea. Las mayúsculas y minúsculas se ignoran a menos que actives Distinguir mayúsculas."],
+    ["¿Se sube mi texto?", "No. Todo funciona en tu navegador y no se guarda ni se envía nada."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Tu texto</label>
+    <textarea id="text" spellcheck="false" placeholder="Escribe o pega tu texto aquí."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Buscar</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Reemplazar por</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Distinguir mayúsculas</label>
+    <label class="check"><input type="checkbox" id="whole">Palabra completa</label>
+    <label class="check"><input type="checkbox" id="regex">Expresión regular</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Sintaxis de expresiones regulares de JavaScript. En el reemplazo, usa $1, $2 para los grupos y $&amp; para la coincidencia completa.</p>
+  <p class="tt__report" id="info" aria-live="polite">Escribe lo que quieres buscar.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Reemplazar todo</button>
+    <button class="btn btn--quiet" id="clear" type="button">Borrar texto</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Abrir un archivo .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Resultado</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Copiar resultado</button>
+      <button class="btn" id="dl" type="button">Descargar .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Usar el resultado como texto</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Reemplazar texto de forma masiva</h2>
+<p>Buscar y reemplazar cambia todas las apariciones de una palabra o un patrón de una sola vez. El contador de coincidencias se actualiza mientras escribes, así que ves hasta dónde llega un cambio antes de aplicarlo, y el resultado aparece en un cuadro aparte, de modo que tu texto original nunca se sobrescribe hasta que eliges "Usar el resultado como texto".</p>
+<p>Las expresiones regulares te permiten describir una forma en lugar de una cadena fija: una serie de dígitos, una fecha, una palabra seguida de una coma. Los grupos entre paréntesis se pueden reordenar en el reemplazo con $1, $2, etc. Como un patrón mal escrito puede ejecutarse durante muchísimo tiempo, los patrones se ejecutan en un proceso en segundo plano que se detiene a los dos segundos.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Arma y depura primero un patrón en el <a href="/tools/regex-tester/">Probador de regex</a>, que muestra cada coincidencia y sus grupos.</li>
+  <li>Cambia mayúsculas y minúsculas con <a href="/tools/case-converter/">Convertir mayúsculas y minúsculas</a>.</li>
+  <li>Revisa el cambio con <a href="/tools/text-diff/">Comparar textos</a>.</li>
+  <li>Quita las líneas repetidas con <a href="/tools/remove-duplicate-lines/">Eliminar líneas duplicadas</a>.</li>
+</ul>

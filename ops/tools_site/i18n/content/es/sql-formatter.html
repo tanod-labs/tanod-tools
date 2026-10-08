@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Formatear SQL online: formateador y embellecedor | Tanod Tools",
+  "description": "Formatea y embellece SQL para PostgreSQL, MySQL, SQL Server, Oracle, SQLite, BigQuery y más. Elige mayúsculas y sangría. Funciona en tu navegador, gratis.",
+  "h1": "Formatear SQL",
+  "lede": "Pega una consulta, elige tu base de datos y recíbela con sangría y una cláusula por línea.",
+  "blurb": "Embellece SQL en 20 dialectos.",
+  "keywords": "formatear sql formateador sql embellecer sql beautify pretty print dar formato consulta indentar postgres postgresql mysql mariadb sqlite tsql sql server oracle plsql bigquery snowflake palabras clave mayusculas sangria",
+  "limits": "Entrada de hasta unos 10 MB. Solo cambia el formato: no ejecuta tu SQL, no lo valida contra un esquema ni lo optimiza.",
+  "howto_title": "Cómo formatear una consulta SQL",
+  "howto": [
+    "Pega la consulta en el cuadro o presiona <strong>Insertar un ejemplo</strong> para ver cómo funciona.",
+    "Elige tu base de datos en <strong>Dialecto</strong> y luego ajusta las mayúsculas de las palabras clave y el tamaño de la sangría.",
+    "La consulta formateada aparece abajo mientras escribes. Cópiala o descárgala como archivo <code>.sql</code>."
+  ],
+  "faq": [
+    [
+      "¿Se sube mi SQL?",
+      "No. El código que formatea es un script servido desde este sitio que se carga la primera vez que pegas una consulta; la consulta en sí se queda en tu navegador y no se envía a ningún servidor."
+    ],
+    [
+      "¿Por qué importa el dialecto?",
+      "Cada base de datos agrega su propia sintaxis. PostgreSQL tiene conversiones con <code>::</code> y parámetros <code>$1</code>, SQL Server tiene nombres <code>[entre corchetes]</code> y <code>TOP</code>, MySQL y MariaDB encierran los nombres entre comillas invertidas, y BigQuery tiene sus propias formas de arrays y structs. Elegir el correcto permite que el analizador acepte tu consulta. SQL estándar es la opción segura si no estás seguro, pero es más estricto con los agregados de cada proveedor."
+    ],
+    [
+      "¿Por qué veo un error en una consulta que funciona bien en mi base de datos?",
+      "El formateador lee la instrucción completa en lugar de solo volver a indentar las líneas, así que un paréntesis o unas comillas sin cerrar lo detienen, igual que una sintaxis que pertenece a otro dialecto. El mensaje indica la línea y la columna donde se detuvo, y la solución más común es elegir el dialecto correspondiente."
+    ],
+    [
+      "¿Formatear cambia lo que hace la consulta?",
+      "Solo cambian los espacios en blanco y, si lo eliges, las mayúsculas de las palabras clave. Los literales de cadena, los nombres entre comillas y los números conservan su texto, así que <code>'select'</code> entre comillas sigue en minúsculas cuando eliges MAYÚSCULAS."
+    ],
+    [
+      "¿Puedo formatear varias instrucciones juntas?",
+      "Sí. Las instrucciones separadas por punto y coma se formatean cada una, con una línea en blanco entre ellas."
+    ],
+    [
+      "¿Qué uso para las palabras clave, mayúsculas o minúsculas?",
+      "Cualquiera sirve; es una cuestión de estilo y las bases de datos lo ignoran. Las palabras clave en mayúsculas son la convención más antigua y hacen que las cláusulas resalten en texto simple. Las minúsculas son comunes en proyectos que ya usan un linter o la salida de un ORM con ese estilo. Mantener como está deja tus mayúsculas sin cambios."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">SQL</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insertar un ejemplo</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Borrar</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="select id, name from users where active = 1 order by name"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <label for="o-dialect">Dialecto</label>
+    <select id="o-dialect"><option value="sql">SQL estándar</option><option value="postgresql">PostgreSQL</option><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option><option value="sqlite">SQLite</option><option value="transactsql">SQL Server (T-SQL)</option><option value="plsql">Oracle (PL/SQL)</option><option value="bigquery">BigQuery</option><option value="snowflake">Snowflake</option><option value="redshift">Amazon Redshift</option><option value="spark">Spark SQL</option><option value="hive">Hive</option><option value="db2">IBM Db2</option><option value="db2i">IBM Db2 for i</option><option value="trino">Trino y Presto</option><option value="duckdb">DuckDB</option><option value="clickhouse">ClickHouse</option><option value="tidb">TiDB</option><option value="singlestoredb">SingleStore</option><option value="n1ql">Couchbase N1QL</option></select>
+  </div>
+  <div class="field">
+    <label for="o-case">Palabras clave en</label>
+    <select id="o-case"><option value="upper" selected>MAYÚSCULAS</option><option value="lower">minúsculas</option><option value="preserve">Mantener como está</option></select>
+  </div>
+  <div class="field">
+    <span class="label" id="o-ind-l">Sangría</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 espacios</label>
+      <label><input type="radio" name="indent" value="4">4 espacios</label>
+      <label><input type="radio" name="indent" value="tab">Tabulador</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Entrada</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Salida</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Cambio</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Resultado</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copiar</button>
+    <button class="btn" id="f-dl" type="button">Descargar .sql</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Hacer que el SQL sea legible</h2>
+<p>Una base de datos lee una consulta igual si está en una línea o en cuarenta, y por eso las consultas copiadas de registros, ORM y herramientas de monitoreo suelen llegar como una sola cadena sin cortes. Formatear SQL pone cada cláusula principal (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>GROUP BY</code>, <code>ORDER BY</code>) en su propia línea y sangra debajo las columnas, condiciones y subconsultas, para que veas la forma de la consulta de un vistazo y detectes una condición de join que falta.</p>
+<p>El formato sigue el dialecto que elijas, porque las palabras y los símbolos cambian de una base de datos a otra. Una conversión de PostgreSQL como <code>price::numeric</code>, un parámetro numerado como <code>$1</code>, un nombre de MySQL entre comillas invertidas, una cláusula <code>CONNECT BY</code> de Oracle y un <code>TOP 10</code> de SQL Server son válidos en un dialecto y un error de sintaxis en otro. Los marcadores de parámetros enlazados (<code>?</code>, <code>$1</code>, <code>:name</code>, <code>@name</code>) se reconocen y se dejan intactos.</p>
+<p>Las mayúsculas de las palabras clave no afectan cómo se ejecuta una consulta, así que son solo una cuestión de estilo de cada equipo. Un formateador que entiende la gramática puede cambiarlas sin riesgo, porque sabe qué palabras son palabras clave y cuáles son nombres de columna o texto entre comillas.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Comparas una consulta antes y después de un cambio? Formatea ambas con la misma configuración y compáralas en <a href="/tools/text-diff/">Comparar textos</a>.</li>
+  <li>¿La consulta devuelve columnas JSON? Pega un valor en <a href="/tools/json-formatter/">Formatear y validar JSON</a> para leerlo.</li>
+  <li>¿Necesitas cambiar el nombre de una tabla en un script largo? <a href="/tools/find-and-replace/">Buscar y reemplazar</a> lo resuelve antes de formatear.</li>
+</ul>

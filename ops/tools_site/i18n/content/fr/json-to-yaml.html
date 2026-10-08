@@ -1,0 +1,99 @@
+<!--meta
+{
+  "title": "Convertir JSON en YAML en ligne gratuitement | Tanod Tools",
+  "description": "Convertissez du JSON en YAML dans votre navigateur. Les valeurs comme yes, null ou 012 restent des chaînes, et le résultat est relu pour vérification.",
+  "h1": "Convertir JSON en YAML",
+  "lede": "Collez du JSON et obtenez un YAML propre, avec les chaînes ambiguës entre guillemets pour qu'elles gardent leur sens.",
+  "blurb": "Convertir du JSON en YAML.",
+  "keywords": "json yaml yml convertir conversion convertisseur transformer config configuration kubernetes compose openapi swagger",
+  "limits": "Entrée jusqu'à 10 Mo environ. Seules les données sont converties : le JSON n'a pas de commentaires, le YAML n'en contiendra donc aucun.",
+  "howto_title": "Comment convertir du JSON en YAML",
+  "howto": [
+    "Collez votre JSON dans la zone de saisie, ou cliquez sur <strong>Insérer un exemple</strong>.",
+    "Choisissez une indentation de 2 ou 4 espaces, et activez Trier les clés pour classer chaque objet par ordre alphabétique.",
+    "Si le JSON n'est pas valide, la ligne et la colonne de l'erreur s'affichent. Sinon, copiez le YAML ou téléchargez-le en fichier <code>.yaml</code>."
+  ],
+  "faq": [
+    [
+      "Mon JSON est-il envoyé sur un serveur ?",
+      "Non. Il est analysé et converti par du code qui s'exécute dans votre navigateur : rien de ce que vous collez ne quitte votre appareil."
+    ],
+    [
+      "Pourquoi certaines chaînes sont-elles entre guillemets ?",
+      "Un <code>yes</code>, <code>null</code>, <code>1.0</code>, <code>012</code> ou <code>0x1F</code> sans guillemets serait relu comme un booléen, une valeur nulle ou un nombre, et non comme la chaîne d'origine. Le convertisseur met ces chaînes (et les chaînes vides) entre guillemets pour que le YAML ait le même sens que le JSON."
+    ],
+    [
+      "Comment savoir si le YAML correspond bien au JSON ?",
+      "Après la conversion, la page relit le YAML avec un parseur YAML 1.2 et le compare à vos données. S'il y a la moindre différence, un avertissement s'affiche au-dessus du résultat."
+    ],
+    [
+      "Comment les chaînes sur plusieurs lignes sont-elles écrites ?",
+      "Une chaîne qui contient des sauts de ligne est écrite sous forme de bloc littéral (<code>|</code>), ce qui la garde lisible. Le texte sur une seule ligne reste sur une ligne, sauf si vous cochez l'option de retour à la ligne."
+    ],
+    [
+      "L'ordre de mes clés est-il modifié ?",
+      "Les clés gardent leur ordre, avec une particularité de JavaScript : les clés qui sont des nombres entiers, comme \"1\", sont placées en premier, dans l'ordre numérique. Cochez Trier les clés pour classer chaque niveau par ordre alphabétique."
+    ],
+    [
+      "Et les très grands nombres ?",
+      "Les entiers supérieurs à 9 007 199 254 740 991 sont écrits exactement tels que saisis, sans arrondi. Les nombres décimaux de plus de 17 chiffres significatifs environ sont arrondis à la valeur la plus proche qu'un double peut représenter."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">JSON</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insérer un exemple</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Effacer</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="{&quot;name&quot;: &quot;example&quot;, &quot;tags&quot;: [&quot;a&quot;, &quot;b&quot;]}"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Indentation</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 espaces</label>
+      <label><input type="radio" name="indent" value="4">4 espaces</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Options</span>
+    <label class="check"><input type="checkbox" id="o-sort">Trier les clés (tous les niveaux)</label>
+    <label class="check"><input type="checkbox" id="o-flat">Ne pas indenter les éléments de liste</label>
+    <label class="check"><input type="checkbox" id="o-wrap">Retour à la ligne des textes longs à 80 colonnes</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Entrée</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Sortie</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Variation</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Résultat</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copier</button>
+    <button class="btn" id="f-dl" type="button">Télécharger .yaml</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Transformer du JSON en YAML lisible</h2>
+<p>Pour convertir du JSON en YAML, il faut d'abord savoir que le YAML est surtout une façon plus lisible d'écrire les mêmes données que le JSON. Les accolades et les guillemets laissent place à l'indentation et à des mots simples, c'est pourquoi la configuration de Kubernetes, de Compose ou des systèmes de CI est généralement écrite en YAML. À partir d'un JSON, comme une réponse d'API ou un manifeste généré, la conversion est mécanique, mais un détail demande de l'attention : le YAML déduit le type d'une valeur de son apparence.</p>
+<p>En YAML, un <code>true</code> seul est un booléen, <code>null</code> est une valeur nulle et <code>1.0</code> est un nombre. Une chaîne JSON qui ressemble à l'une de ces valeurs, comme <code>"null"</code>, <code>"1.0"</code> ou <code>"0x1F"</code>, doit être mise entre guillemets dans le YAML, sinon elle changera de type à la lecture. Le convertisseur met précisément celles-ci entre guillemets, ainsi que les chaînes vides et les textes qui commencent par des symboles ayant un sens en YAML, puis il vérifie le résultat en le relisant.</p>
+<p>Le texte sur plusieurs lignes devient un bloc littéral, bien plus facile à lire qu'une longue chaîne remplie de <code>\n</code>. Les objets et tableaux vides sont écrits <code>{}</code> et <code>[]</code>. Comme le JSON n'a pas de commentaires, le YAML n'en contient aucun au départ ; vous pouvez ajouter les vôtres ensuite.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Pour repasser du YAML au JSON, utilisez <a href="/tools/yaml-to-json/">Convertir YAML en JSON</a>.</li>
+  <li>En cas de doute sur la validité de votre JSON, validez-le et mettez-le en forme d'abord avec <a href="/tools/json-formatter/">Formater et valider du JSON</a>.</li>
+  <li>Vous préférez un tableur ? <a href="/tools/json-to-csv/">JSON en CSV</a> aplatit un tableau d'objets.</li>
+</ul>

@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "Minifier et indenter du CSS en ligne | Tanod Tools",
+  "description": "Minifiez du CSS pour réduire son poids, ou indentez-le pour le lire. Chaînes, url() et calc() protégés, résultat vérifié avec l'analyseur de votre navigateur.",
+  "h1": "Minifier et indenter du CSS",
+  "lede": "Collez une feuille de style pour la compresser avant la mise en production ou la rendre lisible, et voyez combien d'octets vous gagnez.",
+  "blurb": "Minifiez ou indentez du CSS.",
+  "keywords": "minifier css minificateur css compresser css css minifier reduire css réduire alleger css beautify formater css indenter css feuille de style optimiser espaces commentaires",
+  "limits": "Données jusqu'à environ 10 Mo. L'outil retire uniquement les espaces et les commentaires ; il ne fusionne pas les règles, ne réécrit pas les valeurs et ne supprime pas le CSS inutilisé.",
+  "howto_title": "Comment minifier ou indenter du CSS",
+  "howto": [
+    "Collez votre CSS dans le champ, ou cliquez sur <strong>Insérer un exemple</strong>.",
+    "Choisissez <strong>Minifier</strong> pour le compresser, ou <strong>Indenter</strong> pour le mettre en forme avec votre indentation. Cochez ou décochez l'option des commentaires de licence quand vous minifiez.",
+    "Vérifiez le gain de taille, puis copiez le résultat ou téléchargez-le en fichier <code>.css</code>."
+  ],
+  "faq": [
+    ["Mon CSS est-il envoyé en ligne ?", "Non. La minification se fait dans votre navigateur, et la bibliothèque d'indentation n'est chargée depuis ce site que si vous choisissez Indenter. Votre feuille de style n'est jamais envoyée nulle part."],
+    ["Que change exactement Minifier ?", "Il retire les commentaires et les espaces autour des accolades, points-virgules, virgules et combinateurs (<code>&gt;</code>, <code>~</code>, <code>+</code>), et supprime le dernier point-virgule de chaque bloc. Il garde l'espace dans <code>a b</code> (le combinateur descendant), dans <code>and (min-width: ...)</code> et autour de <code>+</code> et <code>-</code> à l'intérieur de <code>calc()</code>, <code>clamp()</code>, <code>min()</code> et <code>max()</code>, où le retirer casserait la valeur."],
+    ["Touche-t-il aux chaînes et à url() ?", "Non. Tout ce qui est entre guillemets, y compris du texte qui ressemble à un commentaire ou à une accolade, et le contenu de <code>url()</code> sont copiés caractère par caractère."],
+    ["Raccourcit-il les couleurs ou les nombres ?", "Non. Les valeurs comme <code>#336699</code>, <code>0.5em</code> et <code>0px</code> restent telles qu'écrites. Ces réécritures font gagner peu et comportent un certain risque : seuls les espaces et les commentaires sont donc retirés."],
+    ["Comment savoir si le CSS minifié est sûr ?", "Après chaque passage, la page analyse votre original et le résultat avec l'analyseur CSS du navigateur et compare ce qu'il lit. S'ils diffèrent, un avertissement apparaît au-dessus du résultat. S'ils concordent, le navigateur voit les mêmes règles."],
+    ["Que sont les commentaires de licence ?", "Les commentaires qui commencent par <code>/*!</code> sont conservés par convention par les minificateurs, car ils contiennent un texte de copyright ou de licence que la licence peut vous obliger à garder. Désactivez l'option pour les retirer aussi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">CSS</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insérer un exemple</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Effacer</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="a { color: red; }"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-mode-l">Mode</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-mode-l">
+      <label><input type="radio" name="mode" value="min" checked>Minifier</label>
+      <label><input type="radio" name="mode" value="beautify">Indenter</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Commentaires</span>
+    <label class="check"><input type="checkbox" id="o-licence" checked>Garder les commentaires de licence (<code>/*! ... */</code>)</label>
+  </div>
+  <div class="field" id="o-indent-field" hidden>
+    <span class="label" id="o-ind-l">Indentation</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 espaces</label>
+      <label><input type="radio" name="indent" value="4">4 espaces</label>
+      <label><input type="radio" name="indent" value="tab">Tabulation</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Entrée</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Sortie</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Variation</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Résultat</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copier</button>
+    <button class="btn" id="f-dl" type="button">Télécharger .css</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Minifier du CSS sans le casser</h2>
+<p>Minifier une feuille de style, c'est retirer tout ce que le navigateur ignore : commentaires, indentation, sauts de ligne et espaces autour de la ponctuation. Les fichiers plus légers se téléchargent et s'analysent plus vite, et pour une grosse feuille de style le gain représente souvent d'un quart à la moitié de sa taille avant compression. Les règles et leur ordre restent exactement tels qu'écrits.</p>
+<p>La difficulté est de savoir quels espaces le navigateur ignore. Une espace entre deux sélecteurs, comme dans <code>nav a</code>, est un combinateur qui signifie « n'importe quel descendant » : <code>nav a</code> et <code>nava</code> sont donc deux choses différentes. Dans <code>calc(1rem + 2px)</code>, les espaces autour de <code>+</code> sont obligatoires, et <code>calc(1rem+2px)</code> est invalide. Le texte entre guillemets et dans <code>url()</code> est une donnée, pas de la syntaxe. Un minificateur fait d'expressions régulières se trompe souvent sur l'un de ces points ; celui-ci lit la feuille de style comme une suite de jetons et ne retire les espaces que là où la grammaire les rend facultatifs.</p>
+<p>Indenter, c'est l'opération inverse : une déclaration par ligne, indentée à l'intérieur des accolades, pour qu'un fichier minifié venant d'un CDN devienne lisible et comparable.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vous voulez mettre en forme toute une page, pas seulement sa feuille de style ? Utilisez <a href="/tools/html-formatter/">Formater et indenter du HTML</a>.</li>
+  <li>Vous choisissez les couleurs de la feuille de style ? Le <a href="/tools/color-converter/">Convertisseur de couleurs et contraste</a> transforme l'hexadécimal en RGB, HSL et plus.</li>
+  <li>Vérifiez ce qu'une minification a réellement changé en comparant les deux versions dans <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+</ul>

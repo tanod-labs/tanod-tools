@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Bildgröße ändern – online in Pixeln oder Prozent | Tanod Tools",
+  "description": "Breite und Höhe von JPG-, PNG- und WebP-Bildern im Browser ändern. Seitenverhältnis beibehalten, mehrere Bilder auf einmal skalieren. Nichts wird hochgeladen.",
+  "h1": "Bildgröße ändern",
+  "lede": "Legen Sie eine neue Breite und Höhe in Pixeln fest oder skalieren Sie um einen Prozentwert, für ein Bild oder einen ganzen Stapel.",
+  "blurb": "Bildabmessungen in Pixeln oder Prozent ändern.",
+  "keywords": "bildgröße ändern bildgroesse aendern bild verkleinern bild vergrößern vergroessern skalieren auflösung abmessungen breite höhe pixel foto miniaturbild",
+  "limits": "Bis zu 50 Bilder pro Durchgang, je 50 MB und etwa 100 Megapixel bei Ein- und Ausgabe. Vergrößern ist auf das Vierfache der Originalgröße begrenzt.",
+  "howto_title": "So ändern Sie die Größe eines Bildes",
+  "howto": [
+    "Wählen Sie Ihre Bilder aus oder ziehen Sie sie auf die Seite.",
+    "Geben Sie eine Breite oder Höhe in Pixeln ein (bei fixiertem Seitenverhältnis passt sich der andere Wert an) oder wechseln Sie zu Prozent.",
+    "Klicken Sie auf <strong>Größe ändern</strong> und laden Sie das Ergebnis oder ein .zip des Stapels herunter."
+  ],
+  "faq": [
+    ["Werden meine Bilder hochgeladen?", "Nein. Die Größenänderung geschieht in Ihrem Browser auf Ihrem Gerät. Nichts wird an einen Server gesendet."],
+    ["Wie funktioniert die Fixierung des Seitenverhältnisses bei mehreren Bildern?", "Die Felder starten mit der Größe des ersten Bildes. Bei aktivierter Fixierung wird der Wert, den Sie zuletzt geändert haben (Breite oder Höhe), auf jedes Bild angewendet, und die andere Seite folgt den Proportionen des jeweiligen Bildes. Ohne Fixierung wird jedes Bild exakt auf die eingegebene Breite und Höhe gestreckt."],
+    ["Kann ich ein Bild vergrößern?", "Ja, bis zum Vierfachen der ursprünglichen Breite und Höhe. Vergrößern kann keine Details hinzufügen, das Ergebnis wirkt daher weicher. Über das Vierfache hinaus lehnt das Tool ab, statt eine unscharfe Datei zu erzeugen."],
+    ["In welcher Qualität werden JPEG- und WebP-Dateien gespeichert?", "Mit Qualität 92 von 100, was die Dateien optisch nah an der Quelle hält. Möchten Sie zusätzlich eine kleinere Dateigröße, schicken Sie das Ergebnis durch <a href=\"/tools/compress-image/\">Bild komprimieren</a>."],
+    ["Wie wird das Bild verkleinert?", "Starke Verkleinerungen erfolgen in mehreren Schritten von jeweils der Hälfte, dann folgt ein letzter Zeichenvorgang auf die exakte Größe mit der hochwertigen Glättung des Browsers. Das vermeidet den gezackten, treppenartigen Look, den eine einzige große Verkleinerung erzeugen kann."],
+    ["Bleiben EXIF-Daten erhalten?", "Nein. Das Bild wird neu kodiert, daher werden Metadaten wie GPS und Kameradetails nicht übernommen, und das Bild wird in der Ausrichtung gespeichert, in der es angezeigt wird."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Bilder hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Bilder auswählen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP oder AVIF. Oder ziehen Sie sie an eine beliebige Stelle dieser Seite.</p>
+</div>
+<ol class="files" id="files" aria-label="Zu skalierende Bilder" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Größe ändern nach</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="pixels" checked>Pixel</label>
+        <label><input type="radio" name="mode" value="percent">Prozent</label>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Ausgabeformat</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Behalten</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">JPEG und WebP werden mit Qualität 92 gespeichert. GIF, BMP und AVIF werden bei „Behalten“ zu PNG.</p>
+    </fieldset>
+  </div>
+  <div id="pane-px">
+    <div class="opts">
+      <div class="field"><label for="width">Breite (px)</label><input type="number" id="width" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><label for="height">Höhe (px)</label><input type="number" id="height" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><span class="label">Seitenverhältnis</span><label class="check"><input type="checkbox" id="lock" checked>Seitenverhältnis fixieren</label></div>
+    </div>
+  </div>
+  <div id="pane-pct" hidden>
+    <div class="opts">
+      <div class="field"><label for="percent">Skalierung (%)</label><input type="number" id="percent" min="1" max="400" value="50" inputmode="numeric"><p class="help">100 behält die Größe. 50 halbiert Breite und Höhe.</p></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Größe ändern</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Alle entfernen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Bildgröße im Browser ändern</h2>
+<p>Die Größe eines Bildes zu ändern heißt, aus dem alten Pixelraster ein neues zu berechnen. Beim Verkleinern werden Gruppen von Pixeln gemittelt; deshalb sieht eine gute Verkleinerung glatt aus und eine nachlässige gezackt. Dieses Tool halbiert das Bild wiederholt, solange es mehr als doppelt so groß wie das Ziel ist, und zeichnet es dann ein letztes Mal mit hochwertiger Glättung auf die exakte Größe.</p>
+<p>Das Seitenverhältnis ist die Breite geteilt durch die Höhe. Bleibt es fixiert, wird ein Foto mit 1200 × 800 bei einer Breite von 600 Pixeln zu 600 × 400, ohne Verzerrung. Heben Sie die Fixierung nur auf, wenn Sie ein exaktes Format brauchen und die Verzerrung in Kauf nehmen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für Webseiten verkleinern Sie auf die größte Größe, in der das Bild tatsächlich angezeigt wird, und reduzieren die Datei dann weiter mit <a href="/tools/compress-image/">Bild komprimieren</a>.</li>
+  <li>Um stattdessen einen Teil des Bildes wegzuschneiden, nutzen Sie <a href="/tools/crop-image/">Bild zuschneiden</a>.</li>
+  <li>Sie brauchen quadratische Icons für eine Website? Der <a href="/tools/favicon-generator/">Favicon-Generator</a> erstellt alle Größen auf einmal.</li>
+</ul>

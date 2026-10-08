@@ -1,0 +1,87 @@
+<!--meta
+{
+  "category": "image",
+  "name": "Image color picker",
+  "title": "Image color picker: get HEX and RGB from a photo | Tanod Tools",
+  "description": "Pick colours from any image: click a pixel to get its HEX, RGB and HSL code, and see the image's main colour palette. Runs in your browser, no upload.",
+  "h1": "Image color picker",
+  "lede": "Click anywhere on an image to read the exact colour of that pixel, or take the palette of its main colours.",
+  "blurb": "HEX and RGB codes from any pixel.",
+  "keywords": "color picker from image colour picker eyedropper hex code rgb hsl palette extractor photo screenshot",
+  "limits": "One image at a time, 50 MB and about 100 megapixels. PNG, JPEG, WebP, GIF (first frame), BMP or AVIF.",
+  "howto_title": "How to pick a colour from an image",
+  "howto": [
+    "Choose an image, or drag or paste it onto the page.",
+    "Move over the image to aim with the magnifier, then click or tap to pick. With the keyboard, focus the image, move with the arrow keys (Shift for bigger steps) and press Enter.",
+    "Copy the HEX, RGB or HSL code, or copy a colour from the palette of main colours."
+  ],
+  "faq": [
+    ["How exact is the colour?", "It is the stored value of the single pixel under the crosshair, read from the full-size image, not from the scaled-down preview. The magnifier shows the pixels around it so you can aim at one pixel on a busy edge."],
+    ["Why does the colour differ from what another app shows?", "JPEG compression shifts colours slightly, especially near edges and in flat areas, so neighbouring pixels can differ by a few values. Images with a colour profile are converted to standard sRGB by your browser before reading, which is what web pages use; a photo editor working in another colour space may show different numbers."],
+    ["How is the palette worked out?", "The image is sampled at up to 160 by 160 points and grouped into eight colour clusters by repeatedly splitting the colour range where it is widest (the median cut method). Each swatch is the average colour of its cluster, with its share of the image. Fully or mostly transparent pixels are skipped."],
+    ["What do HEX, RGB and HSL mean?", "They are three ways to write the same colour. HEX is the red, green and blue values (0 to 255) written in base 16, as used in CSS and design tools. RGB lists them as plain numbers. HSL gives hue (0 to 360 degrees), saturation and lightness, which is easier to adjust by hand."],
+    ["Is my image uploaded?", "No. The image is decoded and read in your browser, on your device."]
+  ],
+  "related": ["color-converter", "color-palette-generator", "image-to-base64", "crop-image", "resize-image", "convert-image"],
+  "app_category": "MultimediaApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Drop an image here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Choose an image</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP or AVIF. Or drag or paste it here.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="colour picker" aria-label="Image. Arrow keys move the crosshair, Shift with arrow keys moves faster, Enter picks the colour." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Click or tap to pick. Keyboard: arrow keys move the crosshair, Shift moves faster, Enter picks.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Under the crosshair</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Picked colour</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="Copy HEX code">Copy</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="Copy RGB code">Copy</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="Copy HSL code">Copy</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Picked so far</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Main colours</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">Select a swatch to copy its HEX code.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Reading colours straight from the pixels</h2>
+<p>Matching a brand colour from a logo, finding the exact blue in a screenshot, or building a palette from a photo all come down to the same thing: reading the red, green and blue values stored for a pixel. This tool decodes the image in your browser and reads those values from the full-resolution picture, so the code you copy is the colour that is actually in the file.</p>
+<p>Single pixels can mislead in photos, where noise and compression make neighbours vary. Use the magnifier to aim at the middle of a flat area, or take the palette, which averages whole groups of similar pixels into a handful of representative colours.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Convert a picked colour to CMYK or check its contrast against text with the <a href="/tools/color-converter/">Color converter</a>.</li>
+  <li>Picking from a small part of a big image? <a href="/tools/crop-image/">Crop</a> it first so the area fills the screen.</li>
+</ul>

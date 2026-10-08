@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Urutkan baris sesuai abjad, A ke Z atau Z ke A | Tanod Tools",
+  "description": "Urutkan daftar baris sesuai abjad, urutan angka alami, panjang atau acak. Abaikan huruf besar/kecil, buang duplikat dan baris kosong. Gratis, di browser.",
+  "h1": "Urutkan baris sesuai abjad",
+  "lede": "Tempel daftar, satu item per baris, dan dapatkan kembali dalam urutan A ke Z, Z ke A, urutan angka alami, menurut panjang atau diacak.",
+  "blurb": "Urutkan daftar A ke Z, menurut angka, panjang atau acak.",
+  "keywords": "urutkan baris abjad urut abjad mengurutkan daftar alfabet a-z z-a urutan alami urutkan menurut panjang acak baris sort lines",
+  "limits": "Teks hingga sekitar 5 MB. Hasil diperbarui saat Anda mengetik; daftar yang sangat panjang diperbarui sesaat setelah Anda berhenti mengetik.",
+  "howto_title": "Cara mengurutkan baris sesuai abjad",
+  "howto": [
+    "Tempel daftar Anda ke kotak, satu item per baris, atau buka file .txt.",
+    "Pilih cara pengurutan dan arahnya: A ke Z atau Z ke A. Centang opsi pembersihan yang Anda inginkan.",
+    "Salin daftar yang sudah diurutkan atau unduh sebagai file .txt."
+  ],
+  "faq": [
+    ["Bagaimana huruf beraksen dan bahasa lain diurutkan?", "Baris dibandingkan dengan aturan pengurutan browser Anda yang peka bahasa, sehingga é diurutkan di dekat e dan Ä di dekat A, bukan setelah Z. Urutannya mengikuti bahasa yang diatur di browser Anda, dan ini berpengaruh pada beberapa huruf: dalam bahasa Swedia, misalnya, Ä muncul setelah Z."],
+    ["Apa itu urutan alami?", "Urutan alami membaca deretan digit sebagai angka, sehingga \"item 2\" muncul sebelum \"item 10\". Urutan abjad biasa membandingkan satu karakter demi satu karakter dan menaruh \"item 10\" lebih dulu, karena 1 muncul sebelum 2."],
+    ["Apa fungsi Abaikan huruf besar/kecil?", "Jika Abaikan huruf besar/kecil aktif, \"apel\" dan \"Apel\" dianggap kata yang sama saat diurutkan, dan baris yang hanya berbeda huruf besar/kecil mempertahankan urutan aslinya. Jika nonaktif, huruf kecil muncul sebelum huruf besar bila hurufnya selain itu sama. Urutan kode karakter berbeda lagi: semua huruf kapital ditaruh sebelum semua huruf kecil, seperti yang dilakukan banyak program."],
+    ["Bisakah saya menghapus duplikat sambil mengurutkan?", "Bisa. Centang Hapus baris duplikat dan hanya salinan pertama dari setiap baris yang disimpan. Jika Abaikan huruf besar/kecil aktif, baris yang hanya berbeda huruf kapital dihitung sebagai duplikat. Untuk kontrol lebih, misalnya menyimpan salinan terakhir, gunakan <a href=\"/tools/remove-duplicate-lines/\">Hapus baris duplikat</a>."],
+    ["Seberapa acak pengacakannya?", "Pengacakan memakai generator angka acak kriptografis dari browser Anda dengan metode Fisher-Yates, sehingga setiap urutan punya peluang yang sama. Tekan Acak lagi untuk urutan baru."],
+    ["Apakah daftar saya diunggah?", "Tidak. Pengurutan berjalan di browser Anda, dan teksnya tidak diunggah atau disimpan."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Baris yang diurutkan</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Satu item per baris."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Hasil urutan</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="by">Urutkan menurut</label>
+      <select id="by">
+        <option value="alpha">Abjad</option>
+        <option value="natural">Alami (angka berurutan)</option>
+        <option value="code">Kode karakter (huruf kapital dulu)</option>
+        <option value="length">Panjang baris</option>
+        <option value="reverse">Balik urutan saat ini</option>
+        <option value="shuffle">Acak (urutan acak)</option>
+      </select>
+    </div>
+    <fieldset id="dir-field">
+      <legend>Arah</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="asc" checked><span id="asc-l">A ke Z</span></label>
+        <label><input type="radio" name="dir" value="desc"><span id="desc-l">Z ke A</span></label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci" checked>Abaikan huruf besar/kecil</label>
+    <label class="check"><input type="checkbox" id="dedupe">Hapus baris duplikat</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Hapus baris kosong</label>
+    <label class="check"><input type="checkbox" id="trim">Pangkas spasi di ujung baris</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Tempel baris untuk memulai.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Salin hasil</button>
+    <button class="btn" id="dl" type="button" disabled>Unduh .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Acak lagi</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Pakai hasil sebagai input</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Hapus</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Buka file .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Menyusun daftar sesuai abjad</h2>
+<p>Setiap baris input adalah satu item. Alat untuk mengurutkan baris sesuai abjad ini menyusun baris dan menampilkan hasilnya di samping input saat Anda mengetik, sehingga Anda bisa mencoba urutan atau opsi lain dan langsung melihat efeknya. Baris dibandingkan secara utuh, mulai dari karakter pertama, jadi daftar nama diurutkan menurut nama depan kecuali nama belakang ditulis lebih dulu di setiap baris.</p>
+<p>Pengurutan abjad memakai aturan bahasa browser Anda, yang menangani aksen dan campuran huruf besar/kecil dengan wajar. Urutan alami paling cocok untuk apa pun yang mengandung angka, seperti nama file, judul bab, atau nomor versi. Urutan kode karakter sama dengan yang dilakukan banyak alat pemrograman dan spreadsheet pada pengurutan biasa: setiap huruf kapital muncul sebelum setiap huruf kecil.</p>
+<p>Jika dua baris dianggap sama, misalnya "Apel" dan "apel" saat Abaikan huruf besar/kecil aktif, keduanya tetap dalam urutan semula, sehingga mengurutkan dua kali memberi hasil yang sama.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Hapus penomoran atau karakter butir sebelum mengurutkan dengan <a href="/tools/find-and-replace/">Cari dan ganti</a>, agar tidak menentukan urutan.</li>
+  <li>Periksa apa yang berubah di antara dua versi daftar dengan <a href="/tools/text-diff/">Bandingkan teks</a>.</li>
+  <li>Perlu daftar dalam satu baris lagi? Gunakan <a href="/tools/remove-line-breaks/">Hapus jeda baris</a> dengan koma sebagai pemisah.</li>
+</ul>

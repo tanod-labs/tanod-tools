@@ -1,0 +1,93 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "CSS gradient generator",
+  "title": "CSS gradient generator: linear, radial, conic | Tanod Tools",
+  "description": "Build linear, radial and conic CSS gradients with a live preview, editable colour stops and presets, then copy the background rule. Free, runs in your browser.",
+  "h1": "CSS gradient generator",
+  "lede": "Design a linear, radial or conic gradient, watch it update live, and copy the CSS background rule.",
+  "blurb": "Linear, radial and conic gradients with live preview and copyable CSS.",
+  "keywords": "css gradient linear-gradient radial-gradient conic-gradient repeating gradient background color stops angle generator maker",
+  "limits": "Stop colours can be any colour your browser understands (HEX, names, rgb(), hsl(), oklch()). Up to 10 stops. Positions are percentages; the output is plain CSS with no vendor prefixes.",
+  "howto_title": "How to make a CSS gradient",
+  "howto": [
+    "Choose <strong>Linear</strong>, <strong>Radial</strong> or <strong>Conic</strong>, or start from a preset.",
+    "Set the angle or position, then edit the colour stops: change each colour and position, add stops, and move them up or down.",
+    "Press <strong>Copy CSS</strong> and paste the rule into your stylesheet. Tick the fallback option if you want a solid colour line before it."
+  ],
+  "faq": [
+    ["What does the angle mean in a linear gradient?", "0deg points to the top, so the gradient runs from the bottom edge up. 90deg runs left to right, 180deg top to bottom, and 270deg right to left. 360deg is the same direction as 0deg. The tool writes the number you enter with the deg unit."],
+    ["How do I get a hard edge instead of a smooth blend?", "Give two neighbouring stops the same position. For example, red at 50% followed by blue at 50% switches colour at the halfway point with no blend. The Hard stripes preset shows this."],
+    ["What does the repeating option do?", "It writes repeating-linear-gradient, repeating-radial-gradient or repeating-conic-gradient. The pattern between your first and last stop is tiled, so it only shows when the last stop is before 100%. Try stops at 0%, 10% and 20% to get stripes."],
+    ["What is the solid fallback line for?", "A browser that cannot read the gradient ignores that line and keeps the earlier one. Browsers that support gradients, which is nearly all in use, override it. The fallback is the colour of your first stop."],
+    ["Which colour formats are accepted?", "Anything the CSS <code>color</code> property accepts in your browser: <code>#1636a3</code>, <code>tomato</code>, <code>rgb(22 54 163)</code>, <code>hsl(226 76% 36%)</code> or <code>oklch(0.5 0.2 260)</code>. Typing something else shows a message and leaves the last good gradient on screen."],
+    ["Does a conic gradient need a position?", "It always has a centre, and this tool writes it as percentages, so 50% 50% is the middle of the box. The start angle rotates where the colour sweep begins, measured clockwise from the top."]
+  ],
+  "related": ["color-palette-generator", "color-converter", "css-minifier", "image-color-picker", "meta-tag-generator"],
+  "app_category": "DesignApplication"
+}
+-->
+<!--tool-->
+<div class="gen-grad">
+  <div class="gen-grad__show">
+    <div class="gen-gpreview" id="g-preview" role="img" aria-label="Gradient preview"></div>
+    <label for="g-out" class="label">CSS</label>
+    <textarea id="g-out" class="mono gen-out" rows="3" readonly spellcheck="false" aria-describedby="g-msg"></textarea>
+    <p class="tt__report" id="g-msg" role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="g-copy" type="button">Copy CSS</button>
+    </div>
+  </div>
+
+  <div class="gen-grad__ctl util-stack">
+    <fieldset class="field">
+      <legend>Type</legend>
+      <div class="seg" role="radiogroup" aria-label="Gradient type">
+        <label><input type="radio" name="g-type" value="linear" checked>Linear</label>
+        <label><input type="radio" name="g-type" value="radial">Radial</label>
+        <label><input type="radio" name="g-type" value="conic">Conic</label>
+      </div>
+    </fieldset>
+
+    <div class="opts">
+      <div class="field" id="g-angle-box">
+        <label for="g-angle" id="g-angle-l">Angle (degrees)</label>
+        <div class="util-pair"><input type="range" id="g-angle-r" min="0" max="360" step="1" value="90" aria-label="Angle slider"><input type="number" id="g-angle" min="0" max="360" step="1" value="90"></div>
+      </div>
+      <div class="field" id="g-shape-box" hidden>
+        <label for="g-shape">Shape</label>
+        <select id="g-shape"><option value="circle">Circle</option><option value="ellipse">Ellipse</option></select>
+      </div>
+      <div class="field" id="g-x-box" hidden><label for="g-x">Centre X (%)</label><input type="number" id="g-x" min="0" max="100" step="1" value="50"></div>
+      <div class="field" id="g-y-box" hidden><label for="g-y">Centre Y (%)</label><input type="number" id="g-y" min="0" max="100" step="1" value="50"></div>
+    </div>
+
+    <div class="field">
+      <span class="label">Options</span>
+      <label class="check"><input type="checkbox" id="g-repeat">Repeating</label>
+      <label class="check"><input type="checkbox" id="g-fallback">Add a solid fallback colour line first</label>
+    </div>
+
+    <h2 class="util-h">Colour stops</h2>
+    <ol class="gen-stops" id="g-stops"></ol>
+    <div class="actions">
+      <button class="btn btn--sm" id="g-add" type="button">Add stop</button>
+      <button class="btn btn--sm" id="g-sort" type="button">Sort by position</button>
+      <button class="btn btn--sm" id="g-rev" type="button">Reverse</button>
+    </div>
+
+    <h2 class="util-h">Presets</h2>
+    <div class="actions" id="g-presets"></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Reading a CSS gradient</h2>
+<p>A CSS gradient is an image that the browser draws itself, so it scales to any size and costs no download. A linear gradient blends colours along a line set by an angle. A radial gradient blends outward from a centre point in a circle or an ellipse. A conic gradient sweeps the colours around a centre like the hand of a clock, which makes it the natural choice for pie charts and colour wheels.</p>
+<p>Each colour stop is a colour plus a position along the gradient line, written as a percentage. Between two stops the browser blends smoothly. If two stops share a position, the blend has no width and you get a sharp edge. If a stop is placed earlier than the one before it, browsers treat it as sitting at the earlier stop's position, which is why this tool lets you reorder and sort stops.</p>
+<p>The rule is written as <code>background:</code> so it works on any element. Gradients are drawn on the background, so text on top of them needs the same contrast care as text on a flat colour: check the lightest and darkest parts of the blend separately.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Choose stop colours that go together with the <a href="/tools/color-palette-generator/">Color palette generator</a>.</li>
+  <li>Convert a stop between HEX, RGB and HSL in the <a href="/tools/color-converter/">Color converter</a>.</li>
+  <li>Shipping the stylesheet? Shrink it with the <a href="/tools/css-minifier/">CSS minifier</a>.</li>
+</ul>

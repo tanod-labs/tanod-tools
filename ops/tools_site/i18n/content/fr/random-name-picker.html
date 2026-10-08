@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Tirage au sort de noms : roue aléatoire et équipes | Tanod Tools",
+  "description": "Collez une liste de noms et tirez au sort un ou plusieurs gagnants avec une roue, ou formez des équipes aléatoires équilibrées. Rien n'est envoyé.",
+  "h1": "Tirage au sort de noms",
+  "lede": "Collez vos noms, un par ligne, puis faites tourner la roue pour désigner un gagnant ou répartissez tout le monde en équipes.",
+  "blurb": "Faites tourner une roue pour tirer des gagnants, ou formez des équipes.",
+  "keywords": "tirage au sort en ligne roue aleatoire roue de la fortune tirer au sort un nom gagnant concours jeu concours tombola loterie generateur d'equipes groupes aleatoires classe choisir au hasard",
+  "limits": "La roue affiche les étiquettes jusqu'à 100 noms ; au-delà, le tirage reste équitable mais les parts ne sont pas étiquetées. La liste n'existe que sur cette page et disparaît quand vous la fermez ou la rechargez.",
+  "howto_title": "Comment tirer un nom au sort",
+  "howto": [
+    "Saisissez ou collez les noms dans la case, <strong>un par ligne</strong>. Les lignes vides sont ignorées.",
+    "Choisissez <em>Tirer des gagnants</em> et combien, ou <em>Répartir en équipes</em> et combien d'équipes.",
+    "Appuyez sur le bouton. Cochez <em>Retirer les noms tirés</em> si une même personne ne doit pas gagner deux fois."
+  ],
+  "faq": [
+    ["Le tirage est-il équitable ?", "Oui. Le gagnant est choisi d'abord, par un tirage sans biais à partir de la source aléatoire sécurisée de votre navigateur, puis la roue tourne pour s'arrêter sur ce nom. L'animation est décorative : une part plus longue ou un tour chanceux ne change les chances de personne. Chaque ligne a la même probabilité."],
+    ["Que se passe-t-il si un nom figure deux fois dans la liste ?", "Chaque ligne est une entrée distincte : un nom saisi deux fois a deux chances, et la page vous indique quels noms se répètent. Si c'est une erreur, supprimez la ligne en trop ; si c'est voulu, par exemple deux tickets de tombola, laissez-la."],
+    ["Comment tirer plusieurs gagnants à la suite ?", "Cochez <em>Retirer les noms tirés de la liste</em>, puis appuyez de nouveau sur le bouton pour chaque tirage. Ou réglez le nombre de gagnants sur 3 pour obtenir trois entrées différentes en une seule fois. Les gagnants d'un même tirage sont toujours des entrées différentes."],
+    ["Comment les équipes sont-elles formées ?", "La liste est mélangée avec un mélange de Fisher-Yates sans biais, puis distribuée un nom à la fois, comme des cartes. Les tailles des équipes ne diffèrent ainsi jamais de plus d'une personne : 10 noms en 3 équipes donnent 4, 3 et 3."],
+    ["Puis-je désactiver la rotation ?", "Si votre appareil est réglé pour réduire les animations, la roue passe directement au résultat sans animation, et le résultat est annoncé aux lecteurs d'écran dans tous les cas. Les résultats sont aussi listés en texte sous la roue."],
+    ["Ma liste est-elle envoyée quelque part ?", "Non. Les noms sont uniquement lus par la page dans votre navigateur, et rien n'est conservé : fermer l'onglet les efface. Copiez l'historique si vous avez besoin d'une trace des personnes tirées."]
+  ]
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Noms, un par ligne</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Amara&#10;Bruno&#10;Chen"></textarea>
+      <p class="help" id="rp-info">Aucun nom pour l'instant</p>
+    </div>
+    <fieldset class="field">
+      <legend>Que faire</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Tirer des gagnants</label>
+        <label><input type="radio" name="rp-mode" value="teams">Répartir en équipes</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">Nombre de gagnants</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">Nombre d'équipes</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Retirer les noms tirés de la liste</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Tirer au sort</button>
+      <button class="btn" id="rp-sample" type="button">Utiliser des noms d'exemple</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Roue vide : ajoutez des noms pour la remplir"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">Historique</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Effacer l'historique</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Un tirage équitable, et pourquoi la roue n'est là que pour le spectacle</h2>
+<p>Un tirage au sort équitable donne la même chance à chaque entrée. Le piège habituel consiste à lancer une animation, à lire où elle s'arrête et à en faire le résultat : la physique d'une roue dessinée, une image ralentie ou une erreur d'arrondi peuvent alors favoriser certaines parts. Ici, l'ordre est inversé. L'entrée gagnante est choisie d'abord en tirant un indice aléatoire par échantillonnage avec rejet, qui écarte le reliquat inégal qu'un simple modulo laisserait, puis la roue tourne pour s'arrêter sur cette part.</p>
+<p>Tirer plusieurs gagnants fonctionne de la même façon, sans remise. La page applique un mélange de Fisher-Yates partiel aux positions de votre liste et prend les premières : une position ne peut jamais être choisie deux fois dans un même tirage. Les équipes utilisent le mélange complet, puis distribuent les noms un par un entre les équipes. Les tailles diffèrent ainsi d'une personne au plus, tandis que la composition des équipes reste aléatoire.</p>
+<p>Pour tout tirage avec un enjeu, comme un jeu concours, gardez la liste visible pendant le tirage et expliquez comment il a été fait. Lire l'historique à voix haute ou le publier ensuite constitue une meilleure preuve qu'une capture d'écran de la roue.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Nettoyez d'abord une liste collée : utilisez <a href="/tools/remove-duplicate-lines/">Supprimer les lignes en double</a> si chaque personne ne doit avoir qu'une seule entrée.</li>
+  <li>Besoin de nombres plutôt que de noms, comme un ticket de 1 à 500 ? Utilisez le <a href="/tools/random-number-generator/">générateur de nombres aléatoires</a>.</li>
+  <li>Vous animez un quiz ou une présentation ? Limitez le temps de chaque tour avec le <a href="/tools/countdown-timer/">minuteur (compte à rebours)</a>.</li>
+</ul>

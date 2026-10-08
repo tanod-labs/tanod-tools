@@ -1,0 +1,74 @@
+<!--meta
+{
+  "title": "Morsecode-Übersetzer: Text in Morsecode und zurück | Tanod Tools",
+  "description": "Text in Morsecode übersetzen und Morsecode zurück in Text, mit Buchstaben, Ziffern und Satzzeichen. Als Ton abspielen, im gewünschten Tempo. Läuft im Browser.",
+  "h1": "Morsecode-Übersetzer",
+  "lede": "Verwandeln Sie Text in Punkte und Striche oder dekodieren Sie Morsecode zurück in Text, und hören Sie, wie er klingt.",
+  "blurb": "Text in Morsecode und zurück, mit Ton.",
+  "keywords": "morsecode übersetzer uebersetzer morse übersetzen morse decoder text in morse morse in text morsealphabet punkte und striche sos morsen ton",
+  "limits": "Bis zu 100.000 Zeichen auf einmal. Die Tonwiedergabe ist auf die ersten 2.000 Zeichen begrenzt.",
+  "howto_title": "So übersetzen Sie Morsecode",
+  "howto": [
+    "Wählen Sie <strong>Text in Morse</strong> oder <strong>Morse in Text</strong>.",
+    "Geben Sie Text in das Feld ein oder fügen Sie ihn ein. Setzen Sie bei Morsecode ein Leerzeichen zwischen Buchstaben und einen Schrägstrich (oder mehrere Leerzeichen) zwischen Wörter.",
+    "Kopieren Sie das Ergebnis, laden Sie es herunter oder klicken Sie auf <strong>Abspielen</strong>, um den Morsecode zu hören."
+  ],
+  "faq": [
+    ["Wie gebe ich Morsecode zum Dekodieren ein?", "Verwenden Sie einen Punkt für ein kurzes Signal und einen Bindestrich für ein langes, ein Leerzeichen zwischen Buchstaben und einen Schrägstrich zwischen Wörtern, etwa <code>.... .. / - .... . .-. .</code>. Mehrere Leerzeichen oder eine neue Zeile trennen ebenfalls Wörter. Mittelpunkte (·), Aufzählungspunkte (•), Unterstriche und lange Striche (– —) werden auch akzeptiert."],
+    ["Welche Zeichen können übersetzt werden?", "Die Buchstaben A bis Z, die Ziffern 0 bis 9 und die Satzzeichen des internationalen Morsestandards: . , ? ' ! / ( ) & : ; = + - _ \" $ @. Buchstaben mit Akzent oder Umlaut werden als einfacher Buchstabe gesendet (é als E). Zeichen ohne Morsecode, etwa # oder Emojis, werden ausgelassen und unter dem Ergebnis aufgelistet, damit Sie wissen, dass sie fehlen."],
+    ["Was passiert mit einer Morsefolge, die kein echter Code ist?", "Sie erscheint im dekodierten Text als # und wird im Bericht aufgeführt, zum Beispiel wenn ein Punkt fehlt oder zwei Buchstaben ohne Leerzeichen zusammengelaufen sind."],
+    ["Wie funktioniert die Tonwiedergabe?", "Der Morsecode wird als 600-Hz-Ton abgespielt, den Ihr Browser erzeugt, mit Standard-Timing: Ein Strich ist drei Punkte lang, Buchstaben werden durch drei Punktlängen Stille getrennt, Wörter durch sieben. Die Geschwindigkeit in Wörtern pro Minute bestimmt die Länge eines Punktes (1,2 Sekunden geteilt durch die Geschwindigkeit)."],
+    ["Wie schreibe ich SOS?", "SOS ist <code>... --- ...</code>. Als echtes Notsignal wird es als ein durchgehendes Signal ohne Pausen zwischen den Buchstaben gesendet, aber ausgeschrieben werden die Buchstaben meist wie gezeigt getrennt."],
+    ["Wird mein Text hochgeladen?", "Nein. Übersetzung und Ton entstehen in Ihrem Browser, und der Text wird weder hochgeladen noch gespeichert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <fieldset>
+    <legend>Übersetzen</legend>
+    <div class="seg">
+      <label><input type="radio" name="dir" value="encode" checked>Text in Morse</label>
+      <label><input type="radio" name="dir" value="decode">Morse in Text</label>
+    </div>
+  </fieldset>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Text</label>
+      <textarea id="text" spellcheck="false" placeholder="Geben Sie hier Text ein, zum Beispiel SOS"></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">Morsecode</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Geben Sie Text ein, um zu beginnen.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Ergebnis kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>.txt herunterladen</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Tauschen: Ergebnis zurückübersetzen</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Leeren</button>
+  </div>
+  <div class="actions mc-play">
+    <button class="btn" id="play" type="button" disabled>Ton abspielen</button>
+    <button class="btn btn--quiet" id="stop" type="button" hidden>Stopp</button>
+    <label class="mc-wpm" for="wpm">Tempo</label>
+    <select id="wpm" class="mc-wpm__sel">
+      <option value="10">10 Wörter pro Minute</option>
+      <option value="15">15 Wörter pro Minute</option>
+      <option value="20" selected>20 Wörter pro Minute</option>
+      <option value="25">25 Wörter pro Minute</option>
+    </select>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Morsecode in Kürze</h2>
+<p>Der Morsecode schreibt jeden Buchstaben als kurzes Muster aus kurzen und langen Signalen, Punkten und Strichen. Häufige Buchstaben bekommen kurze Codes: E ist ein einzelner Punkt und T ein einzelner Strich, während seltenere Buchstaben wie Q (--.-) vier Signale brauchen. Dieser Morsecode-Übersetzer verwendet den internationalen Morsecode, wie ihn die ITU standardisiert hat und wie ihn Funkamateure, Piloten und Seeleute lernen.</p>
+<p>Das Timing gehört zum Code. Ein Strich dauert dreimal so lang wie ein Punkt, die Pause innerhalb eines Buchstabens ist einen Punkt lang, die Pause zwischen Buchstaben drei Punkte und die zwischen Wörtern sieben. Geschrieben steht ein Leerzeichen für die Pause zwischen Buchstaben und ein Schrägstrich für die Pause zwischen Wörtern.</p>
+<p>Der Morsecode kennt keine Groß- und Kleinbuchstaben, deshalb erscheint dekodierter Text in Großbuchstaben, so wie Funker ihn traditionell mitschreiben.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Probieren Sie eine andere Art, Text als Signale zu schreiben, mit <a href="/tools/text-to-binary/">Text in Binärcode</a>.</li>
+  <li>Machen Sie aus den dekodierten Großbuchstaben normale Sätze mit <a href="/tools/case-converter/">Groß- und Kleinschreibung umwandeln</a> (Satzanfang groß).</li>
+</ul>

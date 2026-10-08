@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Kompres foto online: perkecil JPG, PNG, WebP | Tanod Tools",
+  "description": "Kompres foto dan gambar JPEG, PNG, dan WebP di browser Anda. Atur kualitas, kurangi warna PNG, dan lihat ukuran yang dihemat. Tidak ada yang diunggah.",
+  "h1": "Kompres foto dan gambar",
+  "lede": "Kompres foto dan perkecil file JPEG, PNG, serta WebP, dan lihat persis berapa banyak ruang yang Anda hemat, tanpa mengunggah apa pun.",
+  "blurb": "Perkecil ukuran foto dan grafik, di browser Anda.",
+  "keywords": "kompres foto kompres gambar perkecil ukuran foto kecilkan foto mengecilkan ukuran gambar kb jpg jpeg png webp kualitas compress tinypng",
+  "limits": "Hingga 50 gambar per proses, masing-masing 50 MB dan sekitar 100 megapiksel. PNG, JPEG, WebP, GIF, BMP, dan AVIF (jika browser Anda bisa membukanya).",
+  "howto_title": "Cara mengompres gambar",
+  "howto": [
+    "Pilih gambar Anda, atau seret ke halaman ini.",
+    "Pilih format output dan kualitas. Untuk PNG, Anda juga bisa mengurangi jumlah warna.",
+    "Tekan <strong>Kompres</strong>, periksa ukurannya, lalu unduh file-filenya atau sebuah .zip."
+  ],
+  "faq": [
+    ["Apakah gambar saya diunggah?", "Tidak. Kompresi berjalan di browser Anda: gambar didekode, digambar ulang, dan disimpan kembali di perangkat Anda. Tidak ada yang dikirim ke server."],
+    ["Kualitas berapa yang sebaiknya dipilih?", "Untuk foto, 70 sampai 85 biasanya menghasilkan file yang jelas lebih kecil dan terlihat sama pada ukuran tampilan normal. Nilai lebih rendah menghemat lebih banyak ruang tetapi memunculkan kotak-kotak di sekitar tepi dan di area halus seperti langit. Untuk satu gambar, halaman ini menampilkan bagian tengah gambar asli dan hasilnya berdampingan pada 100%, sehingga Anda bisa menilainya."],
+    ["Apa fungsi \"Kurangi warna\"?", "Fungsi ini menulis ulang PNG dengan palet 256, 128, 64, atau 32 warna, bukan jutaan warna. Logo, screenshot, dan ilustrasi datar sering menyusut banyak tanpa perubahan yang terlihat. Foto dan gradasi halus bisa menampilkan banding (garis-garis warna), jadi periksa pratinjaunya. Ini bersifat lossy dan hanya berlaku jika output-nya PNG."],
+    ["Mengapa sebuah file bertuliskan \"sudah optimal\"?", "Jika versi yang disimpan ulang tidak lebih kecil dari file asli Anda, alat ini mempertahankan file asli tanpa mengubahnya, alih-alih memberi Anda file yang lebih besar."],
+    ["Apakah metadata dipertahankan?", "Tidak. Gambar dienkode ulang, sehingga data EXIF seperti detail kamera dan lokasi GPS tidak ikut terbawa, dan profil warna tidak disematkan. Gambar disimpan dengan orientasi seperti yang ditampilkan. Untuk menghapus metadata tanpa mengenkode ulang, gunakan <a href=\"/tools/remove-exif/\">Hapus data EXIF</a>."],
+    ["Apa yang terjadi pada file GIF, BMP, dan AVIF?", "Dengan \"Pertahankan\", file itu disimpan sebagai PNG (GIF menjadi frame pertamanya). Jika hasilnya tidak lebih kecil, file asli Anda dipertahankan. Anda juga bisa memilih JPEG atau WebP sebagai output."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Letakkan gambar di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Pilih gambar</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, atau AVIF. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<ol class="files" id="files" aria-label="Gambar yang akan dikompres" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Format output</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Pertahankan</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Pertahankan menyimpan JPEG, WebP, dan PNG dalam formatnya sendiri; format lain menjadi PNG.</p>
+    </fieldset>
+    <div class="field">
+      <label for="quality">Kualitas: <span class="num" id="quality-out">80</span></label>
+      <input type="range" id="quality" min="10" max="100" value="80">
+      <p class="help">Berlaku untuk output JPEG dan WebP. JPEG tidak mendukung transparansi, jadi area transparan menjadi putih.</p>
+    </div>
+    <div class="field">
+      <label for="colours">Kurangi warna (output PNG)</label>
+      <select id="colours">
+        <option value="0" selected>Mati: pertahankan semua warna</option>
+        <option value="256">256 warna</option>
+        <option value="128">128 warna</option>
+        <option value="64">64 warna</option>
+        <option value="32">32 warna</option>
+      </select>
+      <p class="help">Lossy. Paling cocok untuk logo, screenshot, dan grafik datar.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Kompres</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Hapus semua</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="compare" class="compare" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cara kerja kompresi gambar di sini</h2>
+<p>Saat Anda mengompres foto, yang dikecilkan adalah data pikselnya, karena sebagian besar ukuran file gambar berasal dari situ. JPEG dan WebP memperkecilnya dengan membuang detail yang paling kecil kemungkinannya disadari mata; pengaturan kualitas menentukan seberapa banyak yang dibuang. PNG bersifat lossless, jadi ukurannya bergantung pada seberapa mudah piksel-pikselnya diprediksi. Mengurangi PNG menjadi palet maksimal 256 warna membuat datanya jauh lebih mudah dikompres, dengan konsekuensi warnanya tidak lagi persis sama.</p>
+<p>Alat ini mendekode setiap gambar dengan browser Anda, menggambarnya ke kanvas, dan menyimpannya kembali, memakai encoder JPEG dan WebP bawaan browser Anda. Untuk PNG berpalet, alat ini memilih warna dengan quantiser open source UPNG.js dan menulis file PNG-nya sendiri. Jika hasilnya tidak lebih kecil dari file yang Anda berikan, Anda mendapatkan kembali file asli Anda.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Foto berukuran besar paling banyak menyusut jika dimensinya juga dikurangi: coba <a href="/tools/resize-image/">Ubah ukuran gambar</a> dulu, lalu kompres.</li>
+  <li>Perlu format lain? <a href="/tools/convert-image/">Konversi gambar</a> mendukung PNG, JPEG, dan WebP.</li>
+  <li>Untuk menghapus lokasi dan detail kamera tanpa mengompres ulang, gunakan <a href="/tools/remove-exif/">Hapus data EXIF</a>.</li>
+</ul>

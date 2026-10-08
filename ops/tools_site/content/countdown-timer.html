@@ -1,0 +1,98 @@
+<!--meta
+{
+  "category": "util",
+  "name": "Countdown timer",
+  "title": "Countdown timer: set a duration or a date | Tanod Tools",
+  "description": "Free online countdown timer with presets, a sound when time is up, the time in the tab title, and a date mode that counts down to any moment in any time zone.",
+  "h1": "Countdown timer",
+  "lede": "Set a duration and press start, or count down to a date and time in the zone of your choice and share the link.",
+  "blurb": "Timer with presets and alarm, or countdown to a date.",
+  "keywords": "timer countdown clock alarm pomodoro kitchen timer event countdown days until new year deadline",
+  "limits": "Durations go up to 99 hours, 59 minutes and 59 seconds. The timer only runs while this page stays open in a tab; closing it stops the countdown and the sound.",
+  "howto_title": "How to use the countdown timer",
+  "howto": [
+    "Enter hours, minutes and seconds or press a <strong>preset</strong>, then press <strong>Start</strong>. The tab title shows the time left.",
+    "Pause and resume as often as you like, or press <strong>Reset</strong> to go back to your starting time.",
+    "To count down to an event instead, switch to <em>To a date</em>, enter the date, time and zone, and copy the link to share it."
+  ],
+  "faq": [
+    ["Will it stay accurate if I switch to another tab?", "Yes. Browsers slow down timers in background tabs, so the page never counts ticks. It compares the current clock reading with the moment the timer should end, so the display catches up the instant the tab is visible and the end time does not drift. The alarm in a hidden tab can arrive up to about a second late."],
+    ["Will the sound play?", "The alarm is a short tone made by your browser's audio engine, with no audio file. Browsers allow sound only after you have interacted with the page, so press Start on this page first. If your device is on silent or the tab is muted you will not hear it, and the finished message stays on screen. Use the checkbox to turn the sound off."],
+    ["Can the timer keep my screen on?", "There is an optional checkbox for it. It uses the browser's Wake Lock feature, which Chrome, Edge and Safari offer. If your browser or battery saver refuses, the page says so and carries on; the countdown itself is unaffected."],
+    ["How do I share a countdown to an event?", "Switch to the date mode, enter the date, time and zone, then use Copy link. The target is stored in the part of the address after the <code>#</code>, such as <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. That part is not sent to any server when someone opens the link, and they see the same moment in their own clock."],
+    ["What happens at a daylight-saving change?", "In date mode the time is worked out for the zone you chose, using the browser's time zone data. If the clock time is skipped, for example 02:30 on the night clocks go forward, the page moves to the equivalent later moment and tells you. If it happens twice, the first one is used."],
+    ["Why does it show a whole second before it reaches zero?", "The display rounds up, so 00:00:01 stays on screen for the last second and zero appears at the moment time is up, which is how a kitchen timer behaves."]
+  ],
+  "related": ["stopwatch", "time-zone-converter", "date-difference-calculator", "unix-timestamp-converter", "random-name-picker"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Count down</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>For a duration</label>
+      <label><input type="radio" name="ct-mode" value="date">To a date</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Time remaining" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>Time is up.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Hours</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minutes</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Seconds</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Presets">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 min</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Start</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Reset</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Date</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Time</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Time zone</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Days</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Hours</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minutes</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Seconds</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Copy link to this countdown</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Mute the sound when time is up</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Keep the screen awake while counting</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>How a timer stays accurate, and what a hidden tab does to it</h2>
+<p>The obvious way to build a countdown is to subtract one from a number every time a one-second timer fires. It is also wrong. Browsers throttle timers in background tabs to once a second or even once a minute, and a busy page delays them further, so a counted-down timer quietly falls behind. This page stores the moment the timer should finish and, on every tick, subtracts the current time from it, using the monotonic clock for durations and the wall clock for dates. Ticks only decide when the screen is redrawn.</p>
+<p>Date mode works with calendar time, which is messier. "Midnight on 1 January in Auckland" is a different instant from the same clock reading in London, and twice a year some zones skip or repeat an hour. The page asks the browser's time zone database for the exact offset on the target day, so a countdown to a local event is correct for the place it happens, whatever zone the viewer is in.</p>
+<p>The announcements for screen readers are deliberately sparse: the start, each whole minute, 10 and 5 seconds, and the end. Reading out every second would make the page unusable with a screen reader and would not help anyone who can see the digits.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Planning an event across regions? Compare clock times first in the <a href="/tools/time-zone-converter/">time zone converter</a>.</li>
+  <li>Want elapsed time rather than time left, with laps? Use the <a href="/tools/stopwatch/">stopwatch</a>.</li>
+  <li>Need the gap between two dates in days, not a live clock? Try the <a href="/tools/date-difference-calculator/">date difference calculator</a>.</li>
+</ul>

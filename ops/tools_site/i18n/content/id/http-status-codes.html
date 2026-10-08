@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Daftar kode status HTTP lengkap dan artinya | Tanod Tools",
+  "description": "Cari semua kode status HTTP terdaftar IANA, 100 sampai 511: artinya, kapan muncul, apa yang harus dilakukan klien atau pemilik server, dan RFC-nya.",
+  "h1": "Kode status HTTP",
+  "lede": "Cari kode status HTTP apa pun berdasarkan angka atau kata, lengkap dengan arti dalam bahasa sehari-hari, penyebab umum, cara mengatasi dan RFC yang mendefinisikannya.",
+  "blurb": "Referensi semua kode status HTTP yang bisa dicari, plus cara mengatasinya.",
+  "keywords": "kode status http arti kode http daftar status code 404 not found 500 internal server error 301 302 redirect pengalihan 429 too many requests 502 bad gateway 503 504 teapot 418 rfc 9110 error http",
+  "limits": "Berisi kode dalam IANA HTTP Status Code Registry, dengan 306 dan 418 ditampilkan sebagai kode yang dicadangkan sebagaimana statusnya, ditambah sejumlah kecil kode tidak resmi yang sering terlihat dari nginx, Cloudflare dan Laravel, diberi label sumbernya. Kode khusus vendor lainnya tidak dicakup.",
+  "howto_title": "Cara mencari kode status",
+  "howto": [
+    "Ketik angkanya, misalnya <code>502</code>, atau sebuah kata, misalnya <em>rate limit</em> atau <em>pengalihan</em>, di kotak pencarian.",
+    "Persempit daftar dengan tombol kelas: 1xx sampai 5xx untuk kode standar, atau Tidak resmi untuk kode nginx, Cloudflare dan Laravel.",
+    "Buka sebuah kode untuk melihat kapan kode itu muncul dan apa yang harus dilakukan sebagai klien dan sebagai pemilik server. Gunakan tautan # untuk membagikan tautan langsung ke kode tersebut."
+  ],
+  "faq": [
+    ["Apa arti lima kelas kode status?", "Digit pertama menentukan kelasnya. 1xx bersifat informasi dan permintaan masih berjalan, 2xx berarti berhasil, 3xx berarti klien harus mengambil langkah lain (biasanya redirect), 4xx berarti permintaan bermasalah di sisi klien, dan 5xx berarti server gagal memproses permintaan yang tampak valid."],
+    ["Apa bedanya 401 dan 403?", "401 berarti server tidak tahu siapa Anda: kredensial tidak ada, salah atau kedaluwarsa, dan login bisa mengatasinya. 403 berarti server tahu siapa Anda tetapi Anda tidak diizinkan melakukan hal itu, jadi mengirim kredensial yang sama lagi tidak akan membantu."],
+    ["Sebaiknya pakai 301 atau 302 untuk redirect?", "Gunakan 301 (atau 308) jika perpindahannya permanen, agar browser dan mesin pencari beralih ke alamat baru. Gunakan 302 (atau 307) jika alamat lama akan dipakai lagi. 307 dan 308 mempertahankan metode request, sedangkan 301 dan 302 membiarkan klien lama mengubah POST menjadi GET."],
+    ["Apakah 418 I'm a teapot benar-benar kode status?", "Kode ini berawal dari lelucon April Mop di RFC 2324 untuk protokol pengendali teko kopi. IANA kini mencantumkan 418 sebagai tidak dipakai, dicadangkan agar tidak diberi arti sungguhan. Beberapa situs masih mengembalikannya untuk iseng atau untuk menolak scraper, tetapi ini bukan respons standar."],
+    ["Apa itu 520 sampai 526 dan 499?", "Kode-kode itu tidak ada dalam standar HTTP. 520 sampai 526 adalah error Cloudflare yang melaporkan masalah antara Cloudflare dan server Anda sendiri, dan 499 adalah kode log nginx untuk klien yang memutus koneksi sebelum balasan dikirim. Kode-kode ini ditampilkan di grup Tidak resmi beserta sumbernya."],
+    ["Mengapa error 5xx kadang hilang saat saya mencoba lagi?", "Banyak error 5xx berasal dari beban berlebih, backend yang sedang restart atau gangguan jaringan singkat, yang bisa pulih dalam hitungan detik. Mencoba lagi dengan jeda yang makin lama aman untuk request idempoten seperti GET; untuk POST, periksa dulu apakah percobaan pertama ternyata sudah berhasil."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="h-q">Cari berdasarkan angka atau kata</label>
+    <input type="search" id="h-q" class="hs-q" placeholder="404, pengalihan, rate limit, timeout" autocomplete="off" spellcheck="false" aria-describedby="h-count">
+  </div>
+  <fieldset class="hs-groups">
+    <legend class="visually-hidden">Filter berdasarkan kelas</legend>
+    <div class="seg">
+      <label><input type="radio" name="h-group" id="h-g-all" value="all" checked>Semua</label>
+      <label><input type="radio" name="h-group" id="h-g-1" value="1">1xx</label>
+      <label><input type="radio" name="h-group" id="h-g-2" value="2">2xx</label>
+      <label><input type="radio" name="h-group" id="h-g-3" value="3">3xx</label>
+      <label><input type="radio" name="h-group" id="h-g-4" value="4">4xx</label>
+      <label><input type="radio" name="h-group" id="h-g-5" value="5">5xx</label>
+      <label><input type="radio" name="h-group" id="h-g-u" value="u">Tidak resmi</label>
+    </div>
+  </fieldset>
+  <p class="tt__report" id="h-count" aria-live="polite"></p>
+  <p class="note" id="h-none" role="status" hidden></p>
+  <div class="hs-list" id="h-list"></div>
+</div>
+<!--explain-->
+<h2>Membaca kode status HTTP</h2>
+<p>Setiap respons HTTP diawali kode status tiga digit yang memberi tahu klien apa yang terjadi pada permintaannya. Digit pertama menunjukkan kelompoknya: 1xx untuk pesan progres, 2xx untuk keberhasilan, 3xx untuk pengalihan (redirect), 4xx untuk masalah pada permintaan dan 5xx untuk kegagalan di server. Program yang tidak mengenal sebuah kode tertentu tetap bisa bertindak benar dengan melihat digit pertama itu, itulah sebabnya kode baru bisa ditambahkan tanpa merusak klien lama.</p>
+<p>Daftar resminya disimpan di IANA HTTP Status Code Registry, dan artinya ditulis di RFC 9110 (HTTP Semantics) serta beberapa RFC lain untuk WebDAV dan ekstensi. Reason phrase setelah angka, seperti Not Found, hanyalah label; HTTP/2 dan HTTP/3 tidak membawanya. Beberapa frasa diganti namanya pada 2022, jadi 413 kini bernama Content Too Large dan 422 bernama Unprocessable Content.</p>
+<p>Server di luar standar juga membuat kode sendiri. nginx mencatat 499 ketika klien memutus koneksi, dan Cloudflare memakai 520 sampai 526 untuk menggambarkan kegagalan antara jaringannya dan server origin Anda. Kode-kode itu ditampilkan di sini dalam grup terpisah agar tidak dikira kode terdaftar. Saat debugging, ingat bahwa kode yang Anda lihat bisa berasal dari proxy atau CDN di depan aplikasi Anda, bukan dari aplikasinya sendiri.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Request gagal karena alamatnya berisi karakter khusus? Encode atau decode dengan <a href="/tools/url-encode-decode/">Encode dan decode URL</a>.</li>
+  <li>Baca body respons dari error API dengan <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+  <li>Dapat 403 untuk browser atau bot tertentu? Cek apa yang dikirim klien dengan <a href="/tools/user-agent-parser/">Pengurai user agent</a>.</li>
+</ul>

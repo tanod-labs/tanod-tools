@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Bild zuschneiden – online, kostenlos, pixelgenau | Tanod Tools",
+  "description": "JPG, PNG oder WebP im Browser zuschneiden: Rahmen ziehen, Seitenverhältnis wählen oder exakte Pixelwerte eingeben. Kein Upload, das Format bleibt erhalten.",
+  "h1": "Bild zuschneiden",
+  "lede": "Ziehen Sie einen Zuschneiderahmen über Ihr Bild oder geben Sie exakte Pixelwerte ein und speichern Sie dann die zugeschnittene Kopie.",
+  "blurb": "Ein Bild auf den Ausschnitt zuschneiden, den Sie brauchen.",
+  "keywords": "bild zuschneiden foto zuschneiden ausschneiden beschneiden croppen zurechtschneiden seitenverhältnis seitenverhaeltnis quadratisch 16:9 4:3 ausschnitt",
+  "limits": "Ein Bild nach dem anderen, bis zu 50 MB und etwa 100 Megapixel. PNG, JPEG, WebP, GIF, BMP und AVIF (sofern Ihr Browser sie öffnen kann).",
+  "howto_title": "So schneiden Sie ein Bild zu",
+  "howto": [
+    "Wählen Sie ein Bild aus oder ziehen Sie es auf die Seite.",
+    "Ziehen Sie den Rahmen, um ihn zu verschieben, und die Eckgriffe, um seine Größe zu ändern. Wählen Sie bei Bedarf ein Seitenverhältnis oder geben Sie X, Y, Breite und Höhe in Pixeln ein.",
+    "Klicken Sie auf <strong>Zuschneiden</strong> und laden Sie dann das Ergebnis herunter."
+  ],
+  "faq": [
+    ["Wird mein Bild hochgeladen?", "Nein. Der Zuschnitt entsteht in Ihrem Browser aus der Datei auf Ihrem Gerät. Nichts wird an einen Server gesendet."],
+    ["Kann ich statt der Maus die Tastatur benutzen?", "Ja. Setzen Sie den Fokus auf den Zuschneiderahmen (per Tab oder per Klick) und verschieben Sie ihn mit den Pfeiltasten; mit Umschalt und Pfeiltasten ändern Sie seine Größe. Die Felder X, Y, Breite und Höhe nehmen außerdem exakte Pixelwerte an."],
+    ["Verringert das Zuschneiden die Qualität?", "Die Pixel im Rahmen werden unverändert in voller Auflösung kopiert, nicht aus der bildschirmgroßen Vorschau. JPEG und WebP werden mit Qualität 92 neu gespeichert, es gibt also eine geringe erneute Komprimierung; PNG bleibt verlustfrei."],
+    ["In welchem Format ist das Ergebnis?", "Im selben wie das Original: PNG bleibt PNG, JPEG bleibt JPEG und WebP bleibt WebP. GIF, BMP und AVIF werden als PNG gespeichert (aus einem GIF wird sein erstes Bild)."],
+    ["Was bewirken die Seitenverhältnis-Vorgaben?", "Sie fixieren den Rahmen auf ein Verhältnis von Breite zu Höhe, etwa 1:1 für ein Quadrat oder 16:9 für ein Breitbildformat, und halten es beim Ändern der Größe ein. Wählen Sie Frei, um eine beliebige Form zuzuschneiden."],
+    ["Bleiben EXIF-Daten erhalten?", "Nein. Die zugeschnittene Datei ist ein neues Bild ohne Kamera- oder GPS-Metadaten und wird in der Ausrichtung gespeichert, in der es angezeigt wird."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Bild hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Bild auswählen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP oder AVIF. Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Vorschau des Bildes, das zugeschnitten wird" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Zuschneidebereich" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Ziehen Sie den Rahmen, um ihn zu verschieben, und eine Ecke, um seine Größe zu ändern. Hat der Rahmen den Fokus, verschieben ihn die Pfeiltasten; Umschalt mit Pfeiltasten ändert seine Größe.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Seitenverhältnis</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Frei</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Breite (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Höhe (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Zuschneiden</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Bild zuschneiden, ohne Auflösung zu verlieren</h2>
+<p>Beim Zuschneiden bleibt ein Rechteck der Originalpixel erhalten, der Rest wird verworfen. Das Bild auf dem Bildschirm ist eine verkleinerte Vorschau, damit es auf die Seite passt; der Zuschnitt selbst stammt aus dem Bild in voller Auflösung, anhand der X-, Y-, Breiten- und Höhenwerte in den Feldern. Diese Zahlen beziehen sich auf die Pixel des Bildes selbst, nicht auf Bildschirmpixel.</p>
+<p>Nutzen Sie ein Seitenverhältnis, wenn das Ergebnis in einen bestimmten Rahmen passen muss: 1:1 für ein quadratisches Profilbild, 16:9 für ein Video-Vorschaubild, 4:3 oder 3:2 für gängige Fotoformate, 9:16 für eine Story im Hochformat. Der Rahmen behält diese Form beim Ändern der Größe, und wenn Sie eine Breite oder Höhe eingeben, passt sich der andere Wert an.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Erst zuschneiden, dann die Größe mit <a href="/tools/resize-image/">Bildgröße ändern</a> und <a href="/tools/compress-image/">Bild komprimieren</a> verringern.</li>
+  <li>Foto falsch herum? <a href="/tools/rotate-image/">Bild drehen</a> behebt das.</li>
+  <li>Sie möchten aus einem Bildausschnitt ein Icon machen? Schneiden Sie es auf 1:1 zu und nutzen Sie dann den <a href="/tools/favicon-generator/">Favicon-Generator</a>.</li>
+</ul>

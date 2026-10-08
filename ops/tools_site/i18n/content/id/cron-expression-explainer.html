@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Jelaskan ekspresi cron dan jadwal eksekusinya | Tanod Tools",
+  "description": "Tempel ekspresi cron untuk membacanya dalam bahasa sehari-hari dan melihat eksekusi berikutnya di zona waktu Anda, UTC atau lainnya. Kesalahan dijelaskan.",
+  "h1": "Jelaskan ekspresi cron",
+  "lede": "Baca jadwal crontab dalam bahasa sehari-hari dan lihat daftar waktu eksekusi berikutnya, di zona waktu mana pun.",
+  "blurb": "Jadwal cron dalam bahasa sehari-hari, plus waktu eksekusi berikutnya.",
+  "keywords": "crontab cron jadwal cron job eksekusi berikutnya crontab guru setiap 5 menit sintaks cron cek cron arti cron penjelasan cron",
+  "limits": "Cron standar lima kolom (menit, jam, tanggal, bulan, hari dalam seminggu) seperti yang dipakai Vixie cron, cronie dan sebagian besar sistem Linux, plus pintasan seperti @daily. Format Quartz dan format lain yang memakai kolom detik dikenali tetapi tidak dijelaskan.",
+  "howto_title": "Cara mengecek ekspresi cron",
+  "howto": [
+    "Ketik atau tempel kelima kolom jadwal, misalnya <code>*/15 9-17 * * 1-5</code>, atau pilih contoh. Baris crontab lengkap juga bisa; perintah setelah kolom kelima diabaikan.",
+    "Baca ringkasannya dalam bahasa sehari-hari dan rincian tiap kolom. Kesalahan ditunjukkan di kolom tempat kesalahan itu terjadi.",
+    "Periksa daftar waktu eksekusi berikutnya. Pilih zona waktu tempat server berjalan, dan waktu mulai lain jika Anda ingin melihat lebih jauh ke depan."
+  ],
+  "faq": [
+    ["Apa arti kelima kolom cron?", "Berurutan: menit (0-59), jam (0-23), tanggal (1-31), bulan (1-12 atau JAN-DEC) dan hari dalam seminggu (0-7 atau SUN-SAT, dengan 0 dan 7 sama-sama Minggu). Setiap kolom menerima satu nilai, daftar seperti <code>1,15</code>, rentang seperti <code>9-17</code>, langkah seperti <code>*/15</code> atau <code>0-30/10</code>, atau <code>*</code> untuk semua nilai."],
+    ["Mengapa job saya berjalan di lebih banyak hari dari yang saya kira?", "Jika kolom tanggal dan kolom hari dalam seminggu sama-sama dibatasi, cron berjalan pada hari yang cocok dengan salah satunya, bukan keduanya. <code>0 9 1 * 1</code> berjalan setiap tanggal 1 dan setiap hari Senin. Begitulah perilaku Vixie cron dan cronie. Keanehan dari aturan yang sama: kolom yang diawali <code>*</code>, seperti <code>*/2</code>, dianggap tidak dibatasi, sehingga kedua kolom harus cocok."],
+    ["Zona waktu apa yang dipakai cron?", "Zona waktu mesin atau container tempat cron berjalan, kecuali crontab mengatur <code>CRON_TZ</code> atau <code>TZ</code>. Banyak server berjalan dengan UTC, jadi periksa itu sebelum memercayai waktu yang Anda lihat. Pilih zona server di daftar untuk melihat waktu eksekusinya."],
+    ["Apa yang terjadi saat jam berubah karena daylight saving time?", "Daftar mengikuti jam di zona yang Anda pilih: waktu yang terlewati saat jam dimajukan tidak dicantumkan, dan waktu yang terjadi dua kali saat jam dimundurkan dicantumkan sekali. Vixie cron dan cronie menjalankan job yang dijadwalkan di jam yang terlewati segera setelah perubahan dan tidak mengulang job di jam yang terulang; scheduler lain bisa berbeda. Sebuah catatan muncul jika periode yang ditampilkan mencakup perubahan jam."],
+    ["Apakah alat ini mendukung detik atau sintaks Quartz?", "Tidak. Ekspresi dengan enam atau tujuh kolom, atau yang memakai <code>?</code>, <code>L</code>, <code>W</code> atau <code>#</code>, berasal dari Quartz, Spring dan scheduler sejenis, yang kolom pertamanya adalah detik. Alat ini memberi tahu Anda alih-alih menebak, karena membacanya sebagai cron standar akan menghasilkan jadwal yang salah."],
+    ["Apa arti @daily, @hourly dan pintasan lainnya?", "<code>@hourly</code> adalah <code>0 * * * *</code>, <code>@daily</code> dan <code>@midnight</code> adalah <code>0 0 * * *</code>, <code>@weekly</code> adalah <code>0 0 * * 0</code>, <code>@monthly</code> adalah <code>0 0 1 * *</code>, serta <code>@yearly</code> dan <code>@annually</code> adalah <code>0 0 1 1 *</code>. <code>@reboot</code> berjalan sekali saat layanan cron dimulai, jadi tidak ada waktu yang bisa ditampilkan."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="c-in">Ekspresi cron</label>
+    <input type="text" id="c-in" class="mono cron-in" value="*/15 9-17 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Contoh">
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Setiap 5 menit</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Setiap jam</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Setiap hari tengah malam</button>
+    <button class="btn btn--sm" type="button" data-cron="0 9 * * 1-5">Hari kerja pukul 09:00</button>
+    <button class="btn btn--sm" type="button" data-cron="30 2 * * 0">Minggu pukul 02:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Tanggal 1 setiap bulan</button>
+  </div>
+  <p class="tt__report" id="c-info" aria-live="polite"></p>
+  <p class="cron-say" id="c-say" aria-live="polite"></p>
+  <dl class="cron-fields" id="c-fields" aria-label="Kolom">
+    <div><dt>Menit</dt><dd></dd></div>
+    <div><dt>Jam</dt><dd></dd></div>
+    <div><dt>Tanggal</dt><dd></dd></div>
+    <div><dt>Bulan</dt><dd></dd></div>
+    <div><dt>Hari dalam seminggu</dt><dd></dd></div>
+  </dl>
+  <p class="note" id="c-note" hidden></p>
+
+  <h2 class="util-h">Eksekusi berikutnya</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="c-tz">Zona waktu</label>
+      <select id="c-tz"></select>
+    </div>
+    <div class="field">
+      <label for="c-from">Mulai dari</label>
+      <input type="datetime-local" id="c-from" step="60">
+      <span class="help">Biarkan kosong untuk mulai dari sekarang.</span>
+    </div>
+    <div class="field">
+      <label for="c-count">Jumlah</label>
+      <select id="c-count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="c-runs-info"></p>
+  <ol class="cron-runs" id="c-runs" aria-label="Waktu eksekusi berikutnya"></ol>
+  <p class="note" id="c-runs-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Membaca jadwal cron</h2>
+<p>Untuk menjelaskan ekspresi cron, perlu dipahami dulu cara kerjanya: cron memeriksa tabelnya sekali per menit dan menjalankan setiap job yang kelima kolomnya cocok dengan waktu saat itu, dengan satu pengecualian untuk dua kolom hari yang dijelaskan di bawah. Jadi <code>*/15 9-17 * * 1-5</code> berarti: pada menit 0, 15, 30 dan 45, pada jam 9 sampai 17, pada tanggal berapa pun, di bulan apa pun, Senin sampai Jumat. Eksekusi terakhir dalam sehari terjadi pukul 17:45, karena kolom jam mencakup seluruh jam ke-17.</p>
+<p>Alat ini mengurai setiap kolom seperti Vixie cron dan cronie, yang dipakai sebagian besar distribusi Linux. Nama bulan dan hari diterima dalam huruf besar maupun kecil, dan 7 dihitung sebagai Minggu. Langkah setelah satu angka, seperti <code>5/10</code>, dibaca sebagai <code>5-59/10</code> seperti di banyak versi cron; beberapa versi lama menolaknya, jadi alat ini mengingatkan Anda untuk menuliskan rentangnya secara lengkap. Rentang harus dari kecil ke besar: <code>FRI-MON</code> ditandai, bukan diputar balik, karena cron standar tidak memutar rentang.</p>
+<p>Waktu eksekusi berikutnya dihitung dengan menelusuri kalender di zona waktu yang Anda pilih, sehingga ekspresi yang hanya bisa cocok pada 29 Februari langsung menemukan tahun kabisat berikutnya, dan ekspresi yang tidak akan pernah cocok, seperti <code>0 0 31 2 *</code>, dilaporkan tidak pernah berjalan.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ubah waktu eksekusi dari log menjadi timestamp Unix, atau sebaliknya, dengan <a href="/tools/unix-timestamp-converter/">Konverter timestamp Unix</a>.</li>
+  <li>Menguji pola yang dipakai job untuk menyaring log-nya? Coba <a href="/tools/regex-tester/">Penguji regex</a>.</li>
+  <li>Lihat tampilan konfigurasi JSON yang berisi jadwal dengan <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+</ul>

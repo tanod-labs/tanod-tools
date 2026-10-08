@@ -1,0 +1,94 @@
+<!--meta
+{
+  "title": "Countdown-Timer online: Dauer oder Datum | Tanod Tools",
+  "description": "Kostenloser Countdown-Timer mit Vorgaben, Signalton bei Ablauf, Restzeit im Tab-Titel und Datumsmodus, der bis zu jedem Zeitpunkt in jeder Zeitzone zählt.",
+  "h1": "Countdown-Timer",
+  "lede": "Stellen Sie eine Dauer ein und drücken Sie Start, oder zählen Sie bis zu einem Datum und einer Uhrzeit in der Zeitzone Ihrer Wahl herunter und teilen Sie den Link.",
+  "blurb": "Timer mit Vorgaben und Alarm oder Countdown bis zu einem Datum.",
+  "keywords": "countdown timer online countdown kurzzeitwecker eieruhr küchentimer kuechentimer stoppuhr rückwärts wecker alarm pomodoro event countdown tage bis silvester neujahr frist",
+  "limits": "Dauern bis 99 Stunden, 59 Minuten und 59 Sekunden. Der Timer läuft nur, solange diese Seite in einem Tab geöffnet bleibt; wird sie geschlossen, stoppen Countdown und Ton.",
+  "howto_title": "So nutzen Sie den Countdown-Timer",
+  "howto": [
+    "Geben Sie Stunden, Minuten und Sekunden ein oder klicken Sie auf eine <strong>Vorgabe</strong> und dann auf <strong>Start</strong>. Der Tab-Titel zeigt die verbleibende Zeit.",
+    "Pausieren und fortsetzen Sie so oft Sie möchten, oder klicken Sie auf <strong>Zurücksetzen</strong>, um zur Startzeit zurückzukehren.",
+    "Um stattdessen bis zu einem Ereignis herunterzuzählen, wechseln Sie zu <em>Bis zu einem Datum</em>, geben Sie Datum, Uhrzeit und Zeitzone ein und kopieren Sie den Link zum Teilen."
+  ],
+  "faq": [
+    ["Bleibt der Timer genau, wenn ich zu einem anderen Tab wechsle?", "Ja. Browser verlangsamen Timer in Hintergrund-Tabs, daher zählt die Seite nie Ticks. Sie vergleicht die aktuelle Uhrzeit mit dem Zeitpunkt, an dem der Timer enden soll; die Anzeige holt also auf, sobald der Tab sichtbar ist, und die Endzeit verschiebt sich nicht. Der Alarm in einem verborgenen Tab kann bis zu etwa einer Sekunde zu spät kommen."],
+    ["Wird der Ton abgespielt?", "Der Alarm ist ein kurzer Ton, den die Audio-Engine Ihres Browsers erzeugt, ohne Audiodatei. Browser erlauben Ton erst, nachdem Sie mit der Seite interagiert haben, klicken Sie also zuerst auf dieser Seite auf Start. Ist Ihr Gerät stummgeschaltet oder der Tab stumm, hören Sie ihn nicht, und die Abschlussmeldung bleibt auf dem Bildschirm. Mit dem Kontrollkästchen schalten Sie den Ton ab."],
+    ["Kann der Timer meinen Bildschirm eingeschaltet lassen?", "Dafür gibt es ein optionales Kontrollkästchen. Es nutzt die Wake-Lock-Funktion des Browsers, die Chrome, Edge und Safari anbieten. Lehnt Ihr Browser oder Energiesparmodus ab, meldet die Seite das und läuft weiter; der Countdown selbst ist davon nicht betroffen."],
+    ["Wie teile ich einen Countdown zu einem Ereignis?", "Wechseln Sie in den Datumsmodus, geben Sie Datum, Uhrzeit und Zeitzone ein und nutzen Sie dann „Link kopieren“. Das Ziel steht im Teil der Adresse nach dem <code>#</code>, etwa <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. Dieser Teil wird beim Öffnen des Links an keinen Server gesendet, und die Empfänger sehen denselben Zeitpunkt in ihrer eigenen Uhrzeit."],
+    ["Was passiert bei einer Zeitumstellung?", "Im Datumsmodus wird die Uhrzeit für die gewählte Zeitzone berechnet, mit den Zeitzonendaten des Browsers. Wird die Uhrzeit übersprungen, etwa 02:30 in der Nacht der Umstellung auf Sommerzeit, springt die Seite zum entsprechenden späteren Zeitpunkt und weist Sie darauf hin. Gibt es sie zweimal, wird die erste verwendet."],
+    ["Warum wird eine ganze Sekunde angezeigt, bevor null erreicht ist?", "Die Anzeige rundet auf, sodass 00:00:01 in der letzten Sekunde stehen bleibt und null genau dann erscheint, wenn die Zeit abgelaufen ist, so wie bei einer Küchenuhr."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Herunterzählen</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>Eine Dauer</label>
+      <label><input type="radio" name="ct-mode" value="date">Bis zu einem Datum</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Verbleibende Zeit" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>Die Zeit ist abgelaufen.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Stunden</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minuten</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Sekunden</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Vorgaben">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 Min.</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 Min.</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 Min.</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 Min.</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 Min.</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Start</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Zurücksetzen</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Datum</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Uhrzeit</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Zeitzone</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Tage</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Stunden</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minuten</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Sekunden</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Link zu diesem Countdown kopieren</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Ton bei Ablauf stummschalten</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Bildschirm während des Countdowns aktiv halten</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Wie ein Timer genau bleibt, und was ein verborgener Tab mit ihm macht</h2>
+<p>Der naheliegende Weg, einen Countdown-Timer zu bauen, ist, bei jedem Auslösen eines Sekunden-Timers eins von einer Zahl abzuziehen. Er ist aber falsch. Browser drosseln Timer in Hintergrund-Tabs auf einmal pro Sekunde oder sogar einmal pro Minute, und eine ausgelastete Seite verzögert sie zusätzlich, sodass ein heruntergezählter Timer unbemerkt zurückfällt. Diese Seite speichert den Zeitpunkt, an dem der Timer enden soll, und zieht bei jedem Tick die aktuelle Zeit davon ab, mit der monotonen Uhr für Dauern und der Systemuhr für Daten. Die Ticks bestimmen nur, wann der Bildschirm neu gezeichnet wird.</p>
+<p>Der Datumsmodus arbeitet mit Kalenderzeit, und die ist unordentlicher. „Mitternacht am 1. Januar in Auckland“ ist ein anderer Zeitpunkt als dieselbe Uhrzeit in Berlin, und zweimal im Jahr überspringen oder wiederholen manche Zeitzonen eine Stunde. Die Seite fragt die Zeitzonendatenbank des Browsers nach dem genauen Versatz am Zieltag, sodass ein Countdown zu einem lokalen Ereignis für den Ort stimmt, an dem es stattfindet, egal in welcher Zeitzone sich der Betrachter befindet.</p>
+<p>Die Ansagen für Screenreader sind bewusst sparsam: der Start, jede volle Minute, 10 und 5 Sekunden und das Ende. Jede Sekunde vorzulesen würde die Seite mit einem Screenreader unbenutzbar machen und niemandem helfen, der die Ziffern sehen kann.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie planen ein Ereignis über mehrere Regionen? Vergleichen Sie die Uhrzeiten zuerst im <a href="/tools/time-zone-converter/">Zeitzonenrechner</a>.</li>
+  <li>Sie möchten die verstrichene statt der verbleibenden Zeit, mit Runden? Nutzen Sie die <a href="/tools/stopwatch/">Stoppuhr</a>.</li>
+  <li>Sie brauchen den Abstand zwischen zwei Daten in Tagen statt einer laufenden Uhr? Probieren Sie <a href="/tools/date-difference-calculator/">Tage zwischen zwei Daten</a>.</li>
+</ul>

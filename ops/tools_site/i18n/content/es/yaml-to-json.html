@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Convertir YAML a JSON online | Tanod Tools",
+  "description": "Convierte YAML a JSON en tu navegador. Admite anclas, alias, claves de fusión y varios documentos, con línea y columna de cada error. Gratis y privado.",
+  "h1": "Convertir YAML a JSON",
+  "lede": "Pega YAML y recibe JSON, con las anclas y las claves de fusión resueltas y la línea exacta de cualquier error de sintaxis.",
+  "blurb": "Convierte YAML a JSON.",
+  "keywords": "yaml a json convertir yaml json conversor yml a json parsear kubernetes docker compose openapi configuracion anclas alias",
+  "limits": "Entrada de hasta unos 10 MB. Lee YAML 1.2 solo con los tipos estándar; las etiquetas personalizadas como <code>!!python/object</code> se rechazan, no se ejecutan.",
+  "howto_title": "Cómo convertir YAML a JSON",
+  "howto": [
+    "Pega tu YAML en el cuadro o presiona <strong>Insertar un ejemplo</strong>.",
+    "Elige 2 espacios, 4 espacios, tabuladores o <strong>Minificar</strong> para el formato del JSON.",
+    "Si el YAML tiene un error de sintaxis, verás su línea y columna. Si no, copia el JSON o descárgalo como archivo <code>.json</code>."
+  ],
+  "faq": [
+    [
+      "¿Se sube mi YAML?",
+      "No. El analizador de YAML se carga desde este sitio la primera vez que pegas algo y funciona en tu navegador. Una configuración con contraseñas o claves no se envía a ningún lado."
+    ],
+    [
+      "¿Por qué yes sigue siendo el texto \"yes\"?",
+      "Esta herramienta sigue YAML 1.2, donde solo <code>true</code> y <code>false</code> son booleanos. Las palabras <code>yes</code>, <code>no</code>, <code>on</code> y <code>off</code> siguen siendo cadenas, lo que evita el llamado problema de Noruega, en el que el código de país <code>NO</code> se convierte en <code>false</code> con los analizadores de YAML 1.1. Si lo que va a leer el resultado es un analizador de YAML 1.1, puede interpretar esas palabras de otra forma."
+    ],
+    [
+      "¿Qué pasa con las fechas y las marcas de tiempo?",
+      "Un valor como <code>2024-05-01</code> se conserva como la cadena \"2024-05-01\". JSON no tiene tipo de fecha, y convertirlo en un número o en otro formato haría perder información."
+    ],
+    [
+      "¿Y los enteros muy grandes?",
+      "Los enteros mayores que 9.007.199.254.740.991 (2<sup>53</sup> - 1) se escriben dígito por dígito en lugar de redondearse, así que un identificador como 12345678901234567890 se conserva. Ten en cuenta que un programa que después lea el JSON con números normales de JavaScript lo redondeará."
+    ],
+    [
+      "¿Se admiten anclas, alias y claves de fusión?",
+      "Sí. Las anclas <code>&amp;nombre</code> y los alias <code>*nombre</code> se expanden, y <code>&lt;&lt;: *nombre</code> fusiona un mapeo dentro de otro. Como JSON no tiene referencias, cada alias se escribe completo."
+    ],
+    [
+      "¿Qué son el límite de alias y el tope de 20 MB?",
+      "Un archivo YAML pequeño puede usar alias que se expanden en algo enorme, lo que se conoce como bomba de alias. Los archivos con más de 10.000 alias se rechazan, y la conversión se detiene si el JSON superaría los 20 MB, así tu pestaña no se congela."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insertar un ejemplo</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Borrar</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="nombre: ejemplo
+etiquetas: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Formato</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 espacios</label>
+      <label><input type="radio" name="indent" value="4">4 espacios</label>
+      <label><input type="radio" name="indent" value="tab">Tabulador</label>
+      <label><input type="radio" name="indent" value="min">Minificar</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Entrada</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Salida</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Cambio</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Resultado</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copiar</button>
+    <button class="btn" id="f-dl" type="button">Descargar .json</button>
+  </div>
+</div>
+<!--explain-->
+<h2>De YAML a JSON</h2>
+<p>YAML y JSON describen el mismo tipo de datos: mapeos, listas y valores simples. YAML lo escriben personas, con sangría en lugar de llaves, comentarios y atajos como las anclas; JSON es lo que esperan la mayoría de los programas y las API. Convertir YAML a JSON es habitual cuando un manifiesto de Kubernetes, un archivo de Compose o una descripción OpenAPI tiene que pasarse a algo que solo lee JSON.</p>
+<p>Algunas funciones de YAML no tienen equivalente en JSON, así que el conversor las resuelve. Un ancla (<code>&amp;base</code>) marca un bloque que un alias (<code>*base</code>) puede reutilizar, y una clave de fusión (<code>&lt;&lt;</code>) copia las entradas de un mapeo en otro; en JSON cada uno de ellos se convierte en una copia completa. Los comentarios se descartan, porque JSON no puede contenerlos. Un archivo con varios documentos separados por <code>---</code> se convierte en un array JSON.</p>
+<p>Las reglas de tipos siguen YAML 1.2: <code>true</code> y <code>false</code> son booleanos, <code>null</code> y <code>~</code> son nulos, los números son números y todo lo demás, incluidos <code>yes</code> y <code>2024-05-01</code>, es texto. Los errores de sintaxis indican línea y columna, y las causas más frecuentes son un tabulador usado para la sangría, una clave repetida en el mismo mapeo y un valor que no está indentado bajo su clave.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Necesitas lo contrario? <a href="/tools/json-to-yaml/">Convertir JSON a YAML</a> pone entre comillas valores como "yes" para que no cambien en el camino.</li>
+  <li>Revisa u ordena el resultado con <a href="/tools/json-formatter/">Formatear y validar JSON</a>.</li>
+  <li>¿Tienes datos en forma de tabla? <a href="/tools/csv-to-json/">CSV a JSON</a> se encarga de las hojas de cálculo.</li>
+</ul>

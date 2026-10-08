@@ -1,0 +1,82 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Color palette generator",
+  "title": "Color palette generator: harmonies from one colour | Tanod Tools",
+  "description": "Pick a base colour and get analogous, complementary, triadic, tetradic and monochromatic palettes with contrast ratios and export. Free, runs in your browser.",
+  "h1": "Color palette generator",
+  "lede": "Start from one colour and get matching palettes, each swatch with its HEX and RGB values and its contrast against white and black.",
+  "blurb": "Colour harmonies from one base colour, with contrast ratios.",
+  "keywords": "colour palette color scheme harmony analogous complementary triadic tetradic split complementary monochromatic tints shades oklch random palette swatches css variables",
+  "limits": "Palettes are built in the OKLCH colour space and shown as sRGB HEX, so colours too vivid for a screen are toned down in chroma. Contrast figures use the WCAG 2 formula, which measures lightness contrast only.",
+  "howto_title": "How to make a colour palette",
+  "howto": [
+    "Choose a base colour with the picker, or type a value such as <code>#1636a3</code> or <code>f60</code> into the HEX field.",
+    "Read the harmony palettes below it. Each swatch shows its HEX, RGB and whether black or white text passes WCAG AA or AAA on it.",
+    "Pick a palette under <strong>Export</strong> and copy or download it as CSS custom properties, a JSON array or a plain list. Use <strong>Random palette</strong> and the lock buttons to explore."
+  ],
+  "faq": [
+    ["Why OKLCH instead of HSL?", "In HSL, a yellow and a blue with the same lightness value look very different in brightness. OKLCH is built so that equal lightness steps look equal, which keeps a palette's swatches even in weight. Hue is the angle used for the harmonies, so a complementary colour sits 180 degrees from your base in OKLCH, not in HSL."],
+    ["What happens when a colour cannot be shown on a screen?", "Rotating a hue while keeping the lightness and chroma sometimes lands outside the sRGB range that a normal display can show. The tool then lowers the chroma, keeping lightness and hue, until the colour fits. That is why a rotated swatch can look a little less vivid than the base."],
+    ["What do the AA and AAA labels mean?", "They report the WCAG 2 contrast ratio of white or black text on that swatch. A ratio of 4.5 or more is AA for normal text, 7 or more is AAA, and 3 to 4.5 passes AA only for large text. A swatch that fails both black and white is a poor background for text."],
+    ["How does the random palette work?", "Five colours are drawn with the browser's secure random number generator: hues spread around the wheel, with random lightness and chroma in a range that avoids near-black and near-white. Lock a swatch to keep it, then press Random palette or the Space bar to replace the others."],
+    ["Which export format should I use?", "CSS custom properties paste straight into a stylesheet's <code>:root</code> block. The JSON array suits design tokens or scripts, and the plain list is one HEX per line for tools that accept pasted colours. All three use the displayed HEX values."],
+    ["Does it handle shorthand HEX and capital letters?", "Yes. <code>#abc</code>, <code>abc</code>, <code>#AABBCC</code> and <code>aabbcc</code> are all read. Values with an alpha pair, such as eight digits, are not accepted here; use the <a href=\"/tools/color-converter/\">Color converter</a> to drop the alpha first."]
+  ],
+  "related": ["css-gradient-generator", "color-converter", "image-color-picker", "favicon-generator", "meta-tag-generator"],
+  "app_category": "DesignApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack gen-pal">
+  <div class="gen-base">
+    <div class="field">
+      <label for="cp-pick">Base colour</label>
+      <input type="color" id="cp-pick" value="#1636a3">
+    </div>
+    <div class="field gen-base__hex">
+      <label for="cp-hex">HEX value</label>
+      <input type="text" id="cp-hex" class="mono" value="#1636a3" maxlength="9" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="cp-msg">
+    </div>
+    <p class="tt__report gen-base__info" id="cp-msg" aria-live="polite"></p>
+  </div>
+
+  <div id="cp-harmonies" class="util-stack"></div>
+
+  <h2 class="util-h">Random palette</h2>
+  <p class="help" id="cp-rand-help">Five colours from your browser's random number generator. Lock the ones you want to keep, then draw again. Press the Space bar to draw when no text field has focus.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="cp-random" type="button">Random palette</button>
+  </div>
+  <div id="cp-random-out" data-scheme="random"></div>
+
+  <h2 class="util-h">Export</h2>
+  <div class="opts">
+    <div class="field"><label for="cp-which">Palette</label><select id="cp-which"></select></div>
+    <fieldset class="field">
+      <legend>Format</legend>
+      <div class="seg" role="radiogroup" aria-label="Export format">
+        <label><input type="radio" name="cp-fmt" value="css" checked>CSS variables</label>
+        <label><input type="radio" name="cp-fmt" value="json">JSON</label>
+        <label><input type="radio" name="cp-fmt" value="list">Plain list</label>
+      </div>
+    </fieldset>
+  </div>
+  <label class="visually-hidden" for="cp-out">Exported palette</label>
+  <textarea id="cp-out" class="mono gen-out" rows="7" readonly spellcheck="false"></textarea>
+  <div class="actions">
+    <button class="btn" id="cp-copy" type="button">Copy</button>
+    <button class="btn" id="cp-dl" type="button">Download</button>
+  </div>
+</div>
+<!--explain-->
+<h2>How the harmonies are built</h2>
+<p>A colour harmony is a set of colours whose hues sit at fixed angles around the colour wheel. Analogous colours are neighbours, 30 degrees apart. A complementary colour is 180 degrees away, a split-complementary pair sits 150 and 210 degrees away, a triad is spaced 120 degrees apart, and a tetrad uses four hues 90 degrees apart. The monochromatic palette keeps the hue and steps the lightness from pale tints to dark shades.</p>
+<p>The wheel used here is OKLCH, the cylindrical form of Björn Ottosson's OKLab space. The conversion goes from sRGB to linear light, then through the OKLab matrices, and back again with a gamut check. If a rotated colour falls outside what sRGB can show, its chroma is reduced in small steps until it fits, so the lightness and hue you chose are kept.</p>
+<p>Contrast is reported for every swatch against both white and black, because the first question about a palette colour is usually what text can sit on it. The ratio and the AA or AAA wording are always written out, so the information does not depend on seeing colour.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need the same colour as HSL, CMYK or a CSS name? Use the <a href="/tools/color-converter/">Color converter</a>.</li>
+  <li>Turn two palette colours into a background with the <a href="/tools/css-gradient-generator/">CSS gradient generator</a>.</li>
+  <li>Want a colour taken from a photo rather than a wheel? Try the <a href="/tools/image-color-picker/">Image colour picker</a>.</li>
+</ul>

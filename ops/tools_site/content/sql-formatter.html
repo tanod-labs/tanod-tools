@@ -1,0 +1,112 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "SQL formatter",
+  "title": "SQL formatter and beautifier online | Tanod Tools",
+  "description": "Format and beautify SQL for PostgreSQL, MySQL, SQL Server, Oracle, SQLite, BigQuery and more. Choose keyword case and indent. Runs in your browser, free.",
+  "h1": "SQL formatter",
+  "lede": "Paste a query, pick your database, and get it back indented with one clause per line.",
+  "blurb": "Beautify SQL for 20 dialects.",
+  "keywords": "sql beautify pretty print format query postgres postgresql mysql mariadb sqlite tsql sql server oracle plsql bigquery snowflake uppercase keywords indent",
+  "limits": "Input up to about 10 MB. It changes layout only: it does not run your SQL, check it against a schema or optimise it.",
+  "howto_title": "How to format a SQL query",
+  "howto": [
+    "Paste the query into the box, or press <strong>Insert a sample</strong> to see how it works.",
+    "Choose your database under <strong>Dialect</strong>, then set the keyword case and indent size.",
+    "The formatted query appears below as you type. Copy it, or download it as a <code>.sql</code> file."
+  ],
+  "faq": [
+    [
+      "Is my SQL uploaded?",
+      "No. The formatting code is a script served from this site and loaded the first time you paste a query; the query itself stays in your browser and is not sent to any server."
+    ],
+    [
+      "Why does the dialect matter?",
+      "Databases add their own syntax. PostgreSQL has <code>::</code> casts and <code>$1</code> parameters, SQL Server has <code>[bracketed]</code> names and <code>TOP</code>, MySQL and MariaDB quote names with backticks, and BigQuery has its own array and struct forms. Picking the right one lets the parser accept your query. Standard SQL is the safe choice when you are unsure, but it is stricter about vendor extras."
+    ],
+    [
+      "Why do I see an error for a query that runs fine in my database?",
+      "The formatter reads the whole statement rather than just re-indenting lines, so an unclosed bracket or quote stops it, and so does syntax that belongs to a different dialect. The message gives the line and column where it gave up, and the most common fix is choosing the matching dialect."
+    ],
+    [
+      "Does formatting change what the query does?",
+      "Only whitespace and, if you choose, the case of keywords. String literals, quoted names and numbers keep their text, so <code>'select'</code> inside quotes stays lower case when you pick UPPER CASE."
+    ],
+    [
+      "Can I format several statements together?",
+      "Yes. Statements separated by semicolons are each formatted, with a blank line between them."
+    ],
+    [
+      "Which keyword case should I use?",
+      "Either works; it is a style choice and databases ignore it. Upper case keywords are the older convention and make clauses stand out in plain text. Lower case is common in code bases that already use a linter or ORM output in that style. Keep as typed leaves your capitalisation alone."
+    ]
+  ],
+  "related": [
+    "json-formatter",
+    "xml-formatter",
+    "text-diff",
+    "find-and-replace",
+    "sort-lines-alphabetically"
+  ],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">SQL</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insert a sample</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Clear</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="select id, name from users where active = 1 order by name"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <label for="o-dialect">Dialect</label>
+    <select id="o-dialect"><option value="sql">Standard SQL</option><option value="postgresql">PostgreSQL</option><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option><option value="sqlite">SQLite</option><option value="transactsql">SQL Server (T-SQL)</option><option value="plsql">Oracle (PL/SQL)</option><option value="bigquery">BigQuery</option><option value="snowflake">Snowflake</option><option value="redshift">Amazon Redshift</option><option value="spark">Spark SQL</option><option value="hive">Hive</option><option value="db2">IBM Db2</option><option value="db2i">IBM Db2 for i</option><option value="trino">Trino and Presto</option><option value="duckdb">DuckDB</option><option value="clickhouse">ClickHouse</option><option value="tidb">TiDB</option><option value="singlestoredb">SingleStore</option><option value="n1ql">Couchbase N1QL</option></select>
+  </div>
+  <div class="field">
+    <label for="o-case">Keyword case</label>
+    <select id="o-case"><option value="upper" selected>UPPER CASE</option><option value="lower">lower case</option><option value="preserve">Keep as typed</option></select>
+  </div>
+  <div class="field">
+    <span class="label" id="o-ind-l">Indent</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spaces</label>
+      <label><input type="radio" name="indent" value="4">4 spaces</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Change</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Result</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copy</button>
+    <button class="btn" id="f-dl" type="button">Download .sql</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Making SQL readable</h2>
+<p>A database reads a query the same way whether it sits on one line or forty, which is why queries pasted from logs, ORMs and monitoring tools so often arrive as a single unbroken string. Formatting puts each major clause (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>GROUP BY</code>, <code>ORDER BY</code>) on its own line and indents the columns, conditions and subqueries beneath it, so you can see the shape of the query at a glance and spot a missing join condition.</p>
+<p>The layout follows the dialect you pick, because the words and symbols differ between databases. A PostgreSQL cast such as <code>price::numeric</code>, a numbered parameter like <code>$1</code>, a MySQL backtick name, an Oracle <code>CONNECT BY</code> clause and a SQL Server <code>TOP 10</code> are all valid in one dialect and a syntax error in another. Placeholders for bound parameters (<code>?</code>, <code>$1</code>, <code>:name</code>, <code>@name</code>) are recognised and left alone.</p>
+<p>Keyword case has no effect on how a query runs, so it is purely a house style. A formatter that understands the grammar can change it safely, because it knows which words are keywords and which are column names or text inside quotes.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Comparing a query before and after a change? Format both with the same settings and compare them in <a href="/tools/text-diff/">Text diff</a>.</li>
+  <li>Does the query return JSON columns? Paste a value into the <a href="/tools/json-formatter/">JSON formatter</a> to read it.</li>
+  <li>Need to rename a table across a long script? <a href="/tools/find-and-replace/">Find and replace</a> handles it before you format.</li>
+</ul>

@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "JSON in TypeScript – Interfaces online erzeugen | Tanod Tools",
+  "description": "JSON-Beispiel einfügen und TypeScript-Interfaces oder Types erhalten: verschachtelte Objekte benannt, optionale Felder erkannt. Läuft in Ihrem Browser.",
+  "h1": "JSON in TypeScript",
+  "lede": "Machen Sie aus einem JSON-Beispiel TypeScript-Interfaces oder Typ-Aliase, mit optionalen Feldern und Unions, die aus Ihren Daten abgeleitet werden.",
+  "blurb": "JSON-Beispiel in TypeScript-Interfaces oder Types umwandeln.",
+  "keywords": "json in typescript json zu typescript json to ts interface generator typen erzeugen type generator quicktype json2ts api antwort typen typescript typen aus json umwandeln",
+  "limits": "Die Typen werden aus dem eingefügten Beispiel abgeleitet und beschreiben dieses Beispiel, kein Schema: Ein Feld, das in Ihrem Beispiel ein String ist, kann anderswo eine Zahl sein. Alle Zahlen werden zu <code>number</code>, Datumswerte bleiben <code>string</code>. Die Reihenfolge der Eigenschaften folgt JSON.parse, das ganzzahlige Schlüssel zuerst auflistet.",
+  "howto_title": "So erzeugen Sie TypeScript aus JSON",
+  "howto": [
+    "Fügen Sie eine JSON-Antwort oder -Datei in das Feld ein. Mehrere Array-Einträge verbessern das Ergebnis, weil Felder, die in manchen Einträgen fehlen, optional werden.",
+    "Legen Sie den Namen des obersten Typs fest, wählen Sie <code>interface</code> oder <code>type</code> und aktivieren Sie nach Bedarf <strong>export</strong>, <strong>readonly</strong> oder die Erkennung optionaler Felder.",
+    "Kopieren Sie die Deklarationen oder laden Sie sie als <code>.ts</code>-Datei herunter. Prüfen Sie die Namen, denn sie stammen aus Ihren Schlüsselnamen."
+  ],
+  "faq": [
+    ["Wie wird entschieden, ob ein Feld optional ist?", "Bei einem Array von Objekten werden die Objekte zu einer gemeinsamen Form zusammengeführt. Ein Schlüssel, der in manchen Einträgen vorkommt, aber nicht in allen, bekommt ein <code>?</code>. Ein Schlüssel, der vorhanden ist, aber in manchen Einträgen <code>null</code> enthält, ist nicht optional; er wird zu <code>T | null</code>. Schalten Sie die Erkennung optionaler Felder aus, wenn jeder Schlüssel als Pflichtfeld gelten soll."],
+    ["Wie werden verschachtelte Typen benannt?", "Jedes verschachtelte Objekt wird nach seinem Schlüssel in PascalCase benannt, aus <code>billing_address</code> wird also <code>BillingAddress</code>. Bei einem Array verliert der Elementtyp ein abschließendes „s“, wenn der Schlüssel länger als 3 Buchstaben ist und nicht auf ss, us oder is endet: <code>users</code> ergibt <code>User</code>, <code>address</code> dagegen <code>AddressItem</code>. Wollen zwei unterschiedliche Formen denselben Namen, wird die zweite nummeriert, es entstehen <code>User</code> und <code>User2</code>. Die Regel für die Einzahl richtet sich nach englischen Schlüsselnamen."],
+    ["Was passiert mit Objekten, die dieselbe Form haben?", "Sie teilen sich eine Deklaration. Enthalten <code>billing</code> und <code>shipping</code> beide <code>{ street, city }</code>, erhalten Sie ein einziges Interface, benannt nach der Stelle, an der es zuerst vorkommt. Zwei Objekte mit denselben Schlüsseln, aber unterschiedlichen Werttypen sind verschiedene Formen und bekommen getrennte Namen."],
+    ["Warum wird ein leeres Array als unknown[] typisiert?", "Ein leeres Array enthält keine Beispiele, also lässt sich über seine Elemente nichts ableiten. <code>unknown[]</code> ist die ehrliche Antwort; ändern Sie es von Hand, sobald Sie den Elementtyp kennen. Ein Array mit gemischten Werten wird zu einer Union, etwa <code>(string | number)[]</code>."],
+    ["Kann die Ausgabe von der echten API abweichen?", "Ja. Ein Beispiel zeigt nur die Werte, die es enthält. Ein Feld, das in Ihrem Beispiel immer vorhanden ist, in der Produktion aber manchmal fehlt, wird hier als Pflichtfeld erzeugt, und ein String mit wenigen festen Werten wird einfach <code>string</code>. Für strikte Validierung verwenden Sie ein Schema; für einen schnellen Start nehmen Sie diese Ausgabe und passen sie an."],
+    ["Wird mein JSON hochgeladen?", "Nein. Nichts, was Sie einfügen, wird irgendwohin gesendet; die Umwandlung läuft in Ihrem Browser, und Sie können die Netzwerkverbindung trennen, nachdem die Seite geladen ist."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">JSON-Beispiel</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "name": "Ada Lovelace",
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Name des obersten Typs</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Deklarieren mit</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Modifikatoren</span>
+      <label class="check"><input type="checkbox" id="t-export" checked><code>export</code> hinzufügen</label>
+      <label class="check"><input type="checkbox" id="t-readonly">Eigenschaften als <code>readonly</code> markieren</label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Optionale Felder erkennen</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">TypeScript kopieren</button>
+    <button class="btn" id="t-dl" type="button">.ts herunterladen</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Typen aus einem JSON-Beispiel ableiten</h2>
+<p>TypeScript-Typen beschreiben die Form von Daten, und eine JSON-Antwort enthält diese Form bereits: jeden Schlüssel, die Art des Werts dahinter und wie Objekte ineinander verschachtelt sind. Ein Konverter von JSON in TypeScript geht das Beispiel durch und schreibt diese Form als Deklarationen auf, sodass Sie nicht erst vierzig Felder von Hand abtippen müssen, bevor Sie eine API mit gutem Gewissen aufrufen können.</p>
+<p>Der wichtigste Schritt ist der Umgang mit Arrays. Jeder Eintrag in einem Array von Objekten wird gelesen, und ihre Formen werden zusammengeführt: Ein Schlüssel, der in jedem Eintrag vorkommt, bleibt Pflichtfeld, ein Schlüssel, der nur in manchen Einträgen vorkommt, wird optional, und Werte unterschiedlicher Art werden zu einer Union. Deshalb liefert ein Beispiel mit mehreren Datensätzen viel bessere Typen als eines mit nur einem. Ein Wert <code>null</code> wird anders behandelt als ein fehlender Schlüssel, weil beides für den Code, der das Feld liest, etwas anderes bedeutet.</p>
+<p>Abgeleitete Typen sind ein Ausgangspunkt, kein Vertrag. Sie können nicht wissen, dass ein String immer einer von drei Werten ist, dass eine Zahl eigentlich eine ganzzahlige ID ist oder dass ein Feld, das in all Ihren Beispielen vorhanden war, in der Produktion verschwinden kann. Lesen Sie das Ergebnis, benennen Sie alles um, was unglücklich geraten ist, und schärfen Sie die Typen nach, auf die es ankommt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Prüfen Sie zuerst mit <a href="/tools/json-formatter/">JSON formatieren und validieren</a>, ob Ihr Beispiel gültig ist; das Tool zeigt bei einem Syntaxfehler auf das genaue Zeichen.</li>
+  <li>Arbeiten Sie stattdessen mit einer YAML-Konfiguration? Wandeln Sie sie mit <a href="/tools/yaml-to-json/">YAML in JSON umwandeln</a> um und fügen Sie das Ergebnis hier ein.</li>
+  <li>Sie möchten in die Nutzdaten eines Tokens schauen, bevor Sie sie typisieren? Dekodieren Sie es mit dem <a href="/tools/jwt-decoder/">JWT-Decoder</a>.</li>
+</ul>

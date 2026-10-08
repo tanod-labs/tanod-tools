@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Conversor de zonas horarias y diferencia horaria | Tanod Tools",
+  "description": "Convierte una fecha y hora a muchas zonas horarias a la vez, con diferencia UTC, cambio de día, horario de verano y un planificador de reuniones por horas.",
+  "h1": "Conversor de zonas horarias",
+  "lede": "Elige una fecha, una hora y la zona horaria en la que está, y ve el mismo momento en cada ciudad de tu lista, con un planificador para encontrar horas de trabajo en común.",
+  "blurb": "Convierte una hora a muchas zonas y planifica reuniones entre ellas.",
+  "keywords": "conversor convertidor de zonas horarias huso horario diferencia horaria reloj mundial planificador de reuniones convertir hora entre ciudades que hora es en utc gmt diferencia utc horario de verano est pst cst mexico colombia argentina españa",
+  "limits": "Usa los datos de zonas horarias integrados en tu navegador, así que las diferencias horarias y las reglas del horario de verano siguen lo que sepa tu navegador, incluidas fechas pasadas y futuras. Las abreviaturas solo se muestran cuando el navegador tiene una. Nada sale de tu dispositivo.",
+  "howto_title": "Cómo convertir una hora entre zonas horarias",
+  "howto": [
+    "Elige la fecha, la hora y la zona horaria de esa hora. Presiona <strong>Ahora</strong> para empezar desde el momento actual.",
+    "Agrega las ciudades que necesites con <em>Agregar un lugar</em>. Cada fila muestra la hora local, el día (el mismo, el siguiente o el anterior) y la diferencia con UTC. Tu lista se recuerda en este dispositivo.",
+    "Usa el planificador de reuniones debajo de la lista para encontrar horas en las que todos estén entre las 09:00 y las 17:00 hora local. Las celdas rayadas son horas de trabajo."
+  ],
+  "faq": [
+    ["¿Qué pasa si elijo una hora que no existe?", "Cuando los relojes se adelantan, se salta una hora local: en Nueva York, el 8 de marzo de 2026 el reloj pasa de la 01:59 directamente a las 03:00, así que las 02:30 nunca ocurren. El conversor te lo indica y usa la convención habitual: adelanta la hora en la duración del salto (las 02:30 pasan a ser las 03:30) y luego convierte ese momento."],
+    ["¿Y una hora que ocurre dos veces?", "Cuando los relojes se atrasan, se repite una hora. El 1 de noviembre de 2026 en Nueva York, la 01:30 ocurre primero como 01:30 EDT (UTC-04:00) y otra vez una hora después como 01:30 EST (UTC-05:00). El conversor muestra las dos posibilidades y te deja elegir; empieza con la primera."],
+    ["¿Por qué algunas diferencias horarias no son horas completas?", "Varios lugares usan diferencias de media hora o de 45 minutos: la India está en UTC+05:30, Nepal en UTC+05:45 y la isla Lord Howe, en Australia, está en UTC+10:30 en invierno y en UTC+11:00 en verano, un cambio de horario de verano de solo 30 minutos. La herramienta usa la diferencia exacta vigente en la fecha que elijas."],
+    ["¿Se ve el cambio de día?", "Sí. Cada fila dice Mismo día, Día siguiente o Día anterior, respecto a la fecha que elegiste en la zona de origen. Kiritimati, en Kiribati, está en UTC+14, la zona más adelantada del mundo, así que una hora de mediodía en Londres ya es el día siguiente allí."],
+    ["¿Cómo funciona el planificador de reuniones?", "Muestra 24 celdas por hora para cada lugar, alineadas por el mismo instante, empezando a la medianoche de la fecha elegida en la zona de origen. Las celdas entre las 09:00 y las 17:00 hora local aparecen rayadas y se consideran horas de trabajo, y la fila inferior marca las horas que les sirven a todos. La columna con borde grueso es la hora que escribiste."],
+    ["¿Qué nombres de zona puedo usar?", "Cualquier zona IANA que tenga tu navegador, como Europe/London o America/Mexico_City, además de UTC y tu propia zona. Los nombres de las ciudades se muestran de forma legible, con el identificador completo de la zona debajo. Para convertir un timestamp Unix en lugar de una hora de reloj, usa el <a href=\"/tools/unix-timestamp-converter/\">conversor de timestamp Unix</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Fecha</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Hora</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Ahora</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Zona horaria de esa hora</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Esta hora ocurre dos veces. ¿Cuál de las dos?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Agregar un lugar</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Agregar</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Reloj</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24 horas</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12 horas</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Horas convertidas"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Planificador de reuniones</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Leyenda del planificador">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Horas de trabajo, de 09:00 a 17:00 hora local (rayado)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>La hora que escribiste (borde grueso)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Todos están en horas de trabajo</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Por qué falla la conversión de horas entre zonas horarias</h2>
+<p>Una zona horaria no es solo una diferencia respecto a UTC. Es un conjunto de reglas, guardado en la base de datos de zonas horarias de IANA, que indica cuál fue y cuál será la diferencia en cada fecha. Por eso la misma ciudad está en UTC-5 en invierno y en UTC-4 en verano, por eso dos ciudades que hoy comparten diferencia horaria pueden separarse el mes que viene, y por eso una reunión fijada a las 9:00 en Londres se mueve respecto a Nueva York durante algunas semanas cada primavera y cada otoño, cuando los dos países cambian la hora en fechas distintas.</p>
+<p>Los cambios al horario de verano crean dos casos incómodos. En primavera se salta un tramo de la hora local, así que una hora dentro de ese tramo no existe. En otoño un tramo se repite, así que una hora dentro de él es ambigua y necesita la diferencia horaria para aclarar a qué ocurrencia se refiere. Muchos programas eligen una respuesta sin avisar; este conversor te informa del salto o de la repetición y, en el caso de la repetición, te deja elegir.</p>
+<p>Para programar reuniones, comparar lo que marcan los relojes es solo la mitad del trabajo. Que sea justo depende de en qué horario laboral cae la reunión. El planificador por horas alinea todos los lugares en los mismos instantes para que veas de un vistazo dónde se superponen las 09:00 a 17:00 y dónde alguien tendría que conectarse en plena madrugada. Aunque la coincidencia sea muy buena, indica la zona horaria de forma explícita en la invitación, de preferencia con la diferencia respecto a UTC, para que nadie tenga que adivinar.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Lees un timestamp de un log o de una API? El <a href="/tools/unix-timestamp-converter/">conversor de timestamp Unix</a> lo muestra en cualquier zona.</li>
+  <li>Para saber en qué fecha cae un plazo después de sumar días o días hábiles, usa la <a href="/tools/date-calculator/">calculadora de fechas</a>.</li>
+  <li>¿Quieres saber cuánto dura un proyecto o un viaje? <a href="/tools/date-difference-calculator/">Días entre fechas</a> lo calcula.</li>
+</ul>

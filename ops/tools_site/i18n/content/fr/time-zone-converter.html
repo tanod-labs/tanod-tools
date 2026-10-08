@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Convertisseur de fuseau horaire et planificateur | Tanod Tools",
+  "description": "Convertissez une date et une heure dans plusieurs fuseaux horaires à la fois : décalage UTC, changement de jour, heure d'été et planificateur de réunions.",
+  "h1": "Convertisseur de fuseau horaire",
+  "lede": "Choisissez une date, une heure et son fuseau, puis voyez le même instant dans chaque ville de votre liste, avec un planificateur pour trouver des heures de travail communes.",
+  "blurb": "Convertissez une heure dans plusieurs fuseaux et planifiez des réunions.",
+  "keywords": "convertisseur fuseau horaire decalage horaire heure dans le monde horloge mondiale planificateur reunion convertir heure entre villes utc gmt heure d'ete heure d'hiver cet cest est pst decalage",
+  "limits": "Utilise les données de fuseaux horaires intégrées à votre navigateur : les décalages et les règles d'heure d'été suivent ce que connaît votre navigateur, y compris pour les dates passées et futures. Les abréviations ne s'affichent que si le navigateur en connaît une. Rien ne quitte votre appareil.",
+  "howto_title": "Comment convertir une heure d'un fuseau à l'autre",
+  "howto": [
+    "Choisissez la date, l'heure et le fuseau horaire de cette heure. Appuyez sur <strong>Maintenant</strong> pour partir de l'instant présent.",
+    "Ajoutez les villes dont vous avez besoin avec <em>Ajouter un lieu</em>. Chaque ligne affiche l'heure locale, le jour (même jour, lendemain ou veille) et le décalage UTC. Votre liste est mémorisée sur cet appareil.",
+    "Utilisez le planificateur de réunions sous la liste pour trouver les heures où chacun est entre 09:00 et 17:00, heure locale. Les cases hachurées sont les heures de travail."
+  ],
+  "faq": [
+    ["Que se passe-t-il si je choisis une heure qui n'existe pas ?", "Lors du passage à l'heure d'été, une heure locale est sautée : à New York, le 8 mars 2026, l'horloge passe directement de 01:59 à 03:00, donc 02:30 n'existe pas. Le convertisseur le signale et applique la convention habituelle : il avance l'heure de la durée du saut (02:30 devient 03:30), puis convertit cet instant."],
+    ["Et une heure qui existe deux fois ?", "Lors du retour à l'heure d'hiver, une heure se répète. Le 1er novembre 2026 à New York, 01:30 survient d'abord en tant que 01:30 EDT (UTC-04:00), puis de nouveau une heure plus tard en tant que 01:30 EST (UTC-05:00). Le convertisseur affiche les deux possibilités et vous laisse choisir ; il commence par la première."],
+    ["Pourquoi certains décalages ne sont-ils pas des heures entières ?", "Plusieurs endroits utilisent des décalages d'une demi-heure ou de 45 minutes : l'Inde est à UTC+05:30, le Népal à UTC+05:45, et l'île Lord Howe, en Australie, à UTC+10:30 en hiver et UTC+11:00 en été, soit un changement d'heure de seulement 30 minutes. L'outil utilise le décalage exact en vigueur à la date choisie."],
+    ["Le changement de jour est-il indiqué ?", "Oui. Chaque ligne indique s'il s'agit du même jour, du lendemain ou de la veille, par rapport à la date choisie dans le fuseau d'origine. Kiritimati, aux Kiribati, est à UTC+14, le fuseau le plus en avance au monde : une heure de milieu de journée à Londres y tombe déjà le lendemain."],
+    ["Comment fonctionne le planificateur de réunions ?", "Il dispose 24 cases horaires pour chaque lieu, alignées sur les mêmes instants, à partir de minuit à la date choisie dans le fuseau d'origine. Les cases entre 09:00 et 17:00, heure locale, sont hachurées et correspondent aux heures de travail, et la dernière ligne signale les heures qui conviennent à tout le monde. Une colonne au contour épais correspond à l'heure que vous avez saisie."],
+    ["Quels noms de fuseaux puis-je utiliser ?", "Tout fuseau IANA listé par votre navigateur, comme Europe/Paris ou Asia/Tokyo, ainsi que UTC et votre propre fuseau. Les noms de villes s'affichent sous une forme lisible, avec l'identifiant complet du fuseau en dessous. Pour convertir un timestamp Unix plutôt qu'une heure d'horloge, utilisez le <a href=\"/tools/unix-timestamp-converter/\">convertisseur de timestamp Unix</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Date</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Heure</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Maintenant</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Fuseau horaire de cette heure</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Cette heure existe deux fois. Laquelle ?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Ajouter un lieu</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Ajouter</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Horloge</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24 heures</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12 heures</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Heures converties"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Planificateur de réunions</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Légende du planificateur">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Heures de travail, de 09:00 à 17:00, heure locale (hachuré)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>L'heure que vous avez saisie (contour épais)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Tout le monde est dans ses heures de travail</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Pourquoi convertir une heure entre fuseaux horaires tourne mal</h2>
+<p>Un fuseau horaire n'est pas qu'un décalage par rapport à UTC. C'est un ensemble de règles, conservées dans la base de données des fuseaux horaires IANA, qui indique quel était et quel sera le décalage à chaque date. C'est pourquoi la même ville est à UTC-5 en hiver et à UTC-4 en été, pourquoi deux villes qui partagent aujourd'hui le même décalage peuvent se séparer le mois prochain, et pourquoi une réunion fixée à 9:00 à Londres se décale par rapport à New York pendant quelques semaines chaque printemps et chaque automne, quand les deux pays changent d'heure à des dates différentes. Ce convertisseur de fuseau horaire en tient compte.</p>
+<p>Les changements d'heure créent deux cas délicats. Au printemps, une plage d'heure locale est sautée : une heure à l'intérieur de cette plage n'existe pas. À l'automne, une plage se répète : une heure à l'intérieur est ambiguë et il faut le décalage pour savoir de quelle occurrence il s'agit. Beaucoup de programmes choisissent discrètement une réponse ; ce convertisseur vous signale le saut ou le chevauchement et, en cas de chevauchement, vous laisse choisir.</p>
+<p>Pour planifier, comparer des heures d'horloge ne fait que la moitié du travail. L'équité dépend des heures de travail de chacun. Le planificateur horaire aligne tous les lieux sur les mêmes instants pour que vous voyiez d'un coup d'œil où les plages de 09:00 à 17:00 se recoupent, et où quelqu'un devrait se connecter en pleine nuit. Même avec un bon recoupement, indiquez explicitement le fuseau dans l'invitation, de préférence avec le décalage UTC, pour que personne n'ait à deviner.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Vous lisez un timestamp dans un journal ou une API ? Le <a href="/tools/unix-timestamp-converter/">convertisseur de timestamp Unix</a> l'affiche dans n'importe quel fuseau.</li>
+  <li>Pour trouver la date d'une échéance après avoir ajouté des jours ou des jours ouvrés, utilisez la <a href="/tools/date-calculator/">calculatrice de dates</a>.</li>
+  <li>Vous calculez la durée d'un projet ou d'un voyage ? L'outil <a href="/tools/date-difference-calculator/">jours entre deux dates</a> la compte pour vous.</li>
+</ul>

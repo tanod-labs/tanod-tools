@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Ubah ukuran foto online dalam piksel atau persen | Tanod Tools",
+  "description": "Ubah lebar dan tinggi gambar JPG, PNG, dan WebP di browser Anda. Pertahankan rasio aspek dan proses banyak gambar sekaligus. Tidak ada yang diunggah.",
+  "h1": "Ubah ukuran gambar",
+  "lede": "Ubah ukuran foto dengan lebar dan tinggi baru dalam piksel, atau skala dalam persen, untuk satu gambar atau banyak sekaligus.",
+  "blurb": "Ubah dimensi gambar dalam piksel atau persen.",
+  "keywords": "ubah ukuran foto resize gambar perkecil perbesar dimensi lebar tinggi piksel pixel skala thumbnail mengubah ukuran gambar",
+  "limits": "Hingga 50 gambar per proses, masing-masing 50 MB, sekitar 100 megapiksel untuk masukan maupun hasil. Pembesaran dibatasi hingga 4 kali ukuran asli.",
+  "howto_title": "Cara mengubah ukuran gambar",
+  "howto": [
+    "Pilih gambar Anda, atau seret ke halaman ini.",
+    "Masukkan lebar atau tinggi dalam piksel (sisi lainnya menyesuaikan jika rasio aspek dikunci), atau beralih ke persentase.",
+    "Tekan <strong>Ubah ukuran</strong>, lalu unduh hasilnya atau .zip berisi semua gambar."
+  ],
+  "faq": [
+    ["Apakah gambar saya diunggah?", "Tidak. Pengubahan ukuran berlangsung di browser, di perangkat Anda. Tidak ada yang dikirim ke server."],
+    ["Bagaimana kunci rasio aspek bekerja untuk beberapa gambar?", "Kolom diisi mulai dari ukuran gambar pertama. Jika kunci aktif, lebar atau tinggi yang terakhir Anda ubah diterapkan ke setiap gambar, dan sisi lainnya mengikuti proporsi masing-masing gambar. Jika kunci mati, setiap gambar diregangkan persis ke lebar dan tinggi yang Anda masukkan."],
+    ["Bisakah gambar diperbesar?", "Bisa, hingga 4 kali lebar dan tinggi aslinya. Pembesaran tidak bisa menambah detail, jadi hasilnya terlihat lebih lembut. Lebih dari 4 kali, alat ini menolak alih-alih membuat file yang buram."],
+    ["Dengan kualitas berapa file JPEG dan WebP disimpan?", "Kualitas 92 dari 100, yang membuat file secara visual tetap mendekati sumbernya. Jika Anda juga ingin ukuran file yang lebih kecil, proses hasilnya dengan <a href=\"/tools/compress-image/\">Kompres gambar</a>."],
+    ["Bagaimana gambar diperkecil?", "Pengecilan besar dilakukan dalam beberapa langkah, masing-masing setengahnya, lalu digambar akhir ke ukuran yang tepat dengan penghalusan berkualitas tinggi bawaan browser. Ini menghindari tampilan bergerigi yang bisa muncul dari satu kali pengecilan yang sangat besar."],
+    ["Apakah data EXIF dipertahankan?", "Tidak. Gambar dienkode ulang, sehingga metadata seperti GPS dan detail kamera tidak ikut terbawa, dan gambar disimpan dengan orientasi seperti yang ditampilkan."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Letakkan gambar di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Pilih gambar</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, atau AVIF. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<ol class="files" id="files" aria-label="Gambar yang akan diubah ukurannya" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Ubah ukuran dengan</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="pixels" checked>Piksel</label>
+        <label><input type="radio" name="mode" value="percent">Persentase</label>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Format output</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Pertahankan</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">JPEG dan WebP disimpan dengan kualitas 92. GIF, BMP, dan AVIF menjadi PNG jika diatur ke Pertahankan.</p>
+    </fieldset>
+  </div>
+  <div id="pane-px">
+    <div class="opts">
+      <div class="field"><label for="width">Lebar (px)</label><input type="number" id="width" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><label for="height">Tinggi (px)</label><input type="number" id="height" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><span class="label">Rasio aspek</span><label class="check"><input type="checkbox" id="lock" checked>Kunci rasio aspek</label></div>
+    </div>
+  </div>
+  <div id="pane-pct" hidden>
+    <div class="opts">
+      <div class="field"><label for="percent">Skala (%)</label><input type="number" id="percent" min="1" max="400" value="50" inputmode="numeric"><p class="help">100 mempertahankan ukuran. 50 membagi dua lebar dan tinggi.</p></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Ubah ukuran</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Hapus semua</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Mengubah ukuran gambar di browser Anda</h2>
+<p>Mengubah ukuran foto berarti menghitung grid piksel baru dari grid yang lama. Pengecilan merata-ratakan sekelompok piksel, itulah sebabnya pengecilan yang baik terlihat halus dan yang asal-asalan terlihat bergerigi. Alat ini membagi dua ukuran gambar berulang kali selama ukurannya masih lebih dari dua kali target, lalu menggambar akhir ke ukuran yang tepat dengan penghalusan berkualitas tinggi.</p>
+<p>Rasio aspek adalah lebar dibagi tinggi. Jika dikunci, foto 1200 × 800 yang diatur menjadi lebar 600 piksel akan menjadi 600 × 400, tanpa peregangan. Matikan kunci hanya jika Anda menginginkan kotak dengan ukuran persis dan menerima distorsinya.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Untuk halaman web, ubah ukuran ke ukuran terbesar saat gambar benar-benar ditampilkan, lalu perkecil filenya lagi dengan <a href="/tools/compress-image/">Kompres gambar</a>.</li>
+  <li>Ingin membuang sebagian gambar? Gunakan <a href="/tools/crop-image/">Potong gambar</a>.</li>
+  <li>Perlu ikon persegi untuk situs? <a href="/tools/favicon-generator/">Generator favicon</a> membuat semua ukuran sekaligus.</li>
+</ul>

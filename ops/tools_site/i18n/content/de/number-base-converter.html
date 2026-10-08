@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Zahlensystem-Umrechner: Binär, Oktal, Dezimal, Hex | Tanod Tools",
+  "description": "Ganze Zahlen beliebiger Größe zwischen Binär, Oktal, Dezimal, Hexadezimal und jeder Basis von 2 bis 36 umrechnen, mit Zweierkomplement für 8 bis 64 Bit.",
+  "h1": "Zahlensystem-Umrechner",
+  "lede": "Rechnen Sie eine ganze Zahl zwischen Binär, Oktal, Dezimal, Hex und jeder Basis bis 36 um und sehen Sie ihre Bitmuster im Zweierkomplement.",
+  "blurb": "Binär, Oktal, Dezimal, Hex und Basis 2 bis 36.",
+  "keywords": "zahlensystem umrechner zahlensysteme umrechnen binär in dezimal binaer dezimal in binär hex in dezimal dezimal in hex hexadezimal oktal dualzahl basis 36 zweierkomplement vorzeichen bits",
+  "limits": "Ganze Zahlen bis 4.096 Stellen, positiv oder negativ. Brüche werden nicht umgerechnet.",
+  "howto_title": "So rechnen Sie zwischen Zahlensystemen um",
+  "howto": [
+    "Wählen Sie das Zahlensystem, in dem Ihre Zahl geschrieben ist, oder wählen Sie Andere und geben Sie eine Basis von 2 bis 36 ein.",
+    "Geben Sie die Zahl ein. Ein Minuszeichen ist erlaubt, und ein passendes Präfix <code>0x</code>, <code>0b</code> oder <code>0o</code> wird akzeptiert; Leerzeichen und Unterstriche werden ignoriert.",
+    "Lesen Sie die Zahl unten in jedem Zahlensystem ab, kopieren Sie das benötigte und prüfen Sie die Zweierkomplement-Tabelle für Ganzzahlen fester Breite."
+  ],
+  "faq": [
+    ["Wie große Zahlen kann der Umrechner verarbeiten?", "Bis zu 4.096 Stellen in der Eingabebasis. Die Umrechnung verwendet exakte Ganzzahlarithmetik (BigInt), daher werden sehr große Werte wie 2⁶⁴ + 1 = 18446744073709551617 ohne Rundung umgerechnet, anders als bei Rechnern, die oberhalb von etwa 9 Billiarden auf Gleitkommazahlen umschalten."],
+    ["Kann er Brüche wie 0,1 umrechnen?", "Nein. Es werden nur ganze Zahlen umgerechnet, und ein Dezimalpunkt wird als Fehler gemeldet, statt stillschweigend entfernt zu werden. Viele Brüche haben in einer anderen Basis keine exakte Form: 0,1 im Dezimalsystem ist im Binärsystem ein periodisches Muster; deshalb ergibt 0,1 + 0,2 in den meisten Programmiersprachen nicht genau 0,3."],
+    ["Was zeigt das Zweierkomplement?", "So speichern Computer vorzeichenbehaftete Ganzzahlen in einer festen Anzahl von Bits. Eine negative Zahl −n wird als 2 hoch Bitanzahl minus n gespeichert, −1 in 8 Bit ist also 11111111 (FF). Die Tabelle zeigt das Bitmuster für 8, 16, 32 und 64 Bit und was dieses Muster als Ganzzahl mit und ohne Vorzeichen bedeutet. Passt die Zahl nicht in eine Breite, steht das in der Zeile, statt dass sie überläuft."],
+    ["Welche Ziffern werden oberhalb von Basis 10 verwendet?", "Buchstaben, wie in den meisten Programmiersprachen: A ist 10, B ist 11 und so weiter bis Z für 35; deshalb ist Basis 36 die höchste. Die Eingabe wird in Groß- und Kleinbuchstaben akzeptiert; die Option Großbuchstaben steuert die Ausgabe."],
+    ["Warum wird eine Ziffer als ungültig gemeldet?", "Jede Basis erlaubt nur Ziffern unterhalb ihres Werts: Binär erlaubt 0 und 1, Oktal 0 bis 7, Hex 0 bis 9 und A bis F. Die Fehlermeldung nennt das Zeichen und seine Position, damit Sie einen Tippfehler finden oder zu der Basis wechseln, in der die Zahl wirklich geschrieben ist."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Zahl ist in</label>
+      <select id="nb-from">
+        <option value="10" selected>Dezimal (Basis 10)</option>
+        <option value="2">Binär (Basis 2)</option>
+        <option value="8">Oktal (Basis 8)</option>
+        <option value="16">Hexadezimal (Basis 16)</option>
+        <option value="other">Andere Basis …</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Basis (2 bis 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Zahl</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Ziffern gruppieren</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Großbuchstaben</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Zweierkomplement</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bits</th><th scope="col">Bitmuster (hex, binär)</th><th scope="col">Gelesen als</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Wie Zahlensysteme funktionieren</h2>
+<p>Die Basis eines Zahlensystems gibt an, wie viele verschiedene Ziffern es verwendet. Im Dezimalsystem ist jede Stelle zehnmal so viel wert wie die rechts daneben, im Binärsystem zweimal so viel; 1101 bedeutet also 8 + 4 + 0 + 1 = 13. Das Hexadezimalsystem verwendet sechzehn Ziffern, 0 bis 9 und dann A bis F, und jede Hex-Ziffer steht für genau vier Binärziffern; deshalb schreiben Programmierer Bytes damit kompakt: 255 ist FF oder 11111111. Mit diesem Umrechner wandeln Sie Binär in Dezimal, Dezimal in Hex und jede andere Kombination um.</p>
+<p>Das Oktalsystem fasst Binärziffern in Dreiergruppen zusammen und begegnet einem noch bei Unix-Dateirechten (755 bedeutet rwxr-xr-x). Basis 36 verwendet alle Ziffern und Buchstaben und taucht in kurzen IDs und URL-Kürzern auf.</p>
+<p>Computer speichern vorzeichenbehaftete Ganzzahlen in einer festen Anzahl von Bits im Zweierkomplement, bei dem das oberste Bit ein negatives Gewicht trägt. Dieselben Bits können daher zwei verschiedene Zahlen bedeuten: 11001000 ist ohne Vorzeichen gelesen 200 und mit Vorzeichen gelesen −56. Die Tabelle unter den Ergebnissen zeigt beide Lesarten für die üblichen Ganzzahlgrößen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie möchten Text in Binär-Bytes umwandeln statt einer Zahl? Nutzen Sie <a href="/tools/text-to-binary/">Text in Binärcode</a>.</li>
+  <li>Farbcodes wie <code>#1636A3</code> sind drei Hex-Bytes: Lesen Sie sie mit dem <a href="/tools/color-converter/">Farbkonverter und Kontrastprüfer</a>.</li>
+  <li>Unix-Zeitstempel sind einfache Dezimalsekunden; rechnen Sie einen mit <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> um.</li>
+</ul>

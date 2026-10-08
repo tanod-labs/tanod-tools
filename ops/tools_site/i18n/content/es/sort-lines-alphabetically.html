@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Ordenar alfabéticamente online, de la A a la Z | Tanod Tools",
+  "description": "Ordena una lista alfabéticamente, en orden numérico natural, por longitud o al azar. Ignora mayúsculas, quita duplicados y vacías. Gratis, en tu navegador.",
+  "h1": "Ordenar líneas alfabéticamente",
+  "lede": "Pega una lista, un elemento por línea, y obtenla ordenada de la A a la Z, de la Z a la A, en orden numérico natural, por longitud o mezclada.",
+  "blurb": "Ordena una lista de la A a la Z, por número, longitud o al azar.",
+  "keywords": "ordenar alfabeticamente orden alfabetico ordenar lista ordenar lineas a-z z-a orden natural ordenar por longitud mezclar lineas aleatorio desordenar",
+  "limits": "Texto de hasta unos 5 MB. El resultado se actualiza mientras escribes; las listas muy largas se actualizan un momento después de que dejas de escribir.",
+  "howto_title": "Cómo ordenar líneas alfabéticamente",
+  "howto": [
+    "Pega tu lista en el cuadro, un elemento por línea, o abre un archivo .txt.",
+    "Elige cómo ordenar y en qué sentido: de la A a la Z o de la Z a la A. Marca las opciones de limpieza que quieras.",
+    "Copia la lista ordenada o descárgala como archivo .txt."
+  ],
+  "faq": [
+    ["¿Cómo se ordenan las letras con acento y otros idiomas?", "Las líneas se comparan con las reglas de ordenación según idioma de tu navegador, así que la é queda junto a la e y la Ä junto a la A, en lugar de después de la Z. El orden sigue el idioma configurado en tu navegador, lo que importa para algunas letras: en sueco, por ejemplo, la Ä va después de la Z."],
+    ["¿Qué es el orden natural?", "El orden natural lee las secuencias de dígitos como números, así que \"item 2\" va antes que \"item 10\". El orden alfabético simple compara un carácter a la vez y pone primero \"item 10\", porque 1 va antes que 2."],
+    ["¿Qué hace Ignorar mayúsculas?", "Con Ignorar mayúsculas activado, \"manzana\" y \"Manzana\" se tratan como la misma palabra al ordenar, y las líneas que solo se diferencian en mayúsculas conservan su orden original. Con la opción desactivada, las minúsculas van antes que las mayúsculas cuando las letras son por lo demás iguales. El orden por código de carácter es distinto otra vez: pone todas las mayúsculas antes que todas las minúsculas, como hacen muchos programas."],
+    ["¿Puedo eliminar duplicados mientras ordeno?", "Sí. Marca Eliminar líneas duplicadas y solo se conserva la primera copia de cada línea. Cuando Ignorar mayúsculas está activado, las líneas que solo se diferencian en mayúsculas cuentan como duplicadas. Para tener más control, por ejemplo conservar la última copia, usa <a href=\"/tools/remove-duplicate-lines/\">Eliminar líneas duplicadas</a>."],
+    ["¿Qué tan aleatoria es la mezcla?", "La mezcla usa el generador criptográfico de números aleatorios de tu navegador con el método de Fisher-Yates, así que todos los órdenes son igual de probables. Presiona Mezclar de nuevo para obtener otro orden."],
+    ["¿Se sube mi lista?", "No. La ordenación se hace en tu navegador y el texto no se sube ni se guarda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Líneas para ordenar</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Un elemento por línea."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Ordenado</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="by">Ordenar por</label>
+      <select id="by">
+        <option value="alpha">Alfabético</option>
+        <option value="natural">Natural (números en orden)</option>
+        <option value="code">Código de carácter (mayúsculas primero)</option>
+        <option value="length">Longitud de línea</option>
+        <option value="reverse">Invertir el orden actual</option>
+        <option value="shuffle">Mezclar (orden aleatorio)</option>
+      </select>
+    </div>
+    <fieldset id="dir-field">
+      <legend>Sentido</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="asc" checked><span id="asc-l">A a Z</span></label>
+        <label><input type="radio" name="dir" value="desc"><span id="desc-l">Z a A</span></label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci" checked>Ignorar mayúsculas</label>
+    <label class="check"><input type="checkbox" id="dedupe">Eliminar líneas duplicadas</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Eliminar líneas vacías</label>
+    <label class="check"><input type="checkbox" id="trim">Quitar espacios al inicio y al final</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Pega líneas para empezar.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copiar resultado</button>
+    <button class="btn" id="dl" type="button" disabled>Descargar .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Mezclar de nuevo</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Usar el resultado como entrada</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Borrar</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Abrir un archivo .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Ordenar una lista alfabéticamente</h2>
+<p>Cada línea de la entrada es un elemento. La herramienta ordena las líneas alfabéticamente y muestra el resultado junto a la entrada mientras escribes, así que puedes probar otro orden u opción y ver el efecto al instante. Las líneas se comparan completas, desde el primer carácter, así que una lista de nombres se ordena por el nombre de pila, a menos que el apellido vaya primero en cada línea.</p>
+<p>El orden alfabético usa las reglas de idioma de tu navegador, que manejan bien los acentos y la mezcla de mayúsculas y minúsculas. El orden natural es el mejor para cualquier cosa que lleve números, como nombres de archivo, títulos de capítulos o números de versión. El orden por código de carácter coincide con lo que hacen muchas herramientas de programación y hojas de cálculo con una ordenación simple: todas las mayúsculas van antes que todas las minúsculas.</p>
+<p>Cuando dos líneas se consideran iguales, por ejemplo "Manzana" y "manzana" con Ignorar mayúsculas activado, se quedan en el orden en que estaban, así que ordenar dos veces da el mismo resultado.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Quita la numeración o las viñetas antes de ordenar con <a href="/tools/find-and-replace/">Buscar y reemplazar</a>, para que no decidan el orden.</li>
+  <li>Revisa qué cambió entre dos versiones de una lista con <a href="/tools/text-diff/">Comparar textos</a>.</li>
+  <li>¿Necesitas la lista de nuevo en una sola línea? Usa <a href="/tools/remove-line-breaks/">Eliminar saltos de línea</a> con una coma como separador.</li>
+</ul>

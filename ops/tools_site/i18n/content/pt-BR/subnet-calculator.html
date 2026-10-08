@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Calculadora de sub-rede IPv4 e IPv6 (CIDR) | Tanod Tools",
+  "description": "Informe um IPv4 ou IPv6 com prefixo ou máscara e veja rede, broadcast, faixa de hosts, contagens, máscara curinga e binário, e divida em sub-redes.",
+  "h1": "Calculadora de sub-rede",
+  "lede": "Calcule a rede, a faixa de hosts e as contagens de qualquer sub-rede IPv4 ou IPv6 e depois divida-a em sub-redes menores.",
+  "blurb": "Calculadora CIDR IPv4 e IPv6 com faixas de hosts e divisão em sub-redes.",
+  "keywords": "calculadora de sub-rede calculadora de subrede calculadora cidr calculadora ip mascara de rede netmask mascara curinga wildcard endereco de broadcast hosts utilizaveis prefixo ipv6 subnetting rfc 1918",
+  "limits": "Apenas IPv4 e IPv6, uma sub-rede por vez. O tipo de endereço é identificado pelas faixas de uso especial da IANA embutidas na página, então ela não sabe nada sobre quem é o dono de um endereço público. As tabelas de divisão em sub-redes param em 256 linhas.",
+  "howto_title": "Como calcular uma sub-rede",
+  "howto": [
+    "Digite um endereço com o tamanho do prefixo, como <code>192.168.1.10/24</code> ou <code>2001:db8::/32</code>. Um endereço IPv4 com máscara em notação decimal, como <code>192.168.1.10 255.255.255.0</code>, também funciona.",
+    "Leia o endereço de rede, a faixa de hosts e as contagens. Se o endereço tinha bits de host ligados, a página diz para qual rede ele foi normalizado.",
+    "Para planejar redes menores, informe um prefixo mais longo em <strong>Dividir em</strong> e leia a tabela de sub-redes."
+  ],
+  "faq": [
+    ["Por que há dois hosts utilizáveis a menos que endereços?", "Em uma sub-rede IPv4 comum, o primeiro endereço identifica a rede e o último é o endereço de broadcast, então nenhum dos dois pode ser dado a um dispositivo. Uma /24 tem 256 endereços e 254 hosts utilizáveis. Há duas exceções: uma /31 tem dois endereços e ambos são utilizáveis em um enlace ponto a ponto (RFC 3021), e uma /32 é um único host."],
+    ["O que a máscara curinga (wildcard) mostra?", "É a máscara de rede invertida: os bits 0 precisam corresponder e os bits 1 são ignorados. Para 255.255.255.0, a máscara curinga é 0.0.0.255. As listas de acesso de equipamentos Cisco e as declarações network do OSPF usam esse formato."],
+    ["Por que 010.0.0.1 é rejeitado?", "Um zero à esquerda faz alguns sistemas lerem aquela parte como octal, então 010 significaria 8, enquanto outros a leem como o decimal 10. O mesmo texto pode apontar para duas máquinas diferentes, então a página pede que você escreva o número sem o zero."],
+    ["Qual a diferença do IPv6 no cálculo de sub-rede?", "O IPv6 não tem endereço de broadcast, então todo endereço de um prefixo pode ser atribuído e a contagem é simplesmente 2 elevado a (128 menos o prefixo). Sub-redes de LAN normais são /64. A página mostra o endereço na forma compactada da RFC 5952 e por extenso, com os oito grupos de 4 dígitos."],
+    ["O que é a forma compactada de um endereço IPv6?", "Os zeros à esquerda de cada grupo são removidos, e a sequência mais longa de dois ou mais grupos só de zeros é substituída por <code>::</code>, usando a sequência mais à esquerda em caso de empate. Um único grupo zero nunca é compactado, então <code>2001:db8:0:1:1:1:1:1</code> mantém o seu 0."],
+    ["Isto envia meus endereços para algum lugar?", "Não. Os cálculos são feitos no seu navegador com inteiros grandes, nada do que você digita é enviado, e a página funciona offline depois de carregada."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Endereço IP com prefixo ou máscara</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Exemplos">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + máscara</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Detalhes da sub-rede"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Dividir em sub-redes menores</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Dividir em prefixo de tamanho /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="por exemplo, 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Deixe em branco para não dividir. Precisa ser maior que o prefixo acima.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Sub-redes</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Sub-redes e notação CIDR</h2>
+<p>Para usar uma calculadora de sub-rede, ajuda lembrar que um endereço IP tem duas partes: os bits iniciais identificam a rede e os bits restantes identificam o host dentro dela. O tamanho do prefixo depois da barra diz quantos bits iniciais pertencem à rede, então <code>192.168.1.10/24</code> significa que os primeiros 24 dos 32 bits são a rede e os últimos 8 identificam um entre 256 endereços. Zerar todos os bits de host dá o endereço de rede; ligar todos dá o endereço de broadcast, e é por isso que normalmente eles não são atribuídos a dispositivos.</p>
+<p>A máscara de rede é a mesma informação escrita como endereço: 24 bits 1 seguidos de 8 bits 0 é 255.255.255.0. Só máscaras contíguas são válidas, então algo como 255.0.255.0 é rejeitado. O IPv6 funciona do mesmo jeito com 128 bits, mas sem endereço de broadcast e com uma faixa muito maior: uma sub-rede de LAN /64 padrão contém 2<sup>64</sup> endereços, cerca de 18 quintilhões.</p>
+<p>Algumas faixas têm significado especial onde quer que apareçam. 10.0.0.0/8, 172.16.0.0/12 e 192.168.0.0/16 são privadas e não são roteadas na internet pública, 100.64.0.0/10 é espaço de endereços compartilhado para CGNAT (NAT de operadora), 169.254.0.0/16 é link-local, e os blocos 192.0.2.0, 198.51.100.0 e 203.0.113.0 são reservados para documentação. A página indica em qual faixa o seu endereço está.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Converta um octeto ou um endereço inteiro entre binário e decimal com o <a href="/tools/number-base-converter/">Conversor de bases numéricas</a>.</li>
+  <li>Também está configurando permissões de arquivos em um servidor? A <a href="/tools/chmod-calculator/">Calculadora chmod</a> transforma 755 em rwxr-xr-x e vice-versa.</li>
+  <li>Entenda o código de status de um health check que está falhando na referência de <a href="/tools/http-status-codes/">Códigos de status HTTP</a>.</li>
+</ul>

@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Zeilen alphabetisch sortieren – A bis Z, Z bis A | Tanod Tools",
+  "description": "Liste alphabetisch sortieren, natürlich nach Zahlen, nach Länge oder zufällig. Duplikate und leere Zeilen entfernen. Kostenlos, läuft im Browser.",
+  "h1": "Zeilen alphabetisch sortieren",
+  "lede": "Fügen Sie eine Liste ein, ein Eintrag pro Zeile, und erhalten Sie sie sortiert zurück: A bis Z, Z bis A, natürlich nach Zahlen, nach Länge oder zufällig gemischt.",
+  "blurb": "Liste sortieren: A–Z, nach Zahlen, Länge oder zufällig.",
+  "keywords": "alphabetisch sortieren liste sortieren alphabetische reihenfolge a-z z-a zeilen ordnen natürliche sortierung nach länge sortieren zeilen mischen zufällig",
+  "limits": "Text bis etwa 5 MB. Das Ergebnis aktualisiert sich während der Eingabe; sehr lange Listen kurz nachdem Sie aufhören zu tippen.",
+  "howto_title": "So sortieren Sie Zeilen alphabetisch",
+  "howto": [
+    "Fügen Sie Ihre Liste in das Feld ein, ein Eintrag pro Zeile, oder öffnen Sie eine .txt-Datei.",
+    "Wählen Sie die Sortierart und die Richtung: A bis Z oder Z bis A. Haken Sie die gewünschten Bereinigungsoptionen an.",
+    "Kopieren Sie die sortierte Liste oder laden Sie sie als .txt-Datei herunter."
+  ],
+  "faq": [
+    ["Wie werden Umlaute, Akzente und andere Sprachen sortiert?", "Die Zeilen werden mit den sprachbewussten Sortierregeln Ihres Browsers verglichen, sodass é neben e und Ä neben A einsortiert wird statt nach Z. Die Reihenfolge richtet sich nach der Sprache, auf die Ihr Browser eingestellt ist, und das spielt bei einigen Buchstaben eine Rolle: Im Schwedischen etwa kommt Ä nach Z."],
+    ["Was ist natürliche Sortierung?", "Die natürliche Sortierung liest Ziffernfolgen als Zahlen, sodass „item 2“ vor „item 10“ kommt. Die rein alphabetische Reihenfolge vergleicht Zeichen für Zeichen und setzt „item 10“ an den Anfang, weil 1 vor 2 kommt."],
+    ["Was bewirkt Groß-/Kleinschreibung ignorieren?", "Ist die Option an, werden „apfel“ und „Apfel“ beim Sortieren als dasselbe Wort behandelt, und Zeilen, die sich nur in der Schreibweise unterscheiden, behalten ihre ursprüngliche Reihenfolge. Ist sie aus, kommen Kleinbuchstaben vor Großbuchstaben, wenn die Buchstaben ansonsten gleich sind. Die Zeichencode-Reihenfolge ist wiederum anders: Sie setzt alle Großbuchstaben vor alle Kleinbuchstaben, wie es viele Programme tun."],
+    ["Kann ich beim Sortieren Duplikate entfernen?", "Ja. Haken Sie Doppelte Zeilen entfernen an, dann bleibt nur die erste Kopie jeder Zeile erhalten. Bei aktivem Groß-/Kleinschreibung ignorieren zählen Zeilen, die sich nur in der Großschreibung unterscheiden, als Duplikate. Für mehr Kontrolle, etwa um die letzte Kopie zu behalten, nutzen Sie <a href=\"/tools/remove-duplicate-lines/\">Doppelte Zeilen entfernen</a>."],
+    ["Wie zufällig ist das Mischen?", "Das Mischen nutzt den kryptografischen Zufallszahlengenerator Ihres Browsers mit dem Fisher-Yates-Verfahren, sodass jede Reihenfolge gleich wahrscheinlich ist. Klicken Sie erneut auf Neu mischen, um eine neue Reihenfolge zu erhalten."],
+    ["Wird meine Liste hochgeladen?", "Nein. Das Sortieren läuft in Ihrem Browser, und der Text wird weder hochgeladen noch gespeichert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Zu sortierende Zeilen</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Ein Eintrag pro Zeile."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Sortiert</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="by">Sortieren nach</label>
+      <select id="by">
+        <option value="alpha">Alphabetisch</option>
+        <option value="natural">Natürlich (Zahlen der Reihe nach)</option>
+        <option value="code">Zeichencode (Großbuchstaben zuerst)</option>
+        <option value="length">Zeilenlänge</option>
+        <option value="reverse">Aktuelle Reihenfolge umkehren</option>
+        <option value="shuffle">Mischen (zufällige Reihenfolge)</option>
+      </select>
+    </div>
+    <fieldset id="dir-field">
+      <legend>Richtung</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="asc" checked><span id="asc-l">A bis Z</span></label>
+        <label><input type="radio" name="dir" value="desc"><span id="desc-l">Z bis A</span></label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci" checked>Groß-/Kleinschreibung ignorieren</label>
+    <label class="check"><input type="checkbox" id="dedupe">Doppelte Zeilen entfernen</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Leere Zeilen entfernen</label>
+    <label class="check"><input type="checkbox" id="trim">Leerzeichen an Zeilenenden kürzen</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Fügen Sie Zeilen ein, um zu beginnen.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Ergebnis kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>.txt herunterladen</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Neu mischen</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Ergebnis als Eingabe</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Leeren</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>.txt-Datei öffnen</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Eine Liste in alphabetische Reihenfolge bringen</h2>
+<p>Jede Zeile der Eingabe ist ein Eintrag. Das Tool sortiert die Zeilen alphabetisch und zeigt das Ergebnis schon während der Eingabe neben dem Text an, sodass Sie eine andere Reihenfolge oder Option ausprobieren und die Wirkung sofort sehen. Zeilen werden als Ganzes ab dem ersten Zeichen verglichen: Eine Namensliste wird also nach Vornamen sortiert, es sei denn, der Nachname steht in jeder Zeile vorne.</p>
+<p>Die alphabetische Sortierung verwendet die Sprachregeln Ihres Browsers, die Akzente, Umlaute und gemischte Groß-/Kleinschreibung sinnvoll behandeln. Die natürliche Reihenfolge eignet sich am besten für alles mit Zahlen darin, etwa Dateinamen, Kapitelüberschriften oder Versionsnummern. Die Zeichencode-Reihenfolge entspricht dem, was viele Programmierwerkzeuge und Tabellenkalkulationen bei einer einfachen Sortierung tun: Jeder Großbuchstabe kommt vor jedem Kleinbuchstaben.</p>
+<p>Wenn zwei Zeilen als gleich gelten, zum Beispiel „Apfel“ und „apfel“ bei aktivem Groß-/Kleinschreibung ignorieren, bleiben sie in ihrer bisherigen Reihenfolge. Zweimal sortieren liefert also dasselbe Ergebnis.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Entfernen Sie Nummerierungen oder Aufzählungszeichen vor dem Sortieren mit <a href="/tools/find-and-replace/">Suchen und Ersetzen</a>, damit sie nicht die Reihenfolge bestimmen.</li>
+  <li>Was sich zwischen zwei Versionen einer Liste geändert hat, zeigt <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Sie brauchen die Liste wieder in einer Zeile? Nutzen Sie <a href="/tools/remove-line-breaks/">Zeilenumbrüche entfernen</a> mit einem Komma als Trennzeichen.</li>
+</ul>

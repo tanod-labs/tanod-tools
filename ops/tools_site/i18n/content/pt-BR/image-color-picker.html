@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Seletor de cores de imagem: HEX e RGB de uma foto | Tanod Tools",
+  "description": "Pegue cores de qualquer imagem: clique em um pixel para ver o código HEX, RGB e HSL e veja a paleta de cores principais. No navegador, sem upload.",
+  "h1": "Seletor de cores de imagem",
+  "lede": "Clique em qualquer ponto de uma imagem para ler a cor exata daquele pixel ou pegue a paleta das cores principais.",
+  "blurb": "Códigos HEX e RGB de qualquer pixel.",
+  "keywords": "seletor de cores de imagem pegar cor da imagem identificar cor conta-gotas color picker codigo hex rgb hsl extrair paleta foto print",
+  "limits": "Uma imagem por vez, 50 MB e cerca de 100 megapixels. PNG, JPEG, WebP, GIF (primeiro quadro), BMP ou AVIF.",
+  "howto_title": "Como pegar uma cor de uma imagem",
+  "howto": [
+    "Escolha uma imagem ou arraste ou cole na página.",
+    "Passe sobre a imagem para mirar com a lupa e depois clique ou toque para pegar a cor. Pelo teclado, coloque o foco na imagem, mova com as setas (Shift para passos maiores) e aperte Enter.",
+    "Copie o código HEX, RGB ou HSL, ou copie uma cor da paleta de cores principais."
+  ],
+  "faq": [
+    ["Qual é a precisão da cor?", "É o valor armazenado do único pixel sob a mira, lido da imagem em tamanho real, e não da prévia reduzida. A lupa mostra os pixels em volta para você mirar em um único pixel em uma borda cheia de detalhes."],
+    ["Por que a cor é diferente da que outro aplicativo mostra?", "A compressão JPEG altera um pouco as cores, principalmente perto das bordas e em áreas lisas, então pixels vizinhos podem variar alguns valores. Imagens com perfil de cor são convertidas pelo navegador para o sRGB padrão antes da leitura, que é o que as páginas da web usam; um editor de fotos que trabalha em outro espaço de cor pode mostrar números diferentes."],
+    ["Como a paleta é calculada?", "A imagem é amostrada em até 160 por 160 pontos e agrupada em oito grupos de cor, dividindo repetidamente a faixa de cores onde ela é mais larga (o método median cut). Cada amostra é a cor média do seu grupo, com a parcela que ocupa na imagem. Pixels total ou quase totalmente transparentes são ignorados."],
+    ["O que significam HEX, RGB e HSL?", "São três formas de escrever a mesma cor. HEX são os valores de vermelho, verde e azul (de 0 a 255) escritos em base 16, como se usa em CSS e em ferramentas de design. RGB lista esses valores como números comuns. HSL dá matiz (de 0 a 360 graus), saturação e luminosidade, que é mais fácil de ajustar à mão."],
+    ["Minha imagem é enviada?", "Não. A imagem é decodificada e lida no seu navegador, no seu dispositivo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Solte uma imagem aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Escolher uma imagem</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou arraste ou cole aqui.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="seletor de cor" aria-label="Imagem. As setas movem a mira, Shift com as setas move mais rápido, Enter pega a cor." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Clique ou toque para pegar a cor. Teclado: as setas movem a mira, Shift move mais rápido, Enter pega a cor.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Sob a mira</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Cor escolhida</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="Copiar código HEX">Copiar</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="Copiar código RGB">Copiar</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="Copiar código HSL">Copiar</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Escolhidas até agora</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Cores principais</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">Selecione uma amostra para copiar o código HEX.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Lendo as cores direto dos pixels</h2>
+<p>Pegar a cor de uma imagem, seja para reproduzir a cor de uma marca a partir de um logotipo, encontrar o azul exato de um print ou montar uma paleta a partir de uma foto, se resume à mesma coisa: ler os valores de vermelho, verde e azul armazenados em um pixel. Esta ferramenta decodifica a imagem no seu navegador e lê esses valores da imagem em resolução total, então o código que você copia é a cor que realmente está no arquivo.</p>
+<p>Em fotos, um único pixel pode enganar, porque o ruído e a compressão fazem os vizinhos variarem. Use a lupa para mirar no meio de uma área lisa, ou pegue a paleta, que calcula a média de grupos inteiros de pixels parecidos e os reduz a algumas cores representativas.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Converta a cor escolhida para CMYK ou confira o contraste dela com o texto no <a href="/tools/color-converter/">Conversor de cores e contraste</a>.</li>
+  <li>Vai pegar cores de uma parte pequena de uma imagem grande? <a href="/tools/crop-image/">Recorte</a> antes, para a área ocupar a tela.</li>
+</ul>

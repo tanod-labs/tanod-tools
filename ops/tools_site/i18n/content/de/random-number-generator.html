@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Zufallszahlen-Generator: Zufallszahl ziehen | Tanod Tools",
+  "description": "Zufallszahlen zwischen beliebigem Minimum und Maximum ziehen, mit oder ohne Wiederholung, sortiert oder nicht, ganzzahlig oder mit Nachkommastellen.",
+  "h1": "Zufallszahlen-Generator",
+  "lede": "Wählen Sie einen Bereich und wie viele Zahlen Sie möchten. Jede wird gleichverteilt aus der sicheren Zufallsquelle Ihres Browsers gezogen.",
+  "blurb": "Zufällige ganze Zahlen oder Dezimalzahlen in jedem Bereich, auch ohne Wiederholung.",
+  "keywords": "zufallszahlen generator zufallsgenerator zufallszahl zahlengenerator zufällige zahl zufaellige zahl würfel wuerfel lotto ziehung verlosung ganze zahl dezimalzahl zwischen min max ohne wiederholung",
+  "limits": "Bis zu 10.000 Zahlen pro Ziehung, Grenzen mit bis zu 30 Ziffern und bis zu 10 Nachkommastellen. Ergebnisse werden nicht gespeichert; beim Neuladen der Seite sind sie weg.",
+  "howto_title": "So erzeugen Sie Zufallszahlen",
+  "howto": [
+    "Geben Sie den <strong>kleinsten</strong> und den <strong>größten</strong> Wert ein. Beide Enden können gezogen werden, und negative Zahlen funktionieren.",
+    "Legen Sie fest, <strong>wie viele</strong> Zahlen Sie möchten, und aktivieren Sie <em>Ohne Wiederholung</em>, wenn jede Zahl anders sein muss.",
+    "Klicken Sie auf <strong>Erzeugen</strong> und kopieren Sie dann die Liste oder laden Sie sie als Textdatei herunter."
+  ],
+  "faq": [
+    ["Sind die Zahlen wirklich zufällig?", "Sie stammen aus <code>crypto.getRandomValues</code>, demselben sicheren Generator, den Browser für Verschlüsselungsschlüssel verwenden, nicht aus <code>Math.random</code>. Jeder Wert in Ihrem Bereich ist gleich wahrscheinlich. Der Generator ist gut genug für Spiele, Verlosungen und Stichproben; für regulierte Lotterien wurde er nicht geprüft."],
+    ["Was ist Modulo-Verzerrung, und hat dieses Tool sie?", "Nimmt man eine zufällige 32-Bit-Zahl und behält den Rest nach der Division durch die Bereichsgröße, werden manche Ergebnisse etwas wahrscheinlicher, sobald der Bereich 2<sup>32</sup> nicht glatt teilt. Dieses Tool verwirft jede Ziehung, die in den ungleichmäßigen Rest fällt, und zieht neu, sodass jeder Wert genau dieselbe Chance hat. Das gilt auch für riesige Bereiche, die mit großen Ganzzahlen verarbeitet werden."],
+    ["Wie funktioniert „Ohne Wiederholung“, und wann klappt es nicht?", "Das Tool zieht jede neue Zahl und überspringt alle, die schon vorkamen, oder mischt bei kleinen Bereichen den ganzen Bereich und nimmt die ersten Werte. Fordern Sie mehr verschiedene Zahlen an, als der Bereich enthält, etwa 7 aus 1 bis 6, sagt es Ihnen das, statt endlos weiterzusuchen."],
+    ["Was passiert, wenn das Minimum größer als das Maximum ist?", "Die beiden Werte werden vertauscht, und die Ergebniszeile weist darauf hin. 10 und 1 ergibt dieselbe Ziehung wie 1 und 10."],
+    ["Wie funktionieren Dezimalzahlen?", "Stellen Sie 2 Nachkommastellen ein, dann wird der Bereich 0 bis 1 zu den 101 Werten 0,00, 0,01 bis 1,00, jeder gleich wahrscheinlich. Die Ergebnisse zeigen immer die volle Zahl an Stellen, 0,50 bleibt also 0,50. Die Grenzen selbst dürfen nicht mehr Nachkommastellen haben, als Sie gewählt haben."],
+    ["Kann ich das für Lottozahlen oder einen Würfelwurf nutzen?", "Für einen Würfelwurf nehmen Sie 1 bis 6. Für einen Lottoschein aktivieren Sie <em>Ohne Wiederholung</em>, zum Beispiel 6 Zahlen aus 1 bis 49, aufsteigend sortiert. Zufällig gezogene Zahlen bringen keine besseren Gewinnchancen als andere Zahlen. Die Ziehungen werden weder gespeichert noch irgendwohin gesendet."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Minimum</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Maximum</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">Anzahl</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Nachkommastellen</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 ergibt ganze Zahlen.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Reihenfolge</label>
+      <select id="rn-order">
+        <option value="drawn">Wie gezogen</option>
+        <option value="asc">Aufsteigend</option>
+        <option value="desc">Absteigend</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">Ohne Wiederholung</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Erzeugen</button>
+    <button class="btn" id="rn-copy" type="button">Liste kopieren</button>
+    <button class="btn" id="rn-dl" type="button">.txt herunterladen</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Ergebnis</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Erzeugte Zahlen"></pre>
+</div>
+<!--explain-->
+<h2>Warum ein sicherer Generator, und was „zufällig“ hier bedeuten muss</h2>
+<p>Eine faire Ziehung bedeutet, dass jeder zulässige Wert gleich wahrscheinlich ist und eine Ziehung nichts über die nächste verrät. <code>Math.random()</code> ist schnell, aber eine getarnte vorhersagbare Folge; für Animationen reicht das, für eine Preisverlosung nicht. Das <code>crypto.getRandomValues</code> des Browsers wird vom Betriebssystem gespeist und ist die richtige Quelle für alles, worüber sich Menschen streiten könnten. Darauf baut dieser Zufallszahlen-Generator auf.</p>
+<p>Aus rohen Zufallsbits eine Zahl von 1 bis 6 zu machen, ist der Punkt, an dem viele Tools Fehler machen. Ein 32-Bit-Wert hat 4.294.967.296 Möglichkeiten, die sich nicht glatt durch 6 teilen lassen, daher macht die Verwendung des Rests die niedrigen Augenzahlen ein klein wenig wahrscheinlicher. Die Lösung ist die Verwerfungsmethode: Das größte Vielfache der Bereichsgröße unter 2<sup>32</sup> ist die Grenze, und eine Ziehung darüber wird verworfen und neu gezogen. Bei Bereichen, die breiter als 32 Bit sind, zieht das Tool genau so viele Bits wie nötig und verwirft alles über dem Bereich, mit großen Ganzzahlen, damit Werte in der Nähe von 9.007.199.254.740.991 exakt bleiben.</p>
+<p>Dezimalzahlen nutzen dieselbe Idee auf einem Raster. Bei zwei Nachkommastellen wird der Bereich 0 bis 5 als die ganzen Zahlen 0 bis 500 behandelt, eine davon gezogen und das Komma wieder eingesetzt. So bleibt jeder Rasterwert gleich wahrscheinlich, statt eine stetige Zahl zu runden.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Um Personen statt Zahlen auszuwählen, fügen Sie eine Liste in <a href="/tools/random-name-picker/">Namen auslosen</a> ein.</li>
+  <li>Sie brauchen ein Geheimnis, keine Zahl? Der <a href="/tools/password-generator/">Passwort-Generator</a> nutzt dieselbe Zufallsquelle mit Zeichengruppen.</li>
+  <li>Sie möchten eine eindeutige Kennung statt einer kleinen Zahl? Probieren Sie den <a href="/tools/uuid-generator/">UUID-Generator</a>.</li>
+</ul>

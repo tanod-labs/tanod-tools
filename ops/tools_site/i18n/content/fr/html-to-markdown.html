@@ -1,0 +1,93 @@
+<!--meta
+{
+  "title": "Convertir HTML en Markdown en ligne, gratuit | Tanod Tools",
+  "description": "Convertissez du HTML en Markdown propre dans votre navigateur : titres, listes, liens, code et tableaux. Style Markdown au choix. Gratuit, rien n'est envoyé.",
+  "h1": "Convertir HTML en Markdown",
+  "lede": "Collez du HTML ou ouvrez un fichier .html et obtenez un Markdown propre pour un README, un wiki ou une application de notes.",
+  "blurb": "Convertissez du HTML en Markdown propre.",
+  "keywords": "html en markdown convertir html markdown convertisseur html md page web readme wiki notes gfm tableau",
+  "limits": "HTML jusqu'à environ 5 Mo, collé ou ouvert depuis un fichier .html. Le résultat se met à jour pendant la saisie.",
+  "howto_title": "Comment convertir du HTML en Markdown",
+  "howto": [
+    "Collez votre HTML dans le champ, ou ouvrez un fichier .html.",
+    "Choisissez le style de titres, de listes et de blocs de code. Les tableaux sont convertis en tableaux Markdown, sauf si vous désactivez cette option.",
+    "Copiez le Markdown ou téléchargez-le en fichier .md."
+  ],
+  "faq": [
+    ["Mon HTML est-il envoyé en ligne ?", "Non. Il est converti dans votre navigateur avec la bibliothèque open source Turndown, et rien n'est envoyé nulle part ni conservé."],
+    ["L'outil charge-t-il les images ou exécute-t-il les scripts du HTML ?", "Non. Le HTML est lu dans un document détaché que le navigateur n'affiche jamais : les scripts ne s'exécutent pas et les images, polices et feuilles de style ne sont pas chargées. Les blocs script et style sont retirés du résultat."],
+    ["Comment les tableaux sont-ils convertis ?", "Les tableaux simples deviennent des tableaux Markdown de style GitHub, avec la première ligne comme en-tête et l'alignement à gauche, centré ou à droite conservé quand le HTML le définit. Les tableaux avec des cellules fusionnées (rowspan ou colspan) ou un tableau dans un tableau ne peuvent pas s'écrire en tableaux Markdown : ils restent donc en HTML, que la plupart des moteurs de rendu Markdown affichent tel quel. Vous pouvez désactiver la conversion des tableaux pour garder tous les tableaux en HTML."],
+    ["Quelle est la différence entre les styles de titres et de code ?", "Les titres ATX commencent par des signes # (<code># Titre</code>) et fonctionnent à tous les niveaux ; les titres Setext soulignent le texte avec = ou - et n'existent que pour les niveaux 1 et 2, les niveaux suivants utilisent donc quand même #. Les blocs de code délimités entourent le code de trois accents graves et gardent le nom du langage tiré d'une classe <code>language-</code> ; les blocs indentés utilisent quatre espaces, l'ancien style."],
+    ["Qu'est-ce qui se perd dans la conversion ?", "Le Markdown ne sait pas exprimer les couleurs, polices, classes, la mise en page ou les contrôles de formulaire : ils sont donc supprimés et seuls le texte et sa structure restent. Le texte barré devient <code>~~texte~~</code> et les cases à cocher des éléments de liste deviennent des marqueurs de liste de tâches. Les caractères qui seraient sinon interprétés comme du Markdown, comme un # ou un * en début de ligne, sont échappés avec une barre oblique inversée."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="html">HTML</label>
+      <textarea id="html" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="&lt;h1&gt;Titre&lt;/h1&gt;&#10;&lt;p&gt;Du texte en &lt;strong&gt;gras&lt;/strong&gt;.&lt;/p&gt;"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Markdown</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="heading">Titres</label>
+      <select id="heading">
+        <option value="atx" selected># ATX</option>
+        <option value="setext">Soulignés (Setext)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bullet">Puce de liste</label>
+      <select id="bullet">
+        <option value="-" selected>- tiret</option>
+        <option value="*">* astérisque</option>
+        <option value="+">+ plus</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="code">Blocs de code</label>
+      <select id="code">
+        <option value="fenced" selected>Délimités (```)</option>
+        <option value="indented">Indentés (4 espaces)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="em">Italique</label>
+      <select id="em">
+        <option value="_" selected>_tiret bas_</option>
+        <option value="*">*astérisque*</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="tables" checked>Convertir les tableaux en tableaux Markdown</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Collez du HTML pour commencer.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le Markdown</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Télécharger .md</button>
+    <button class="btn btn--quiet" id="clear" type="button">Effacer</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/html,.html,.htm,text/plain,.txt">{{mark:i-upload}}<span>Ouvrir un fichier .html</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Transformer des pages web en Markdown</h2>
+<p>Sortir du contenu d'une page web, d'un ancien CMS ou d'un éditeur de texte enrichi pour le mettre dans un README, un site statique ou une application de notes demande en général de convertir du HTML en Markdown. Le convertisseur parcourt la structure HTML et écrit chaque élément sous sa forme Markdown : les titres deviennent des lignes en #, les listes des tirets, les liens <code>[texte](url)</code>, et <code>&lt;pre&gt;&lt;code&gt;</code> devient un bloc de code.</p>
+<p>Le Markdown ne décrit que la structure : la mise en forme visuelle est donc laissée de côté. Les styles en ligne, classes, couleurs et conteneurs de mise en page disparaissent, tandis que les mots, l'emphase, les liens, les images et les listes restent. Les tableaux sont écrits en tableaux GitHub Flavored Markdown quand ils sont assez simples pour ce format.</p>
+<p>Chaque projet a ses habitudes en Markdown : c'est pourquoi les styles de titres, de puces de liste, de blocs de code et d'italique sont modifiables. La plupart des moteurs de rendu acceptent tous ces styles.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vérifiez le rendu du Markdown avec <a href="/tools/markdown-to-html/">Markdown en HTML</a>, qui a un aperçu.</li>
+  <li>Corrigez les espaces ou formulations restantes avec <a href="/tools/find-and-replace/">Rechercher et remplacer</a>.</li>
+  <li>Comptez les mots du résultat avec le <a href="/tools/word-counter/">Compteur de mots</a>.</li>
+</ul>

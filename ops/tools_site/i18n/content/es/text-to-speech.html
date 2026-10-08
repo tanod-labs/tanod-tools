@@ -1,0 +1,79 @@
+<!--meta
+{
+  "title": "Texto a voz: lee texto en voz alta en tu navegador | Tanod Tools",
+  "description": "Pega un texto y escúchalo en voz alta con las voces que ya tiene tu dispositivo. Elige voz, velocidad, tono y volumen, y sigue la lectura palabra por palabra. Gratis.",
+  "h1": "Texto a voz",
+  "lede": "Pega o escribe un texto y escúchalo en voz alta con las voces integradas en tu navegador y tu sistema operativo.",
+  "blurb": "Lee texto en voz alta con las voces de tu dispositivo.",
+  "keywords": "texto a voz tts leer en voz alta convertir texto a voz lector de texto sintesis de voz narrador escuchar texto voz online revisar texto",
+  "limits": "La voz proviene de las voces de tu propio navegador, así que las disponibles dependen de tu dispositivo. Los textos de hasta 100.000 caracteres se leen en partes del tamaño de una oración. Esta herramienta no permite guardar el audio.",
+  "local_text": "Habla con las voces integradas en tu dispositivo",
+  "howto_title": "Cómo hacer que tu navegador lea un texto en voz alta",
+  "howto": [
+    "Pega o escribe el texto. La página muestra cuántos caracteres tiene y en cuántas partes se leerá.",
+    "Elige una <strong>voz</strong> y ajusta la velocidad, el tono y el volumen. Las voces marcadas como <em>(online)</em> usan un servicio de voz del fabricante de tu navegador.",
+    "Pulsa <strong>Reproducir</strong>. Usa <strong>Pausar</strong>, <strong>Reanudar</strong> y <strong>Detener</strong> según lo necesites; la palabra que se está leyendo se resalta cuando tu voz lo informa."
+  ],
+  "faq": [
+    ["¿De dónde sale la voz?", "De tu propio navegador y sistema operativo, a través de la Web Speech API. Esta página no contiene un motor de voz ni tiene voces propias, por eso la lista cambia entre una laptop con Windows, una Mac, un celular Android y una computadora con Linux."],
+    ["¿Mi texto se envía a algún lado?", "Depende de la voz que elijas. Las voces sin la marca <em>(online)</em> funcionan en tu dispositivo y el texto se queda ahí. Algunas voces, como las voces de Google en Chrome o las voces Online (Natural) en Edge, son voces en línea: tu navegador envía el texto al servicio de voz del fabricante del navegador para recibir el audio. Esta página no puede ver ni controlar eso. La herramienta elige una voz del dispositivo de forma predeterminada; elige una voz en línea solo si estás de acuerdo con que ese texto llegue a esa empresa."],
+    ["¿Por qué la lista de voces está vacía o tarda un momento?", "Algunos navegadores llenan la lista un momento después de que carga la página, y la página se actualiza cuando lo hacen. Si sigue vacía, el dispositivo no tiene voces instaladas, algo común en instalaciones mínimas de Linux y en algunos equipos administrados por empresas. Se soluciona instalando una voz de texto a voz en la configuración de idioma del sistema."],
+    ["¿Puedo guardar la voz como MP3 o WAV?", "No. La Web Speech API reproduce el sonido directamente en tus altavoces y no da a las páginas acceso al audio, así que ningún sitio web puede grabarlo a través del navegador. Para crear un archivo de audio necesitas un programa de voz de escritorio o un servicio que genere el audio en sus propios servidores."],
+    ["¿Por qué el texto se lee por partes?", "Chrome y algunos otros navegadores cortan un enunciado largo después de unos 15 segundos. La página divide tu texto en los finales de oración, en partes de unos 200 caracteres, y las lee una tras otra, para que los artículos largos se lean completos. Puede que escuches una pausa mínima entre partes."],
+    ["¿Por qué el resaltado de palabras no avanza con algunas voces?", "No todas las voces le indican al navegador en qué palabra van. Cuando lo hacen, se resalta la palabra actual; cuando no, se resalta la oración que se está leyendo. Los cambios de velocidad, tono o volumen durante la lectura se aplican desde la parte siguiente."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack tts">
+  <p class="note tts-note">La lectura usa las voces integradas en tu navegador y tu sistema operativo. Las voces marcadas como <strong>(online)</strong> envían el texto al servicio de voz del fabricante del navegador; todas las demás funcionan en este dispositivo.</p>
+  <div class="field">
+    <label for="tts-text">Texto para leer</label>
+    <textarea id="tts-text" class="tts-text" rows="8" maxlength="100000" spellcheck="true" placeholder="Pega o escribe algo para escucharlo en voz alta."></textarea>
+    <div class="tts-meta">
+      <span id="tts-count" aria-live="polite">0 caracteres</span>
+      <span id="tts-parts" data-parts="0">Todavía no hay nada para leer.</span>
+      <button class="btn btn--quiet btn--sm" id="tts-clear" type="button">Borrar texto</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tts-voice">Voz</label>
+    <select id="tts-voice" aria-describedby="tts-voice-status"></select>
+    <p class="help" id="tts-voice-status" role="status" data-state="loading">Buscando voces...</p>
+    <p class="help tts-online" id="tts-online" hidden>Esta es una voz en línea. El texto que leas con ella se envía al servicio de voz del fabricante del navegador. Elige una voz sin la marca (online) para que el texto se quede en este dispositivo.</p>
+  </div>
+  <div class="tts-sliders">
+    <div class="field">
+      <label for="tts-rate">Velocidad <output id="tts-rate-v" for="tts-rate"></output></label>
+      <input type="range" id="tts-rate" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-pitch">Tono <output id="tts-pitch-v" for="tts-pitch"></output></label>
+      <input type="range" id="tts-pitch" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-vol">Volumen <output id="tts-vol-v" for="tts-vol"></output></label>
+      <input type="range" id="tts-vol" min="0" max="1" step="0.05" value="1">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="tts-play" type="button" disabled>Reproducir</button>
+    <button class="btn" id="tts-pause" type="button" disabled>Pausar</button>
+    <button class="btn" id="tts-resume" type="button" disabled>Reanudar</button>
+    <button class="btn" id="tts-stop" type="button" disabled>Detener</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="out tts-follow" id="tts-follow" aria-hidden="true" hidden></div>
+  <p class="help">Esta herramienta no permite guardar el audio: el navegador reproduce la voz directamente en tus altavoces y no se la entrega a las páginas web.</p>
+</div>
+<!--explain-->
+<h2>Qué pasa cuando una página web habla</h2>
+<p>El texto a voz en un navegador es un traspaso. La página le da al navegador tu texto, el nombre de una voz, una velocidad y un tono, y el navegador le pide al sistema operativo, o en algunos casos a los servidores del fabricante del navegador, que lo convierta en sonido. Por eso dos personas en la misma página escuchan voces distintas, y por eso aquí no hay nada que descargar: la página nunca recibe el audio.</p>
+<p>Las voces del dispositivo son las que trae tu sistema, como las que se instalan con Windows, macOS, iOS o Android, y funcionan sin conexión. Las voces en red suelen sonar más naturales, por eso los navegadores las ofrecen, pero el texto tiene que viajar a un servidor para leerse. Esa diferencia importa con material privado, así que revisa la marca <em>(online)</em> antes de pegar algo confidencial.</p>
+<p>Escuchar un texto es un buen truco para revisarlo. Los ojos cansados pasan por alto una palabra repetida o un punto que falta, pero una voz lee exactamente lo que está escrito y tropieza donde tropieza la oración. Baja un poco la velocidad y sigue la palabra resaltada.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Comprueba primero cuánto tardará en leerse un fragmento con el <a href="/tools/word-counter/">contador de palabras</a>, que estima el tiempo para hablar.</li>
+  <li>Quita los saltos de línea sueltos del texto copiado con <a href="/tools/remove-line-breaks/">Eliminar saltos de línea</a> para que las oraciones no se lean en fragmentos.</li>
+  <li>Asegúrate de que los símbolos y las mayúsculas estén en su lugar con <a href="/tools/case-converter/">Convertir mayúsculas y minúsculas</a> antes de escuchar.</li>
+</ul>

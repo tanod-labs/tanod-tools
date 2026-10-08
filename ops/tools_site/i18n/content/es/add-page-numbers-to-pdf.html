@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Numerar páginas de un PDF online gratis | Tanod Tools",
+  "description": "Agrega números de página a un PDF en tu navegador. Elige posición, formato y número inicial, omite la portada y descarga. Gratis, sin registro y sin subir nada.",
+  "h1": "Numerar páginas de un PDF",
+  "lede": "Agrega números de página en todas las páginas, o solo en las que elijas, y decide dónde van.",
+  "blurb": "Numera las páginas de un PDF.",
+  "keywords": "numerar paginas pdf agregar poner numeros de pagina paginacion paginar pie de pagina encabezado pagina x de y",
+  "limits": "Un PDF a la vez, de hasta 200 MB. Los PDF protegidos con contraseña no se pueden editar. Los números se dibujan en Helvetica.",
+  "howto_title": "Cómo numerar las páginas de un PDF",
+  "howto": [
+    "Elige un archivo PDF o arrástralo a la página.",
+    "Elige la posición, el formato del número y el número inicial. Si lo necesitas, omite la portada o limita la numeración a algunas páginas.",
+    "Pulsa <strong>Agregar números de página</strong> y descarga el PDF numerado."
+  ],
+  "faq": [
+    ["¿Se sube mi PDF?", "No. Los números se dibujan en una copia de tu PDF con la biblioteca de código abierto pdf-lib, dentro de tu navegador. No se envía nada a ningún servidor."],
+    ["¿Cómo dejo la portada sin número?", "Marca <em>Omitir la primera página</em>. El número inicial se aplica entonces a la primera página numerada, así que la segunda página recibe el número inicial que pusiste. Si prefieres que la página 2 muestre \"2\", pon 2 como número inicial."],
+    ["En \"Página 1 de N\", ¿qué valor toma N?", "N es el último número usado. Si numeras todas las páginas y empiezas en 1, es el total de páginas. Si omites la portada o numeras solo algunas páginas, es el número inicial más la cantidad de páginas numeradas, menos uno."],
+    ["¿Los números quedan derechos en las páginas rotadas?", "Sí. Si una página está guardada con una rotación de 90, 180 o 270 grados, el número se coloca según cómo se ve la página y se gira con ella, así que se lee derecho en la posición que elegiste. El número se coloca dentro del área visible de la página (su cuadro de recorte, si tiene uno)."],
+    ["¿Puedo cambiar la fuente?", "No en esta herramienta. Los números se dibujan en Helvetica, una fuente estándar de PDF, así que funcionan en todas partes y apenas aumentan el tamaño del archivo."],
+    ["¿Cambia el resto del PDF?", "El contenido existente de las páginas se queda como está y los números se agregan encima. La información del documento, como el título y el autor, no se modifica."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Suelta un PDF aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Elegir un PDF</span></label>
+  <p class="drop__hint">O arrástralo a cualquier parte de esta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pos">Posición</label>
+      <select id="pos">
+        <option value="bc" selected>Abajo, al centro</option>
+        <option value="br">Abajo, a la derecha</option>
+        <option value="bl">Abajo, a la izquierda</option>
+        <option value="tc">Arriba, al centro</option>
+        <option value="tr">Arriba, a la derecha</option>
+        <option value="tl">Arriba, a la izquierda</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fmt">Formato</label>
+      <select id="fmt">
+        <option value="n" selected>1</option>
+        <option value="page">Página 1</option>
+        <option value="of">Página 1 de N</option>
+        <option value="slash">1 / N</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Empezar en el número</label>
+      <input id="start" type="number" inputmode="numeric" min="0" max="99999" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Tamaño de fuente (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="6" max="48" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="margin">Margen desde el borde (pt)</label>
+      <input id="margin" type="number" inputmode="numeric" min="0" max="200" step="1" value="28">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Páginas que se numeran</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Todas</label>
+        <label><input type="radio" name="scope" value="range">Algunas</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Páginas</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+      <span class="help">Las páginas se cuentan desde 1.</span>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="skip"> Omitir la primera página (portada)</label>
+    </div>
+  </div>
+  <p class="help" id="sample" aria-live="polite"></p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Agregar números de página</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Numerar páginas sin subir el PDF</h2>
+<p>Los números de página son solo pequeños fragmentos de texto dibujados encima de cada página. Tu navegador puede hacerlo directamente: abre el PDF con pdf-lib, agrega una línea de texto en Helvetica a cada página que elegiste y escribe un archivo nuevo. El contenido original de las páginas no se toca.</p>
+<p>Cada página puede tener su propio tamaño, cuadro de recorte y rotación, así que la posición se calcula página por página. Los márgenes se miden desde el borde del área visible, y en una página guardada de lado el número se gira con ella para que se siga leyendo derecho donde lo esperas.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Primero vas a juntar varios archivos? Usa <a href="/tools/merge-pdf/">Unir PDF</a> y luego numera el resultado para que la numeración sea continua.</li>
+  <li>¿Necesitas una marca que cruce la página en lugar de un número? Prueba <a href="/tools/watermark-pdf/">Marca de agua en PDF</a>.</li>
+  <li>¿Páginas en el orden equivocado? Corrígelo con <a href="/tools/reorder-pdf-pages/">Ordenar páginas de un PDF</a> antes de numerar.</li>
+</ul>

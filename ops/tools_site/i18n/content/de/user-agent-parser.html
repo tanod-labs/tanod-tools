@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "User-Agent analysieren: Browser, OS und Gerät | Tanod Tools",
+  "description": "Ihren User-Agent oder einen beliebigen auslesen: Browser, Engine, OS, Gerät und CPU, dazu Client Hints und warum Chrome Details verbirgt. Läuft im Browser.",
+  "h1": "User-Agent analysieren",
+  "lede": "Zerlegen Sie eine User-Agent-Zeichenkette in Browser, Engine, Betriebssystem, Gerät und CPU, beginnend mit der Ihres eigenen Browsers.",
+  "blurb": "Jeden User-Agent auswerten und den eigenen mit Client Hints sehen.",
+  "keywords": "user agent parser user-agent analysieren auslesen mein user agent was ist mein user agent ua string useragent browser erkennen browsererkennung client hints decoder navigator.userAgent googlebot curl",
+  "limits": "Die Auswertung verwendet ua-parser-js 1.0.41 (MIT) und beruht auf Mustern, daher können ungewöhnliche oder gefälschte Zeichenketten falsch gelesen werden. Client Hints werden nur für den Browser angezeigt, den Sie gerade verwenden, und nur, wenn dieser Browser sie unterstützt (Chromium-Browser tun das, Firefox und Safari nicht).",
+  "howto_title": "So lesen Sie eine User-Agent-Zeichenkette",
+  "howto": [
+    "Der User-Agent Ihres eigenen Browsers wird ausgewertet, sobald die Seite geladen ist. Um einen anderen zu prüfen, fügen Sie ihn in das Feld ein, zum Beispiel aus einem Server-Log.",
+    "Lesen Sie die Zeilen für Browser, Engine, Betriebssystem, Gerät und CPU. Betrachten Sie sie als das, was die Zeichenkette behauptet, nicht als bewiesene Tatsachen.",
+    "Vergleichen Sie für Ihren eigenen Browser das Ergebnis mit dem Abschnitt Client Hints, der Details zeigen kann, die in der gekürzten Zeichenkette fehlen."
+  ],
+  "faq": [
+    ["Was ist eine User-Agent-Zeichenkette?", "Eine Textzeile, die ein Browser oder Programm mit jeder Webanfrage sendet, um zu sagen, was er ist. Wegen jahrzehntelanger Kompatibilitätstricks beginnt fast jeder Browser mit <code>Mozilla/5.0</code> und nennt mehrere andere Browser; zum Lesen braucht es daher Mustererkennung statt einfachen Zerlegens."],
+    ["Warum wird Windows 11 als Windows 10 angezeigt?", "Chrome und andere Chromium-Browser frieren den Plattformteil der Zeichenkette bei „Windows NT 10.0“ ein, egal welche Windows-Version tatsächlich läuft. Nur Client Hints können sie unterscheiden: Eine Plattformversion von 13 oder höher bedeutet Windows 11. Diese Seite zeigt den Wert für Ihren eigenen Browser, wenn er verfügbar ist."],
+    ["Warum gibt sich mein iPad als Mac aus?", "Seit iPadOS 13 fordert Safari standardmäßig Desktop-Websites an und sendet einen Macintosh-User-Agent. Anhand der Zeichenkette allein lässt sich ein Mac nicht von einem iPad unterscheiden, eine Seite kann aber prüfen, ob ein Touchscreen vorhanden ist. Dasselbe gilt für macOS: Die Version ist in der Zeichenkette bei 10_15_7 eingefroren."],
+    ["Was ist die User-Agent-Reduzierung?", "Chrome entfernt Details aus der Zeichenkette, um passives Tracking zu erschweren: Die Unterversion erscheint als 0.0.0, das Android-Gerätemodell als einzelner Buchstabe K, und die Betriebssystemversion ist fest. Websites, die die Details brauchen, müssen sie über Client Hints anfordern."],
+    ["Was sind Client Hints?", "Strukturierte Header und eine JavaScript-API (<code>navigator.userAgentData</code>), über die eine Seite gezielt Details anfordern kann, etwa die Architektur oder die vollständige Browserversion, statt sie aus der Zeichenkette zu lesen. Bisher unterstützen nur Chromium-basierte Browser sie."],
+    ["Kann ich einem User-Agent bei Sicherheitsentscheidungen vertrauen?", "Nein. Jeder kann jede beliebige Zeichenkette senden, und Bots geben sich oft als Chrome aus. Für Statistiken und die Wahl eines Layouts ist er in Ordnung, für Zugriffskontrolle nicht. Um den Googlebot zu verifizieren, prüft eine Website stattdessen die IP-Adresse des Besuchers per Reverse-DNS-Abfrage."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">User-Agent-Zeichenkette</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Meinen Browser verwenden</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Ergebnis kopieren</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="Ausgewerteter User-Agent"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints Ihres Browsers</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Was ein User-Agent verrät und was er verbirgt</h2>
+<p>Der User-Agent entstand, damit ein Server sehen konnte, welcher Browser anfragt, und eine Seite schicken konnte, die dort funktionierte. Browser übernahmen daraufhin die Namen der anderen, um die guten Seiten zu bekommen; deshalb nennt eine Chrome-Zeichenkette heute auch Mozilla, AppleWebKit, KHTML, Gecko und Safari. Ein Parser umgeht das, indem er Muster in sorgfältiger Reihenfolge prüft und den spezifischsten Treffer wählt.</p>
+<p>Die Zeichenkette wird außerdem absichtlich gekürzt. Die User-Agent-Reduzierung von Chrome legt die Windows-Version auf NT 10.0 fest, die macOS-Version auf 10_15_7, das Android-Modell auf K und die Build-Nummer auf 0.0.0, damit die Zeichenkette kein guter Fingerabdruck mehr ist. Verschwunden sind die Details nicht: Eine Seite, die sie über Client Hints anfordert, erhält Plattformversion, Architektur, Modell und vollständige Browserversion, und der Browser des Besuchers entscheidet, ob er antwortet.</p>
+<p>Nutzen Sie die Zeichenkette für grobe Entscheidungen und Logs, nicht für Vertrauen. Crawler und Kommandozeilen-Tools wie curl senden eigene kurze Zeichenketten, und alles lässt sich fälschen. Wenn Sie einem Layoutfehler nachgehen, ist Feature-Erkennung in der Seite zuverlässiger, als den Browsernamen zu lesen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Ein Server-Log voller 403- oder 429-Antworten an einen Client? Schlagen Sie die Codes in der Übersicht der <a href="/tools/http-status-codes/">HTTP-Statuscodes</a> nach.</li>
+  <li>User-Agents in URLs oder Query-Strings sind oft prozentkodiert; dekodieren Sie sie mit <a href="/tools/url-encode-decode/">URL kodieren und dekodieren</a>.</li>
+  <li>Aus einer Anfrage kopierte Header enthalten manchmal Base64-Werte; lesen Sie sie mit <a href="/tools/base64-encode-decode/">Base64 kodieren und dekodieren</a>.</li>
+</ul>

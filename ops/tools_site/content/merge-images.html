@@ -1,0 +1,110 @@
+<!--meta
+{
+  "category": "image",
+  "name": "Merge images",
+  "title": "Merge images side by side, stacked or in a grid | Tanod Tools",
+  "description": "Combine 2 to 20 pictures into one image: side by side, stacked or in a grid, with gaps, alignment and a background colour. Nothing is uploaded.",
+  "h1": "Merge images",
+  "lede": "Join several pictures into one: in a row, in a column or in a grid, with the spacing and background you choose.",
+  "blurb": "Join images into a row, column or grid.",
+  "keywords": "combine join stitch collage side by side stack vertical horizontal grid sprite sheet photo",
+  "limits": "2 to 20 images per merge, 50 MB each. The merged picture can be up to 100 megapixels and 32,767 pixels on a side. Output is PNG, JPEG or WebP.",
+  "howto_title": "How to merge images",
+  "howto": [
+    "Choose two or more images, or drag them onto the page. Use the up and down buttons in the list to set their order.",
+    "Pick <strong>Side by side</strong>, <strong>Stacked</strong> or <strong>Grid</strong>, then set the gap, the alignment, the background and whether to scale the pictures to match.",
+    "Check the preview, choose PNG, JPEG or WebP, and press <strong>Merge images</strong>."
+  ],
+  "faq": [
+    ["Are my images uploaded?", "No. The pictures are decoded and drawn onto one canvas in your browser. Nothing is sent to a server."],
+    ["What happens when the pictures are different sizes?", "By default each one keeps its own size and the smaller ones are placed at the start, centre or end of the row or column, whichever you choose, with the background colour filling the empty space. To make them line up, set \"Match sizes\" to scale them to the smallest or largest picture in the set."],
+    ["How does Match sizes work in each layout?", "Side by side makes every picture the same height, keeping its proportions. Stacked makes every picture the same width. In a grid, every picture is fitted inside the same cell without cropping, so shapes are kept and the leftover space takes the background colour."],
+    ["Can the background be transparent?", "Yes, for PNG and WebP. The gaps and any empty space stay see-through. JPEG cannot store transparency, so with JPEG selected those areas are filled with the background colour instead."],
+    ["Why was my merge refused as too large?", "Merging adds the sizes of the pictures together, and a row of several large photos gets very wide very quickly. The result is limited to 100 megapixels and 32,767 pixels on either side so your browser can build it. Scale to the smallest picture, use a grid, or remove some images."],
+    ["Does the order in the list matter?", "Yes. The first image goes top left in every layout, and a grid fills across each row before starting the next. The up and down buttons change the order and the preview updates straight away."]
+  ],
+  "related": ["resize-image", "add-border-to-image", "crop-image", "convert-image", "jpg-to-pdf", "compress-image"],
+  "app_category": "MultimediaApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Drop two or more images here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choose images</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP or AVIF. Or drag them anywhere on this page.</p>
+</div>
+<ol class="files mrg-list" id="files" aria-label="Images to merge, in order" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts mrg-opts">
+    <fieldset class="field">
+      <legend>Layout</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="row" checked>Side by side</label>
+        <label><input type="radio" name="layout" value="column">Stacked</label>
+        <label><input type="radio" name="layout" value="grid">Grid</label>
+      </div>
+    </fieldset>
+    <div class="field" id="cols-field" hidden>
+      <label for="cols">Columns</label>
+      <input type="number" id="cols" min="1" max="20" step="1" value="2" inputmode="numeric">
+    </div>
+    <fieldset class="field">
+      <legend>Alignment</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="start">Start</label>
+        <label><input type="radio" name="align" value="center" checked>Centre</label>
+        <label><input type="radio" name="align" value="end">End</label>
+      </div>
+      <p class="help" id="align-help"></p>
+    </fieldset>
+    <div class="field">
+      <label for="scale">Match sizes</label>
+      <select id="scale">
+        <option value="none" selected>Keep original sizes</option>
+        <option value="min">Scale to the smallest</option>
+        <option value="max">Scale to the largest</option>
+      </select>
+      <p class="help" id="scale-help"></p>
+    </div>
+    <div class="field">
+      <label for="gap">Gap (px)</label>
+      <input type="number" id="gap" min="0" max="10000" step="1" value="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="bg">Background colour</label>
+      <input type="color" id="bg" value="#ffffff">
+      <label class="check"><input type="checkbox" id="transparent">Transparent (PNG and WebP)</label>
+    </div>
+    <fieldset class="field">
+      <legend>Output format</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="png" checked>PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help" id="fmt-help">PNG keeps every pixel and any transparency.</p>
+    </fieldset>
+  </div>
+  <p class="help">Preview, reduced to fit. The saved file is built at full size.</p>
+  <div class="preview mrg-preview"><canvas id="preview" role="img" aria-label="Preview of the merged image"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Merge images</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Clear all</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>How pictures of different sizes are joined</h2>
+<p>A row of pictures is as tall as its tallest member, and a column is as wide as its widest. Anything smaller leaves spare space, so the alignment setting decides where the picture sits in it: at the start, the centre or the end. The spare space is filled with your background colour, or left see-through in PNG and WebP.</p>
+<p>Scaling is the other way to deal with mismatched sizes. Scaling to the smallest picture never enlarges anything, so nothing gets blurry, but large photos lose detail. Scaling to the largest keeps the big ones sharp and stretches the small ones. In a grid the same idea applies to a single cell shape that every picture is fitted into.</p>
+<p>Widths and heights add up fast. Five 4000-pixel-wide photos in a row make a 20,000-pixel-wide image, which may be more than a browser can handle, so the page stops you and tells you the size before you press the button.</p>
+<h3>Tips</h3>
+<ul>
+  <li>For a printable or shareable collage, add a frame afterwards with <a href="/tools/add-border-to-image/">Add border to image</a>.</li>
+  <li>If the merged file is too heavy to send, <a href="/tools/compress-image/">Compress image</a> or <a href="/tools/resize-image/">Resize image</a> will shrink it.</li>
+  <li>Want the pictures in a document instead? <a href="/tools/jpg-to-pdf/">JPG to PDF</a> puts each one on its own page.</li>
+</ul>

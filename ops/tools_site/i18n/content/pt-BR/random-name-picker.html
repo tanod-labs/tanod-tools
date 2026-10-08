@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Sorteador de nomes: roleta de sorteio e times | Tanod Tools",
+  "description": "Cole uma lista de nomes e sorteie um ou vários vencedores numa roleta, ou divida todos em times aleatórios equilibrados. Sorteio justo, nada é enviado.",
+  "h1": "Sorteador de nomes",
+  "lede": "Cole os nomes, um por linha, e gire a roleta para sortear um vencedor ou distribua todo mundo em times.",
+  "blurb": "Gire a roleta para sortear vencedores ou divida nomes em times.",
+  "keywords": "sorteador de nomes sortear nomes sorteio online roleta de nomes roda da sorte rifa sorteio de brindes amigo secreto sortear times dividir grupos escolher vencedor sala de aula",
+  "limits": "A roleta mostra os nomes em até 100 entradas; com mais, ela continua sorteando de forma justa, mas exibe fatias sem rótulo. A lista existe só nesta página e some quando você a fecha ou recarrega.",
+  "howto_title": "Como sortear um nome",
+  "howto": [
+    "Digite ou cole os nomes na caixa, <strong>um por linha</strong>. Linhas em branco são ignoradas.",
+    "Escolha <em>Sortear vencedores</em> e quantos, ou <em>Dividir em times</em> e quantos times.",
+    "Toque no botão. Marque <em>Remover os nomes sorteados</em> se a mesma pessoa não puder ganhar duas vezes."
+  ],
+  "faq": [
+    ["O sorteio é justo?", "Sim. O vencedor é escolhido primeiro, com um sorteio sem viés a partir da fonte aleatória segura do seu navegador, e a roleta então gira até parar nesse nome. A animação é só decoração, então uma fatia comprida ou um giro de sorte não mudam a chance de ninguém. Cada linha tem a mesma chance."],
+    ["O que acontece se um nome estiver duas vezes na lista?", "Cada linha é uma entrada própria, então um nome digitado duas vezes tem duas chances, e a página mostra quais nomes se repetem. Se for um engano, apague a linha extra; se for proposital, por exemplo dois bilhetes de rifa, deixe como está."],
+    ["Como sorteio vários vencedores em sequência?", "Marque <em>Remover os nomes sorteados da lista</em> e toque no botão de novo a cada sorteio. Ou defina o número de vencedores como 3 e receba três entradas diferentes de uma vez. Os vencedores de um mesmo sorteio são sempre entradas diferentes."],
+    ["Como os times são formados?", "A lista é embaralhada com um embaralhamento Fisher-Yates sem viés e depois distribuída um nome de cada vez, como cartas. Isso mantém os tamanhos dos times com diferença de no máximo um: 10 nomes em 3 times dá 4, 3 e 3."],
+    ["Posso desligar o giro?", "Se o seu dispositivo estiver configurado para reduzir movimento, a roleta vai direto para o resultado, sem animação, e o resultado é anunciado aos leitores de tela de qualquer forma. Os resultados também aparecem listados em texto embaixo da roleta."],
+    ["Minha lista é enviada para algum lugar?", "Não. Os nomes são lidos apenas pela página no seu navegador, e nada é armazenado, então fechar a aba os apaga. Copie o histórico se precisar de um registro de quem foi sorteado."]
+  ]
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Nomes, um por linha</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Ana&#10;Bruno&#10;Carla"></textarea>
+      <p class="help" id="rp-info">Nenhum nome ainda</p>
+    </div>
+    <fieldset class="field">
+      <legend>O que fazer</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Sortear vencedores</label>
+        <label><input type="radio" name="rp-mode" value="teams">Dividir em times</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">Quantos vencedores</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">Quantos times</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Remover os nomes sorteados da lista</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Sortear</button>
+      <button class="btn" id="rp-sample" type="button">Usar nomes de exemplo</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Roleta vazia: adicione nomes para preenchê-la"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">Histórico</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Limpar histórico</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Sortear de forma justa, e por que a roleta é só enfeite</h2>
+<p>Um sorteio de nomes justo dá a mesma chance a cada entrada. A armadilha comum é girar uma animação, ver onde ela para e chamar isso de resultado: a física de uma roleta desenhada, um quadro lento ou um erro de arredondamento podem favorecer algumas fatias. Aqui a ordem é invertida. A entrada vencedora é escolhida primeiro, sorteando uma posição aleatória com amostragem por rejeição, que descarta a sobra desigual que um simples módulo deixaria, e a roleta então gira até parar nessa fatia.</p>
+<p>Sortear vários vencedores funciona do mesmo jeito, sem reposição. A página faz um embaralhamento Fisher-Yates parcial das posições da sua lista e pega as primeiras, então uma posição nunca pode ser escolhida duas vezes no mesmo sorteio. Os times usam o embaralhamento completo e depois distribuem os nomes um a um entre os times. Isso garante que os tamanhos difiram em no máximo um, enquanto quem fica com quem continua aleatório.</p>
+<p>Para qualquer coisa que valha algo, como um sorteio de brindes, deixe a lista visível na hora de sortear e explique como foi feito. Ler o histórico em voz alta ou publicá-lo depois é um registro melhor do que uma captura de tela da roleta.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Arrume primeiro a lista colada: use <a href="/tools/remove-duplicate-lines/">Remover linhas duplicadas</a> se cada pessoa só puder ter uma entrada.</li>
+  <li>Precisa de números em vez de nomes, como bilhetes de 1 a 500? Use o <a href="/tools/random-number-generator/">gerador de números aleatórios</a>.</li>
+  <li>Vai conduzir uma rodada de quiz ou uma palestra? Dê um limite a cada vez com o <a href="/tools/countdown-timer/">timer online</a>.</li>
+</ul>

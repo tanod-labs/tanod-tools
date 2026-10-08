@@ -1,0 +1,115 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "CSS minifier and beautifier",
+  "title": "CSS minifier and beautifier online | Tanod Tools",
+  "description": "Minify CSS to cut file size, or beautify it to read it. Strings, url() and calc() are protected, and the result is checked against your browser's parser.",
+  "h1": "CSS minifier and beautifier",
+  "lede": "Paste a stylesheet to shrink it for production or to lay it out readably, and see how many bytes you save.",
+  "blurb": "Minify or beautify CSS.",
+  "keywords": "css minify minifier compress beautify prettify format shrink stylesheet optimise optimize whitespace comments",
+  "limits": "Input up to about 10 MB. It removes whitespace and comments only; it does not merge rules, rewrite values or remove unused CSS.",
+  "howto_title": "How to minify or beautify CSS",
+  "howto": [
+    "Paste your CSS into the box, or press <strong>Insert a sample</strong>.",
+    "Choose <strong>Minify</strong> to compress it, or <strong>Beautify</strong> to lay it out with your indent. Tick or untick the licence-comment option when minifying.",
+    "Check the size saved, then copy the result or download it as a <code>.css</code> file."
+  ],
+  "faq": [
+    [
+      "Is my CSS uploaded?",
+      "No. Minifying runs in your browser, and the beautifier library is loaded from this site only if you choose Beautify. Your stylesheet is never sent anywhere."
+    ],
+    [
+      "What exactly does Minify change?",
+      "It removes comments and the whitespace around braces, semicolons, commas and combinators (<code>&gt;</code>, <code>~</code>, <code>+</code>), and drops the last semicolon in each block. It keeps the space in <code>a b</code> (the descendant combinator), in <code>and (min-width: ...)</code> and around <code>+</code> and <code>-</code> inside <code>calc()</code>, <code>clamp()</code>, <code>min()</code> and <code>max()</code>, where removing it would break the value."
+    ],
+    [
+      "Does it touch strings and url()?",
+      "No. Anything inside quotes, including text that looks like a comment or a brace, and the contents of <code>url()</code> are copied character for character."
+    ],
+    [
+      "Does it shorten colours or numbers?",
+      "No. Values such as <code>#336699</code>, <code>0.5em</code> and <code>0px</code> are left as written. Those rewrites save little and carry some risk, so only whitespace and comments go."
+    ],
+    [
+      "How do I know the minified CSS is safe?",
+      "After every run the page parses your original and the result with the browser's own CSS parser and compares what it reads. If they differ, a notice appears above the result. A match means the browser sees the same rules."
+    ],
+    [
+      "What are licence comments?",
+      "Comments that begin with <code>/*!</code> are conventionally kept by minifiers because they carry copyright or licence text that a licence may require you to retain. Turn the option off to strip them as well."
+    ]
+  ],
+  "related": [
+    "html-formatter",
+    "json-formatter",
+    "color-converter",
+    "text-diff",
+    "xml-formatter"
+  ],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">CSS</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insert a sample</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Clear</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="a { color: red; }"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-mode-l">Mode</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-mode-l">
+      <label><input type="radio" name="mode" value="min" checked>Minify</label>
+      <label><input type="radio" name="mode" value="beautify">Beautify</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Comments</span>
+    <label class="check"><input type="checkbox" id="o-licence" checked>Keep licence comments (<code>/*! ... */</code>)</label>
+  </div>
+  <div class="field" id="o-indent-field" hidden>
+    <span class="label" id="o-ind-l">Indent</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spaces</label>
+      <label><input type="radio" name="indent" value="4">4 spaces</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Change</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Result</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copy</button>
+    <button class="btn" id="f-dl" type="button">Download .css</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Minifying CSS without breaking it</h2>
+<p>Minifying a stylesheet means removing everything the browser ignores: comments, indentation, line breaks and the spaces around punctuation. Smaller files download and parse faster, and for a large stylesheet the saving is often a quarter to a half of its size before compression. The rules and their order stay exactly as written.</p>
+<p>The tricky part is knowing which whitespace the browser ignores. A space between two selectors, as in <code>nav a</code>, is a combinator that means "any descendant", so <code>nav a</code> and <code>nava</code> are different things. Inside <code>calc(1rem + 2px)</code> the spaces around <code>+</code> are required, and <code>calc(1rem+2px)</code> is invalid. Text inside quotes and inside <code>url()</code> is data, not syntax. A minifier built from regular expressions often gets one of these wrong; this one reads the stylesheet as a sequence of tokens and only removes whitespace where the grammar makes it optional.</p>
+<p>Beautifying is the opposite direction: one declaration per line, indented inside braces, so a minified file from a CDN becomes something you can read and diff.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Tidying a whole page, not just its stylesheet? Use the <a href="/tools/html-formatter/">HTML formatter</a>.</li>
+  <li>Picking colours for the stylesheet? The <a href="/tools/color-converter/">Color converter</a> turns hex into RGB, HSL and more.</li>
+  <li>Check what a minify actually changed by comparing both versions in <a href="/tools/text-diff/">Text diff</a>.</li>
+</ul>

@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Konversi teks ke biner, dan biner ke teks | Tanod Tools",
+  "description": "Ubah teks menjadi kode biner dan biner kembali menjadi teks, dengan UTF-8 sehingga aksen dan emoji berfungsi. Juga byte heksadesimal, desimal, oktal. Gratis.",
+  "h1": "Konverter teks ke biner",
+  "lede": "Ubah teks menjadi kode biner, atau dekode biner kembali menjadi teks yang bisa dibaca. Berfungsi untuk bahasa apa pun dan emoji.",
+  "blurb": "Teks ke kode biner dan sebaliknya, plus heksadesimal dan desimal.",
+  "keywords": "teks ke biner biner ke teks kode biner penerjemah biner ascii ke biner 01 dekoder biner utf-8 byte teks ke hex heksadesimal hex ke teks desimal",
+  "limits": "Teks hingga 1 MB untuk dienkode; biner hingga 5 MB untuk didekode. Hasil diperbarui saat Anda mengetik.",
+  "howto_title": "Cara mengonversi teks ke biner",
+  "howto": [
+    "Pilih <strong>Teks ke biner</strong> atau <strong>Biner ke teks</strong>.",
+    "Ketik atau tempel ke kotak. Hasil muncul saat Anda mengetik.",
+    "Salin hasilnya atau unduh sebagai file .txt. Gunakan <strong>Tukar</strong> untuk mengonversi hasilnya kembali."
+  ],
+  "faq": [
+    ["Bagaimana teks diubah menjadi biner?", "Setiap karakter lebih dulu diubah menjadi byte dengan UTF-8, encoding yang dipakai web, dan setiap byte ditulis sebagai delapan digit biner. Huruf A adalah byte 65, yaitu 01000001. Huruf Latin biasa memakai satu byte masing-masing; huruf beraksen memakai dua byte, dan sebagian besar emoji memakai empat."],
+    ["Apakah ini sama dengan ASCII ke biner?", "Untuk huruf Latin biasa, digit dan tanda baca, ya: UTF-8 memberi karakter tersebut nilai byte yang sama dengan ASCII. Perbedaannya hanya terlihat pada karakter lain, yang sama sekali tidak bisa dinyatakan oleh ASCII."],
+    ["Input biner seperti apa yang bisa didekode?", "Kelompok berisi hingga delapan angka 0 dan 1 yang dipisah spasi, koma atau jeda baris, satu kelompok per byte, atau satu deretan digit tanpa jeda yang panjangnya kelipatan delapan. Selain itu, misalnya angka 2 atau huruf, dilaporkan beserta posisinya agar Anda bisa memperbaikinya."],
+    ["Mengapa dekode menyatakan byte-nya bukan UTF-8 yang valid?", "Tidak setiap urutan byte merupakan teks yang valid. Mungkin ada byte yang kurang atau berlebih, atau binernya berasal dari encoding lama atau dari file yang bukan teks. Pesan menunjuk byte pertama yang tidak bisa dibaca. Pastikan tidak ada kelompok yang hilang saat biner disalin."],
+    ["Apa itu opsi heksadesimal, desimal dan oktal?", "Opsi ini menulis byte yang sama dalam basis bilangan lain: heksadesimal memakai dua digit 0-9 dan a-f per byte (A adalah 41), desimal memakai 0 sampai 255 (A adalah 65) dan oktal memakai 0 sampai 377 (A adalah 101). Dekode menerima basis yang sama dengan yang Anda pilih."],
+    ["Apakah teks saya diunggah?", "Tidak. Konversi berjalan di browser Anda, dan teksnya tidak diunggah atau disimpan."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Konversi</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="encode" checked>Teks ke biner</label>
+        <label><input type="radio" name="dir" value="decode">Biner ke teks</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="base">Byte ditulis sebagai</label>
+      <select id="base">
+        <option value="2" selected>Biner (01000001)</option>
+        <option value="16">Heksadesimal (41)</option>
+        <option value="10">Desimal (65)</option>
+        <option value="8">Oktal (101)</option>
+      </select>
+    </div>
+    <div class="field" id="sep-field">
+      <label for="sep">Di antara byte</label>
+      <select id="sep">
+        <option value=" " selected>Spasi</option>
+        <option value="">Tidak ada</option>
+        <option value="\n">Baris baru</option>
+      </select>
+    </div>
+  </div>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Teks</label>
+      <textarea id="text" spellcheck="false" placeholder="Ketik teks di sini."></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">Biner</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Ketik teks untuk memulai.</p>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Salin hasil</button>
+    <button class="btn" id="dl" type="button" disabled>Unduh .txt</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Tukar: konversi hasil kembali</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Hapus</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Bagaimana teks menjadi angka satu dan nol</h2>
+<p>Komputer menyimpan teks sebagai angka. Encoding menentukan angka mana yang didapat setiap karakter; konverter teks ke biner ini memakai UTF-8, yang dipakai hampir semua halaman web, email, dan file modern. UTF-8 menyimpan 128 karakter pertama (abjad Latin dasar, digit, dan tanda baca umum) masing-masing dalam satu byte, dengan nilai yang sama seperti kode ASCII yang lebih lama. Karakter lain memakai dua sampai empat byte: é adalah 11000011 10101001 dan emoji 😀 adalah empat byte.</p>
+<p>Satu byte terdiri dari delapan bit, jadi setiap byte ditampilkan sebagai delapan digit biner, dengan nol di depan dipertahankan agar setiap kelompok sama lebarnya. Ini membuat hasilnya mudah dibaca kembali: setiap kelompok delapan digit adalah satu byte.</p>
+<p>Untuk mendekode, alat ini membaca setiap kelompok sebagai byte, lalu membaca byte-byte itu sebagai teks UTF-8. Jika byte tersebut tidak membentuk UTF-8 yang valid, alat ini memberi tahu di mana masalahnya dimulai, bukan menampilkan karakter yang kacau.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Untuk cara yang lebih ringkas dan standar membawa byte sebagai teks, gunakan <a href="/tools/base64-encode-decode/">Encode dan decode Base64</a>.</li>
+  <li>Mengonversi satu angka antara biner, desimal, dan heksadesimal? Gunakan <a href="/tools/number-base-converter/">Konverter basis bilangan</a>.</li>
+  <li>Lebih suka titik dan garis? Coba <a href="/tools/morse-code-translator/">Penerjemah kode Morse</a>.</li>
+</ul>

@@ -1,0 +1,72 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Subnet calculator",
+  "title": "Subnet calculator for IPv4 and IPv6 (CIDR) | Tanod Tools",
+  "description": "Enter an IPv4 or IPv6 address with a prefix or mask to get the network, broadcast, host range, counts, wildcard mask and binary view, and split it into subnets.",
+  "h1": "Subnet calculator",
+  "lede": "Work out the network, host range and counts for any IPv4 or IPv6 subnet, then split it into smaller ones.",
+  "blurb": "IPv4 and IPv6 CIDR calculator with host ranges and subnet splits.",
+  "keywords": "subnet calculator cidr calculator ip calculator netmask wildcard mask broadcast address usable hosts ipv6 prefix subnetting rfc 1918",
+  "limits": "IPv4 and IPv6 only, one subnet at a time. The address type is read from the IANA special-purpose ranges built into the page, so it knows nothing about who owns a public address. Subnet split tables stop at 256 rows.",
+  "howto_title": "How to calculate a subnet",
+  "howto": [
+    "Type an address with its prefix length, such as <code>192.168.1.10/24</code> or <code>2001:db8::/32</code>. An IPv4 address with a dotted mask, such as <code>192.168.1.10 255.255.255.0</code>, works too.",
+    "Read the network address, host range and counts. If the address had host bits set, the page tells you which network it was normalised to.",
+    "To plan smaller networks, enter a longer prefix under <strong>Split into</strong> and read the table of subnets."
+  ],
+  "faq": [
+    ["Why are there two fewer usable hosts than addresses?", "In an ordinary IPv4 subnet the first address names the network and the last is the broadcast address, so neither can be given to a device. A /24 has 256 addresses and 254 usable hosts. Two exceptions exist: a /31 has two addresses and both are usable on a point-to-point link (RFC 3021), and a /32 is a single host."],
+    ["What does a wildcard mask show?", "It is the netmask turned inside out: 0 bits must match and 1 bits are ignored. For 255.255.255.0 the wildcard is 0.0.0.255. Access lists on Cisco equipment and OSPF network statements use this form."],
+    ["Why is 010.0.0.1 rejected?", "A leading zero makes some systems read that part as octal, so 010 would mean 8, while others read it as decimal 10. The same text can point at two different machines, so the page asks you to write the number without the zero."],
+    ["How does IPv6 differ in a subnet calculation?", "IPv6 has no broadcast address, so every address in a prefix can be assigned and the count is simply 2 to the power of (128 minus the prefix). Normal LAN subnets are /64. The page shows the address in the compressed form from RFC 5952 and in full, with all eight 4-digit groups."],
+    ["What is the compressed form of an IPv6 address?", "Leading zeros in each group are dropped, and the longest run of two or more all-zero groups is replaced by <code>::</code>, taking the leftmost run if two tie. A single zero group is never compressed, so <code>2001:db8:0:1:1:1:1:1</code> keeps its 0."],
+    ["Does this send my addresses anywhere?", "No. The arithmetic is done in your browser with big integers, nothing you type is sent anywhere, and it works offline once the page has loaded."]
+  ],
+  "related": ["number-base-converter", "chmod-calculator", "http-status-codes", "user-agent-parser", "regex-tester"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">IP address with prefix or mask</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Examples">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + mask</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Subnet details"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Split into smaller subnets</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Split into prefix length /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="for example 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Leave empty for no split. Must be longer than the prefix above.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Subnets</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Subnets and CIDR notation</h2>
+<p>An IP address has two parts: the leading bits name the network and the remaining bits name the host inside it. The prefix length after the slash says how many leading bits belong to the network, so <code>192.168.1.10/24</code> means the first 24 of 32 bits are the network and the last 8 identify one of 256 addresses. Setting every host bit to 0 gives the network address; setting them all to 1 gives the broadcast address, which is why they are normally not handed to devices.</p>
+<p>The netmask is the same information written as an address: 24 one-bits followed by 8 zero-bits is 255.255.255.0. Only contiguous masks are valid, so something like 255.0.255.0 is rejected. IPv6 works the same way with 128 bits, but with no broadcast address and a much larger range: a standard /64 LAN subnet holds 2<sup>64</sup> addresses, about 18 quintillion.</p>
+<p>Some ranges mean something special wherever they appear. 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 are private and not routed on the public internet, 100.64.0.0/10 is shared address space for carrier-grade NAT, 169.254.0.0/16 is link-local, and the 192.0.2.0, 198.51.100.0 and 203.0.113.0 blocks are reserved for documentation. The page labels the range your address falls in.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Convert an octet or a whole address between binary and decimal with the <a href="/tools/number-base-converter/">number base converter</a>.</li>
+  <li>Setting file permissions on a server as well? The <a href="/tools/chmod-calculator/">chmod calculator</a> turns 755 into rwxr-xr-x and back.</li>
+  <li>Read a status code from a failing health check in the <a href="/tools/http-status-codes/">HTTP status code reference</a>.</li>
+</ul>

@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "SVG in PNG umwandeln – in jeder Größe, kostenlos | Tanod Tools",
+  "description": "SVG in ein scharfes PNG umwandeln, in 1x, 2x, 4x oder exakter Breite, mit transparentem oder farbigem Hintergrund. Läuft im Browser; nichts wird hochgeladen.",
+  "h1": "SVG in PNG umwandeln",
+  "lede": "Wandeln Sie eine SVG-Zeichnung, ein Icon oder ein Logo in ein scharfes PNG in genau der Größe um, die Sie brauchen.",
+  "blurb": "SVG-Icons und Logos als scharfe PNGs ausgeben.",
+  "keywords": "svg in png svg zu png umwandeln konvertieren svg png exportieren icon logo vektor in pixel rastergrafik hohe auflösung aufloesung transparent",
+  "limits": "Eine SVG-Datei nach der anderen, bis zu 10 MB. Ausgabe bis etwa 100 Megapixel und 32.767 Pixel pro Seite.",
+  "howto_title": "So wandeln Sie SVG in PNG um",
+  "howto": [
+    "Wählen Sie eine .svg-Datei aus oder ziehen Sie sie auf die Seite. Eine Vorschau erscheint mit der Größe, die die SVG-Datei vorgibt.",
+    "Wählen Sie einen Maßstab (1x, 2x, 4x) oder geben Sie eine exakte Breite ein, und wählen Sie einen transparenten oder einfarbigen Hintergrund.",
+    "Klicken Sie auf <strong>In PNG umwandeln</strong> und laden Sie dann das Bild herunter."
+  ],
+  "faq": [
+    ["Ist das PNG auch in großer Größe scharf?", "Ja. Die SVG-Datei wird direkt in der Ausgabegröße gezeichnet, nicht klein gezeichnet und dann vergrößert. Kurven und Text werden deshalb bei 2x, 4x oder jeder eingegebenen Breite scharf dargestellt."],
+    ["Wie groß ist das PNG bei 1x?", "So groß, wie die SVG-Datei es in ihren Attributen <code>width</code> und <code>height</code> angibt, umgerechnet in Pixel (Zentimeter, Millimeter, Zoll und Punkt werden mit 96 Pixeln pro Zoll umgerechnet). Fehlen diese, wird die <code>viewBox</code> verwendet. Fehlt auch sie, gilt die Browser-Standardgröße von 300 × 150, und das Tool weist Sie darauf hin."],
+    ["Bleibt die Transparenz erhalten?", "Ja, standardmäßig. Entfernen Sie das Häkchen bei <em>Transparenter Hintergrund</em> und wählen Sie eine Farbe, wenn Sie einen einfarbigen Hintergrund brauchen, etwa für ein App-Icon oder ein Dokument."],
+    ["Warum sehen Schriften oder eingebettete Bilder anders aus?", "Die SVG-Datei wird als eigenständiges Bild gezeichnet, so wie eine Webseite eine SVG in einem <code>img</code>-Tag anzeigt. Webfonts und Bilder, auf die sie auf anderen Websites verlinkt, werden nicht geladen: Text erscheint dann in Schriften Ihres Geräts, verlinkte Bilder fehlen. Bilder, die direkt in der SVG-Datei eingebettet sind, werden gezeichnet."],
+    ["Ist es sicher, eine SVG-Datei von jemand anderem zu öffnen?", "Ja, hier schon. SVG-Dateien können Skripte enthalten, doch die Datei wird als Bild geladen, und dabei führen Browser nie Skripte aus und folgen keinen Links; außerdem wird sie nie in die Seite eingefügt. Es wird nichts hochgeladen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:svg-to-png drop__mark}}
+  <p class="drop__title">SVG-Datei hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/svg+xml,.svg">{{mark:i-plus}}<span data-pick-label>SVG auswählen</span></label>
+  <p class="drop__hint">Eine .svg-Datei bis 10 MB. Oder ziehen Sie sie an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="editor" class="util-stack" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview svgp__preview"><canvas id="cv" role="img" aria-label="Vorschau der SVG-Datei"></canvas></div>
+  <p class="note" id="size-note" hidden></p>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Größe</legend>
+      <div class="seg">
+        <label><input type="radio" name="scale" value="1">1x</label>
+        <label><input type="radio" name="scale" value="2" checked>2x</label>
+        <label><input type="radio" name="scale" value="4">4x</label>
+        <label><input type="radio" name="scale" value="custom">Breite</label>
+      </div>
+    </fieldset>
+    <div class="field" id="w-field" hidden>
+      <label for="width">Breite (px)</label>
+      <input type="number" id="width" min="1" max="32767" inputmode="numeric">
+      <p class="help">Die Höhe folgt den Proportionen der SVG-Datei.</p>
+    </div>
+    <div class="field">
+      <span class="label">Hintergrund</span>
+      <label class="check"><input type="checkbox" id="transparent" checked>Transparenter Hintergrund</label>
+      <div id="bg-wrap" hidden><label class="visually-hidden" for="bg">Hintergrundfarbe</label><input type="color" id="bg" value="#ffffff"></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">In PNG umwandeln</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Vektorgrafik in Pixel umwandeln</h2>
+<p>Eine SVG-Datei beschreibt Formen mit Koordinaten und lässt sich daher in jeder Größe ohne Schärfeverlust zeichnen. Viele Stellen verlangen trotzdem eine Pixelgrafik: App-Stores, Social-Media-Profile, Präsentationen, E-Mail-Signaturen und ältere Designprogramme. Wenn Sie SVG in PNG umwandeln, wird die Zeichnung auf eine Pixelgröße festgelegt. Wählen Sie also die größte Größe, die Sie brauchen werden: Ein PNG lässt sich später immer verkleinern, beim Vergrößern wird es unscharf.</p>
+<p>Der SVG-Renderer Ihres Browsers zeichnet das Bild in der Ausgabegröße auf ein Canvas, und das Canvas wird mit voller Transparenz als PNG gespeichert. Die SVG-Datei wird strikt als Bild behandelt: Skripte darin werden nie ausgeführt, und nichts, worauf sie verlinkt, wird heruntergeladen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für Bildschirme mit hoher Pixeldichte exportieren Sie in der 2- oder 3-fachen Anzeigegröße.</li>
+  <li>Sie erstellen ein Website-Icon? Der <a href="/tools/favicon-generator/">Favicon-Generator</a> erzeugt alle Größen aus einem Bild.</li>
+  <li>Sie brauchen stattdessen JPG oder WebP? Wandeln Sie das PNG mit <a href="/tools/convert-image/">Bild konvertieren</a> um.</li>
+</ul>

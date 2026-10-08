@@ -1,0 +1,80 @@
+<!--meta
+{
+  "category": "util",
+  "name": "vCard QR code generator",
+  "title": "vCard QR code generator: contact card QR | Tanod Tools",
+  "description": "Turn contact details into a vCard QR code that phones scan to save a contact. Download PNG, SVG or a .vcf file and see the exact vCard text. Free, in your browser.",
+  "h1": "vCard QR code generator",
+  "lede": "Enter contact details and get a vCard 3.0 QR code that phones scan to add the contact, plus the vCard text and a .vcf download.",
+  "blurb": "Contact details as a vCard QR code, with .vcf download.",
+  "keywords": "vcard qr code contact business card vcf save contact address book digital business card phone email organisation",
+  "limits": "Writes vCard 3.0 text with a single phone of each kind, one email, one website and one address. Photos, multiple entries and non-Latin name variants are not included. Long lines are not folded.",
+  "howto_title": "How to make a vCard QR code",
+  "howto": [
+    "Fill in the name and any details you want to share. Empty fields are left out of the card.",
+    "Read the vCard text below the form. If the code looks dense, remove a field or lower the error correction.",
+    "Download the QR code as PNG or SVG, or download the contact as a <code>.vcf</code> file you can open directly."
+  ],
+  "faq": [
+    ["What is a vCard?", "A vCard is a plain-text contact format, files ending in .vcf, read by phones, Outlook, Apple Contacts and Google Contacts. This tool writes version 3.0, the version that every mainstream address book accepts."],
+    ["Is the contact information uploaded?", "No. The vCard text and the QR code are made in your browser. Nothing you type is stored or sent, and the .vcf file is created on your device when you press the download button."],
+    ["Why does the QR code get dense with a long note or address?", "The code holds every character of the vCard, so each field adds modules and the grid grows. Phones scan large grids less reliably when printed small. The tool shows the QR version and suggests dropping the note, address or job title when the code is dense."],
+    ["How are commas, semicolons and line breaks handled?", "The vCard format uses them as separators, so in values they are escaped with a backslash, and a line break in the note becomes the two characters backslash and n. Name and address parts are kept in their separate positions. Web addresses are written as typed."],
+    ["Do accents and non-English letters work?", "Yes. The text is encoded as UTF-8 in both the .vcf file and the QR code, so accented names such as José or Zoë survive. Some very old address books may not read UTF-8 files correctly."],
+    ["Why must I give a name or organisation?", "The format requires a formatted name, and the QR code would otherwise be empty. If only an organisation is entered, it is used as the display name."]
+  ],
+  "related": ["qr-code-generator", "wifi-qr-code-generator", "meta-tag-generator", "barcode-generator", "text-to-slug"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-split gen-qr gen-vc">
+  <div class="util-split__main">
+    <div class="opts">
+      <div class="field"><label for="v-first">First name</label><input type="text" id="v-first" autocomplete="off"></div>
+      <div class="field"><label for="v-last">Last name</label><input type="text" id="v-last" autocomplete="off"></div>
+      <div class="field"><label for="v-org">Organisation</label><input type="text" id="v-org" autocomplete="off"></div>
+      <div class="field"><label for="v-title">Job title</label><input type="text" id="v-title" autocomplete="off"></div>
+      <div class="field"><label for="v-mobile">Mobile phone</label><input type="text" id="v-mobile" inputmode="tel" autocomplete="off" placeholder="+44 7700 900123"></div>
+      <div class="field"><label for="v-work">Work phone</label><input type="text" id="v-work" inputmode="tel" autocomplete="off"></div>
+      <div class="field"><label for="v-email">Email</label><input type="text" id="v-email" inputmode="email" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="v-url">Website</label><input type="text" id="v-url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com"></div>
+      <div class="field"><label for="v-street">Street</label><input type="text" id="v-street" autocomplete="off"></div>
+      <div class="field"><label for="v-city">City</label><input type="text" id="v-city" autocomplete="off"></div>
+      <div class="field"><label for="v-region">State or region</label><input type="text" id="v-region" autocomplete="off"></div>
+      <div class="field"><label for="v-post">Postcode</label><input type="text" id="v-post" autocomplete="off"></div>
+      <div class="field"><label for="v-country">Country</label><input type="text" id="v-country" autocomplete="off"></div>
+      <div class="field"><label for="v-ec">Error correction</label>
+        <select id="v-ec"><option value="L">L: low (7%)</option><option value="M" selected>M: medium (15%)</option><option value="Q">Q: quartile (25%)</option><option value="H">H: high (30%)</option></select></div>
+    </div>
+    <div class="field"><label for="v-note">Note</label><textarea id="v-note" rows="3" autocomplete="off"></textarea></div>
+    <p class="gen-warn is-on" id="v-warn" hidden></p>
+    <div class="field">
+      <span class="label" id="v-text-l">vCard text</span>
+      <pre class="gen-readout" id="v-text" tabindex="0" aria-labelledby="v-text-l"></pre>
+    </div>
+  </div>
+
+  <div class="util-split__side">
+    <div class="preview" id="v-preview"><canvas id="v-canvas" width="1" height="1" role="img" aria-label="vCard QR code preview"></canvas></div>
+    <p class="help" id="v-info" aria-live="polite"></p>
+    <div class="field"><label for="v-size">Image size (px)</label><input type="number" id="v-size" min="64" max="4096" step="1" value="512"></div>
+    <div class="actions">
+      <button class="btn btn--primary" id="v-png" type="button" disabled>Download PNG</button>
+      <button class="btn" id="v-svg" type="button" disabled>Download SVG</button>
+      <button class="btn" id="v-vcf" type="button" disabled>Download .vcf</button>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>What is inside a contact QR code</h2>
+<p>A vCard QR code is a vCard written out as text and drawn as a QR code. The card starts with <code>BEGIN:VCARD</code> and ends with <code>END:VCARD</code>, and each line is a property: <code>N</code> holds the structured name, <code>FN</code> the name as it should be displayed, <code>TEL</code> a phone number with a type such as CELL, and so on. Scanning the code hands the phone the same text a .vcf file would contain, and the phone offers to save the contact.</p>
+<p>The standard asks for lines to end in a carriage return and a line feed, so the file and the code use that. Values are escaped: a backslash, comma or semicolon gets a backslash in front, and a line break in the note becomes <code>\n</code>. The name and address are lists of parts separated by semicolons, so a semicolon typed into one part cannot spill into the next.</p>
+<p>QR codes grow in steps called versions, from 1 (21 by 21 modules) to 40 (177 by 177). Every extra character may push a code to the next version. A card with only a name, phone and email is a modest version and scans easily on a small print. Adding a street address and a long note can double the width. If the code is dense, drop fields you can live without or choose a lower error correction level.</p>
+<h3>Tips</h3>
+<ul>
+  <li>A website or plain text instead of a contact? Use the <a href="/tools/qr-code-generator/">QR code generator</a>.</li>
+  <li>Putting the code on a sign for guests? Pair it with the <a href="/tools/wifi-qr-code-generator/">Wi-Fi QR code generator</a>.</li>
+  <li>Want a tidy web address for the website field? Make a slug with <a href="/tools/text-to-slug/">Text to slug</a>.</li>
+</ul>

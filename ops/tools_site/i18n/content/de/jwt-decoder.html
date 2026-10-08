@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "JWT-Decoder: JSON Web Token online dekodieren | Tanod Tools",
+  "description": "JSON Web Token im Browser dekodieren: Header, Payload und Claims, exp, nbf und iat als Datum, Restlaufzeit bis zum Ablauf. Das Token wird nirgendwohin gesendet.",
+  "h1": "JWT-Decoder",
+  "lede": "Fügen Sie ein JSON Web Token ein, um Header und Payload zu lesen, mit Ablauf- und Ausstellungszeit als echtem Datum.",
+  "blurb": "Header, Claims und Ablauf eines JWT lesen.",
+  "keywords": "jwt decoder jwt dekodieren decode json web token jws jwe bearer token claims lesen auslesen exp iat nbf ablauf ablaufzeit oauth id token",
+  "limits": "Tokens bis 1 MB. Nur Dekodierung: Die Signatur wird angezeigt, aber nicht geprüft.",
+  "howto_title": "So dekodieren Sie ein JWT",
+  "howto": [
+    "Fügen Sie das Token in das Feld ein. Ein vorangestelltes <code>Bearer </code> sowie umgebende Leerzeichen oder Anführungszeichen werden ignoriert.",
+    "Lesen Sie unten Header und Payload sowie die Zeiten für Ablauf, Nicht-vor und Ausstellung in Ihrer Zeitzone und in UTC.",
+    "Kopieren Sie den dekodierten Payload oder Header als formatiertes JSON, wenn Sie ihn woanders brauchen."
+  ],
+  "faq": [
+    ["Prüft das Tool die Signatur?", "Nein. Diese Seite dekodiert das Token nur. Jeder kann ein Token mit beliebigem Header und Payload erzeugen, die hier angezeigten Inhalte sind also Behauptungen, kein Beweis. Nur der Dienst, der den Signaturschlüssel besitzt (oder bei RS256- und ES256-Tokens den öffentlichen Schlüssel), kann feststellen, ob ein Token echt ist, und er muss außerdem Ablaufzeit, Zielgruppe und Aussteller prüfen."],
+    ["Ist es sicher, ein Token hier einzufügen?", "Diese Seite sendet das Token nirgendwohin: Es wird von Code dekodiert, der in Ihrem Browser läuft, und nicht gespeichert. Trotzdem ist ein gültiges Zugriffstoken ein Passwort, solange es gilt. Fügen Sie Produktions-Tokens möglichst in keine Website ein und verwenden Sie beim Debuggen lieber abgelaufene oder Test-Tokens."],
+    ["Warum kann ich manche Tokens nicht lesen?", "Ein Token mit fünf statt drei Teilen ist ein verschlüsseltes JWT (JWE). Sein Header ist lesbar, aber der Payload ist verschlüsselt und lässt sich nur mit dem Schlüssel des Empfängers lesen; dieses Tool zeigt daher den Header und erklärt die Teile. Andere Fehler, etwa eine falsche Anzahl von Teilen oder Text, der kein gültiges Base64url oder JSON ist, werden mit einer Beschreibung des Problems gemeldet."],
+    ["Wie werden die Zeiten berechnet?", "Die Claims <code>exp</code>, <code>nbf</code> und <code>iat</code> sind NumericDates: Sekunden seit dem 1. Januar 1970 UTC. Sie werden in der Zeitzone Ihres Geräts und in UTC angezeigt und mit der Uhr Ihres Geräts verglichen, um zu sagen, ob das Token abgelaufen ist. Geht Ihre Uhr falsch, stimmen auch die relativen Zeiten nicht. Ein Wert, der nach Millisekunden aussieht, wird markiert, weil das ein häufiger Fehler ist."],
+    ["Was bedeuten alg, typ und kid?", "<code>alg</code> ist der Signaturalgorithmus, etwa HS256 (ein gemeinsames Geheimnis), RS256 oder ES256 (ein Schlüsselpaar). <code>typ</code> ist meist JWT. <code>kid</code> ist die Schlüssel-ID, die der Aussteller verwendet hat; sie sagt einem Prüfer, mit welchem Schlüssel die Signatur zu prüfen ist. Ein Token mit <code>alg</code> gleich <code>none</code> ist nicht signiert und sollte für nichts Wichtiges akzeptiert werden."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">Token</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">Beispiel-Token testen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">Leeren</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>Signatur nicht geprüft.</strong> Diese Seite dekodiert das Token; sie prüft nicht, ob es echt ist. Jeder kann ein Token mit beliebigem Inhalt erzeugen.</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>Algorithmus</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>Typ</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>Schlüssel-ID</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>Teile</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">Zeiten</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Ihre Zeitzone, dann UTC</th><th scope="col">Relativ</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">Header</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">Payload</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">Claims</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Bedeutung</th><th scope="col">Wert</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">Signatur</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}Payload kopieren</button>
+      <button class="btn" id="jw-copy-h" type="button">Header kopieren</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Was in einem JSON Web Token steckt</h2>
+<p>Ein signiertes JWT besteht aus drei Stücken Base64url-Text, verbunden durch Punkte: Header, Payload und Signatur. Header und Payload sind einfach JSON in Base64url, deshalb kann jeder sie dekodieren und lesen. Base64url ist eine Kodierung, keine Verschlüsselung; legen Sie also niemals Geheimnisse in den Payload eines JWT, es sei denn, das Token ist verschlüsselt.</p>
+<p>Der Payload enthält Claims. Einige Namen sind registriert: <code>iss</code> (wer das Token ausgestellt hat), <code>sub</code> (um wen es geht), <code>aud</code> (für wen es bestimmt ist), <code>exp</code> (wann es abläuft), <code>nbf</code> (nicht gültig vor), <code>iat</code> (wann es ausgestellt wurde) und <code>jti</code> (eine eindeutige ID). Dienste ergänzen eigene Claims, etwa Rollen, Scopes oder eine E-Mail-Adresse.</p>
+<p>Erst die Signatur macht die Claims vertrauenswürdig, und um sie zu prüfen, braucht man den Signaturschlüssel, den nur der Aussteller und die Dienste besitzen sollten, die das Token akzeptieren. Dieser Decoder hört bewusst beim Lesen auf: Er zeigt, was ein Token aussagt und wann es abläuft, und genau das brauchen Sie meist, wenn Sie einen Login oder einen API-Aufruf debuggen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Rechnen Sie jede andere Unix-Zeit mit <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> in ein Datum um.</li>
+  <li>Formatieren oder prüfen Sie einen großen Payload mit <a href="/tools/json-formatter/">JSON formatieren und validieren</a>.</li>
+  <li>Dekodieren Sie ein einzelnes Base64url-Stück von Hand mit <a href="/tools/base64-encode-decode/">Base64 kodieren und dekodieren</a>.</li>
+</ul>

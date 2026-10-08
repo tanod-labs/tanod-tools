@@ -1,0 +1,120 @@
+<!--meta
+{
+  "category": "image",
+  "name": "Image filters",
+  "title": "Image filters online: black and white, sepia, blur | Tanod Tools",
+  "description": "Adjust brightness, contrast, saturation and hue, or turn a photo black and white, sepia, inverted or blurred. Live preview, runs in your browser.",
+  "h1": "Image filters",
+  "lede": "Tune a photo with sliders or one-click presets, compare it with the original, and save the result at full size.",
+  "blurb": "Black and white, sepia, brightness, blur and more.",
+  "keywords": "photo editor effects black and white grayscale sepia vintage invert negative brightness contrast saturation hue blur instagram",
+  "limits": "Works on a single picture of up to 50 MB and roughly 100 megapixels. Very large images take a few seconds; the page stays usable while it works.",
+  "howto_title": "How to apply filters to an image",
+  "howto": [
+    "Choose an image. The preview appears at a reduced size so the sliders respond straight away.",
+    "Start from a preset such as <strong>Black and white</strong> or <strong>Vivid</strong>, then adjust the sliders. Switch on <strong>Show original</strong> to compare.",
+    "Press <strong>Apply and save</strong>. The filters are applied again to the full-size picture and you download it."
+  ],
+  "faq": [
+    ["Is my photo uploaded?", "No. Every filter is calculated in your browser on your device, pixel by pixel. Nothing is sent to a server."],
+    ["Do the filters give the same result as in my browser's CSS?", "They follow the same formulas as the CSS Filter Effects specification: brightness multiplies, contrast pivots around mid-grey, and saturation, hue rotation, grayscale and sepia use the specification's colour matrices. Doing the arithmetic in this page rather than through the browser's filter feature means it also works in browsers where that feature is missing."],
+    ["In what order are the filters applied?", "Brightness, contrast, saturation, hue rotation, grayscale, sepia, invert, then blur. The order is fixed, so the same slider positions always give the same picture."],
+    ["Why does blur look the same in the preview and the saved file?", "The blur amount is a fraction of the image width, not a number of pixels. A 4000-pixel photo previewed at 800 pixels is blurred five times less in the preview pixels, which looks identical once you see it at the same scale."],
+    ["What happens to transparency?", "It is left alone. The alpha channel is never changed, and the blur weights colours by opacity so the soft edges of a cut-out do not turn dark. Save as PNG or WebP to keep it; JPEG fills transparent areas with white."],
+    ["Can I undo a preset?", "Choose Reset, or drag the sliders back. Presets only move the sliders, and you can adjust them afterwards. Nothing changes your original file."]
+  ],
+  "related": ["add-text-to-image", "resize-image", "compress-image", "add-border-to-image", "image-color-picker", "crop-image"],
+  "app_category": "MultimediaApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Drop an image here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Choose an image</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP or AVIF. Or drag it anywhere on this page.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Preview with the filters applied"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Show original</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Presets</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Black and white</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Vivid</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Fade</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Invert</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Reset</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Brightness: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Contrast: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Saturation: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Grayscale: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepia: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Invert: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Hue rotate: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Blur: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Save as</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Same</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Same format returns PNG, JPEG and WebP as they came; GIF, BMP and AVIF become PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Apply and save</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>What each filter does to the pixels</h2>
+<p>Every pixel is three numbers from 0 to 255, for red, green and blue. Brightness multiplies those numbers, so 150 per cent turns a value of 100 into 150 and anything past 255 is clipped to white. Contrast stretches the numbers away from mid-grey (128) or squeezes them towards it, which is why 0 per cent contrast gives a flat grey picture. Saturation and hue rotation mix the three channels using fixed colour matrices, which is how a photo drifts towards grey or around the colour wheel.</p>
+<p>Grayscale replaces each pixel with its luminance, a weighted sum that counts green most (about 72 per cent), red next (21 per cent) and blue least (7 per cent), because the eye is most sensitive to green. Sepia uses a matrix that gives the warm brown tint of old prints. Invert subtracts every value from 255 to make a negative. Blur averages each pixel with its neighbours, three times in each direction, which closely approximates a Gaussian blur.</p>
+<p>Small previews make fast sliders, but the saved file is processed at full resolution in chunks, so the page keeps responding and shows progress. Once saved, the original file is untouched.</p>
+<h3>Tips</h3>
+<ul>
+  <li>To read an exact colour from the result, use the <a href="/tools/image-color-picker/">Image color picker</a>.</li>
+  <li>Filtering before adding a caption keeps the text crisp: do it in that order with <a href="/tools/add-text-to-image/">Add text to image</a>.</li>
+  <li>A blurred, high-contrast image compresses very differently, so check the size afterwards in <a href="/tools/compress-image/">Compress image</a>.</li>
+</ul>

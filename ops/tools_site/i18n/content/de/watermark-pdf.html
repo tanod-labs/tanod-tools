@@ -1,0 +1,101 @@
+<!--meta
+{
+  "title": "PDF mit Wasserzeichen versehen – kostenlos online | Tanod Tools",
+  "description": "Text-Wasserzeichen wie ENTWURF oder VERTRAULICH im Browser in ein PDF einfügen. Größe, Farbe, Deckkraft, Winkel, Kachelung wählbar. Kostenlos, ohne Anmeldung.",
+  "h1": "Wasserzeichen in PDF einfügen",
+  "lede": "Legen Sie eine Textzeile über Ihre Seiten, einmal in der Mitte oder als wiederholtes Muster.",
+  "blurb": "Text wie ENTWURF quer über ein PDF stempeln.",
+  "keywords": "pdf wasserzeichen einfügen einfuegen hinzufügen stempel entwurf vertraulich text überlagerung ueberlagerung markieren",
+  "limits": "Ein PDF auf einmal, bis 200 MB. Nur Text-Wasserzeichen, in Helvetica: Buchstaben westeuropäischer Sprachen funktionieren, andere Schriftsysteme nicht. Passwortgeschützte PDFs können nicht bearbeitet werden.",
+  "howto_title": "So versehen Sie ein PDF mit einem Wasserzeichen",
+  "howto": [
+    "Wählen Sie eine PDF-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Geben Sie den Wasserzeichentext ein und stellen Sie Größe, Farbe, Deckkraft, Winkel und Platzierung ein.",
+    "Klicken Sie auf <strong>Wasserzeichen einfügen</strong> und laden Sie das PDF mit Wasserzeichen herunter."
+  ],
+  "faq": [
+    ["Wird mein PDF hochgeladen?", "Nein. Das Wasserzeichen wird von der Open-Source-Bibliothek pdf-lib in Ihrem Browser in eine Kopie Ihres PDFs gezeichnet. Nichts wird an einen Server gesendet."],
+    ["Welche Zeichen kann ich verwenden?", "Das Wasserzeichen nutzt Helvetica, eine Standard-PDF-Schrift, die das westeuropäische lateinische Alphabet, Ziffern und gängige Satzzeichen abdeckt. Enthält Ihr Text etwas anderes, etwa Chinesisch, Arabisch, Kyrillisch oder die meisten Symbole, sagt Ihnen das Tool, welche Zeichen es nicht darstellen kann, statt eine fehlerhafte Datei zu erzeugen."],
+    ["Lässt sich das Wasserzeichen nachträglich entfernen?", "Es wird als normaler Seiteninhalt über die Seite gezeichnet, nicht als entfernbare Ebene, und Ihre Originaldatei wird nicht verändert. Bewahren Sie das Original auf, wenn Sie eine saubere Kopie brauchen. Ein Wasserzeichen dient der visuellen Abschreckung, es ist keine Sicherheitsmaßnahme."],
+    ["Kann ich nur einige Seiten mit einem Wasserzeichen versehen?", "Ja. Wählen Sie <em>Bestimmte</em> und geben Sie Seiten oder Bereiche ein, etwa 1-3, 5. Seiten werden ab 1 gezählt."],
+    ["Was bewirkt die gekachelte Platzierung?", "Der Text wird in einem versetzten Raster wiederholt, das die ganze Seite bedeckt, im gewählten Winkel und in der gewählten Größe. <em>Einmal mittig</em> setzt eine Kopie in die Mitte jeder Seite."],
+    ["Funktioniert es mit gedrehten oder beschnittenen Seiten?", "Ja. Das Wasserzeichen wird im sichtbaren Bereich jeder Seite platziert, und auf gedreht gespeicherten Seiten wird es mitgedreht, sodass es im gewählten Winkel erscheint."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field opts__full">
+      <label for="text">Wasserzeichentext</label>
+      <input id="text" type="text" value="ENTWURF" maxlength="80" autocomplete="off" spellcheck="false">
+      <span class="help" id="text-help">Buchstaben, Ziffern und gängige Satzzeichen (Helvetica).</span>
+    </div>
+    <div class="field">
+      <label for="size">Schriftgröße (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="8" max="400" step="1" value="72">
+    </div>
+    <div class="field">
+      <label for="opacity">Deckkraft: <span class="num" id="opacity-v">30%</span></label>
+      <input id="opacity" type="range" min="5" max="100" step="5" value="30">
+    </div>
+    <div class="field">
+      <label for="color">Farbe</label>
+      <div class="swatches">
+        <input id="color" type="color" value="#8c9497" aria-label="Farbe des Wasserzeichens">
+        <button type="button" class="btn btn--sm" data-swatch="#8c9497">Grau</button>
+        <button type="button" class="btn btn--sm" data-swatch="#16140f">Schwarz</button>
+        <button type="button" class="btn btn--sm" data-swatch="#1636a3">Blau</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="angle-l">Winkel</span>
+      <div class="seg" role="radiogroup" aria-labelledby="angle-l">
+        <label><input type="radio" name="angle" value="45" checked>Diagonal</label>
+        <label><input type="radio" name="angle" value="0">Waagerecht</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="place-l">Platzierung</span>
+      <div class="seg" role="radiogroup" aria-labelledby="place-l">
+        <label><input type="radio" name="place" value="center" checked>Einmal mittig</label>
+        <label><input type="radio" name="place" value="tiled">Gekachelt</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Seiten</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Alle Seiten</label>
+        <label><input type="radio" name="scope" value="range">Bestimmte</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Seitenbereich</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Wasserzeichen einfügen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ein PDF im Browser mit Wasserzeichen versehen</h2>
+<p>Ein Wasserzeichen ist Text, der auf jede Seite gezeichnet wird. Ihr Browser öffnet das PDF mit pdf-lib, ermittelt den sichtbaren Bereich jeder Seite und zeichnet den Text dort in der gewählten Farbe, Deckkraft und im gewählten Winkel. Das Ergebnis ist eine neue Datei; Ihr Original bleibt, wie es war.</p>
+<p>Der Text nutzt Helvetica, eine der Schriften, die jeder PDF-Viewer bereits mitbringt. Das hält die Ausgabe klein, beschränkt die Zeichen aber auf den westeuropäischen lateinischen Zeichensatz. Die gekachelte Platzierung wiederholt den Text in einem versetzten Muster, sodass er sich nicht von einer Ecke aus wegschneiden lässt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Halten Sie die Deckkraft niedrig, etwa 20 bis 35 Prozent, damit die Seite lesbar bleibt.</li>
+  <li>Sie möchten auch Seitenzahlen? Fügen Sie sie mit <a href="/tools/add-page-numbers-to-pdf/">Seitenzahlen in PDF einfügen</a> hinzu.</li>
+  <li>Sie möchten eine nicht bearbeitbare Kopie teilen? Wandeln Sie die Seiten mit <a href="/tools/pdf-to-jpg/">PDF in JPG</a> in Bilder um.</li>
+</ul>

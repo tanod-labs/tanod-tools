@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "JSON para TypeScript: gerar interfaces online | Tanod Tools",
+  "description": "Cole um exemplo de JSON e gere interfaces ou types TypeScript, com campos opcionais e unions detectados. Grátis, sem cadastro, roda no seu navegador.",
+  "h1": "JSON para TypeScript",
+  "lede": "Transforme um exemplo de JSON em interfaces ou type aliases TypeScript, com campos opcionais e unions deduzidos dos seus dados.",
+  "blurb": "Exemplo de JSON para interfaces ou types TypeScript.",
+  "keywords": "json para typescript json para ts json to typescript gerador de interface gerar tipos quicktype json2ts tipos de resposta de api tipagem typescript a partir de json",
+  "limits": "Os tipos são deduzidos do exemplo que você cola, então descrevem esse exemplo e não um schema: um campo que é string no seu exemplo pode ser número em outro lugar. Todos os números viram <code>number</code> e as datas continuam <code>string</code>. A ordem das propriedades segue o JSON.parse, que lista primeiro as chaves que são números inteiros.",
+  "howto_title": "Como gerar TypeScript a partir de JSON",
+  "howto": [
+    "Cole uma resposta JSON ou um arquivo na caixa. Vários itens em um array melhoram o resultado, porque campos ausentes em alguns itens viram opcionais.",
+    "Defina o nome do tipo de nível superior, escolha <code>interface</code> ou <code>type</code> e marque <strong>export</strong>, <strong>readonly</strong> ou a detecção de opcionais conforme precisar.",
+    "Copie as declarações ou baixe-as como arquivo <code>.ts</code>. Revise os nomes, já que eles vêm dos nomes das suas chaves."
+  ],
+  "faq": [
+    ["Como ele decide que um campo é opcional?", "Quando há um array de objetos, os objetos são mesclados em um único formato. Uma chave que aparece em alguns itens, mas não em todos, recebe <code>?</code>. Uma chave presente que vale <code>null</code> em alguns itens não é opcional; ela vira <code>T | null</code>. Desative a detecção de opcionais se preferir todas as chaves obrigatórias."],
+    ["Como os tipos aninhados são nomeados?", "Cada objeto aninhado recebe o nome da sua chave em PascalCase, então <code>billing_address</code> vira <code>BillingAddress</code>. Em um array, o tipo do item perde o \"s\" final quando a chave tem mais de 3 letras e não termina em ss, us ou is: <code>users</code> gera <code>User</code>, enquanto <code>address</code> gera <code>AddressItem</code>. Essa regra de singular segue o inglês. Se dois formatos diferentes pedirem o mesmo nome, o segundo é numerado, gerando <code>User</code> e <code>User2</code>."],
+    ["O que acontece com objetos de mesmo formato?", "Eles compartilham uma única declaração. Se <code>billing</code> e <code>shipping</code> contêm <code>{ street, city }</code>, você recebe uma só interface, com o nome do primeiro lugar onde ela aparece. Dois objetos com as mesmas chaves, mas com tipos de valor diferentes, são formatos distintos e recebem nomes separados."],
+    ["Por que um array vazio vira unknown[]?", "Um array vazio não tem exemplos, então não dá para deduzir nada sobre os itens. <code>unknown[]</code> é a resposta honesta; altere à mão quando souber o tipo do item. Um array que mistura valores vira uma union, como <code>(string | number)[]</code>."],
+    ["O resultado pode ser diferente da API real?", "Sim. Um exemplo mostra apenas os valores que contém. Um campo que está sempre presente no seu exemplo, mas às vezes falta em produção, aparecerá aqui como obrigatório, e uma string com cara de enum será apenas <code>string</code>. Para validação rigorosa, use um schema; para começar rápido, use este resultado e ajuste."],
+    ["Meu JSON é enviado para algum lugar?", "Não. Nada do que você cola é enviado; a conversão roda no seu navegador, e você pode até se desconectar da rede depois que a página carregar."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">Exemplo de JSON</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "name": "Ada Lovelace",
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Nome do tipo de nível superior</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Declarar com</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Modificadores</span>
+      <label class="check"><input type="checkbox" id="t-export" checked>Adicionar <code>export</code></label>
+      <label class="check"><input type="checkbox" id="t-readonly">Marcar propriedades como <code>readonly</code></label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Detectar campos opcionais</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">Copiar TypeScript</button>
+    <button class="btn" id="t-dl" type="button">Baixar .ts</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Como deduzir tipos TypeScript de um exemplo de JSON</h2>
+<p>Converter JSON para TypeScript faz sentido porque os tipos descrevem o formato dos dados, e uma resposta JSON já carrega um formato: cada chave, o tipo de valor por trás dela e como os objetos se aninham. O conversor percorre o exemplo e escreve esse formato como declarações, para você não ter que digitar quarenta campos à mão antes de chamar uma API com segurança.</p>
+<p>O passo mais importante é o tratamento dos arrays. Cada item de um array de objetos é lido e os formatos são mesclados: uma chave encontrada em todos os itens continua obrigatória, uma chave encontrada só em alguns vira opcional, e valores de tipos diferentes viram uma union. Por isso um exemplo com vários registros gera tipos muito melhores do que um exemplo com um só. Um valor <code>null</code> é tratado de forma diferente de uma chave ausente, porque os dois significam coisas diferentes para o código que lê o campo.</p>
+<p>Tipos deduzidos são um ponto de partida, não um contrato. Eles não têm como saber que uma string é sempre um de três valores, que um número é na verdade um ID inteiro ou que um campo presente em todos os seus exemplos pode sumir em produção. Leia o resultado, renomeie o que ficou estranho e deixe mais rígidos os tipos que importam.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Confira antes se o exemplo está bem formado com <a href="/tools/json-formatter/">Formatar e validar JSON</a>, que aponta o caractere exato de um erro de sintaxe.</li>
+  <li>Está trabalhando com uma configuração em YAML? Converta com <a href="/tools/yaml-to-json/">Converter YAML para JSON</a> e cole o resultado aqui.</li>
+  <li>Precisa ver o conteúdo de um token antes de tipá-lo? Decodifique-o com o <a href="/tools/jwt-decoder/">Decodificador de JWT</a>.</li>
+</ul>

@@ -1,0 +1,87 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Regex tester",
+  "title": "Regex tester for JavaScript regular expressions | Tanod Tools",
+  "description": "Test a JavaScript regular expression against your text: matches highlighted as you type, capture groups and named groups listed, and a replace preview. Free.",
+  "h1": "Regex tester",
+  "lede": "Try a regular expression on sample text and see every match, its capture groups and the result of a replace.",
+  "blurb": "Test JavaScript regex with highlighting and groups.",
+  "keywords": "regular expression tester regexp test online javascript regex match groups named groups replace flags",
+  "limits": "JavaScript (ECMAScript) regex syntax as your browser supports it. Text up to 5 MB; the first 1,000 matches are listed and highlighted. A pattern that runs longer than 2 seconds is stopped.",
+  "howto_title": "How to test a regular expression",
+  "howto": [
+    "Type the pattern between the slashes and tick the flags you need, such as <code>g</code> for all matches or <code>i</code> to ignore case.",
+    "Paste your test text. Matches are highlighted as you type, and the table lists each match with its position and capture groups.",
+    "To check a substitution, type a replacement such as <code>$2-$1</code> or <code>$&lt;year&gt;</code> and read the result below it."
+  ],
+  "faq": [
+    ["Which regex flavour does this use?", "The JavaScript one, run by your own browser's engine, so the results are exactly what <code>RegExp</code> in your browser or Node.js gives. Most everyday syntax is shared with PCRE, Python and Java, but some features differ: possessive quantifiers and atomic groups are not supported, and lookbehind, named groups and the <code>v</code> flag need a current browser."],
+    ["Why is only one match shown?", "Without the <code>g</code> (global) flag, a JavaScript regex finds only the first match, and replace changes only the first occurrence. Tick <code>g</code> to find them all. The tester follows the language exactly so what you see is what your code will do."],
+    ["What do the flags do?", "<code>g</code> finds all matches, <code>i</code> ignores case, <code>m</code> makes <code>^</code> and <code>$</code> match at line breaks, <code>s</code> lets <code>.</code> match line breaks, <code>u</code> turns on full Unicode handling, <code>v</code> is the newer Unicode mode with set operations, <code>y</code> (sticky) only matches at the current position, and <code>d</code> records the start of each group, which the tester uses for group positions anyway."],
+    ["How do I use groups in the replacement?", "<code>$1</code>, <code>$2</code> and so on insert numbered groups, <code>$&lt;name&gt;</code> inserts a named group, <code>$&amp;</code> inserts the whole match, <code>$`</code> and <code>$'</code> insert the text before and after it, and <code>$$</code> writes a literal dollar sign."],
+    ["Why did my pattern stop with \"took too long\"?", "Some patterns, such as <code>^(a+)+$</code> on a long run of a's that doesn't end the way it expects, make the engine try an enormous number of ways to match. This is called catastrophic backtracking. The tester runs each pattern in a background worker and stops it after 2 seconds so the page stays usable. Rewrite nested repeats such as <code>(a+)+</code> as <code>a+</code>."],
+    ["Is my text sent anywhere?", "No. The pattern and the text stay in your browser; matching happens on your device and nothing is uploaded or stored."]
+  ],
+  "related": ["find-and-replace", "cron-expression-explainer", "text-diff", "json-formatter", "url-encode-decode"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="r-pattern">Regular expression</label>
+    <div class="rx-pattern">
+      <span aria-hidden="true">/</span>
+      <input type="text" id="r-pattern" class="mono" value="(?&lt;year&gt;\d{4})-(\d{2})-(\d{2})" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="r-info">
+      <span aria-hidden="true" id="r-flagtext">/g</span>
+    </div>
+  </div>
+  <fieldset>
+    <legend>Flags</legend>
+    <div class="rx-flags">
+      <label class="check"><input type="checkbox" data-flag="g" checked><code>g</code>&nbsp;global</label>
+      <label class="check"><input type="checkbox" data-flag="i"><code>i</code>&nbsp;ignore case</label>
+      <label class="check"><input type="checkbox" data-flag="m"><code>m</code>&nbsp;multiline</label>
+      <label class="check"><input type="checkbox" data-flag="s"><code>s</code>&nbsp;dot matches newline</label>
+      <label class="check"><input type="checkbox" data-flag="u"><code>u</code>&nbsp;unicode</label>
+      <label class="check"><input type="checkbox" data-flag="v"><code>v</code>&nbsp;unicode sets</label>
+      <label class="check"><input type="checkbox" data-flag="y"><code>y</code>&nbsp;sticky</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="r-text">Test text</label>
+    <textarea id="r-text" class="mono" rows="6" spellcheck="false">Releases: 2024-03-31, 2025-12-01 and 2026-10-08.</textarea>
+  </div>
+  <p class="tt__report" id="r-info" aria-live="polite"></p>
+  <div class="field">
+    <span class="label" id="r-view-l">Matches in the text</span>
+    <pre class="out rx-view" id="r-view" tabindex="0" aria-labelledby="r-view-l"></pre>
+  </div>
+  <div class="rx-table-wrap" tabindex="0" role="region" aria-label="Match list">
+    <table class="rx-table">
+      <thead><tr><th scope="col">#</th><th scope="col">Position</th><th scope="col">Match</th><th scope="col">Groups</th></tr></thead>
+      <tbody id="r-list"></tbody>
+    </table>
+  </div>
+  <div class="field">
+    <label for="r-repl">Replace with (optional)</label>
+    <input type="text" id="r-repl" class="mono" autocomplete="off" spellcheck="false" placeholder="$&lt;year&gt;/$2/$3">
+  </div>
+  <div class="field" id="r-out-wrap" hidden>
+    <span class="label" id="r-out-l">Result of the replace</span>
+    <pre class="out" id="r-out" tabindex="0" aria-labelledby="r-out-l"></pre>
+    <div class="actions"><button class="btn btn--sm" id="r-copy" type="button">{{mark:i-copy}}Copy result</button></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Testing patterns safely</h2>
+<p>The tester builds a JavaScript <code>RegExp</code> from your pattern and flags and runs it in a background worker, the same engine your code will use in this browser. Matches come back with their start position and every capture group, and the page draws them over your text with alternating highlights so neighbouring matches stay distinguishable. An empty match, such as the one <code>\b</code> or <code>a*</code> can produce, shows as a thin bar.</p>
+<p>Running the pattern in a worker matters because a regular expression can take exponential time. If a pattern is still running after 2 seconds, the worker is stopped and you get a message instead of a frozen tab. The same safeguard protects <a href="/tools/find-and-replace/">Find and replace</a>.</p>
+<p>Positions are counted in UTF-16 code units, which is how JavaScript strings count: an emoji or other character outside the basic plane takes two. The list shows the first 1,000 matches; the total count above it includes every match.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Once a pattern works, apply it to a whole document with <a href="/tools/find-and-replace/">Find and replace</a>.</li>
+  <li>Compare the text before and after a replace with <a href="/tools/text-diff/">Compare text</a>.</li>
+  <li>Matching dates in a log? Turn timestamps into readable times with the <a href="/tools/unix-timestamp-converter/">Unix timestamp converter</a>.</li>
+</ul>

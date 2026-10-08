@@ -1,0 +1,147 @@
+<!--meta
+{
+  "title": "Ajouter du texte sur une image en ligne, gratuit | Tanod Tools",
+  "description": "Écrivez une légende ou un filigrane sur une photo : police, taille, couleur, contour, ombre et encadré, placé d'un clic sur l'aperçu. Rien n'est envoyé.",
+  "h1": "Ajouter du texte à une image",
+  "lede": "Ajoutez une légende, un titre ou un filigrane sur une image, placez-le exactement où vous voulez et enregistrez le résultat en taille réelle.",
+  "blurb": "Légendez ou signez une photo avec du texte stylé.",
+  "keywords": "ajouter texte image ecrire sur une photo mettre du texte sur une image legende meme filigrane titre incruster texte police annoter",
+  "limits": "Une image à la fois (jusqu'à 50 Mo, environ 100 mégapixels). Polices disponibles : Archivo, Bungee et les polices serif, sans-serif et monospace de votre appareil.",
+  "howto_title": "Comment ajouter du texte à une image",
+  "howto": [
+    "Choisissez une image, puis tapez votre texte. Appuyez sur Entrée pour aller à la ligne.",
+    "Choisissez une police, une taille et une couleur. Ajoutez un contour, une ombre ou un encadré si le texte est difficile à lire. Choisissez l'une des neuf positions, ou touchez l'aperçu pour placer le texte à cet endroit.",
+    "Cliquez sur <strong>Ajouter le texte et enregistrer</strong> pour obtenir l'image à sa taille d'origine."
+  ],
+  "faq": [
+    ["Mon image est-elle envoyée en ligne ?", "Non. Le texte est dessiné sur votre image dans votre navigateur, sur votre appareil. Rien n'est envoyé à un serveur."],
+    ["Comment la taille du texte est-elle mesurée ?", "En pourcentage de la largeur de l'image : le texte occupe donc la même part de l'image dans le petit aperçu et dans le fichier en taille réelle. 6 % donne une légende lisible sur la plupart des photos ; utilisez 10 ou plus pour un titre."],
+    ["Comment placer le texte précisément ?", "Choisissez l'une des neuf positions, puis utilisez les champs de décalage X et Y pour le déplacer d'un pourcentage de l'image. Vous pouvez aussi toucher ou cliquer sur l'aperçu pour centrer le texte sur ce point. Quand l'aperçu a le focus, les flèches déplacent le texte d'un demi-pour cent, ou de cinq pour cent en maintenant Maj."],
+    ["Quelles polices puis-je utiliser ?", "Archivo et Bungee sont chargées depuis ce site. Serif, sans-serif et monospace utilisent la police que votre appareil associe à ces noms : elles peuvent donc paraître un peu différentes sur un autre ordinateur. L'image enregistrée garde exactement le même rendu, car les lettres sont dessinées dans les pixels."],
+    ["La transparence d'un PNG est-elle conservée ?", "Oui. Seuls les pixels situés sous le texte, le contour, l'ombre et l'encadré changent ; le reste d'un PNG transparent reste transparent. Le JPEG ne peut pas stocker de transparence : ces zones deviennent blanches si vous enregistrez en JPEG."],
+    ["Puis-je utiliser des accents, d'autres alphabets ou des emoji ?", "Oui, dans la mesure où les polices de votre appareil contiennent ces caractères. Archivo et Bungee couvrent les lettres latines accentuées. Pour les autres écritures et les emoji, le navigateur se rabat sur une police de votre appareil qui les contient."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez une image ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Choisir une image</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou glissez-la n'importe où sur cette page.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview txt-stage">
+    <canvas id="preview" tabindex="0" role="img" aria-label="Aperçu avec votre texte. Touchez ou cliquez pour placer le texte." aria-describedby="place-help"></canvas>
+  </div>
+  <p class="help" id="place-help">Touchez ou cliquez sur l'image pour y placer le texte. Quand l'image a le focus, les flèches déplacent le texte de 0,5 %, et Maj avec une flèche de 5 %.</p>
+  <div class="opts txt-opts">
+    <div class="field txt-opts__wide">
+      <label for="text">Texte</label>
+      <textarea id="text" rows="3" autocomplete="off" spellcheck="false" placeholder="Votre légende">Votre légende</textarea>
+    </div>
+    <div class="field">
+      <label for="font">Police</label>
+      <select id="font">
+        <option value="archivo" selected>Archivo</option>
+        <option value="bungee">Bungee</option>
+        <option value="serif">Serif</option>
+        <option value="sans">Sans-serif</option>
+        <option value="mono">Monospace</option>
+      </select>
+      <label class="check"><input type="checkbox" id="bold" checked>Gras</label>
+    </div>
+    <div class="field">
+      <label for="size">Taille : <span class="num" id="size-out">6</span> % de la largeur</label>
+      <input type="range" id="size" min="1" max="40" step="0.5" value="6">
+    </div>
+    <div class="field">
+      <label for="color">Couleur du texte</label>
+      <input type="color" id="color" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Alignement du texte</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="left">Gauche</label>
+        <label><input type="radio" name="align" value="center" checked>Centre</label>
+        <label><input type="radio" name="align" value="right">Droite</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <span class="label">Contour</span>
+      <label class="check"><input type="checkbox" id="outline" checked>Entourer les lettres</label>
+      <div class="txt-pair"><input type="color" id="outline-color" value="#111417" aria-label="Couleur du contour"><input type="range" id="outline-w" min="1" max="30" value="8" aria-label="Épaisseur du contour"></div>
+    </div>
+    <div class="field">
+      <span class="label">Ombre</span>
+      <label class="check"><input type="checkbox" id="shadow">Ajouter une ombre portée</label>
+      <input type="color" id="shadow-color" value="#000000" aria-label="Couleur de l'ombre">
+    </div>
+    <div class="field">
+      <span class="label">Encadré</span>
+      <label class="check"><input type="checkbox" id="box">Dessiner un encadré derrière le texte</label>
+      <div class="txt-pair"><input type="color" id="box-color" value="#111417" aria-label="Couleur de l'encadré"></div>
+    </div>
+    <div class="field">
+      <label for="box-opacity">Opacité de l'encadré : <span class="num" id="box-opacity-out">70</span> %</label>
+      <input type="range" id="box-opacity" min="0" max="100" value="70">
+    </div>
+    <div class="field">
+      <label for="box-pad">Marge de l'encadré : <span class="num" id="box-pad-out">40</span> % de la taille du texte</label>
+      <input type="range" id="box-pad" min="0" max="150" value="40">
+    </div>
+    <fieldset class="field">
+      <legend>Position</legend>
+      <div class="pos" role="radiogroup" aria-label="Position sur l'image">
+        <label><input type="radio" name="pos" value="0,0"><span class="visually-hidden">En haut à gauche</span></label>
+        <label><input type="radio" name="pos" value="1,0"><span class="visually-hidden">En haut au centre</span></label>
+        <label><input type="radio" name="pos" value="2,0"><span class="visually-hidden">En haut à droite</span></label>
+        <label><input type="radio" name="pos" value="0,1"><span class="visually-hidden">Au milieu à gauche</span></label>
+        <label><input type="radio" name="pos" value="1,1"><span class="visually-hidden">Au centre</span></label>
+        <label><input type="radio" name="pos" value="2,1"><span class="visually-hidden">Au milieu à droite</span></label>
+        <label><input type="radio" name="pos" value="0,2"><span class="visually-hidden">En bas à gauche</span></label>
+        <label><input type="radio" name="pos" value="1,2" checked><span class="visually-hidden">En bas au centre</span></label>
+        <label><input type="radio" name="pos" value="2,2"><span class="visually-hidden">En bas à droite</span></label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="ox">Décaler à droite (% de la largeur)</label>
+      <input type="number" id="ox" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="oy">Décaler vers le bas (% de la hauteur)</label>
+      <input type="number" id="oy" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <fieldset class="field">
+      <legend>Enregistrer en</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Identique</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Avec Identique, un PNG, un JPEG ou un WebP garde son format, et tout autre fichier est enregistré en PNG.</p>
+    </fieldset>
+  </div>
+  <p class="help" id="fit-help" aria-live="polite"></p>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Ajouter le texte et enregistrer</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Rendre un texte lisible sur une photo</h2>
+<p>Pour écrire sur une photo, le texte doit se détacher de ce qui se trouve derrière lui, et les photos offrent rarement un fond uni. Trois outils vous aident. Un contour de couleur sombre garde les lettres blanches lisibles sur les zones claires. Une ombre douce détache légèrement le texte sans bord dur. Un encadré semi-transparent derrière les lignes donne le contraste le plus constant, au prix d'une partie de l'image masquée.</p>
+<p>Comme la taille est un pourcentage de la largeur de l'image, la mise en page visible dans l'aperçu est celle que vous obtenez dans le fichier, quelle que soit la taille de l'original. La marge de l'encadré, l'épaisseur du contour et l'ombre suivent aussi la taille du texte : rien ne paraît plus lourd en taille réelle qu'à l'écran.</p>
+<p>Placez les légendes dans le tiers inférieur, là où on les attend, gardez des lignes courtes et laissez une marge par rapport au bord ; la grille à neuf positions garde automatiquement une petite marge. Le texte centré convient aux titres, le texte aligné à gauche aux légendes de plusieurs lignes.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Réglez d'abord la luminosité ou le contraste avec <a href="/tools/image-filters/">Filtres photo</a> si l'image est trop chargée pour du texte.</li>
+  <li>Encadrez l'image terminée avec <a href="/tools/add-border-to-image/">Ajouter une bordure à une image</a>.</li>
+  <li>Besoin de mettre le texte sur un PDF ? <a href="/tools/watermark-pdf/">Filigrane PDF</a> appose du texte sur chaque page.</li>
+</ul>

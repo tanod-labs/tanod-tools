@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Format dan validasi JSON online (JSON formatter) | Tanod Tools",
+  "description": "Format, minify dan validasi JSON di browser Anda. Error menunjukkan baris dan kolom persis dengan tanda ^ di bawah masalahnya. Urutkan kunci. Gratis.",
+  "h1": "Format dan validasi JSON",
+  "lede": "Tempel JSON untuk merapikan, memperkecil atau memeriksanya, lengkap dengan baris dan kolom persis dari setiap error.",
+  "blurb": "Format, minify dan validasi JSON.",
+  "keywords": "json formatter format json rapikan json validasi json cek json beautify pretty print minify lint urutkan kunci validator",
+  "limits": "Input hingga sekitar 10 MB, ditempel atau dari file .json.",
+  "howto_title": "Cara memformat dan memvalidasi JSON",
+  "howto": [
+    "Tempel JSON Anda ke kotak, atau letakkan file .json ke halaman.",
+    "Pilih tata letak: 2 spasi, 4 spasi, tab, atau minify. Aktifkan Urutkan kunci jika Anda ingin kunci diurutkan sesuai abjad.",
+    "Jika JSON tidak valid, Anda melihat baris dan kolom dengan tanda ^ di bawah masalahnya. Jika valid, salin atau unduh hasilnya."
+  ],
+  "faq": [
+    ["Apakah JSON saya diunggah?", "Tidak. JSON diurai dan diformat di browser Anda dan tidak pernah dikirim atau disimpan, jadi aman untuk menempel konfigurasi atau data yang tidak ingin Anda bagikan."],
+    ["Apa yang dianggap JSON valid?", "Format standar: kunci dan string dalam tanda kutip ganda, tanpa komentar, tanpa koma di akhir, tanpa tanda kutip tunggal, tanpa <code>undefined</code> atau <code>NaN</code>. Banyak file yang tampak seperti JSON, seperti literal objek JavaScript atau file konfigurasi dengan komentar, sebenarnya tidak valid secara ketat dan akan ditandai."],
+    ["Apakah pemformatan mengubah data saya?", "Tidak. Angka dipertahankan persis seperti tertulis (bahkan angka sangat panjang yang tidak bisa disimpan JavaScript secara presisi), string mempertahankan escape sequence-nya, dan kunci mempertahankan urutannya kecuali Anda mengaktifkan Urutkan kunci. Hanya spasi kosong (whitespace) yang berubah."],
+    ["Bagaimana cara kerja Urutkan kunci?", "Kunci di setiap objek, di semua level, diurutkan sesuai abjad berdasarkan karakternya. Array mempertahankan urutannya, karena urutan item array biasanya penting."],
+    ["Apa yang ditampilkan statistiknya?", "Ukuran input dan output dalam byte, jumlah total kunci objek di semua level, dan kedalaman bersarang maksimum, dengan objek datar memiliki kedalaman 1."],
+    ["Seberapa besar input yang bisa dimasukkan?", "Sekitar 10 MB. Input yang lebih besar ditolak agar tab tidak macet. Kotak hasil menampilkan hingga dua juta karakter pertama; Salin dan Unduh selalu menyertakan semuanya."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop is-compact" id="drop">
+  <label class="btn btn--sm"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Buka file .json</span></label>
+  <span class="drop__hint">Atau tempel di bawah, atau seret file ke mana saja di halaman ini.</span>
+</div>
+<div class="field">
+  <label for="j-in">JSON</label>
+  <textarea id="j-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder='{"name": "example", "tags": [1, 2, 3]}'></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="j-lay-l">Tata letak</span>
+    <div class="seg" role="radiogroup" aria-labelledby="j-lay-l">
+      <label><input type="radio" name="layout" value="2" checked>2 spasi</label>
+      <label><input type="radio" name="layout" value="4">4 spasi</label>
+      <label><input type="radio" name="layout" value="tab">Tab</label>
+      <label><input type="radio" name="layout" value="min">Minify</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Kunci</span>
+    <label class="check"><input type="checkbox" id="j-sort">Urutkan kunci (semua level)</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="j-err" hidden></pre>
+<div id="j-result" hidden>
+  <dl class="stats" id="j-stats">
+    <div><dt>Input</dt><dd id="j-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="j-s-out">0</dd></div>
+    <div><dt>Kunci</dt><dd id="j-s-keys">0</dd></div>
+    <div><dt>Kedalaman</dt><dd id="j-s-depth">0</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="j-out-l">Hasil</span>
+    <pre class="out util-json" id="j-out" tabindex="0" aria-labelledby="j-out-l"></pre>
+    <span class="help" id="j-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="j-copy" type="button">Salin</button>
+    <button class="btn" id="j-dl" type="button">Unduh .json</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="j-clear" type="button">Hapus</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Memformat dan memeriksa JSON</h2>
+<p>JSON adalah format teks yang ringkas dan ketat untuk data: objek dalam kurung kurawal, array dalam kurung siku, dan nilai berupa string, angka, <code>true</code>, <code>false</code> atau <code>null</code>. Mesin tidak peduli pada spasi, tetapi manusia peduli, jadi JSON formatter menambahkan indentasi dan jeda baris agar data bersarang mudah dibaca, sedangkan minifier menghapusnya untuk menghemat ruang.</p>
+<p>Alat format dan validasi JSON ini membaca teks Anda dengan parser-nya sendiri, sehingga bisa menunjuk karakter persis tempat kesalahan terjadi. Kesalahan yang paling umum adalah koma berlebih setelah item terakhir, tanda kutip tunggal alih-alih tanda kutip ganda, kunci tanpa tanda kutip, komentar, atau kurung yang hilang di akhir. Pesan error menampilkan baris dan kolom, salinan baris tersebut, dan tanda ^ di bawah posisinya.</p>
+<p>Pemformatan hanya mengubah spasi kosong. Angka dan escape string dipertahankan seperti tertulis, jadi ID panjang seperti 12345678901234567890 tidak dibulatkan seperti yang akan terjadi jika data dibaca sebagai angka JavaScript.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Membandingkan dua versi konfigurasi? Format keduanya dengan opsi yang sama, lalu gunakan <a href="/tools/text-diff/">Bandingkan teks</a>.</li>
+  <li>Ada nilai Base64 di dalam JSON Anda? Dekode dengan <a href="/tools/base64-encode-decode/">Encode dan decode Base64</a>.</li>
+  <li>Butuh datanya di spreadsheet? Gunakan <a href="/tools/json-to-csv/">JSON ke CSV</a>, atau <a href="/tools/csv-to-json/">CSV ke JSON</a> untuk arah sebaliknya.</li>
+</ul>

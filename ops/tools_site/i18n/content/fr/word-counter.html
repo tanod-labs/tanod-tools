@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Compteur de mots et de caractères en ligne | Tanod Tools",
+  "description": "Comptez mots, caractères, phrases et paragraphes en temps réel. Temps de lecture, densité des mots-clés et lisibilité. Gratuit, sans inscription, sans envoi.",
+  "h1": "Compteur de mots",
+  "lede": "Collez ou tapez votre texte pour compter les mots, les caractères, les phrases et les paragraphes, avec le temps de lecture et la densité des mots-clés.",
+  "blurb": "Mots, caractères, temps de lecture et densité.",
+  "keywords": "compteur de mots compter les mots nombre de mots compteur de caracteres nombre de caracteres compter phrases paragraphes temps de lecture temps de parole densite mots cles lisibilite flesch",
+  "limits": "Texte jusqu'à environ 5 Mo. Les compteurs se mettent à jour pendant la saisie ; pour un texte très long, la mise à jour a lieu un instant après la fin de la frappe.",
+  "howto_title": "Comment compter les mots d'un texte",
+  "howto": [
+    "Tapez ou collez votre texte dans la zone, ou ouvrez un fichier .txt.",
+    "Lisez les compteurs à côté. Ils se mettent à jour pendant la saisie.",
+    "Faites défiler jusqu'à Densité des mots-clés pour voir quels mots et expressions se répètent, et jusqu'à Lisibilité pour les textes en anglais de 100 mots ou plus."
+  ],
+  "faq": [
+    ["Qu'est-ce qui compte comme un mot ?", "Un mot est une suite ininterrompue de lettres ou de chiffres. Une apostrophe ou un trait d'union entre des lettres en fait un seul mot (aujourd'hui, porte-monnaie), et un point ou une virgule entre des chiffres garde un nombre entier (3,14 ou 1.000). Pour le chinois, le japonais, le thaï et les autres langues écrites sans espaces, la segmentation en mots intégrée au navigateur est utilisée quand elle est disponible : ces textes comptent donc plus d'un mot."],
+    ["Qu'est-ce qui compte comme une phrase ou un paragraphe ?", "Une phrase se termine par un ou plusieurs signes . ! ? ou par des points de suspension suivis d'une espace, d'un saut de ligne ou de la fin du texte (ou par 。 ！ ？). Les guillemets et parenthèses fermants restent avec la phrase. Le texte restant après la dernière fin de phrase compte comme une phrase s'il contient un mot. Les abréviations comme « M. Dupont » sont comptées comme deux phrases. Un paragraphe est un bloc de texte séparé du suivant par au moins une ligne vide ; un simple saut de ligne ne commence pas un nouveau paragraphe."],
+    ["Comment les caractères sont-ils comptés ?", "Caractères compte tous les caractères, espaces et sauts de ligne compris, chaque emoji ou autre symbole hors du plan de base comptant pour un. Sans espaces exclut les espaces, les tabulations et les sauts de ligne. Lignes compte les sauts de ligne : les lignes vides comptent donc comme des lignes."],
+    ["Comment le temps de lecture et le temps de parole sont-ils calculés ?", "Le temps de lecture suppose 238 mots par minute et le temps de parole 150 mots par minute. Les vitesses réelles varient beaucoup selon le lecteur, l'orateur et le contenu : considérez ces deux valeurs comme des ordres de grandeur."],
+    ["Quelle est la précision du score de lisibilité ?", "L'indice de lisibilité de Flesch (Flesch Reading Ease) et le niveau scolaire Flesch-Kincaid sont des formules standard pour l'anglais, basées sur la longueur des phrases et le nombre de syllabes par mot. Ici, les syllabes sont estimées avec un jeu de règles simple : les scores sont donc approximatifs, et ils ne s'affichent que pour les textes en anglais d'au moins 100 mots."],
+    ["Mon texte est-il envoyé quelque part ?", "Non. Le comptage s'effectue dans votre navigateur, et le texte n'est ni envoyé ni conservé. Fermer l'onglet l'efface."]
+  ]
+}
+-->
+<!--tool-->
+<div class="wc">
+  <div class="wc__bar" aria-hidden="true">
+    <span><b id="bar-words" class="num">0</b> mots</span>
+    <span><b id="bar-chars" class="num">0</b> caractères</span>
+    <span>lecture : <b id="bar-read" class="num">0 s</b></span>
+  </div>
+  <div class="wc__main">
+    <div class="field">
+      <label for="text">Votre texte</label>
+      <textarea id="text" class="wc__text" spellcheck="false" placeholder="Tapez ou collez votre texte ici."></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button" disabled>{{mark:i-copy}}Copier le texte</button>
+      <button class="btn btn--quiet" id="clear" type="button" disabled>Effacer</button>
+      <span class="spacer"></span>
+      <div class="drop is-compact wc__open" id="drop">
+        <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Ouvrir un fichier .txt</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="wc__side">
+    <dl class="stats" aria-label="Compteurs">
+      <div><dt>Mots</dt><dd id="c-words">0</dd></div>
+      <div><dt>Caractères</dt><dd id="c-chars">0</dd></div>
+      <div><dt>Sans espaces</dt><dd id="c-nospace">0</dd></div>
+      <div><dt>Phrases</dt><dd id="c-sent">0</dd></div>
+      <div><dt>Paragraphes</dt><dd id="c-para">0</dd></div>
+      <div><dt>Lignes</dt><dd id="c-lines">0</dd></div>
+      <div><dt>Temps de lecture</dt><dd id="c-read">0 s</dd></div>
+      <div><dt>Temps de parole</dt><dd id="c-speak">0 s</dd></div>
+      <div><dt>Longueur moy. des mots</dt><dd id="c-avg">0</dd></div>
+    </dl>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<section class="wc__more" aria-labelledby="dens-h">
+  <h2 id="dens-h" class="wc__h">Densité des mots-clés</h2>
+  <div class="actions">
+    <fieldset>
+      <legend class="visually-hidden">Longueur des mots-clés</legend>
+      <div class="seg">
+        <label><input type="radio" name="ngram" value="1" checked>Mots</label>
+        <label><input type="radio" name="ngram" value="2">Expressions de 2 mots</label>
+        <label><input type="radio" name="ngram" value="3">Expressions de 3 mots</label>
+      </div>
+    </fieldset>
+    <label class="check"><input type="checkbox" id="stop" checked>Ignorer les mots courants</label>
+  </div>
+  <table class="dens">
+    <thead><tr><th scope="col">Mot-clé</th><th scope="col">Occurrences</th><th scope="col">Densité</th></tr></thead>
+    <tbody id="dens-body"></tbody>
+  </table>
+  <h2 class="wc__h">Lisibilité</h2>
+  <dl class="stats" id="read-box" hidden>
+    <div><dt>Indice de lisibilité de Flesch</dt><dd><span id="r-ease">0</span> <small id="r-ease-l"></small></dd></div>
+    <div><dt>Niveau Flesch-Kincaid</dt><dd id="r-grade">0</dd></div>
+  </dl>
+  <p class="note" id="read-note">Les scores de lisibilité nécessitent au moins 100 mots de texte en anglais. Ils sont approximatifs : les syllabes sont estimées avec un jeu de règles simple.</p>
+</section>
+<!--explain-->
+<h2>Comment fonctionne ce compteur de mots</h2>
+<p>Ce compteur de mots en ligne recalcule les totaux dans votre navigateur à chaque modification du texte : il n'y a aucun bouton à presser et rien ne quitte votre appareil. Les mots sont repérés en cherchant des suites de lettres et de chiffres ; pour les langues qui ne mettent pas d'espaces entre les mots, ce sont les règles de découpage en mots du navigateur qui sont utilisées, ce qui explique qu'une phrase en chinois ou en japonais compte plusieurs mots et non un seul.</p>
+<p>La densité des mots-clés indique la fréquence d'apparition de chaque mot ou expression de deux ou trois mots, en proportion de l'ensemble des mots du texte. Activer « Ignorer les mots courants » masque des mots comme « le », « et » ou « the » (les mots courants du français et de l'anglais), pour faire ressortir les mots du sujet. Les expressions ne sont listées que si elles apparaissent au moins deux fois.</p>
+<p>Les limites de mots sont généralement fixées par le destinataire du texte, et chaque système compte un peu différemment. Si la limite est serrée, gardez une petite marge.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Nettoyez un brouillon avant de compter avec <a href="/tools/remove-duplicate-lines/">Supprimer les lignes en double</a> ou <a href="/tools/find-and-replace/">Rechercher et remplacer</a>.</li>
+  <li>Vous avez modifié un brouillon et voulez voir ce qui a changé ? Utilisez <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+  <li>Corrigez les majuscules avec <a href="/tools/case-converter/">Convertir majuscules et minuscules</a>.</li>
+  <li>Vous vérifiez une publication, un SMS ou une méta-description par rapport à une limite de caractères ? Le <a href="/tools/character-counter/">Compteur de caractères</a> affiche ce qu'il reste.</li>
+</ul>

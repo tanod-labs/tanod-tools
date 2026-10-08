@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "PDF mit Passwort schützen – kostenlos (AES-256) | Tanod Tools",
+  "description": "PDF mit Passwort versehen, damit es sich ohne nicht öffnen lässt. AES-256-Verschlüsselung, optional Druck- und Kopiersperre. Kostenlos; Datei danach gelöscht.",
+  "h1": "PDF mit Passwort schützen",
+  "lede": "Sperren Sie ein PDF mit einem Passwort, bevor Sie es versenden. Ohne das Passwort lässt es sich nicht öffnen.",
+  "blurb": "PDF mit einem Passwort schützen (AES-256).",
+  "keywords": "pdf mit passwort schützen schuetzen pdf verschlüsseln verschluesseln pdf sperren pdf sichern passwort hinzufügen kennwort",
+  "limits": "Ein PDF bis 10 MB, das noch kein Passwort hat. Auf unserem Server verarbeitet, danach gelöscht. 10 kostenlose Server-Aufträge pro Tag und Person, gemeinsam für alle Server-Tools. Mehr: die <a href=\"/learn/password-protect-pdf-api.html\">PDF-Passwortschutz-API</a> (auf Englisch, Bezahlung pro Aufruf).",
+  "howto_title": "So schützen Sie ein PDF mit einem Passwort",
+  "howto": [
+    "Wählen Sie ein PDF bis 10 MB aus oder ziehen Sie es auf die Seite.",
+    "Geben Sie zweimal ein Passwort ein. Entfernen Sie das Häkchen bei Drucken oder Kopieren, wenn Leser das nicht dürfen sollen.",
+    "Klicken Sie auf <strong>PDF schützen</strong>, laden Sie die gesperrte Kopie herunter und bewahren Sie das Passwort sicher auf."
+  ],
+  "faq": [
+    ["Werden mein PDF und mein Passwort hochgeladen?", "Ja. Anders als die meisten Tools auf dieser Website läuft dieses auf unserem Server: Ihr PDF und das Passwort werden über HTTPS gesendet, die Datei wird verschlüsselt, und die gesperrte Kopie geht direkt an Ihren Browser zurück. Datei und Passwort existieren auf dem Server nur, solange der Auftrag läuft, im Arbeitsspeicher und in einem privaten temporären Ordner, der in dem Moment gelöscht wird, in dem der Auftrag endet. Wir speichern oder protokollieren nie die Datei oder das Passwort."],
+    ["Wie stark ist der Schutz?", "Das PDF wird mit AES-256 verschlüsselt, der stärksten Standard-PDF-Verschlüsselung, die jeder aktuelle PDF-Reader unterstützt. Die eigentliche Stärke liegt in Ihrem Passwort: Verwenden Sie ein langes, das Sie nirgendwo sonst nutzen. Unser <a href=\"/tools/password-generator/\">Passwort-Generator</a> erstellt eines in Ihrem Browser."],
+    ["Was, wenn ich das Passwort vergesse?", "Dann lässt sich die Datei nicht öffnen, und wir können nicht helfen: Wir behalten weder das Passwort noch die Datei. Bewahren Sie Ihr ungeschütztes Original auf oder speichern Sie das Passwort in einem Passwort-Manager."],
+    ["Was bewirken die Optionen für Drucken und Kopieren?", "Sie beschränken, was jemand, der das Passwort kennt, tun darf: das Dokument drucken oder seinen Text kopieren. Die meisten PDF-Reader halten sich an diese Beschränkungen, sie sind aber nicht so stark wie das Passwort selbst. Ein separates, zufälliges Besitzerpasswort, das niemand kennt, schützt die Beschränkungen."],
+    ["Kann ich ein PDF schützen, das schon ein Passwort hat?", "Nicht direkt. Entfernen Sie das alte Passwort zuerst mit <a href=\"/tools/unlock-pdf/\">PDF entsperren</a> und schützen Sie dann die Kopie mit dem neuen."],
+    ["Gibt es ein Limit?", "Dateien bis 10 MB und 10 kostenlose Server-Aufträge pro Tag und Person, gemeinsam für alle unsere Server-Tools. Nur erfolgreiche Aufträge zählen, und der Zähler wird um Mitternacht UTC zurückgesetzt."],
+    ["Was ist die Mensch-Prüfung?", "Bevor ein Auftrag läuft, prüft Cloudflare Turnstile, dass ein Mensch und kein Bot das Tool benutzt. Meist ist das unsichtbar; manchmal sollen Sie ein Kästchen anklicken."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:protect-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite. Bis 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Passwort</label>
+      <input id="pw" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <div class="field">
+      <label for="pw2">Passwort wiederholen</label>
+      <input id="pw2" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <p class="help opts__full" id="pw-help">Verwenden Sie ein langes Passwort, das Sie nirgendwo sonst nutzen. Wir können es nicht für Sie wiederherstellen.</p>
+    <div class="field opts__full">
+      <span class="label">Mit dem Passwort dürfen Leser</span>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="allow-print" checked>Drucken</label>
+        <label class="check"><input type="checkbox" id="allow-copy" checked>Text kopieren</label>
+        <label class="check"><input type="checkbox" id="show">Passwort anzeigen</label>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>PDF schützen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Was der Passwortschutz bewirkt</h2>
+<p>Ein geschütztes PDF ist verschlüsselt: Seine Seiten werden mit einem Schlüssel unkenntlich gemacht, der aus Ihrem Passwort abgeleitet wird, sodass ein Reader nichts anzeigt, bis das Passwort eingegeben ist. Unser Server verschlüsselt die Datei mit AES-256 mithilfe der Open-Source-Bibliothek qpdf und schickt Ihnen die gesperrte Kopie zurück.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Schicken Sie das Passwort getrennt von der Datei, zum Beispiel per SMS statt in derselben E-Mail.</li>
+  <li>Sie möchten zusätzlich einen sichtbaren Vermerk „Vertraulich“? Fügen Sie ihn vorher mit <a href="/tools/watermark-pdf/">PDF-Wasserzeichen</a> hinzu; das läuft in Ihrem Browser.</li>
+</ul>

@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Codificar y decodificar URL online (urlencode) | Tanod Tools",
+  "description": "Codifica o decodifica texto para URL (codificación por porcentaje): componente, URL completa o formulario, con UTF-8. También separa una URL en partes.",
+  "h1": "Codificar y decodificar URL",
+  "lede": "Codifica texto por porcentaje para una URL o decodifícalo, y separa cualquier URL en sus partes y parámetros de consulta.",
+  "blurb": "Codifica, decodifica y analiza URL.",
+  "keywords": "urlencode urldecode codificar decodificar url codificacion codificación porcentual percent encoding encodeuricomponent cadena de consulta query string parametros parámetros uri escapar",
+  "limits": "Texto de hasta unos 5 MB. Los resultados se actualizan mientras escribes.",
+  "howto_title": "Cómo codificar o decodificar una URL",
+  "howto": [
+    "Elige Codificar o Decodificar y luego indica qué es el texto: un solo valor (componente), una URL completa o datos de formulario.",
+    "Escribe o pega tu texto. El resultado aparece abajo mientras escribes; un escape roto se informa con su posición.",
+    "Copia el resultado, o pega una URL completa en el analizador de más abajo para ver su host, ruta y parámetros de consulta."
+  ],
+  "faq": [
+    ["¿Cuál es la diferencia entre codificar un componente y una URL completa?", "La codificación de componente (<code>encodeURIComponent</code> de JavaScript) escapa todo excepto letras, dígitos y <code>- _ . ! ~ * ' ( )</code>, así que caracteres como <code>/ ? &amp; =</code> se convierten en <code>%2F %3F %26 %3D</code>. Úsala para un solo valor de consulta o un segmento de ruta. La codificación de URL completa (<code>encodeURI</code>) deja intactos los caracteres que dan estructura a una URL y solo escapa espacios, letras no ASCII y unos pocos más, para que la dirección completa siga funcionando."],
+    ["¿Cuándo debo usar la codificación de formulario?", "La codificación de formulario (<code>application/x-www-form-urlencoded</code>) es la que envía un formulario HTML y la que usan la mayoría de las cadenas de consulta. Escribe el espacio como <code>+</code> y escapa todo excepto letras, dígitos y <code>* - . _</code>. Al decodificar en este modo, un <code>+</code> se lee como espacio; en los otros modos sigue siendo un signo más."],
+    ["¿Cómo se codifican las letras acentuadas y los emojis?", "Como bytes UTF-8, cada uno escrito como <code>%</code> más dos dígitos hexadecimales, que es lo que esperan los navegadores y servidores. Por ejemplo, é se convierte en <code>%C3%A9</code>. Al decodificar se comprueba que los bytes formen UTF-8 válido y se te avisa si no es así."],
+    ["¿Por qué la decodificación muestra un error?", "Cada signo de porcentaje debe ir seguido de dos dígitos hexadecimales (0-9, A-F). Un <code>%</code> suelto, un escape cortado como <code>%A</code> o bytes que no son UTF-8 válido se informan con su posición para que puedas encontrarlos. Si el texto contiene un signo de porcentaje literal, debe escribirse como <code>%25</code>."],
+    ["¿El analizador de URL visita la dirección?", "No. Usa el analizador de URL integrado del navegador para separar el texto en partes; no se descarga nada y nada se envía a ningún lado. El texto que escribes se queda en esta pestaña."],
+    ["¿Debo codificar una URL completa más de una vez?", "No. Codificar un texto ya codificado convierte <code>%20</code> en <code>%2520</code>, un error muy común. Si ves <code>%25</code> seguido de dos dígitos hexadecimales en un resultado, probablemente la entrada ya estaba codificada; decodifícala primero."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Dirección</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Codificar</label>
+        <label><input type="radio" name="dir" value="decode">Decodificar</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">El texto es</label>
+      <select id="u-kind">
+        <option value="component" selected>Un solo valor (componente)</option>
+        <option value="uri">Una URL completa</option>
+        <option value="form">Datos de formulario (espacio como +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Entrada</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Escribe o pega aquí, p. ej. café con leche &amp; té"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Resultado</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Copiar</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Usar el resultado como entrada</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Borrar</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">Separar una URL en partes</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Parámetros de consulta</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Nombre</th><th scope="col">Valor (decodificado)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Qué hace la codificación de URL</h2>
+<p>Para codificar o decodificar una URL correctamente hay que entender una regla: una URL solo puede contener un conjunto limitado de caracteres ASCII, y algunos tienen una función: <code>/</code> separa los segmentos de la ruta, <code>?</code> inicia la consulta, <code>&amp;</code> y <code>=</code> la dividen en nombres y valores, y <code>#</code> inicia el fragmento. La codificación por porcentaje escribe cualquier otro byte como <code>%</code> seguido de dos dígitos hexadecimales, para que un valor como <code>R&amp;D / 2026</code> pueda viajar dentro de una cadena de consulta sin confundirse con la estructura: <code>R%26D%20%2F%202026</code>.</p>
+<p>Primero el texto se convierte en bytes UTF-8; por eso una letra acentuada se convierte en dos escapes y un emoji en cuatro. La decodificación invierte el proceso y comprueba que los bytes formen UTF-8 válido. Esta herramienta decodifica con su propio lector estricto, así que en lugar de un error genérico "URI malformed" te dice qué escape está roto y dónde.</p>
+<p>Los tres modos corresponden a las tres situaciones habituales. Codifica un solo valor (componente) cuando armas un parámetro de consulta o un segmento de ruta. Codifica una URL completa solo cuando tienes una dirección entera con espacios o letras no ASCII. Usa datos de formulario para el cuerpo de un envío de formulario o una cadena de consulta construida como lo hacen los formularios HTML.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Necesitas una ruta limpia y legible en lugar de escapes? Créala con el <a href="/tools/text-to-slug/">Generador de slugs</a>.</li>
+  <li>Los datos binarios en una URL suelen ir en Base64url, no con codificación por porcentaje: prueba <a href="/tools/base64-encode-decode/">Codificar y decodificar Base64</a>.</li>
+  <li>Un token en una cadena de consulta que empieza con <code>eyJ</code> probablemente es un JWT. Léelo con el <a href="/tools/jwt-decoder/">Decodificador de JWT</a>.</li>
+</ul>

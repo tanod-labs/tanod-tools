@@ -1,0 +1,67 @@
+<!--meta
+{
+  "title": "OCR PDF online: buat PDF scan bisa dicari, gratis | Tanod Tools",
+  "description": "Buat PDF hasil scan bisa dicari: OCR menambahkan lapisan teks tak terlihat agar teks bisa dicari dan disalin. Gratis, tanpa daftar; file langsung dihapus.",
+  "h1": "Buat PDF hasil scan bisa dicari (OCR)",
+  "lede": "Tambahkan lapisan teks tersembunyi ke halaman hasil scan, agar teksnya bisa dicari, dipilih, dan disalin. Tampilan halaman tetap sama persis.",
+  "blurb": "Buat PDF hasil scan bisa dicari dan disalin dengan OCR.",
+  "keywords": "ocr pdf pdf bisa dicari pdf scan ke teks kenali teks salin teks dari pdf scan pilih teks searchable",
+  "limits": "Satu PDF hingga 10 MB, hingga 10 halaman per tugas, teks bahasa Inggris. Diproses di server kami, lalu dihapus. 10 tugas server gratis per hari per orang, dibagi untuk semua alat server. Tugas lebih besar: <a href=\"/learn/pdf-ocr-api.html\">PDF OCR API</a> (dibayar per panggilan).",
+  "howto_title": "Cara membuat PDF bisa dicari",
+  "howto": [
+    "Pilih PDF hasil scan hingga 10 MB, atau seret ke halaman ini.",
+    "Periksa halaman yang akan dibaca: semuanya untuk file pendek, atau hingga 10 halaman sekaligus.",
+    "Tekan <strong>Buat bisa dicari</strong>, lalu unduh PDF-nya. Anda juga bisa menyalin atau menyimpan teks yang dikenali."
+  ],
+  "faq": [
+    ["Apakah PDF saya diunggah?", "Ya. Berbeda dengan sebagian besar alat di situs ini, alat ini berjalan di server kami: PDF Anda dikirim melalui HTTPS, dibaca oleh mesin OCR, dan salinan yang bisa dicari langsung dikirim kembali ke browser Anda. File hanya ada di server selama tugas berjalan, di memori dan di folder sementara privat yang dihapus begitu tugas selesai. Kami tidak menyimpan PDF, hasilnya, maupun teks yang dikenali, dan kami tidak pernah mencatat isi file."],
+    ["Apa yang diubah OCR pada PDF saya?", "Tidak ada yang terlihat. Setiap halaman dibaca oleh mesin OCR open source Tesseract, dan kata-kata yang ditemukannya diletakkan di atas halaman sebagai teks tak terlihat di posisi yang tepat. Halaman asli tetap berada di bawahnya, tidak diubah, sehingga PDF terlihat sama tetapi kini bisa dicari, dipilih, dan disalin."],
+    ["Mengapa hanya 10 halaman sekaligus?", "Membaca satu halaman memerlukan beberapa detik waktu server, dan setiap tugas harus selesai dalam sekitar satu menit. Untuk dokumen yang lebih panjang, jalankan alat ini lagi pada file yang sudah diunduh dengan halaman berikutnya, misalnya 11-20. Halaman yang sudah selesai dibiarkan apa adanya."],
+    ["Bahasa apa saja yang didukung?", "Bahasa Inggris, dan bahasa lain yang ditulis dengan huruf Latin yang sama tanpa aksen, dengan akurasi lebih rendah. Huruf beraksen dan aksara lain belum dapat dikenali dengan andal."],
+    ["Halaman saya sudah berisi teks. Apa yang terjadi?", "Halaman yang sudah berisi teks dilewati, jadi PDF yang dibuat oleh pengolah kata tetap seperti semula. Centang <em>Baca halaman yang sudah memiliki teks</em> untuk tetap menjalankan OCR pada halaman itu, misalnya jika hasil scan memiliki lapisan teks yang buruk."],
+    ["Seberapa akurat hasilnya?", "Hasil scan yang bersih dan lurus dengan resolusi normal memberikan hasil yang sangat baik. Foto yang diambil miring, cetakan yang pudar atau buram, tulisan tangan, dan tabel yang rumit menghasilkan lebih banyak kesalahan. Periksa nama dan angka sebelum mengandalkannya."],
+    ["Apakah ada batasnya?", "File hingga 10 MB, hingga 10 halaman per tugas, dan 10 tugas server gratis per hari per orang, dibagi untuk semua alat server kami. Hanya tugas yang berhasil yang dihitung, dan hitungannya direset pada tengah malam UTC. Tugas lebih besar: <a href=\"/learn/pdf-ocr-api.html\">PDF OCR API</a>, dibayar per panggilan."],
+    ["Apa itu verifikasi manusia?", "Sebelum tugas berjalan, Cloudflare Turnstile memeriksa bahwa yang memakai alat ini adalah manusia, bukan bot. Biasanya tidak terlihat; kadang Anda diminta mencentang kotak."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:ocr-pdf drop__mark}}
+  <p class="drop__title">Letakkan PDF hasil scan di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Pilih PDF</span></label>
+  <p class="drop__hint">Atau seret ke mana saja di halaman ini. Hingga 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="range">Halaman yang dibaca</label>
+      <input id="range" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Opsi</span>
+      <label class="check"><input type="checkbox" id="redo">Baca halaman yang sudah memiliki teks</label>
+      <span class="help">Bahasa: Inggris.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Buat bisa dicari</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Apa yang dilakukan OCR pada PDF hasil scan</h2>
+<p>Scanner atau aplikasi ponsel menyimpan setiap halaman sebagai gambar. Anda bisa membacanya, tetapi komputer Anda tidak: pencarian tidak menemukan apa pun dan Anda tidak bisa menyalin satu kalimat pun. Pengenalan karakter optik (OCR) melihat gambar itu, menemukan huruf dan kata, lalu menuliskannya ke dalam PDF sebagai teks tak terlihat yang ditempatkan tepat di atas kata-kata yang Anda lihat. Hasilnya, PDF scan menjadi bisa dicari.</p>
+<p>Server kami merender setiap halaman yang dipilih pada 200 sampai 300 dpi, membacanya dengan mesin open source Tesseract, dan meletakkan teks di atas halaman asli tanpa mengubahnya. Teks yang dikenali juga ditampilkan di sini, sehingga Anda bisa langsung menyalinnya.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Scan pada 300 dpi dalam hitam putih atau abu-abu untuk akurasi terbaik.</li>
+  <li>Halaman terbalik atau miring? Putar dulu dengan <a href="/tools/rotate-pdf/">Putar PDF</a> (di browser Anda).</li>
+  <li>Punya foto atau screenshot, bukan PDF? Gunakan <a href="/tools/image-to-text/">Gambar ke teks (OCR)</a>.</li>
+</ul>

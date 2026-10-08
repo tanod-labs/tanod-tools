@@ -1,0 +1,110 @@
+<!--meta
+{
+  "title": "Encoder et décoder en Base64 : texte et fichiers | Tanod Tools",
+  "description": "Encodez du texte ou un fichier en Base64 et décodez le Base64 en texte ou en fichier. UTF-8, Base64 URL-safe et data URL, dans votre navigateur. Gratuit.",
+  "h1": "Encoder et décoder en Base64",
+  "lede": "Convertissez du texte ou des fichiers en Base64 et inversement, avec les options UTF-8, URL-safe et data URL.",
+  "blurb": "Encoder et décoder du texte et des fichiers en Base64.",
+  "keywords": "base64 encoder decoder encodage decodage convertir data url utf-8 url-safe base64url fichier texte",
+  "limits": "Fichiers jusqu'à 25 Mo. Base64 vers fichier accepte une entrée qui se décode en 25 Mo au maximum.",
+  "howto_title": "Comment encoder ou décoder du Base64",
+  "howto": [
+    "Pour du texte, tapez-le ou collez-le dans la zone, choisissez Encoder ou Décoder : le résultat s'affiche pendant la saisie.",
+    "Activez le Base64 URL-safe ou le retour à la ligne tous les 76 caractères si l'endroit où vous collez le résultat l'exige.",
+    "Pour un fichier, passez en mode Fichier et déposez-le pour obtenir son Base64 ou une data URL. Pour l'opération inverse, collez le Base64, nommez le fichier et téléchargez-le."
+  ],
+  "faq": [
+    ["Mon texte ou mon fichier est-il envoyé sur un serveur ?", "Non. Tout est converti dans votre navigateur, et rien n'est envoyé nulle part ni conservé."],
+    ["Les lettres accentuées et les emoji sont-ils gérés ?", "Oui. Le texte est converti en octets UTF-8 avant l'encodage et décodé en UTF-8 ensuite : les caractères comme é, ö, ✓ et les emoji font l'aller-retour sans erreur. (La fonction <code>btoa</code> intégrée au navigateur échouerait sur ces caractères.)"],
+    ["Qu'est-ce que le Base64 URL-safe ?", "Il remplace les caractères <code>+</code> et <code>/</code> par <code>-</code> et <code>_</code> et supprime le remplissage <code>=</code> final, pour que le résultat puisse figurer dans une URL ou un nom de fichier. Au décodage, cet outil accepte les deux alphabets."],
+    ["Pourquoi le décodage signale-t-il un caractère non valide ?", "Le Base64 n'utilise que des lettres, des chiffres, le plus et la barre oblique (ou le moins et le tiret bas), avec des signes égal à la fin. Les espaces et les sauts de ligne sont ignorés, mais tout autre caractère est signalé avec sa position pour que vous puissiez le retrouver."],
+    ["Une data URL est-elle différente du Base64 simple ?", "Une data URL est le Base64 précédé d'un préfixe comme <code>data:image/png;base64,</code>, pour qu'un navigateur puisse l'utiliser directement comme source d'image ou de fichier. Activez l'option data URL en mode Fichier pour obtenir cette forme."],
+    ["Pourquoi le Base64 est-il plus lourd que mon fichier ?", "Le Base64 écrit chaque groupe de 3 octets sous forme de 4 caractères : le texte encodé est donc environ un tiers plus gros que l'original. C'est un moyen de transporter des données binaires sous forme de texte, pas une forme de chiffrement ni de compression."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Convertir</legend>
+  <div class="seg" role="radiogroup" aria-label="Mode">
+    <label><input type="radio" name="mode" value="text" checked>Texte</label>
+    <label><input type="radio" name="mode" value="file">Fichier</label>
+  </div>
+</fieldset>
+
+<div id="b-textpanel" class="util-stack">
+  <div class="field">
+    <span class="label" id="b-dir-l">Sens</span>
+    <div class="seg" role="radiogroup" aria-labelledby="b-dir-l">
+      <label><input type="radio" name="dir" value="encode" checked>Encoder</label>
+      <label><input type="radio" name="dir" value="decode">Décoder</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="b-in">Entrée</label>
+    <textarea id="b-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Tapez ou collez ici"></textarea>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="b-url">Alphabet URL-safe (- _ et sans remplissage)</label>
+    <label class="check" id="b-wrap-l"><input type="checkbox" id="b-wrap">Retour à la ligne tous les 76 caractères</label>
+  </div>
+  <div class="field">
+    <label for="b-out">Sortie</label>
+    <textarea id="b-out" class="mono" rows="6" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="b-copy" type="button" disabled>Copier</button>
+    <button class="btn" id="b-dl" type="button" disabled>Télécharger .txt</button>
+    <button class="btn btn--quiet" id="b-swap" type="button" disabled>Utiliser la sortie comme entrée</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="b-clear" type="button">Effacer</button>
+  </div>
+</div>
+
+<div id="b-filepanel" class="util-stack" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Déposez un fichier pour l'encoder</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Choisir un fichier</span></label>
+    <p class="drop__hint">Jusqu'à 25 Mo. Ou glissez-le n'importe où sur cette page.</p>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="f-url">Alphabet URL-safe (- _ et sans remplissage)</label>
+    <label class="check"><input type="checkbox" id="f-wrap">Retour à la ligne tous les 76 caractères</label>
+    <label class="check"><input type="checkbox" id="f-data">Créer une data: URL</label>
+  </div>
+  <div id="f-result" hidden>
+    <p class="help" id="f-info"></p>
+    <pre class="out" id="f-out" tabindex="0" aria-label="Aperçu du Base64"></pre>
+    <div class="actions">
+      <button class="btn btn--primary" id="f-copy" type="button">Copier</button>
+      <button class="btn" id="f-dl" type="button">Télécharger .txt</button>
+    </div>
+  </div>
+
+  <h2 class="util-h">Base64 vers fichier</h2>
+  <div class="field">
+    <label for="d-in">Base64 (ou une data: URL)</label>
+    <textarea id="d-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Collez le Base64 ici"></textarea>
+  </div>
+  <div class="field">
+    <label for="d-name">Nom du fichier</label>
+    <input type="text" id="d-name" value="decoded.bin" autocomplete="off" spellcheck="false">
+    <span class="help" id="d-info"></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="d-dl" type="button" disabled>Décoder et télécharger</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>À quoi sert le Base64</h2>
+<p>Encoder et décoder en Base64 permet de représenter n'importe quelle suite d'octets avec 64 caractères de texte sûrs : A-Z, a-z, 0-9, le plus et la barre oblique. Chaque groupe de 3 octets devient 4 caractères, avec un remplissage <code>=</code> pour compléter le dernier groupe. Les données binaires peuvent ainsi être placées sans risque dans un e-mail, du JSON, du HTML, des URL et partout où seul le texte est accepté. C'est un encodage, pas un chiffrement : n'importe qui peut l'inverser.</p>
+<p>Le texte est d'abord transformé en octets, et l'encodage des caractères compte. Cet outil utilise l'UTF-8, la norme du web, pour que les textes non anglais et les symboles survivent à l'aller-retour. Le décodage vérifie que le résultat est de l'UTF-8 valide et vous prévient si ce n'est pas le cas, ce qui signifie généralement que les données étaient un fichier et non du texte.</p>
+<p>Le mode Fichier lit le fichier dans votre navigateur et l'encode par petits morceaux pour que la page reste réactive. Dans l'autre sens, l'outil décode le Base64 collé en octets et vous les propose en téléchargement. Il examine les premiers octets pour suggérer une extension de fichier pour les formats courants comme PNG, JPEG, GIF, PDF et ZIP.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Vous travaillez avec du JSON qui contient des valeurs en Base64 ? Mettez-le en forme avec <a href="/tools/json-formatter/">Formater et valider du JSON</a>.</li>
+  <li>Besoin d'identifiants aléatoires ? Voyez le <a href="/tools/uuid-generator/">Générateur d'UUID</a>.</li>
+  <li>Échapper du texte pour un lien ou une chaîne de requête est une autre affaire : utilisez <a href="/tools/url-encode-decode/">Encoder et décoder une URL</a>. Pour lire un JWT, qui contient du Base64url, utilisez le <a href="/tools/jwt-decoder/">Décodeur JWT</a>.</li>
+</ul>

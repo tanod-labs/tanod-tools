@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "JSON formatieren und validieren – online | Tanod Tools",
+  "description": "JSON im Browser formatieren, minifizieren und validieren. Fehler mit Zeile, Spalte und Caret unter dem Problem. Schlüssel sortieren. Kostenlos, privat.",
+  "h1": "JSON formatieren und validieren",
+  "lede": "Fügen Sie JSON ein, um es zu formatieren, zu verkleinern oder zu prüfen, mit genauer Zeile und Spalte jedes Fehlers.",
+  "blurb": "JSON formatieren, minifizieren und validieren.",
+  "keywords": "json formatieren formatter validieren validator prüfen pruefen json beautifier verschönern minifizieren lint schlüssel sortieren json viewer",
+  "limits": "Eingabe bis etwa 10 MB, eingefügt oder aus einer .json-Datei.",
+  "howto_title": "So formatieren und validieren Sie JSON",
+  "howto": [
+    "Fügen Sie Ihr JSON in das Feld ein oder ziehen Sie eine .json-Datei auf die Seite.",
+    "Wählen Sie das Layout: 2 Leerzeichen, 4 Leerzeichen, Tabs oder minifiziert. Aktivieren Sie Schlüssel sortieren, wenn Sie sie alphabetisch möchten.",
+    "Ist das JSON ungültig, sehen Sie Zeile und Spalte mit einem Caret unter dem Problem. Andernfalls kopieren Sie das Ergebnis oder laden es herunter."
+  ],
+  "faq": [
+    ["Wird mein JSON hochgeladen?", "Nein. Es wird in Ihrem Browser geparst und formatiert und nie gesendet oder gespeichert. Sie können also auch Konfigurationen oder Daten einfügen, die Sie nicht weitergeben möchten."],
+    ["Was gilt als gültiges JSON?", "Das Standardformat: Schlüssel und Zeichenketten in doppelten Anführungszeichen, keine Kommentare, keine Kommas am Ende, keine einfachen Anführungszeichen, kein <code>undefined</code> oder <code>NaN</code>. Viele Dateien, die wie JSON aussehen, etwa JavaScript-Objektliterale oder Konfigurationsdateien mit Kommentaren, sind nicht streng gültig und werden markiert."],
+    ["Verändert das Formatieren meine Daten?", "Nein. Zahlen bleiben genau so, wie sie geschrieben sind (auch sehr lange, die JavaScript nicht exakt speichern könnte), Zeichenketten behalten ihre Escape-Sequenzen, und Schlüssel behalten ihre Reihenfolge, sofern Sie nicht Schlüssel sortieren aktivieren. Nur Leerraum ändert sich."],
+    ["Wie funktioniert Schlüssel sortieren?", "Die Schlüssel in jedem Objekt, auf jeder Ebene, werden alphabetisch nach ihren Zeichen sortiert. Arrays behalten ihre Reihenfolge, weil es auf die Reihenfolge von Array-Elementen meist ankommt."],
+    ["Was zeigen die Statistiken?", "Eingabe- und Ausgabegröße in Bytes, die Gesamtzahl der Objektschlüssel auf allen Ebenen und die maximale Verschachtelungstiefe, wobei ein flaches Objekt die Tiefe 1 hat."],
+    ["Wie groß darf die Eingabe sein?", "Etwa 10 MB. Größere Eingaben werden abgelehnt, statt ein Einfrieren des Tabs zu riskieren. Das Ausgabefeld zeigt bis zu den ersten zwei Millionen Zeichen; Kopieren und Herunterladen enthalten immer alles."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop is-compact" id="drop">
+  <label class="btn btn--sm"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>.json-Datei öffnen</span></label>
+  <span class="drop__hint">Oder unten einfügen oder eine Datei an eine beliebige Stelle dieser Seite ziehen.</span>
+</div>
+<div class="field">
+  <label for="j-in">JSON</label>
+  <textarea id="j-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder='{"name": "example", "tags": [1, 2, 3]}'></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="j-lay-l">Layout</span>
+    <div class="seg" role="radiogroup" aria-labelledby="j-lay-l">
+      <label><input type="radio" name="layout" value="2" checked>2 Leerzeichen</label>
+      <label><input type="radio" name="layout" value="4">4 Leerzeichen</label>
+      <label><input type="radio" name="layout" value="tab">Tab</label>
+      <label><input type="radio" name="layout" value="min">Minifiziert</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Schlüssel</span>
+    <label class="check"><input type="checkbox" id="j-sort">Schlüssel sortieren (alle Ebenen)</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="j-err" hidden></pre>
+<div id="j-result" hidden>
+  <dl class="stats" id="j-stats">
+    <div><dt>Eingabe</dt><dd id="j-s-in">0</dd></div>
+    <div><dt>Ausgabe</dt><dd id="j-s-out">0</dd></div>
+    <div><dt>Schlüssel</dt><dd id="j-s-keys">0</dd></div>
+    <div><dt>Tiefe</dt><dd id="j-s-depth">0</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="j-out-l">Ergebnis</span>
+    <pre class="out util-json" id="j-out" tabindex="0" aria-labelledby="j-out-l"></pre>
+    <span class="help" id="j-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="j-copy" type="button">Kopieren</button>
+    <button class="btn" id="j-dl" type="button">.json herunterladen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="j-clear" type="button">Leeren</button>
+  </div>
+</div>
+<!--explain-->
+<h2>JSON formatieren und prüfen</h2>
+<p>JSON ist ein kleines, strenges Textformat für Daten: Objekte in geschweiften Klammern, Arrays in eckigen Klammern und Werte, die Zeichenketten, Zahlen, <code>true</code>, <code>false</code> oder <code>null</code> sind. Maschinen ist Leerraum egal, Menschen nicht. Wer JSON formatieren will, braucht deshalb einen Formatter, der Einrückungen und Zeilenumbrüche einfügt, damit verschachtelte Daten lesbar werden; ein Minifier entfernt sie wieder, um Platz zu sparen.</p>
+<p>Dieses Tool liest Ihren Text mit einem eigenen Parser und kann deshalb genau auf das Zeichen zeigen, an dem etwas schiefgeht. Die häufigsten Fehler sind ein Komma nach dem letzten Element, einfache statt doppelter Anführungszeichen, ein Schlüssel ohne Anführungszeichen, ein Kommentar oder eine fehlende Klammer am Ende. Der Fehler zeigt Zeile und Spalte, eine Kopie dieser Zeile und ein Caret unter der Position.</p>
+<p>Das Formatieren ändert nur Leerraum. Zahlen und Escape-Sequenzen in Zeichenketten bleiben wie geschrieben, sodass eine lange ID wie 12345678901234567890 nicht gerundet wird, wie es beim Einlesen der Daten als JavaScript-Zahlen geschähe.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie vergleichen zwei Versionen einer Konfiguration? Formatieren Sie beide mit denselben Optionen und nutzen Sie dann <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Steckt ein Base64-Wert in Ihrem JSON? Dekodieren Sie ihn mit <a href="/tools/base64-encode-decode/">Base64 kodieren und dekodieren</a>.</li>
+  <li>Sie brauchen die Daten in einer Tabelle? Nutzen Sie <a href="/tools/json-to-csv/">JSON in CSV</a> oder für den umgekehrten Weg <a href="/tools/csv-to-json/">CSV in JSON</a>.</li>
+</ul>

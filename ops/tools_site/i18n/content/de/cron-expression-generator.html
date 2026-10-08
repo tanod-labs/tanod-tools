@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Cron-Ausdruck erstellen – Generator mit Vorschau | Tanod Tools",
+  "description": "Cron-Zeitplan mit fünf Feldern per Vorlage und Klick erstellen, in Klartext lesen und die nächsten Ausführungen in jeder Zeitzone prüfen, bevor Sie ihn nutzen.",
+  "h1": "Cron-Ausdruck erstellen",
+  "lede": "Bauen Sie einen Crontab-Zeitplan aus einfachen Auswahlen und prüfen Sie dann, was er in Klartext bedeutet und wann er als Nächstes läuft.",
+  "blurb": "Cron-Zeitplan per Klick erstellen und nächste Ausführungen sehen.",
+  "keywords": "cron ausdruck erstellen cron generator crontab generator cron builder cronjob erstellen zeitplan alle 5 minuten cron syntax werktags um 9 uhr",
+  "limits": "Standard-Cron mit fünf Feldern, wie in Vixie cron und cronie: Minute, Stunde, Tag des Monats, Monat und Wochentag. Quartz und andere Formate mit Sekundenfeld werden nicht erzeugt, und eingefügte Ausdrücke, die die Bedienelemente nicht darstellen können, bleiben so erhalten, wie sie eingegeben wurden.",
+  "howto_title": "So erstellen Sie einen Cron-Ausdruck",
+  "howto": [
+    "Beginnen Sie mit einer Vorlage oder stellen Sie jedes Feld ein: jedes Mal, alle N Einheiten ab einem Startwert, zu bestimmten Werten oder zwischen zwei Werten.",
+    "Prüfen Sie den Ausdruck, seine Beschreibung in Klartext und die nächsten Ausführungszeiten in der Zeitzone Ihres Servers.",
+    "Kopieren Sie den Ausdruck in Ihre Crontab, Ihren CI-Zeitplan oder Scheduler. Sie können auch einen vorhandenen Ausdruck einfügen, um ihn in die Bedienelemente zu laden."
+  ],
+  "faq": [
+    ["Wie lasse ich einen Job alle 15 Minuten laufen?", "Stellen Sie „Minute“ auf <em>alle 15 Minuten, beginnend bei 0</em>; das ergibt <code>*/15 * * * *</code>. Der Job läuft in den Minuten 0, 15, 30 und 45 jeder Stunde."],
+    ["Wie wird ein anderer Startwert als 0 geschrieben?", "Ein Start etwa bei Minute 5 mit einer Schrittweite von 10 wird als <code>5-59/10</code> geschrieben und läuft in den Minuten 5, 15, 25, 35, 45 und 55. Das kürzere <code>5/10</code> funktioniert in manchen Cron-Versionen, wird von anderen aber abgelehnt, daher ist die lange Form die portable Wahl."],
+    ["Warum werden manche Tage als Bereich und andere als Liste geschrieben?", "Drei oder mehr aufeinanderfolgende Werte werden als Bereich geschrieben, Montag bis Freitag ist also <code>1-5</code>, während Montag, Mittwoch und Freitag <code>1,3,5</code> ergeben. Beides bedeutet genau die Werte, die Sie angehakt haben."],
+    ["Was passiert, wenn ich Tag des Monats und Wochentag setze?", "Standard-Cron führt den Job aus, wenn eines der beiden Felder passt, nicht erst, wenn beide passen. <code>0 9 1 * 1</code> läuft am 1. des Monats und an jedem Montag. Das Tool zeigt einen Hinweis, wenn Ihre Auswahl in diesen Fall fällt."],
+    ["Welche Zeitzone verwenden die nächsten Ausführungen?", "Die, die Sie unter dem Ausdruck auswählen. Cron selbst verwendet die Zeitzone des Rechners oder Containers, auf dem es läuft, sofern die Crontab nicht <code>CRON_TZ</code> setzt. Viele Server laufen in UTC; prüfen Sie das, bevor Sie sich auf eine Uhrzeit verlassen."],
+    ["Werden Sekunden, @daily oder die Quartz-Syntax unterstützt?", "Das Tool erzeugt nur Ausdrücke mit fünf Feldern. Wenn Sie <code>@daily</code> oder eine andere Abkürzung einfügen, funktioniert das, und sie wird in ihre fünf Felder umgewandelt. Ausdrücke mit sechs Feldern und im Quartz-Stil werden abgelehnt, weil ihr erstes Feld Sekunden sind. <a href=\"/tools/cron-expression-explainer/\">Cron-Ausdruck erklären</a> geht darauf im Detail ein."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Cron-Ausdruck</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Kopieren</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Vorlagen">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Jede Minute</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Alle 5 Minuten</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Alle 15 Minuten</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Jede Stunde</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Täglich um Mitternacht</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">Werktags um 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Jeden Sonntag</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">Am 1. und 15.</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Am Monatsersten</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Jedes Jahr</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Vorhandenen Ausdruck laden</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Laden</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Fügen Sie einen Ausdruck mit fünf Feldern oder eine Abkürzung wie @daily ein.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Nächste Ausführungen</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Zeitzone</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">Ab</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Leer lassen, um ab jetzt zu beginnen.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Anzahl</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Nächste Ausführungszeiten"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Sie haben schon einen Ausdruck und möchten ihn nur erklärt bekommen? Nutzen Sie <a href="/tools/cron-expression-explainer/">Cron-Ausdruck erklären</a>.</p>
+</div>
+<!--explain-->
+<h2>Einen Cron-Zeitplan erstellen</h2>
+<p>Ein Cron-Ausdruck besteht aus fünf durch Leerzeichen getrennten Feldern: Minute, Stunde, Tag des Monats, Monat und Wochentag. Jedes Feld beantwortet eine Frage dazu, wann der Job laufen soll, und der Job läuft, wenn alle passen. Ein Feld mit <code>*</code> bedeutet jeden Wert; deshalb läuft <code>0 * * * *</code> zu Beginn jeder Stunde und <code>0 0 * * *</code> einmal täglich um Mitternacht.</p>
+<p>Der Generator bietet für jedes Feld vier Möglichkeiten, das Gewünschte auszudrücken. Eine Schrittweite wie <code>*/15</code> bedeutet jeden 15. Wert, eine Liste wie <code>1,15</code> wählt genaue Werte, ein Bereich wie <code>9-17</code> deckt alles zwischen zwei Werten ab, und <code>*</code> bedeutet jeden Wert. Wenn Sie Werte anhaken, werden drei oder mehr aufeinanderfolgende als Bereich geschrieben, Montag bis Freitag ergibt also <code>1-5</code> statt <code>1,2,3,4,5</code>.</p>
+<p>Zwei Fallen erwischen die meisten. Cron verwendet die Uhr des Rechners, auf dem es läuft; ein Job für 09:00 Uhr läuft also um 09:00 Uhr Serverzeit, die nicht Ihre sein muss. In der Liste der nächsten Ausführungen können Sie das in verschiedenen Zonen prüfen. Und wenn sowohl das Feld „Tag des Monats“ als auch „Wochentag“ eingeschränkt ist, läuft ein Job, sobald eines der beiden passt, was weit mehr Ausführungen bedeuten kann als erwartet.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Um einen Ausdruck zu lesen, den jemand anderes geschrieben hat, fügen Sie ihn in <a href="/tools/cron-expression-explainer/">Cron-Ausdruck erklären</a> ein.</li>
+  <li>Rechnen Sie eine Ausführungszeit aus einem Log mit <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> in einen Unix-Zeitstempel um und zurück.</li>
+  <li>Geplante Skripte brauchen das Ausführungsrecht; die richtigen Rechte ermitteln Sie mit dem <a href="/tools/chmod-calculator/">chmod-Rechner</a>.</li>
+</ul>

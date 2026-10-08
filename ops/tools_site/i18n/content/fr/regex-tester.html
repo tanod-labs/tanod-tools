@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Testeur de regex en ligne pour JavaScript | Tanod Tools",
+  "description": "Testez une expression régulière JavaScript sur votre texte : correspondances surlignées pendant la saisie, groupes de capture et nommés, aperçu du remplacement.",
+  "h1": "Testeur de regex",
+  "lede": "Essayez une expression régulière sur un texte d'exemple et voyez chaque correspondance, ses groupes de capture et le résultat d'un remplacement.",
+  "blurb": "Tester des regex JavaScript avec surlignage et groupes.",
+  "keywords": "testeur regex tester expression reguliere regexp en ligne javascript correspondance groupes groupes nommes remplacer drapeaux flags",
+  "limits": "Syntaxe regex JavaScript (ECMAScript) telle que votre navigateur la prend en charge. Texte jusqu'à 5 Mo ; les 1 000 premières correspondances sont listées et surlignées. Un motif qui s'exécute plus de 2 secondes est arrêté.",
+  "howto_title": "Comment tester une expression régulière",
+  "howto": [
+    "Tapez le motif entre les barres obliques et cochez les drapeaux nécessaires, comme <code>g</code> pour toutes les correspondances ou <code>i</code> pour ignorer la casse.",
+    "Collez votre texte de test. Les correspondances sont surlignées pendant la saisie, et le tableau liste chaque correspondance avec sa position et ses groupes de capture.",
+    "Pour vérifier une substitution, tapez un remplacement comme <code>$2-$1</code> ou <code>$&lt;year&gt;</code> et lisez le résultat en dessous."
+  ],
+  "faq": [
+    ["Quelle variante de regex est utilisée ?", "Celle de JavaScript, exécutée par le moteur de votre propre navigateur : les résultats sont exactement ceux que donne <code>RegExp</code> dans votre navigateur ou dans Node.js. La syntaxe courante est en grande partie commune avec PCRE, Python et Java, mais certaines fonctions diffèrent : les quantificateurs possessifs et les groupes atomiques ne sont pas pris en charge, et le lookbehind, les groupes nommés et le drapeau <code>v</code> nécessitent un navigateur récent."],
+    ["Pourquoi une seule correspondance s'affiche-t-elle ?", "Sans le drapeau <code>g</code> (global), une regex JavaScript ne trouve que la première correspondance, et le remplacement ne modifie que la première occurrence. Cochez <code>g</code> pour toutes les trouver. Le testeur suit exactement le langage : ce que vous voyez est ce que fera votre code."],
+    ["À quoi servent les drapeaux ?", "<code>g</code> trouve toutes les correspondances, <code>i</code> ignore la casse, <code>m</code> fait correspondre <code>^</code> et <code>$</code> aux sauts de ligne, <code>s</code> permet à <code>.</code> de correspondre aux sauts de ligne, <code>u</code> active la gestion complète d'Unicode, <code>v</code> est le mode Unicode plus récent avec opérations sur les ensembles, <code>y</code> (sticky) ne trouve une correspondance qu'à la position courante, et <code>d</code> enregistre le début de chaque groupe, ce que le testeur utilise de toute façon pour les positions des groupes."],
+    ["Comment utiliser les groupes dans le remplacement ?", "<code>$1</code>, <code>$2</code>, etc. insèrent les groupes numérotés, <code>$&lt;name&gt;</code> insère un groupe nommé, <code>$&amp;</code> insère la correspondance entière, <code>$`</code> et <code>$'</code> insèrent le texte avant et après celle-ci, et <code>$$</code> écrit un signe dollar littéral."],
+    ["Pourquoi mon motif s'est-il arrêté avec « trop de temps » ?", "Certains motifs, comme <code>^(a+)+$</code> appliqué à une longue suite de a qui ne se termine pas comme prévu, obligent le moteur à essayer un nombre énorme de façons de correspondre. C'est ce qu'on appelle le backtracking catastrophique. Le testeur exécute chaque motif dans un worker en arrière-plan et l'arrête au bout de 2 secondes pour que la page reste utilisable. Réécrivez les répétitions imbriquées comme <code>(a+)+</code> en <code>a+</code>."],
+    ["Mon texte est-il envoyé quelque part ?", "Non. Le motif et le texte restent dans votre navigateur ; la recherche des correspondances se fait sur votre appareil et rien n'est envoyé ni conservé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="r-pattern">Expression régulière</label>
+    <div class="rx-pattern">
+      <span aria-hidden="true">/</span>
+      <input type="text" id="r-pattern" class="mono" value="(?&lt;year&gt;\d{4})-(\d{2})-(\d{2})" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="r-info">
+      <span aria-hidden="true" id="r-flagtext">/g</span>
+    </div>
+  </div>
+  <fieldset>
+    <legend>Drapeaux</legend>
+    <div class="rx-flags">
+      <label class="check"><input type="checkbox" data-flag="g" checked><code>g</code>&nbsp;global</label>
+      <label class="check"><input type="checkbox" data-flag="i"><code>i</code>&nbsp;ignorer la casse</label>
+      <label class="check"><input type="checkbox" data-flag="m"><code>m</code>&nbsp;multiligne</label>
+      <label class="check"><input type="checkbox" data-flag="s"><code>s</code>&nbsp;le point inclut les sauts de ligne</label>
+      <label class="check"><input type="checkbox" data-flag="u"><code>u</code>&nbsp;unicode</label>
+      <label class="check"><input type="checkbox" data-flag="v"><code>v</code>&nbsp;ensembles unicode</label>
+      <label class="check"><input type="checkbox" data-flag="y"><code>y</code>&nbsp;sticky</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="r-text">Texte de test</label>
+    <textarea id="r-text" class="mono" rows="6" spellcheck="false">Versions : 2024-03-31, 2025-12-01 et 2026-10-08.</textarea>
+  </div>
+  <p class="tt__report" id="r-info" aria-live="polite"></p>
+  <div class="field">
+    <span class="label" id="r-view-l">Correspondances dans le texte</span>
+    <pre class="out rx-view" id="r-view" tabindex="0" aria-labelledby="r-view-l"></pre>
+  </div>
+  <div class="rx-table-wrap" tabindex="0" role="region" aria-label="Liste des correspondances">
+    <table class="rx-table">
+      <thead><tr><th scope="col">#</th><th scope="col">Position</th><th scope="col">Correspondance</th><th scope="col">Groupes</th></tr></thead>
+      <tbody id="r-list"></tbody>
+    </table>
+  </div>
+  <div class="field">
+    <label for="r-repl">Remplacer par (facultatif)</label>
+    <input type="text" id="r-repl" class="mono" autocomplete="off" spellcheck="false" placeholder="$&lt;year&gt;/$2/$3">
+  </div>
+  <div class="field" id="r-out-wrap" hidden>
+    <span class="label" id="r-out-l">Résultat du remplacement</span>
+    <pre class="out" id="r-out" tabindex="0" aria-labelledby="r-out-l"></pre>
+    <div class="actions"><button class="btn btn--sm" id="r-copy" type="button">{{mark:i-copy}}Copier le résultat</button></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Tester des motifs en toute sécurité</h2>
+<p>Ce testeur de regex construit un <code>RegExp</code> JavaScript à partir de votre motif et de vos drapeaux, et l'exécute dans un worker en arrière-plan, avec le même moteur que celui qu'utilisera votre code dans ce navigateur. Les correspondances reviennent avec leur position de début et chaque groupe de capture, et la page les dessine sur votre texte avec un surlignage alterné pour que les correspondances voisines restent distinctes. Une correspondance vide, comme celle que peuvent produire <code>\b</code> ou <code>a*</code>, apparaît sous forme de fine barre.</p>
+<p>Exécuter le motif dans un worker est important, car une expression régulière peut prendre un temps exponentiel. Si un motif tourne encore au bout de 2 secondes, le worker est arrêté et vous recevez un message au lieu d'un onglet figé. La même protection s'applique à <a href="/tools/find-and-replace/">Rechercher et remplacer</a>.</p>
+<p>Les positions sont comptées en unités de code UTF-16, comme le font les chaînes JavaScript : un emoji ou un autre caractère hors du plan de base en occupe deux. La liste affiche les 1 000 premières correspondances ; le total indiqué au-dessus les inclut toutes.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Une fois le motif au point, appliquez-le à un document entier avec <a href="/tools/find-and-replace/">Rechercher et remplacer</a>.</li>
+  <li>Comparez le texte avant et après un remplacement avec <a href="/tools/text-diff/">Comparer deux textes</a>.</li>
+  <li>Vous cherchez des dates dans un journal ? Transformez les timestamps en heures lisibles avec le <a href="/tools/unix-timestamp-converter/">Convertisseur de timestamp Unix</a>.</li>
+</ul>

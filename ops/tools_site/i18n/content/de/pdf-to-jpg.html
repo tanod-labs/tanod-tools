@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "PDF in JPG umwandeln – kostenlos online | Tanod Tools",
+  "description": "PDF-Seiten im Browser in JPG- oder PNG-Bilder umwandeln. Auflösung und Seiten wählen, Bild oder ZIP herunterladen. Kostenlos, ohne Anmeldung, kein Upload.",
+  "h1": "PDF in JPG umwandeln",
+  "lede": "Wandeln Sie PDF-Seiten in JPG-Bilder um, oder in PNG, wenn Sie scharfe Kanten oder eine verlustfreie Kopie brauchen.",
+  "blurb": "PDF-Seiten in JPG- oder PNG-Bilder umwandeln.",
+  "keywords": "pdf in jpg pdf zu jpg pdf in png pdf in bild umwandeln konvertieren seiten exportieren foto jpeg",
+  "limits": "Ein PDF auf einmal, bis 200 MB und bis 200 Seiten pro Durchgang. Jedes Seitenbild ist auf 10.000 Pixel an der längsten Seite und insgesamt etwa 100 Millionen Pixel begrenzt; größere Seiten werden mit geringerer Auflösung gerendert, und das Ergebnis weist darauf hin. Passwortgeschützte PDFs können nicht geöffnet werden.",
+  "howto_title": "So wandeln Sie ein PDF in JPG um",
+  "howto": [
+    "Wählen Sie eine PDF-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Wählen Sie JPG oder PNG, eine Auflösung (72, 150 oder 300 dpi) und die gewünschten Seiten.",
+    "Klicken Sie auf <strong>Umwandeln</strong>. Eine Seite wird als einzelnes Bild heruntergeladen, mehrere Seiten als ZIP."
+  ],
+  "faq": [
+    ["Wird mein PDF hochgeladen?", "Nein. Die Seiten werden in Ihrem Browser mit der Open-Source-Bibliothek pdf.js gezeichnet und von dort gespeichert. Nichts wird an einen Server gesendet."],
+    ["Kann das Tool neben JPG auch PNG erzeugen?", "Ja. Wählen Sie PNG für ein verlustfreies Bild, das sich für Text, Strichzeichnungen und Screenshots eignet. JPG-Dateien sind kleiner und passen zu Seiten mit Fotos. Beide nutzen einen weißen Hintergrund, denn eine PDF-Seite hat kein transparentes Papier."],
+    ["Welche Auflösung sollte ich wählen?", "72 dpi ergibt Bilder in Bildschirmgröße, 150 dpi ist eine gute Größe zum Lesen und Teilen, und 300 dpi eignet sich zum Drucken. Höhere Auflösung bedeutet größere Bilder und eine langsamere Umwandlung."],
+    ["Warum wurde meine Seite mit geringerer Auflösung gerendert?", "Browser können keine beliebig großen Canvas-Flächen zeichnen. Jedes Bild ist auf 10.000 Pixel an der längsten Seite und insgesamt etwa 100 Millionen Pixel begrenzt, daher wird eine sehr große Seite, etwa ein Poster, passend verkleinert. Das Ergebnis sagt Ihnen, wenn das passiert ist."],
+    ["Funktioniert es mit gescannten PDFs?", "Ja. Eine gescannte Seite ist bereits ein Bild; dieses Tool zeichnet es in der gewählten Auflösung. Eine höhere Auflösung als die des Scans kann keine zusätzlichen Details hinzufügen."],
+    ["Kann ich nur einige Seiten umwandeln?", "Ja. Wählen Sie <em>Bestimmte</em> und geben Sie Seiten oder Bereiche ein, etwa 1-3, 5. Seiten werden ab 1 gezählt."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="fmt-l">Bildformat</span>
+      <div class="seg" role="radiogroup" aria-labelledby="fmt-l">
+        <label><input type="radio" name="fmt" value="jpg" checked>JPG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="dpi-l">Auflösung</span>
+      <div class="seg" role="radiogroup" aria-labelledby="dpi-l">
+        <label><input type="radio" name="dpi" value="72">72 dpi</label>
+        <label><input type="radio" name="dpi" value="150" checked>150 dpi</label>
+        <label><input type="radio" name="dpi" value="300">300 dpi</label>
+      </div>
+    </div>
+    <div class="field" id="q-field">
+      <label for="quality">JPG-Qualität: <span class="num" id="quality-v">85</span></label>
+      <input id="quality" type="range" min="40" max="100" step="1" value="85">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Seiten</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Alle Seiten</label>
+        <label><input type="radio" name="scope" value="range">Bestimmte</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Seitenbereich</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Umwandeln</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<div id="previews" hidden></div>
+<!--explain-->
+<h2>PDF-Seiten im Browser in Bilder umwandeln</h2>
+<p>Eine PDF-Seite ist eine Liste von Zeichenanweisungen, kein Bild. Um ein Bild zu erhalten, muss die Seite in einer bestimmten Größe gezeichnet werden. Ihr Browser macht das mit pdf.js auf einem Canvas in der gewählten Auflösung, Seite für Seite, und speichert den Canvas dann als JPG- oder PNG-Datei.</p>
+<p>Die Auflösung wird in Punkten pro Zoll (dpi) gemessen. Eine PDF-Seite ist in Punkten definiert, 72 pro Zoll, daher zeichnet 150 dpi jede Seite gut doppelt so breit wie ihre Nenngröße. Wählen Sie JPG für Fotos und kleinere Dateien oder PNG, wenn Sie scharfen Text und klare Kanten ohne Kompressionsartefakte möchten.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie möchten in die andere Richtung umwandeln? <a href="/tools/jpg-to-pdf/">JPG in PDF</a> erstellt ein PDF aus Bildern.</li>
+  <li>Sie brauchen nur ein paar Seiten als PDF statt als Bilder? Nutzen Sie <a href="/tools/extract-pdf-pages/">PDF-Seiten extrahieren</a>.</li>
+  <li>Verkleinern oder komprimieren Sie die Bilder anschließend mit <a href="/tools/compress-image/">Bild komprimieren</a>.</li>
+</ul>

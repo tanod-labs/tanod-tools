@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Doppelte Zeilen entfernen und Zeilen sortieren | Tanod Tools",
+  "description": "Doppelte Zeilen aus einer Liste entfernen und sortieren: A–Z, Z–A, natürlich, nach Länge oder zufällig. Kostenlos, im Browser, nichts wird hochgeladen.",
+  "h1": "Doppelte Zeilen entfernen",
+  "lede": "Fügen Sie eine Liste ein, entfernen Sie doppelte Zeilen und sortieren Sie den Rest.",
+  "blurb": "Doppelte Zeilen entfernen und Zeilen sortieren.",
+  "keywords": "doppelte zeilen entfernen duplikate löschen loeschen dubletten entfernen eindeutige zeilen liste bereinigen zeilen sortieren alphabetisch mischen natürliche sortierung leere zeilen",
+  "limits": "Text bis etwa 5 MB. Das Ergebnis aktualisiert sich, sobald Sie die Optionen ändern.",
+  "howto_title": "So entfernen Sie doppelte Zeilen",
+  "howto": [
+    "Fügen Sie Ihre Liste in das Eingabefeld ein, ein Eintrag pro Zeile, oder öffnen Sie eine .txt-Datei.",
+    "Legen Sie fest, wie Zeilen verglichen werden, welches Vorkommen erhalten bleibt und, falls gewünscht, eine Sortierung.",
+    "Kopieren Sie das Ergebnis oder laden Sie es als .txt-Datei herunter."
+  ],
+  "faq": [
+    ["Was gilt als doppelte Zeile?", "Zwei Zeilen gelten als doppelt, wenn sie Zeichen für Zeichen exakt gleich sind. Aktivieren Sie „Groß-/Kleinschreibung ignorieren“, um Apfel und apfel als dieselbe Zeile zu behandeln, und „Leerzeichen vor dem Vergleich kürzen“, um Leerzeichen und Tabs am Anfang und Ende jeder Zeile zu ignorieren."],
+    ["Verändert das Kürzen die Zeilen im Ergebnis?", "Ja. Wenn das Kürzen aktiv ist, werden die Leerzeichen am Anfang und Ende jeder Zeile auch aus den zurückgegebenen Zeilen entfernt, nicht nur beim Vergleich ignoriert."],
+    ["Was passiert mit leeren Zeilen?", "Mit „Leere Zeilen entfernen“ werden Zeilen gelöscht, die leer sind oder nur Leerzeichen enthalten. Ist die Option aus, bleiben leere Zeilen genau so erhalten und zählen nie als Duplikate voneinander."],
+    ["Was ist natürliche Sortierung?", "Die natürliche Sortierung erkennt Zahlen im Text, sodass item2 vor item10 kommt. A bis Z sortiert Zeichen für Zeichen nach den Sprachregeln Ihres Browsers und setzt damit item10 vor item2. Nach Länge sortieren stellt die kürzesten Zeilen an den Anfang und behält bei gleich langen Zeilen die ursprüngliche Reihenfolge bei."],
+    ["Ist das Mischen wirklich zufällig?", "Es nutzt den sicheren Zufallszahlengenerator Ihres Browsers mit einem Fisher-Yates-Shuffle, sodass jede Reihenfolge gleich wahrscheinlich ist. Klicken Sie erneut auf Neu mischen, um eine neue Reihenfolge zu erhalten."],
+    ["Wird meine Liste hochgeladen?", "Nein. Alles geschieht in Ihrem Browser, und nichts wird gespeichert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Eingabezeilen</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Ein Eintrag pro Zeile."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Ergebnis</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci">Groß-/Kleinschreibung ignorieren</label>
+    <label class="check"><input type="checkbox" id="trim">Leerzeichen vor dem Vergleich kürzen</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Leere Zeilen entfernen</label>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="keep">Behalten</label>
+      <select id="keep"><option value="first">Erstes Vorkommen</option><option value="last">Letztes Vorkommen</option></select>
+    </div>
+    <div class="field">
+      <label for="sort">Zeilen sortieren</label>
+      <select id="sort">
+        <option value="none">Ursprüngliche Reihenfolge</option>
+        <option value="az">A bis Z</option>
+        <option value="za">Z bis A</option>
+        <option value="natural">Natürlich (Zahlen der Reihe nach)</option>
+        <option value="length">Nach Länge, kürzeste zuerst</option>
+        <option value="reverse">Umgekehrte Reihenfolge</option>
+        <option value="shuffle">Zufällig mischen</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Fügen Sie Zeilen ein, um zu beginnen.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Ergebnis kopieren</button>
+    <button class="btn" id="dl" type="button" disabled>.txt herunterladen</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Neu mischen</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Ergebnis als Eingabe</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Leeren</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>.txt-Datei öffnen</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Duplikate entfernen und Zeilen sortieren</h2>
+<p>In Listen sammeln sich Wiederholungen: E-Mail-Adressen aus mehreren Quellen, Keywords, Logzeilen, Dateinamen. Dieses Tool liest den Text Zeile für Zeile, merkt sich jede Zeile, die es schon gesehen hat, und entfernt die späteren Kopien (oder die früheren, wenn Sie das letzte Vorkommen behalten). So können Sie doppelte Zeilen entfernen, ohne die Liste von Hand durchzugehen. Die verbleibenden Zeilen behalten ihre ursprüngliche Reihenfolge, sofern Sie keine Sortierung wählen.</p>
+<p>Der Bericht über den Schaltflächen zeigt, wie viele Zeilen eingegeben wurden, wie viele übrig sind und wie viele als Duplikate entfernt wurden, sodass Sie das Ergebnis mit Ihren Erwartungen abgleichen können. Leere Zeilen, die durch die Option entfernt wurden, werden getrennt ausgewiesen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Um die Zeilen vorher zu bereinigen, nutzen Sie <a href="/tools/find-and-replace/">Suchen und Ersetzen</a> und kommen dann hierher zurück.</li>
+  <li>Was sich zwischen zwei Versionen einer Liste geändert hat, zeigt <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Sie brauchen die Liste nur sortiert, mit mehr Sortieroptionen? Nutzen Sie <a href="/tools/sort-lines-alphabetically/">Zeilen alphabetisch sortieren</a>.</li>
+  <li>Zählen Sie, was übrig bleibt, mit <a href="/tools/word-counter/">Wörter zählen</a>.</li>
+</ul>

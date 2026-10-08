@@ -1,0 +1,100 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Cron expression generator",
+  "title": "Cron expression generator with next run times | Tanod Tools",
+  "description": "Build a five-field cron schedule with presets and point-and-click controls, see it in plain English and check its next run times in any time zone before you use it.",
+  "h1": "Cron expression generator",
+  "lede": "Build a crontab schedule from simple choices, then check what it says in English and when it will next run.",
+  "blurb": "Build a cron schedule with controls and see the next runs.",
+  "keywords": "cron expression generator cron builder crontab generator cron schedule maker cron job every 5 minutes cron syntax weekdays at 9am",
+  "limits": "Standard five-field cron as used by Vixie cron and cronie: minute, hour, day of month, month and day of week. Quartz and other seconds-field formats are not generated, and pasted expressions that the controls cannot show are kept as typed.",
+  "howto_title": "How to build a cron expression",
+  "howto": [
+    "Start from a preset, or set each field to run every time, every N units from a start, on specific values or between two values.",
+    "Check the expression, its plain-English description and the next run times in the time zone your server uses.",
+    "Copy the expression into your crontab, CI schedule or scheduler. You can also paste an existing expression to load it into the controls."
+  ],
+  "faq": [
+    ["How do I run a job every 15 minutes?", "Set Minute to <em>Every 15 minutes starting at 0</em>, which writes <code>*/15 * * * *</code>. The job runs at minutes 0, 15, 30 and 45 of every hour."],
+    ["How is a start other than 0 written?", "A start such as minute 5 with a step of 10 is written <code>5-59/10</code>, which runs at 5, 15, 25, 35, 45 and 55. The shorter <code>5/10</code> works in some cron versions but is rejected by others, so the long form is the portable choice."],
+    ["Why are some days chosen with ranges and others with lists?", "Three or more consecutive values are written as a range, so Monday to Friday is <code>1-5</code>, while Monday, Wednesday and Friday are <code>1,3,5</code>. Both mean exactly the values you ticked."],
+    ["What happens when I set both day of month and day of week?", "Standard cron runs the job when either one matches, not both. <code>0 9 1 * 1</code> runs on the 1st of the month and on every Monday. The tool adds a note when your choices fall into that case."],
+    ["Which time zone do the next runs use?", "The one you pick below the expression. Cron itself uses the time zone of the machine or container running it, unless the crontab sets <code>CRON_TZ</code>. Many servers use UTC, so check before trusting a time."],
+    ["Does this support seconds, @daily or Quartz syntax?", "It builds five-field expressions only. Pasting <code>@daily</code> or another shortcut works and is converted to its five fields. Six-field and Quartz-style expressions are rejected, because their first field is seconds. The <a href=\"/tools/cron-expression-explainer/\">cron expression explainer</a> says so in detail."]
+  ],
+  "related": ["cron-expression-explainer", "unix-timestamp-converter", "time-zone-converter", "chmod-calculator", "regex-tester"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Cron expression</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Copy</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Presets">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Every minute</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Every 5 minutes</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Every 15 minutes</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Every hour</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Every day at midnight</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">Weekdays at 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Every Sunday</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">1st and 15th</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">First of the month</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Every year</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Load an existing expression</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Load</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Paste a five-field expression or a shortcut such as @daily.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Next runs</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Time zone</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">Starting from</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Leave empty to start from now.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">How many</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Next run times"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Already have an expression and just want it explained? Use the <a href="/tools/cron-expression-explainer/">cron expression explainer</a>.</p>
+</div>
+<!--explain-->
+<h2>Building a cron schedule</h2>
+<p>A cron expression is five fields separated by spaces: minute, hour, day of the month, month and day of the week. Each field answers one question about when the job should run, and the job runs when all of them match. Leaving a field as <code>*</code> means every value, which is why <code>0 * * * *</code> runs at the start of every hour and <code>0 0 * * *</code> runs once a day at midnight.</p>
+<p>The builder gives each field four ways to say what you want. A step such as <code>*/15</code> means every 15th value, a list such as <code>1,15</code> picks exact values, a range such as <code>9-17</code> covers everything between two values, and <code>*</code> means every value. When you tick values, runs of three or more in a row are written as a range, so Monday to Friday gives <code>1-5</code> rather than <code>1,2,3,4,5</code>.</p>
+<p>Two traps catch most people. Cron uses the clock of the machine it runs on, so a job set for 09:00 runs at 09:00 server time, which may not be yours; the next-runs list lets you check in several zones. And when both the day-of-month and day-of-week fields are restricted, a job runs when either one matches, which can mean far more runs than you expected.</p>
+<h3>Tips</h3>
+<ul>
+  <li>To read an expression someone else wrote, paste it into the <a href="/tools/cron-expression-explainer/">cron expression explainer</a>.</li>
+  <li>Convert a run time from a log to and from a Unix timestamp with the <a href="/tools/unix-timestamp-converter/">Unix timestamp converter</a>.</li>
+  <li>Scheduled scripts need the execute bit set; work out the right mode in the <a href="/tools/chmod-calculator/">chmod calculator</a>.</li>
+</ul>

@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "Editar o eliminar metadatos de un PDF online gratis | Tanod Tools",
+  "description": "Edita el título, autor, asunto, palabras clave y fechas de un PDF, o borra todos sus metadatos antes de compartirlo. En tu navegador, gratis y sin subir nada.",
+  "h1": "Editar metadatos de PDF",
+  "lede": "Mira lo que un PDF dice de sí mismo, cambia los campos o elimínalos todos antes de compartirlo.",
+  "blurb": "Edita o borra el título, el autor y otras propiedades de un PDF.",
+  "keywords": "metadatos pdf propiedades titulo autor quitar eliminar borrar metadatos limpiar xmp informacion del documento",
+  "limits": "Un PDF a la vez, de hasta 200 MB. Los PDF protegidos con contraseña no se pueden editar.",
+  "howto_title": "Cómo editar los metadatos de un PDF",
+  "howto": [
+    "Elige un archivo PDF o arrástralo a la página. Sus propiedades actuales aparecen en el formulario.",
+    "Cambia los campos que quieras o pulsa <strong>Eliminar todos los metadatos</strong> para vaciarlos.",
+    "Pulsa <strong>Guardar cambios</strong> y descarga el PDF actualizado."
+  ],
+  "faq": [
+    ["¿Se sube mi PDF?", "No. Las propiedades se leen y se reescriben en tu navegador con la biblioteca de código abierto pdf-lib. No se envía nada a ningún servidor."],
+    ["¿Qué hace Eliminar todos los metadatos?", "Borra todas las entradas del diccionario de información del documento (título, autor, asunto, palabras clave, creador, productor y las fechas) y quita el flujo de metadatos XMP incrustado, que muchos programas escriben como una segunda copia de la misma información. No toca el contenido de las páginas, así que el texto, las imágenes y cualquier nombre visible en las páginas se mantienen. Algunos archivos contienen otros datos privados, como comentarios o valores de formularios, que esta herramienta no modifica."],
+    ["¿El archivo guardado tiene el mismo nombre?", "Sí. La descarga usa el nombre original, por ejemplo report.pdf, así que asegúrate de abrir la copia nueva. Tu archivo original no se modifica."],
+    ["¿Por qué se marca la opción XMP cuando edito los campos?", "Muchos visores y herramientas de búsqueda leen primero el flujo XMP. Si se queda en el archivo, puede seguir mostrando el título o el autor anterior, y parecería que la edición no tuvo efecto. Al marcar la opción, ese flujo se elimina al guardar."],
+    ["¿Guardar cambia otras propiedades?", "Solo cambian los campos que editas. La herramienta no agrega su propio nombre de productor ni una fecha de modificación, a menos que los pongas tú."],
+    ["¿Puedo editar las fechas?", "Sí. Desmarca <em>Conservar las fechas originales</em> y pon nuevos valores en tu hora local. Si la dejas marcada, las fechas se quedan como están."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Suelta un PDF aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Elegir un PDF</span></label>
+  <p class="drop__hint">O arrástralo a cualquier parte de esta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <dl class="stats" id="stats">
+    <div><dt>Páginas</dt><dd id="s-pages"></dd></div>
+    <div><dt>Versión de PDF</dt><dd id="s-ver"></dd></div>
+    <div><dt>Flujo XMP</dt><dd id="s-xmp"></dd></div>
+  </dl>
+  <div class="opts">
+    <div class="field"><label for="m-title">Título</label><input id="m-title" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-author">Autor</label><input id="m-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-subject">Asunto</label><input id="m-subject" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-keywords">Palabras clave</label><input id="m-keywords" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-creator">Creador (programa que lo creó)</label><input id="m-creator" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-producer">Productor (programa que lo guardó)</label><input id="m-producer" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-created">Creado</label><input id="m-created" type="datetime-local" step="1"></div>
+    <div class="field"><label for="m-modified">Modificado</label><input id="m-modified" type="datetime-local" step="1"></div>
+    <div class="field opts__full">
+      <label class="check"><input type="checkbox" id="keep-dates" checked> Conservar las fechas originales</label>
+      <label class="check"><input type="checkbox" id="drop-xmp"> Eliminar también el flujo de metadatos XMP incrustado</label>
+      <span class="help" id="xmp-help"></span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Guardar cambios</button>
+    <button class="btn" id="wipe" type="button">Eliminar todos los metadatos</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+  <p class="help">La descarga conserva el nombre original del archivo. Los campos vacíos se eliminan del archivo.</p>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Qué son los metadatos de un PDF y por qué podrías cambiarlos</h2>
+<p>Todo PDF puede llevar algunos campos descriptivos: un título, un autor, un asunto, palabras clave, el programa que lo creó y las fechas de creación y de última modificación. Se guardan en el diccionario de información del documento, y muchos programas también escriben una segunda copia como paquete XMP, un bloque XML adjunto al archivo.</p>
+<p>Estos campos aparecen en las propiedades del archivo, en los resultados de búsqueda y en las pestañas del navegador, así que un título equivocado o el nombre de un autor olvidado pueden resultar incómodos cuando un documento sale de tus manos. Esta herramienta los lee en tu navegador y te permite editar los metadatos del PDF o borrarlos. El contenido de las páginas nunca se modifica.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Quieres limpiar los metadatos de fotos? Usa <a href="/tools/remove-exif/">Eliminar datos EXIF</a>.</li>
+  <li>¿Vas a combinar archivos? <a href="/tools/merge-pdf/">Unir PDF</a> crea un documento nuevo, así que pon el título aquí después.</li>
+</ul>

@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Supprimer les sauts de ligne d'un texte en ligne | Tanod Tools",
+  "description": "Supprimez les sauts de ligne d'un texte copié d'un PDF ou d'un e-mail. Gardez les paragraphes ou joignez tout, recollez les mots coupés. Gratuit, sans envoi.",
+  "h1": "Supprimer les sauts de ligne",
+  "lede": "Recollez les lignes coupées en un texte continu, en gardant les paragraphes si vous le souhaitez. Pratique pour le texte copié depuis un PDF ou un e-mail.",
+  "blurb": "Recollez les lignes, gardez les paragraphes, réparez les césures.",
+  "keywords": "supprimer sauts de ligne enlever retours a la ligne retour chariot joindre lignes texte sur une ligne copier coller pdf retirer retours à la ligne",
+  "limits": "Texte jusqu'à environ 5 Mo. Le résultat se met à jour pendant la saisie ; pour les très longs textes, juste après que vous arrêtez de taper.",
+  "howto_title": "Comment supprimer les sauts de ligne",
+  "howto": [
+    "Collez votre texte dans le champ, ou ouvrez un fichier .txt.",
+    "Choisissez <strong>Garder les paragraphes</strong> pour ne joindre que les lignes de chaque paragraphe, ou <strong>Tout supprimer</strong> pour obtenir une seule longue ligne. Choisissez ce qui sépare les lignes jointes.",
+    "Copiez le résultat ou téléchargez-le en fichier .txt."
+  ],
+  "faq": [
+    ["Pourquoi le texte copié d'un PDF a-t-il des sauts de ligne partout ?", "Un PDF enregistre la position de chaque ligne sur la page, pas les lignes qui appartiennent au même paragraphe. Quand vous copiez le texte, la plupart des lecteurs terminent chaque ligne par un saut de ligne : un paragraphe arrive donc sous forme d'une pile de lignes courtes. Joindre les lignes de chaque paragraphe rétablit un texte continu."],
+    ["Comment Garder les paragraphes sait-il où finit un paragraphe ?", "Une ligne vierge (vide ou ne contenant que des espaces) marque la fin d'un paragraphe. Les lignes de texte situées entre deux lignes vierges sont jointes en un seul paragraphe, et le résultat contient exactement une ligne vierge entre les paragraphes. Si votre texte ne contient aucune ligne vierge, Garder les paragraphes donne le même résultat que Tout supprimer."],
+    ["À quoi sert Recoller les mots coupés par un tiret ?", "Quand une ligne se termine par un tiret et que la suivante commence par une minuscule, comme « infor- » et « mation », les deux parties sont jointes sans le tiret. Un vrai mot composé qui se trouve coupé à son trait d'union, comme « porte- » « monnaie », perdra aussi son tiret : cette option reste donc désactivée tant que vous ne l'activez pas."],
+    ["Puis-je joindre les lignes avec une virgule plutôt qu'une espace ?", "Oui. Choisissez Personnalisé et tapez ce qui doit séparer les lignes jointes, par exemple une virgule et une espace pour transformer une liste en une seule ligne. Les choix proposés sont : rien, une espace ou un séparateur personnalisé."],
+    ["Les sauts de ligne Windows sont-ils gérés ?", "Oui. Les sauts de ligne Windows (CR LF), ancien Mac (CR) et Unix (LF) sont tous reconnus. Le résultat utilise de simples sauts de ligne LF entre les paragraphes."],
+    ["Mon texte est-il envoyé en ligne ?", "Non. Le texte est traité dans votre navigateur, et il n'est ni envoyé ni conservé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Texte avec sauts de ligne</label>
+      <textarea id="text" spellcheck="false" placeholder="Collez un texte copié depuis un PDF, un e-mail ou une page web."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Résultat</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+  </div>
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Sauts de ligne</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="para" checked>Garder les paragraphes</label>
+        <label><input type="radio" name="mode" value="all">Tout supprimer</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="joiner">Entre les lignes jointes</label>
+      <select id="joiner">
+        <option value="space" selected>Une espace</option>
+        <option value="none">Rien</option>
+        <option value="custom">Personnalisé…</option>
+      </select>
+    </div>
+    <div class="field" id="custom-field" hidden>
+      <label for="custom">Séparateur personnalisé</label>
+      <input type="text" id="custom" class="mono" value=", " autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="trim" checked>Supprimer les espaces en bout de ligne</label>
+    <label class="check"><input type="checkbox" id="collapse" checked>Réduire les espaces multiples</label>
+    <label class="check"><input type="checkbox" id="hyphen">Recoller les mots coupés par un tiret</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Collez du texte pour commencer.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le résultat</button>
+    <button class="btn" id="dl" type="button" disabled>Télécharger .txt</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Effacer</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Ouvrir un fichier .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Transformer des lignes coupées en paragraphes</h2>
+<p>Le texte copié depuis un PDF, un vieil e-mail, un terminal ou certains sites web contient souvent un saut de ligne forcé à la fin de chaque ligne affichée. Collé dans un document ou un formulaire, il reste découpé en lignes courtes qui ne se réorganisent pas. Cet outil supprime ces sauts de ligne et joint les morceaux avec une espace, pour que le texte redevienne continu.</p>
+<p>Garder les paragraphes est le bon choix pour la plupart des textes : les lignes vierges qui séparent les paragraphes sont conservées et tout le reste est joint. Tout supprimer met le texte entier sur une seule ligne, ce qui convient aux courts extraits, aux éléments de liste à séparer par des virgules ou aux valeurs destinées à une seule cellule de tableur.</p>
+<p>Le texte d'un PDF coupe parfois les mots en fin de ligne avec un tiret. Activez Recoller les mots coupés par un tiret pour les reconstituer, et vérifiez ensuite les vrais mots composés.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Besoin de modifier d'autres caractères, comme les doubles espaces après les points ou les guillemets typographiques ? Poursuivez avec <a href="/tools/find-and-replace/">Rechercher et remplacer</a>.</li>
+  <li>Comptez le texte nettoyé avec le <a href="/tools/word-counter/">Compteur de mots</a> ou le <a href="/tools/character-counter/">Compteur de caractères</a>.</li>
+  <li>Dans l'autre sens, d'une liste à des lignes triées ? Utilisez <a href="/tools/sort-lines-alphabetically/">Trier par ordre alphabétique</a>.</li>
+</ul>

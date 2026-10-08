@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Redimensionar imagem online em pixels ou % | Tanod Tools",
+  "description": "Mude a largura e a altura de imagens JPG, PNG e WebP no navegador. Mantenha a proporção, redimensione várias de uma vez e baixe. Nada é enviado.",
+  "h1": "Redimensionar imagem",
+  "lede": "Defina uma nova largura e altura em pixels, ou mude a escala por porcentagem, para uma imagem ou um lote inteiro.",
+  "blurb": "Mude as dimensões da imagem em pixels ou porcentagem.",
+  "keywords": "redimensionar imagem mudar tamanho da foto alterar dimensoes largura altura pixels diminuir aumentar reduzir miniatura escala",
+  "limits": "Até 50 imagens por lote, de até 50 MB cada, cerca de 100 megapixels na entrada ou na saída. A ampliação é limitada a 4 vezes o tamanho original.",
+  "howto_title": "Como redimensionar uma imagem",
+  "howto": [
+    "Escolha suas imagens ou arraste-as para a página.",
+    "Digite uma largura ou altura em pixels (a outra acompanha quando a proporção está travada) ou mude para porcentagem.",
+    "Clique em <strong>Redimensionar</strong> e baixe o resultado ou um .zip do lote."
+  ],
+  "faq": [
+    ["Minhas imagens são enviadas?", "Não. O redimensionamento acontece no seu navegador, no seu dispositivo. Nada é enviado a um servidor."],
+    ["Como funciona a trava de proporção com várias imagens?", "Os campos começam com o tamanho da primeira imagem. Com a trava ligada, a medida que você alterou por último, largura ou altura, é aplicada a todas as imagens, e o outro lado segue as proporções de cada imagem. Com a trava desligada, cada imagem é esticada para ficar exatamente com a largura e a altura digitadas."],
+    ["Posso aumentar uma imagem?", "Sim, até 4 vezes a largura e a altura originais. Ampliar não acrescenta detalhes, então o resultado fica mais suave. Acima de 4 vezes, a ferramenta recusa em vez de gerar um arquivo borrado."],
+    ["Com que qualidade os arquivos JPEG e WebP são salvos?", "Qualidade 92 de 100, o que mantém os arquivos visualmente próximos do original. Se também quiser um arquivo menor, passe o resultado por <a href=\"/tools/compress-image/\">Comprimir imagem</a>."],
+    ["Como a imagem é reduzida?", "Reduções grandes são feitas em várias etapas, cada uma pela metade, e depois um desenho final no tamanho exato com a suavização de alta qualidade do navegador. Isso evita o aspecto serrilhado que uma única redução enorme pode causar."],
+    ["Os dados EXIF são mantidos?", "Não. A imagem é recodificada, então metadados como GPS e informações da câmera não são levados junto, e a imagem é salva na orientação em que aparece."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Solte as imagens aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Escolher imagens</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP ou AVIF. Ou arraste para qualquer lugar desta página.</p>
+</div>
+<ol class="files" id="files" aria-label="Imagens para redimensionar" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Redimensionar por</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="pixels" checked>Pixels</label>
+        <label><input type="radio" name="mode" value="percent">Porcentagem</label>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Formato de saída</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Manter</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">JPEG e WebP são salvos com qualidade 92. GIF, BMP e AVIF viram PNG com a opção Manter.</p>
+    </fieldset>
+  </div>
+  <div id="pane-px">
+    <div class="opts">
+      <div class="field"><label for="width">Largura (px)</label><input type="number" id="width" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><label for="height">Altura (px)</label><input type="number" id="height" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><span class="label">Proporção</span><label class="check"><input type="checkbox" id="lock" checked>Travar proporção</label></div>
+    </div>
+  </div>
+  <div id="pane-pct" hidden>
+    <div class="opts">
+      <div class="field"><label for="percent">Escala (%)</label><input type="number" id="percent" min="1" max="400" value="50" inputmode="numeric"><p class="help">100 mantém o tamanho. 50 reduz largura e altura pela metade.</p></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Redimensionar</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Limpar tudo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Como redimensionar imagens no navegador</h2>
+<p>Redimensionar uma imagem significa calcular uma nova grade de pixels a partir da antiga. Reduzir faz a média de grupos de pixels, e é por isso que uma boa redução fica suave e uma descuidada fica serrilhada. Esta ferramenta divide a imagem pela metade repetidas vezes enquanto ela tiver mais que o dobro do tamanho final, e depois faz um desenho final no tamanho exato com suavização de alta qualidade.</p>
+<p>A proporção é a largura dividida pela altura. Mantê-la travada significa que uma foto de 1200 × 800 ajustada para 600 pixels de largura fica com 600 × 400, sem esticar. Desligue a trava só quando quiser uma caixa exata e aceitar a distorção.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Para páginas da web, redimensione para o maior tamanho em que a imagem é realmente exibida e depois diminua ainda mais o arquivo com <a href="/tools/compress-image/">Comprimir imagem</a>.</li>
+  <li>Para cortar uma parte da imagem, use <a href="/tools/crop-image/">Recortar imagem</a>.</li>
+  <li>Precisa de ícones quadrados para um site? O <a href="/tools/favicon-generator/">Gerador de favicon</a> cria todos os tamanhos de uma vez.</li>
+</ul>

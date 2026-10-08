@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Conversor de bases: binário, octal, decimal, hex | Tanod Tools",
+  "description": "Converta inteiros de qualquer tamanho entre binário, octal, decimal, hexadecimal e qualquer base de 2 a 36, com complemento de dois em 8, 16, 32 e 64 bits.",
+  "h1": "Conversor de bases numéricas",
+  "lede": "Converta um número inteiro entre binário, octal, decimal, hexadecimal e qualquer base até 36, e veja os padrões de bits em complemento de dois.",
+  "blurb": "Binário, octal, decimal, hex e bases de 2 a 36.",
+  "keywords": "conversor de bases numericas binario para decimal decimal para binario hex para decimal decimal para hexadecimal octal radix base 36 complemento de dois com sinal sem sinal bits converter base",
+  "limits": "Números inteiros de até 4.096 dígitos, positivos ou negativos. Frações não são convertidas.",
+  "howto_title": "Como converter entre bases numéricas",
+  "howto": [
+    "Escolha a base em que o seu número está escrito, ou escolha Outra e informe uma base de 2 a 36.",
+    "Digite o número. O sinal de menos é permitido, e um prefixo correspondente <code>0x</code>, <code>0b</code> ou <code>0o</code> é aceito; espaços e sublinhados são ignorados.",
+    "Veja o número em todas as bases abaixo, copie a que precisar e confira a tabela de complemento de dois para inteiros de largura fixa."
+  ],
+  "faq": [
+    ["Qual o tamanho máximo de número que ele converte?", "Até 4.096 dígitos na base de entrada. A conversão usa aritmética exata de números inteiros (BigInt), então valores muito grandes como 2⁶⁴ + 1 = 18446744073709551617 são convertidos sem arredondamento, ao contrário de calculadoras que passam para ponto flutuante acima de cerca de 9 quatrilhões."],
+    ["Ele converte frações como 0,1?", "Não. Só números inteiros são convertidos, e uma vírgula ou ponto decimal é indicado como erro em vez de ser descartado em silêncio. Muitas frações não têm forma exata em outra base: 0,1 em decimal é uma dízima periódica em binário, e é por isso que 0.1 + 0.2 não dá exatamente 0.3 na maioria das linguagens de programação."],
+    ["O que o complemento de dois mostra?", "É como os computadores armazenam inteiros com sinal em um número fixo de bits. Um número negativo −n é armazenado como 2 elevado ao número de bits, menos n, então −1 em 8 bits é 11111111 (FF). A tabela mostra o padrão de bits para 8, 16, 32 e 64 bits, e o que esse padrão significa lido como inteiro com sinal e sem sinal. Se o número não cabe em uma largura, a linha avisa em vez de dar a volta."],
+    ["Quais dígitos são usados acima da base 10?", "Letras, como faz a maioria das linguagens de programação: A é 10, B é 11 e assim por diante até Z, que é 35, e é por isso que a base 36 é a maior. A entrada é aceita em maiúsculas ou minúsculas; a opção de letras maiúsculas controla a saída."],
+    ["Por que um dígito aparece como inválido?", "Cada base só permite dígitos menores que o seu valor: o binário permite 0 e 1, o octal de 0 a 7, o hex de 0 a 9 e de A a F. A mensagem de erro informa o caractere e a posição para você encontrar um erro de digitação, ou mudar para a base em que o número está realmente escrito."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">O número está em</label>
+      <select id="nb-from">
+        <option value="10" selected>Decimal (base 10)</option>
+        <option value="2">Binário (base 2)</option>
+        <option value="8">Octal (base 8)</option>
+        <option value="16">Hexadecimal (base 16)</option>
+        <option value="other">Outra base…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Base (de 2 a 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Número</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Agrupar dígitos</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Letras maiúsculas</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Complemento de dois</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bits</th><th scope="col">Padrão de bits (hex, binário)</th><th scope="col">Lido como</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Como funcionam as bases numéricas</h2>
+<p>Um conversor de bases numéricas parte de uma ideia simples: a base, ou radix, é quantos dígitos diferentes um sistema de numeração usa. No decimal, cada posição vale dez vezes a posição à direita; no binário, cada uma vale duas vezes, então 1101 significa 8 + 4 + 0 + 1 = 13. O hexadecimal usa dezesseis dígitos, de 0 a 9 e depois de A a F, e cada dígito hex representa exatamente quatro dígitos binários, e é por isso que programadores o usam como forma compacta de escrever bytes: 255 é FF, ou 11111111.</p>
+<p>O octal agrupa os dígitos binários de três em três e ainda aparece nas permissões de arquivos Unix (755 significa rwxr-xr-x). A base 36 usa todos os dígitos e letras e aparece em IDs curtos e encurtadores de URL.</p>
+<p>Os computadores armazenam inteiros com sinal em um número fixo de bits usando complemento de dois, em que o bit mais alto tem peso negativo. Os mesmos bits podem, portanto, significar dois números diferentes: 11001000 é 200 quando lido sem sinal e −56 quando lido com sinal. A tabela abaixo dos resultados mostra as duas leituras para os tamanhos de inteiro mais comuns.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Quer transformar texto em bytes binários em vez de um número? Use <a href="/tools/text-to-binary/">Texto para binário</a>.</li>
+  <li>Códigos de cor como <code>#1636A3</code> são três bytes em hex: leia-os no <a href="/tools/color-converter/">Conversor de cores e contraste</a>.</li>
+  <li>Timestamps Unix são simplesmente segundos em decimal; converta um com o <a href="/tools/unix-timestamp-converter/">Conversor de timestamp Unix</a>.</li>
+</ul>

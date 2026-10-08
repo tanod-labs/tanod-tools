@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Cek user agent: browser, OS dan perangkat | Tanod Tools",
+  "description": "Cek user agent browser Anda atau tempel string apa pun: browser, engine, OS, perangkat dan CPU, plus Client Hints dan alasan Chrome menyembunyikan detail.",
+  "h1": "Pengurai user agent",
+  "lede": "Pecah string user agent menjadi browser, engine, sistem operasi, perangkat dan CPU, dimulai dengan milik browser Anda sendiri.",
+  "blurb": "Urai string user agent apa pun, dan lihat milik Anda beserta Client Hints.",
+  "keywords": "user agent parser pengurai user agent cek user agent apa user agent saya ua string deteksi browser client hints useragent decoder navigator.userAgent googlebot curl",
+  "limits": "Penguraian memakai ua-parser-js 1.0.41 (MIT) dan berbasis pola, jadi string yang tidak lazim atau dipalsukan bisa salah dibaca. Client Hints hanya ditampilkan untuk browser yang sedang Anda pakai, dan hanya jika browser itu mendukungnya (browser Chromium mendukung; Firefox dan Safari tidak).",
+  "howto_title": "Cara membaca string user agent",
+  "howto": [
+    "User agent browser Anda sendiri langsung diurai begitu halaman dimuat. Untuk mengecek yang lain, tempel ke kotak, misalnya dari log server.",
+    "Baca baris browser, engine, sistem operasi, perangkat dan CPU. Anggap semua itu sebagai klaim dari string tersebut, bukan fakta yang terbukti.",
+    "Untuk browser Anda sendiri, bandingkan hasilnya dengan bagian Client Hints, yang bisa menampilkan detail yang tidak dicantumkan di string versi singkat."
+  ],
+  "faq": [
+    ["Apa itu string user agent?", "String user agent adalah sebaris teks yang dikirim browser atau program bersama setiap request web untuk menyatakan siapa dirinya. Karena trik kompatibilitas selama puluhan tahun, hampir setiap browser diawali <code>Mozilla/5.0</code> dan menyebut beberapa browser lain, jadi membacanya butuh pencocokan pola, bukan sekadar memecah teks."],
+    ["Mengapa Windows 11 terbaca sebagai Windows 10?", "Chrome dan browser Chromium lainnya membekukan bagian platform dalam string di \"Windows NT 10.0\", apa pun versi Windows yang sebenarnya. Hanya Client Hints yang bisa membedakannya: versi platform 13 atau lebih berarti Windows 11. Halaman ini menampilkan nilai tersebut untuk browser Anda sendiri jika tersedia."],
+    ["Mengapa iPad saya mengaku sebagai Mac?", "Sejak iPadOS 13, Safari secara default meminta situs versi desktop dan mengirim user agent Macintosh. String saja tidak bisa membedakan Mac dari iPad, meskipun halaman bisa mengecek adanya layar sentuh. Hal yang sama berlaku untuk macOS: versinya dibekukan di 10_15_7 dalam string."],
+    ["Apa itu User-Agent reduction?", "Chrome telah menghapus detail dari string untuk mengurangi pelacakan pasif: versi minor ditampilkan sebagai 0.0.0, model perangkat Android ditampilkan sebagai satu huruf K, dan versi OS dibuat tetap. Situs yang membutuhkan detail tersebut harus memintanya lewat Client Hints."],
+    ["Apa itu Client Hints?", "Client Hints adalah header terstruktur dan API JavaScript (<code>navigator.userAgentData</code>) yang memungkinkan halaman meminta detail tertentu, seperti arsitektur atau versi lengkap browser, alih-alih membacanya dari string. Saat ini hanya browser berbasis Chromium yang mendukungnya."],
+    ["Bisakah user agent dipercaya untuk keputusan keamanan?", "Tidak. Siapa pun bisa mengirim string apa pun, dan bot sering berpura-pura menjadi Chrome. User agent cocok untuk statistik dan memilih tata letak, tetapi tidak untuk kontrol akses. Untuk memverifikasi Googlebot, situs mengecek alamat IP pengunjung dengan reverse DNS lookup."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">String user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Pakai milik browser saya</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Salin hasil</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="Hasil penguraian user agent"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints dari browser Anda</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Apa yang diungkapkan user agent, dan apa yang disembunyikannya</h2>
+<p>Pengurai user agent ini membaca string yang awalnya dibuat agar server bisa melihat browser mana yang meminta halaman, sehingga server bisa mengirim halaman yang berfungsi di browser itu. Browser lalu saling meniru nama satu sama lain agar mendapat halaman yang bagus, itulah sebabnya string Chrome saat ini juga menyebut Mozilla, AppleWebKit, KHTML, Gecko dan Safari. Parser mengatasinya dengan menguji pola dalam urutan yang cermat dan memilih kecocokan yang paling spesifik.</p>
+<p>String ini juga sengaja dipersingkat. User-Agent reduction di Chrome membuat versi Windows tetap di NT 10.0, versi macOS di 10_15_7, model Android di K dan nomor build di 0.0.0, sehingga string tersebut tidak lagi menjadi sidik jari yang bagus. Detailnya tidak hilang: halaman yang memintanya lewat Client Hints mendapat versi platform, arsitektur, model dan versi lengkap browser, dan browser pengunjunglah yang memutuskan apakah akan menjawab.</p>
+<p>Gunakan string ini untuk keputusan kasar dan log, bukan untuk kepercayaan. Crawler dan alat command line seperti curl mengirim string pendek mereka sendiri, dan apa pun bisa dipalsukan. Jika Anda sedang memburu bug tata letak, deteksi fitur di halaman lebih andal daripada membaca nama browser.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Log server penuh respons 403 atau 429 untuk satu klien? Cari arti kodenya di <a href="/tools/http-status-codes/">Kode status HTTP</a>.</li>
+  <li>User agent di URL atau query string sering di-percent-encode; decode dengan <a href="/tools/url-encode-decode/">Encode dan decode URL</a>.</li>
+  <li>Header yang disalin dari request kadang berisi nilai Base64; baca dengan <a href="/tools/base64-encode-decode/">Encode dan decode Base64</a>.</li>
+</ul>

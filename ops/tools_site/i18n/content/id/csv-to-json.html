@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Konversi CSV ke JSON online gratis | Tanod Tools",
+  "description": "Konversi CSV ke JSON di browser. Mendukung kolom bertanda kutip, jeda baris di dalam sel, pemisah titik koma dan tab, dan baris header. Gratis, tanpa unggah.",
+  "h1": "Konverter CSV ke JSON",
+  "lede": "Tempel CSV atau buka file .csv dan dapatkan array JSON berisi objek atau baris, dengan pemisah yang terdeteksi otomatis.",
+  "blurb": "Ubah baris CSV menjadi array JSON.",
+  "keywords": "csv ke json konversi csv ubah csv ke json spreadsheet ekspor excel tsv titik koma array objek konverter",
+  "limits": "Input hingga sekitar 10 MB, ditempel atau dari file .csv atau .tsv. Hasil diperbarui saat Anda mengetik.",
+  "howto_title": "Cara mengonversi CSV ke JSON",
+  "howto": [
+    "Tempel CSV Anda ke kotak, atau buka file .csv.",
+    "Periksa pemisahnya (terdeteksi otomatis) dan apakah baris pertama berisi nama kolom. Aktifkan konversi angka dan true/false jika Anda ingin nilai bertipe.",
+    "Salin JSON atau unduh sebagai file .json."
+  ],
+  "faq": [
+    ["Apakah data saya diunggah?", "Tidak. CSV dibaca dan dikonversi di browser Anda, dan tidak ada yang dikirim ke mana pun atau disimpan. Menutup tab akan menghapusnya."],
+    ["Format CSV apa saja yang bisa dibaca?", "CSV standar sesuai RFC 4180: kolom dipisahkan oleh pemisah, kolom yang berisi pemisah, tanda kutip atau jeda baris dibungkus tanda kutip ganda, dan tanda kutip di dalam kolom bertanda kutip ditulis dua kali (<code>\"\"</code>). Akhir baris Windows (CRLF), Unix (LF) dan Mac lama (CR) semuanya didukung, dan byte-order mark di awal diabaikan. Pemisah koma, titik koma, tab dan garis vertikal didukung."],
+    ["Bagaimana pemisah dideteksi?", "Alat ini mencoba koma, titik koma, tab dan garis vertikal pada baris-baris pertama dan memilih yang membagi paling banyak baris menjadi jumlah kolom yang sama. File yang disimpan Excel di banyak pengaturan regional Eropa memakai titik koma, karena itu hal ini penting. Jika tebakannya salah, pilih pemisahnya sendiri."],
+    ["Mengapa angka saya diberi tanda kutip?", "Secara default setiap nilai tetap berupa teks, persis seperti tertulis di CSV, karena CSV tidak punya tipe data dan menebak bisa merusak data seperti kode pos atau ID. Aktifkan <em>Konversi angka, true/false dan null</em> untuk mendapat nilai bertipe. Meski begitu, nilai dengan nol di depan (007) dan angka yang lebih panjang dari 15 digit tetap berupa teks agar tidak berubah atau dibulatkan."],
+    ["Apa yang terjadi pada nama kolom yang berulang atau kosong, atau baris yang tidak rata?", "Nama kolom kosong menjadi column_1, column_2 dan seterusnya, dan nama yang berulang diberi tambahan _2, _3, sehingga tidak ada nilai yang menimpa nilai lain. Baris dengan kolom lebih sedikit dari header mendapat nilai kosong; baris dengan kolom lebih banyak mendapat kunci column_N tambahan. Keduanya dilaporkan di atas hasil agar Anda bisa memeriksa sumbernya."],
+    ["Bisakah saya mendapat array, bukan objek?", "Bisa. Matikan <em>Baris pertama adalah header</em> dan setiap baris menjadi array nilai, termasuk baris pertama."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="name,email,age&#10;Ana,ana@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Pemisah</label>
+      <select id="delim">
+        <option value="auto" selected>Deteksi otomatis</option>
+        <option value=",">Koma ( , )</option>
+        <option value=";">Titik koma ( ; )</option>
+        <option value="&#9;">Tab</option>
+        <option value="|">Garis vertikal ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Tata letak</label>
+      <select id="indent">
+        <option value="2" selected>Indentasi, 2 spasi</option>
+        <option value="4">Indentasi, 4 spasi</option>
+        <option value="min">Diperkecil (minify)</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>Baris pertama adalah header (array objek)</label>
+    <label class="check"><input type="checkbox" id="types">Konversi angka, true/false dan null</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Tempel CSV untuk memulai.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Salin JSON</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Unduh .json</button>
+    <button class="btn btn--quiet" id="clear" type="button">Hapus</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>Buka file .csv</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Dari baris CSV ke JSON</h2>
+<p>CSV adalah format data yang paling umum: setiap spreadsheet dan database bisa mengekspornya. JSON adalah format yang diharapkan sebagian besar API web, skrip, dan file konfigurasi. Konverter CSV ke JSON ini membaca CSV dengan parser yang mengikuti standar CSV, sehingga koma di dalam alamat bertanda kutip atau jeda baris di dalam komentar bertanda kutip tetap berada di selnya, bukan memecah baris.</p>
+<p>Dengan baris header, setiap baris menjadi objek yang kuncinya adalah nama kolom, sesuai urutan kolom. Tanpa header, setiap baris menjadi array. Nilai dipertahankan sebagai teks kecuali Anda meminta angka dan true/false dikonversi, karena file CSV tidak membawa tipe data dan tebakan otomatis bisa diam-diam mengubah kode pos seperti 02134 menjadi angka 2134.</p>
+<p>Baris di bawah opsi menunjukkan berapa baris dan kolom yang dibaca dan pemisah mana yang dipakai. Jika beberapa baris memiliki kolom lebih banyak atau lebih sedikit dari header, sebuah catatan menyebutkan baris mana saja, yang biasanya menunjuk ke pemisah yang nyasar atau tanda kutip yang tidak ditutup di sumbernya.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ingin sebaliknya? Gunakan <a href="/tools/json-to-csv/">JSON ke CSV</a>.</li>
+  <li>Untuk memeriksa atau memformat ulang hasilnya, tempel ke <a href="/tools/json-formatter/">Format dan validasi JSON</a>.</li>
+  <li>Bersihkan baris yang berulang terlebih dahulu dengan <a href="/tools/remove-duplicate-lines/">Hapus baris duplikat</a>.</li>
+</ul>

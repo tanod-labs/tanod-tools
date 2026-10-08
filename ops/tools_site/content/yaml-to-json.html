@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "YAML to JSON converter",
+  "title": "YAML to JSON converter online | Tanod Tools",
+  "description": "Convert YAML to JSON in your browser. Supports anchors, aliases, merge keys and multi-document files, with line and column for errors. Free and private.",
+  "h1": "YAML to JSON converter",
+  "lede": "Paste YAML and get JSON back, with anchors and merge keys resolved and the exact line of any syntax error.",
+  "blurb": "Convert YAML to JSON.",
+  "keywords": "yaml to json convert parse yml kubernetes docker compose openapi config anchors aliases",
+  "limits": "Input up to about 10 MB. It reads YAML 1.2 with the standard types only; custom tags such as <code>!!python/object</code> are refused, not executed.",
+  "howto_title": "How to convert YAML to JSON",
+  "howto": [
+    "Paste your YAML into the box, or press <strong>Insert a sample</strong>.",
+    "Choose 2 spaces, 4 spaces, tabs or <strong>Minify</strong> for the JSON layout.",
+    "If the YAML has a syntax error you see its line and column. Otherwise copy the JSON or download it as a <code>.json</code> file."
+  ],
+  "faq": [
+    [
+      "Is my YAML uploaded?",
+      "No. The YAML parser is loaded from this site the first time you paste something and runs in your browser. Configuration with passwords or keys in it is not sent anywhere."
+    ],
+    [
+      "Why is yes still the text \"yes\"?",
+      "This tool follows YAML 1.2, where only <code>true</code> and <code>false</code> are booleans. The words <code>yes</code>, <code>no</code>, <code>on</code> and <code>off</code> stay strings, which avoids the so-called Norway problem where the country code <code>NO</code> turns into <code>false</code> under YAML 1.1 parsers. If your consumer is a YAML 1.1 parser, it may read those words differently."
+    ],
+    [
+      "What happens to dates and timestamps?",
+      "A value such as <code>2024-05-01</code> is kept as the string \"2024-05-01\". JSON has no date type, and converting it to a number or a different format would lose information."
+    ],
+    [
+      "What about very large integers?",
+      "Integers beyond 9,007,199,254,740,991 (2<sup>53</sup> - 1) are written digit for digit rather than rounded, so an ID such as 12345678901234567890 survives. Be aware that a program that later reads the JSON with ordinary JavaScript numbers will round it."
+    ],
+    [
+      "Are anchors, aliases and merge keys supported?",
+      "Yes. <code>&amp;name</code> anchors and <code>*name</code> aliases are expanded, and <code>&lt;&lt;: *name</code> merges a mapping into another. Because JSON has no references, each alias is written out in full."
+    ],
+    [
+      "What is the alias limit and the 20 MB cap?",
+      "A small YAML file can use aliases that expand into something enormous, known as an alias bomb. Files with more than 10,000 aliases are refused, and conversion stops if the JSON would pass 20 MB, so your tab is not frozen."
+    ]
+  ],
+  "related": [
+    "json-to-yaml",
+    "json-formatter",
+    "xml-formatter",
+    "csv-to-json",
+    "text-diff"
+  ],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Insert a sample</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Clear</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="name: example
+tags: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Layout</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spaces</label>
+      <label><input type="radio" name="indent" value="4">4 spaces</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+      <label><input type="radio" name="indent" value="min">Minify</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Change</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Result</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copy</button>
+    <button class="btn" id="f-dl" type="button">Download .json</button>
+  </div>
+</div>
+<!--explain-->
+<h2>From YAML to JSON</h2>
+<p>YAML and JSON describe the same kind of data: mappings, lists and simple values. YAML is written by people, with indentation instead of braces, comments, and shortcuts like anchors; JSON is what most programs and APIs expect. Converting between them is common when a Kubernetes manifest, a Compose file or an OpenAPI description has to be fed to something that only reads JSON.</p>
+<p>Some YAML features have no JSON equivalent, so the converter resolves them. An anchor (<code>&amp;base</code>) marks a block that an alias (<code>*base</code>) can reuse, and a merge key (<code>&lt;&lt;</code>) copies a mapping's entries into another; in JSON each of those becomes a full copy. Comments are dropped, because JSON cannot hold them. A file with several documents separated by <code>---</code> becomes a JSON array.</p>
+<p>The type rules follow YAML 1.2: <code>true</code> and <code>false</code> are booleans, <code>null</code> and <code>~</code> are null, numbers are numbers, and everything else, including <code>yes</code> and <code>2024-05-01</code>, is text. Syntax errors carry a line and column, and the most frequent causes are a tab used for indentation, a key repeated in the same mapping, and a value that is not indented under its key.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need to go the other way? <a href="/tools/json-to-yaml/">JSON to YAML</a> quotes values like "yes" so they survive the trip.</li>
+  <li>Check or tidy the result with the <a href="/tools/json-formatter/">JSON formatter</a>.</li>
+  <li>Got tabular data instead? <a href="/tools/csv-to-json/">CSV to JSON</a> covers spreadsheets.</li>
+</ul>

@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Convertir texte en binaire, et binaire en texte | Tanod Tools",
+  "description": "Convertissez du texte en code binaire et du binaire en texte, en UTF-8 : accents et emoji fonctionnent. Octets en hexa, décimal et octal aussi. Gratuit.",
+  "h1": "Convertir du texte en binaire",
+  "lede": "Transformez un texte en code binaire, ou décodez du binaire en texte lisible. Fonctionne avec toutes les langues et les emoji.",
+  "blurb": "Texte en code binaire et inversement, plus hexa et décimal.",
+  "keywords": "texte en binaire binaire en texte traducteur binaire code binaire convertisseur binaire ascii en binaire 01 decodeur binaire décoder utf-8 octets texte en hexadecimal hexa en texte",
+  "limits": "Texte jusqu'à 1 Mo à encoder ; binaire jusqu'à 5 Mo à décoder. Le résultat se met à jour pendant la saisie.",
+  "howto_title": "Comment convertir du texte en binaire",
+  "howto": [
+    "Choisissez <strong>Texte en binaire</strong> ou <strong>Binaire en texte</strong>.",
+    "Tapez ou collez dans le champ. Le résultat s'affiche pendant la saisie.",
+    "Copiez le résultat ou téléchargez-le en fichier .txt. Utilisez <strong>Inverser</strong> pour reconvertir le résultat."
+  ],
+  "faq": [
+    ["Comment un texte est-il converti en binaire ?", "Chaque caractère est d'abord transformé en octets avec l'UTF-8, l'encodage utilisé sur le web, puis chaque octet est écrit sous forme de huit chiffres binaires. La lettre A est l'octet 65, soit 01000001. Les lettres latines sans accent prennent un octet chacune ; les lettres accentuées en prennent deux, et la plupart des emoji quatre."],
+    ["Est-ce la même chose qu'ASCII en binaire ?", "Pour les lettres sans accent, les chiffres et la ponctuation courante, oui : l'UTF-8 donne à ces caractères les mêmes valeurs d'octet que l'ASCII. La différence n'apparaît que pour les autres caractères, comme é ou ç, que l'ASCII ne peut pas représenter du tout."],
+    ["Quel binaire l'outil peut-il décoder ?", "Des groupes de jusqu'à huit 0 et 1 séparés par des espaces, des virgules ou des sauts de ligne, un groupe par octet, ou une seule suite continue de chiffres dont la longueur est un multiple de huit. Tout le reste, comme un 2 ou une lettre, est signalé avec sa position pour que vous puissiez le corriger."],
+    ["Pourquoi le décodage dit-il que les octets ne sont pas de l'UTF-8 valide ?", "Toute suite d'octets n'est pas forcément un texte valide. Un octet peut manquer ou être en trop, ou le binaire peut venir d'un ancien encodage ou d'un fichier qui n'est pas du texte. Le message indique le premier octet illisible. Vérifiez qu'aucun groupe n'a été perdu lors de la copie du binaire."],
+    ["À quoi servent les options hexadécimal, décimal et octal ?", "Elles écrivent les mêmes octets dans une autre base : l'hexadécimal utilise deux chiffres 0-9 et a-f par octet (A vaut 41), le décimal utilise 0 à 255 (A vaut 65) et l'octal 0 à 377 (A vaut 101). Le décodage accepte la base que vous choisissez."],
+    ["Mon texte est-il envoyé en ligne ?", "Non. La conversion se fait dans votre navigateur, et le texte n'est ni envoyé ni conservé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Convertir</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="encode" checked>Texte en binaire</label>
+        <label><input type="radio" name="dir" value="decode">Binaire en texte</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="base">Octets écrits en</label>
+      <select id="base">
+        <option value="2" selected>Binaire (01000001)</option>
+        <option value="16">Hexadécimal (41)</option>
+        <option value="10">Décimal (65)</option>
+        <option value="8">Octal (101)</option>
+      </select>
+    </div>
+    <div class="field" id="sep-field">
+      <label for="sep">Entre les octets</label>
+      <select id="sep">
+        <option value=" " selected>Une espace</option>
+        <option value="">Rien</option>
+        <option value="\n">Un saut de ligne</option>
+      </select>
+    </div>
+  </div>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Texte</label>
+      <textarea id="text" spellcheck="false" placeholder="Tapez du texte ici."></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">Binaire</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Tapez du texte pour commencer.</p>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copier le résultat</button>
+    <button class="btn" id="dl" type="button" disabled>Télécharger .txt</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Inverser : reconvertir le résultat</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Effacer</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment un texte devient des uns et des zéros</h2>
+<p>Les ordinateurs stockent le texte sous forme de nombres. Un encodage décide quel nombre reçoit chaque caractère ; pour convertir le texte en binaire, cet outil utilise l'UTF-8, l'encodage de presque toutes les pages web, tous les e-mails et les fichiers modernes. L'UTF-8 stocke les 128 premiers caractères (l'alphabet latin sans accent, les chiffres et la ponctuation courante) sur un octet chacun, avec les mêmes valeurs que l'ancien code ASCII. Les autres caractères prennent de deux à quatre octets : é s'écrit 11000011 10101001 et l'emoji 😀 occupe quatre octets.</p>
+<p>Un octet compte huit bits : chaque octet s'affiche donc sous forme de huit chiffres binaires, avec les zéros de tête conservés pour que tous les groupes aient la même largeur. Le résultat est ainsi facile à relire : chaque groupe de huit est un octet.</p>
+<p>Pour décoder, l'outil lit chaque groupe comme un octet, puis lit les octets comme du texte UTF-8. Si les octets ne forment pas de l'UTF-8 valide, il indique où commence le problème au lieu d'afficher des caractères illisibles.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Pour transporter des octets sous forme de texte de façon plus courte et standard, utilisez <a href="/tools/base64-encode-decode/">Encoder et décoder en Base64</a>.</li>
+  <li>Vous convertissez un seul nombre entre binaire, décimal et hexadécimal ? Utilisez le <a href="/tools/number-base-converter/">Convertisseur de base numérique</a>.</li>
+  <li>Vous préférez les points et les traits ? Essayez le <a href="/tools/morse-code-translator/">Traducteur de code morse</a>.</li>
+</ul>

@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Analisador de user agent: navegador, SO e aparelho | Tanod Tools",
+  "description": "Veja o que diz o user agent do seu navegador, ou cole qualquer string, e descubra navegador, motor, sistema, dispositivo e CPU, além dos Client Hints.",
+  "h1": "Analisador de user agent",
+  "lede": "Divida uma string de user agent em navegador, motor, sistema operacional, dispositivo e CPU, começando pela do seu próprio navegador.",
+  "blurb": "Analise qualquer user agent e veja o seu com Client Hints.",
+  "keywords": "analisador de user agent qual e meu user agent meu user agent ua string detectar navegador client hints useragent decodificar navigator.userAgent googlebot curl",
+  "limits": "A análise usa o ua-parser-js 1.0.41 (MIT) e se baseia em padrões, então strings incomuns ou falsificadas podem ser mal interpretadas. Os Client Hints só aparecem para o navegador que você está usando agora, e só onde esse navegador os suporta (os navegadores Chromium suportam; Firefox e Safari, não).",
+  "howto_title": "Como ler uma string de user agent",
+  "howto": [
+    "O user agent do seu navegador é analisado assim que a página carrega. Para verificar outro, cole-o na caixa, por exemplo a partir de um log do servidor.",
+    "Leia as linhas de navegador, motor, sistema operacional, dispositivo e CPU. Trate-as como o que a string afirma, não como fatos comprovados.",
+    "No caso do seu navegador, compare o resultado com a seção Client Hints, que pode mostrar detalhes que a string encurtada omite."
+  ],
+  "faq": [
+    ["O que é uma string de user agent?", "É uma linha de texto que um navegador ou programa envia em toda requisição web para dizer o que ele é. Por causa de décadas de truques de compatibilidade, quase todo navegador começa com <code>Mozilla/5.0</code> e menciona vários outros navegadores, então lê-la exige reconhecimento de padrões, e não uma simples divisão."],
+    ["Por que o Windows 11 aparece como Windows 10?", "O Chrome e outros navegadores Chromium congelam a parte da plataforma na string em \"Windows NT 10.0\", seja qual for a versão real do Windows. Só os Client Hints conseguem diferenciá-los: uma versão de plataforma 13 ou maior significa Windows 11. Esta página mostra esse valor para o seu navegador quando ele está disponível."],
+    ["Por que meu iPad diz que é um Mac?", "Desde o iPadOS 13, o Safari pede a versão para computador dos sites por padrão e envia um user agent de Macintosh. A string sozinha não consegue separar um Mac de um iPad, embora uma página possa verificar se há tela sensível ao toque. O mesmo vale para o macOS: a versão fica congelada em 10_15_7 na string."],
+    ["O que é a User-Agent reduction?", "O Chrome vem removendo detalhes da string para reduzir o rastreamento passivo: a versão secundária aparece como 0.0.0, o modelo do aparelho Android aparece como uma única letra K, e a versão do sistema é fixa. Sites que precisam desses detalhes têm de pedi-los via Client Hints."],
+    ["O que são Client Hints?", "São cabeçalhos estruturados e uma API JavaScript (<code>navigator.userAgentData</code>) que permitem a uma página pedir detalhes específicos, como a arquitetura ou a versão completa do navegador, em vez de lê-los da string. Hoje só os navegadores baseados em Chromium os suportam."],
+    ["Posso confiar no user agent para decisões de segurança?", "Não. Qualquer um pode enviar qualquer string, e bots muitas vezes fingem ser o Chrome. Ele serve para estatísticas e para escolher um layout, mas não para controle de acesso. Para verificar o Googlebot, um site confere o endereço IP do visitante com uma consulta de DNS reverso."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">String de user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Usar o do meu navegador</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Copiar resultado</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="User agent analisado"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints do seu navegador</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>O que um user agent revela e o que ele esconde</h2>
+<p>Um analisador de user agent existe porque essa string nasceu como uma forma de o servidor ver qual navegador estava pedindo a página, para enviar uma versão que funcionasse nele. Os navegadores então passaram a copiar os nomes uns dos outros para receber as páginas boas, e é por isso que uma string do Chrome hoje também diz Mozilla, AppleWebKit, KHTML, Gecko e Safari. Um analisador contorna isso testando padrões em uma ordem cuidadosa e escolhendo a correspondência mais específica.</p>
+<p>A string também está sendo encurtada de propósito. A User-Agent reduction do Chrome fixa a versão do Windows em NT 10.0, a do macOS em 10_15_7, o modelo Android em K e o número de build em 0.0.0, para que a string deixe de ser uma boa impressão digital. Os detalhes não sumiram: uma página que os pede via Client Hints recebe a versão da plataforma, a arquitetura, o modelo e a versão completa do navegador, e o navegador do visitante decide se responde.</p>
+<p>Use a string para decisões genéricas e para logs, não para confiança. Crawlers e ferramentas de linha de comando como o curl enviam as próprias strings curtas, e qualquer coisa pode ser falsificada. Se você está caçando um bug de layout, a detecção de recursos na página é mais confiável do que ler o nome do navegador.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Um log de servidor cheio de respostas 403 ou 429 para um cliente? Consulte os códigos em <a href="/tools/http-status-codes/">Códigos de status HTTP</a>.</li>
+  <li>User agents em URLs ou query strings muitas vezes estão com percent-encoding; decodifique-os com <a href="/tools/url-encode-decode/">Codificar e decodificar URL</a>.</li>
+  <li>Cabeçalhos copiados de uma requisição às vezes trazem valores em Base64; leia-os com <a href="/tools/base64-encode-decode/">Codificar e decodificar Base64</a>.</li>
+</ul>

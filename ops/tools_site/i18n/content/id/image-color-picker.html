@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Ambil warna dari gambar: kode HEX dan RGB | Tanod Tools",
+  "description": "Ambil warna dari gambar apa pun: klik piksel untuk mendapatkan kode HEX, RGB, dan HSL, serta lihat palet warna utamanya. Gratis, berjalan di browser, tanpa unggah.",
+  "h1": "Ambil warna dari gambar",
+  "lede": "Klik di mana saja pada gambar untuk membaca warna persis dari piksel itu, atau ambil palet warna utamanya.",
+  "blurb": "Kode HEX dan RGB dari piksel mana pun.",
+  "keywords": "ambil warna dari gambar color picker pemilih warna cek kode warna foto eyedropper pipet kode hex rgb hsl palet warna ekstrak warna screenshot",
+  "limits": "Satu gambar sekaligus, 50 MB dan sekitar 100 megapiksel. PNG, JPEG, WebP, GIF (frame pertama), BMP, atau AVIF.",
+  "howto_title": "Cara mengambil warna dari gambar",
+  "howto": [
+    "Pilih gambar, atau seret atau tempel ke halaman ini.",
+    "Gerakkan kursor di atas gambar untuk membidik dengan kaca pembesar, lalu klik atau ketuk untuk memilih. Dengan keyboard, fokuskan gambar, gerakkan dengan tombol panah (Shift untuk langkah lebih besar), lalu tekan Enter.",
+    "Salin kode HEX, RGB, atau HSL, atau salin warna dari palet warna utama."
+  ],
+  "faq": [
+    ["Seberapa akurat warnanya?", "Warnanya adalah nilai tersimpan dari satu piksel di bawah tanda silang, dibaca dari gambar ukuran penuh, bukan dari pratinjau yang diperkecil. Kaca pembesar menampilkan piksel di sekitarnya sehingga Anda bisa membidik satu piksel di tepi yang ramai."],
+    ["Mengapa warnanya berbeda dengan yang ditampilkan aplikasi lain?", "Kompresi JPEG sedikit menggeser warna, terutama di dekat tepi dan di area yang datar, sehingga piksel yang bersebelahan bisa berbeda beberapa nilai. Gambar dengan profil warna dikonversi ke sRGB standar oleh browser Anda sebelum dibaca, yaitu ruang warna yang dipakai halaman web; editor foto yang bekerja di ruang warna lain mungkin menampilkan angka yang berbeda."],
+    ["Bagaimana palet warnanya ditentukan?", "Gambar diambil sampelnya hingga 160 kali 160 titik lalu dikelompokkan menjadi delapan kluster warna dengan berulang kali membagi rentang warna di bagian yang paling lebar (metode median cut). Setiap swatch adalah warna rata-rata dari klusternya, beserta porsinya dalam gambar. Piksel yang sepenuhnya atau sebagian besar transparan dilewati."],
+    ["Apa arti HEX, RGB, dan HSL?", "Ketiganya adalah cara berbeda untuk menuliskan warna yang sama. HEX adalah nilai merah, hijau, dan biru (0 sampai 255) yang ditulis dalam basis 16, seperti yang dipakai di CSS dan alat desain. RGB mencantumkannya sebagai angka biasa. HSL memberikan hue (0 sampai 360 derajat), saturasi, dan kecerahan (lightness), yang lebih mudah disesuaikan secara manual."],
+    ["Apakah gambar saya diunggah?", "Tidak. Gambar dibaca dan diproses di browser Anda, di perangkat Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Letakkan gambar di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Pilih gambar</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, atau AVIF. Atau seret atau tempel di sini.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="pemilih warna" aria-label="Gambar. Tombol panah menggerakkan tanda silang, Shift dengan tombol panah bergerak lebih cepat, Enter memilih warna." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Klik atau ketuk untuk memilih. Keyboard: tombol panah menggerakkan tanda silang, Shift bergerak lebih cepat, Enter memilih.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Di bawah tanda silang</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Warna terpilih</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="Salin kode HEX">Salin</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="Salin kode RGB">Salin</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="Salin kode HSL">Salin</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Sudah dipilih</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Warna utama</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">Pilih swatch untuk menyalin kode HEX-nya.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Membaca warna langsung dari piksel</h2>
+<p>Mencocokkan warna brand dari sebuah logo, mencari warna biru yang persis di screenshot, atau membuat palet dari foto pada dasarnya sama: mengambil warna dari gambar dengan membaca nilai merah, hijau, dan biru yang tersimpan untuk sebuah piksel. Alat ini membaca gambar di browser Anda dan mengambil nilai-nilai itu dari gambar beresolusi penuh, jadi kode yang Anda salin adalah warna yang benar-benar ada di file.</p>
+<p>Satu piksel bisa menyesatkan pada foto, karena noise dan kompresi membuat piksel yang bersebelahan bervariasi. Gunakan kaca pembesar untuk membidik bagian tengah area yang datar, atau ambil paletnya, yang merata-ratakan seluruh kelompok piksel serupa menjadi beberapa warna yang mewakili.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Konversi warna yang dipilih ke CMYK atau periksa kontrasnya terhadap teks dengan <a href="/tools/color-converter/">Konverter warna dan kontras</a>.</li>
+  <li>Memilih dari bagian kecil gambar yang besar? <a href="/tools/crop-image/">Potong</a> dulu agar area itu memenuhi layar.</li>
+</ul>

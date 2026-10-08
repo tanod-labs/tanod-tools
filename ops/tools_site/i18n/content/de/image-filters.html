@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Bildfilter: Schwarz-Weiß, Sepia, Weichzeichnen | Tanod Tools",
+  "description": "Helligkeit, Kontrast, Sättigung und Farbton anpassen oder ein Foto schwarz-weiß, sepia, invertiert oder weichgezeichnet machen. Live-Vorschau, läuft im Browser.",
+  "h1": "Bildfilter",
+  "lede": "Optimieren Sie ein Foto mit Reglern oder Vorgaben per Klick, vergleichen Sie es mit dem Original und speichern Sie das Ergebnis in voller Größe.",
+  "blurb": "Schwarz-Weiß, Sepia, Helligkeit, Weichzeichner und mehr.",
+  "keywords": "bildfilter foto filter bild schwarz weiß weiss machen graustufen sepia vintage invertieren negativ helligkeit kontrast sättigung saettigung farbton weichzeichnen unscharf effekte fotobearbeitung instagram",
+  "limits": "Für ein einzelnes Bild bis 50 MB und etwa 100 Megapixel. Sehr große Bilder brauchen einige Sekunden; die Seite bleibt währenddessen bedienbar.",
+  "howto_title": "So wenden Sie Filter auf ein Bild an",
+  "howto": [
+    "Wählen Sie ein Bild aus. Die Vorschau erscheint verkleinert, damit die Regler sofort reagieren.",
+    "Beginnen Sie mit einer Vorgabe wie <strong>Schwarz-Weiß</strong> oder <strong>Lebendig</strong> und passen Sie dann die Regler an. Schalten Sie <strong>Original anzeigen</strong> ein, um zu vergleichen.",
+    "Klicken Sie auf <strong>Anwenden und speichern</strong>. Die Filter werden erneut auf das Bild in voller Größe angewendet, und Sie laden es herunter."
+  ],
+  "faq": [
+    ["Wird mein Foto hochgeladen?", "Nein. Jeder Filter wird in Ihrem Browser auf Ihrem Gerät berechnet, Pixel für Pixel. Nichts wird an einen Server gesendet."],
+    ["Liefern die Filter dasselbe Ergebnis wie das CSS meines Browsers?", "Sie folgen denselben Formeln wie die Spezifikation CSS Filter Effects: Helligkeit multipliziert, Kontrast dreht sich um das mittlere Grau, und Sättigung, Farbtondrehung, Graustufen und Sepia verwenden die Farbmatrizen der Spezifikation. Weil diese Seite selbst rechnet, statt die Filterfunktion des Browsers zu nutzen, funktioniert sie auch in Browsern, denen diese Funktion fehlt."],
+    ["In welcher Reihenfolge werden die Filter angewendet?", "Helligkeit, Kontrast, Sättigung, Farbtondrehung, Graustufen, Sepia, Invertieren, dann Weichzeichnen. Die Reihenfolge ist fest, sodass dieselben Reglerstellungen immer dasselbe Bild ergeben."],
+    ["Warum sieht die Weichzeichnung in der Vorschau und in der gespeicherten Datei gleich aus?", "Die Stärke der Weichzeichnung ist ein Bruchteil der Bildbreite, keine Pixelzahl. Ein 4000 Pixel breites Foto, das mit 800 Pixeln in der Vorschau erscheint, wird in den Vorschaupixeln fünfmal schwächer weichgezeichnet, was bei gleichem Maßstab identisch aussieht."],
+    ["Was passiert mit der Transparenz?", "Sie bleibt unberührt. Der Alphakanal wird nie verändert, und der Weichzeichner gewichtet Farben nach Deckkraft, damit die weichen Kanten eines Freistellers nicht dunkel werden. Speichern Sie als PNG oder WebP, um sie zu behalten; JPEG füllt transparente Bereiche mit Weiß."],
+    ["Kann ich eine Vorgabe rückgängig machen?", "Wählen Sie Zurücksetzen oder ziehen Sie die Regler zurück. Vorgaben verschieben nur die Regler, die Sie danach weiter anpassen können. Ihre Originaldatei wird in keinem Fall verändert."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Bild hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Bild auswählen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP oder AVIF. Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Vorschau mit angewendeten Filtern"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Original anzeigen</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Vorgaben</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Schwarz-Weiß</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Lebendig</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Verblasst</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Invertieren</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Zurücksetzen</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Helligkeit: <span class="num" id="o-brightness">100</span> %</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Kontrast: <span class="num" id="o-contrast">100</span> %</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Sättigung: <span class="num" id="o-saturation">100</span> %</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Graustufen: <span class="num" id="o-grayscale">0</span> %</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepia: <span class="num" id="o-sepia">0</span> %</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Invertieren: <span class="num" id="o-invert">0</span> %</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Farbton drehen: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Weichzeichnen: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Speichern als</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Wie Original</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">„Wie Original“ gibt PNG, JPEG und WebP im selben Format zurück; GIF, BMP und AVIF werden zu PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Anwenden und speichern</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Was jeder Bildfilter mit den Pixeln macht</h2>
+<p>Jedes Pixel besteht aus drei Zahlen von 0 bis 255, für Rot, Grün und Blau. Die Helligkeit multipliziert diese Zahlen: 150 Prozent machen aus einem Wert von 100 einen Wert von 150, und alles über 255 wird zu Weiß abgeschnitten. Der Kontrast streckt die Zahlen vom mittleren Grau (128) weg oder staucht sie dorthin, weshalb 0 Prozent Kontrast ein flaches graues Bild ergeben. Sättigung und Farbtondrehung mischen die drei Kanäle mit festen Farbmatrizen; so wandert ein Foto in Richtung Grau oder um den Farbkreis.</p>
+<p>Graustufen ersetzen jedes Pixel durch seine Leuchtdichte, eine gewichtete Summe, in der Grün am stärksten zählt (etwa 72 Prozent), dann Rot (21 Prozent) und Blau am wenigsten (7 Prozent), weil das Auge für Grün am empfindlichsten ist. Sepia verwendet eine Matrix, die den warmen Braunton alter Abzüge erzeugt. Invertieren zieht jeden Wert von 255 ab und erzeugt so ein Negativ. Der Weichzeichner mittelt jedes Pixel mit seinen Nachbarn, dreimal in jeder Richtung, was einem Gaußschen Weichzeichner sehr nahekommt.</p>
+<p>Kleine Vorschauen sorgen für flüssige Regler, die gespeicherte Datei wird aber in voller Auflösung abschnittsweise verarbeitet, sodass die Seite reagiert und den Fortschritt anzeigt. Die Originaldatei bleibt nach dem Speichern unverändert.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Um eine exakte Farbe aus dem Ergebnis abzulesen, nutzen Sie <a href="/tools/image-color-picker/">Farbe aus Bild auslesen</a>.</li>
+  <li>Wenn Sie vor dem Beschriften filtern, bleibt der Text scharf: Gehen Sie in dieser Reihenfolge vor, mit <a href="/tools/add-text-to-image/">Text auf Bild schreiben</a> als zweitem Schritt.</li>
+  <li>Ein weichgezeichnetes, kontrastreiches Bild lässt sich ganz anders komprimieren; prüfen Sie die Größe danach mit <a href="/tools/compress-image/">Bild komprimieren</a>.</li>
+</ul>

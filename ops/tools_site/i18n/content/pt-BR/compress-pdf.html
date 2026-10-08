@@ -1,0 +1,65 @@
+<!--meta
+{
+  "title": "Comprimir PDF online grátis: reduzir tamanho | Tanod Tools",
+  "description": "Diminua o tamanho de um PDF para enviar por e-mail ou formulário. Compressão real das fotos. Grátis, sem cadastro; o arquivo é excluído logo depois.",
+  "h1": "Comprimir PDF",
+  "lede": "Reduza o tamanho de um PDF para caber no e-mail ou em um formulário de envio. Páginas digitalizadas e fotos são reduzidas e recodificadas; o texto continua nítido.",
+  "blurb": "Diminua um PDF: fotos reduzidas e recodificadas.",
+  "keywords": "comprimir reduzir diminuir tamanho pdf compactar pdf menor otimizar pdf email compressor",
+  "limits": "Um PDF de até 10 MB. Processado no nosso servidor e depois excluído. 10 tarefas gratuitas no servidor por dia por pessoa, compartilhadas por todas as ferramentas de servidor. PDFs protegidos por senha precisam ser desbloqueados antes. Arquivos maiores: a <a href=\"/learn/compress-pdf-api.html\">API de compressão de PDF</a> (em inglês, paga por chamada).",
+  "howto_title": "Como comprimir um PDF",
+  "howto": [
+    "Escolha um PDF de até 10 MB ou arraste-o para a página.",
+    "Selecione <strong>Recomendado</strong> para a maioria dos arquivos, <strong>Forte</strong> para o menor arquivo possível ou <strong>Sem perdas</strong> para não mexer nas imagens.",
+    "Clique em <strong>Comprimir PDF</strong>, confira o novo tamanho e baixe o arquivo menor."
+  ],
+  "faq": [
+    ["Meu PDF é enviado?", "Sim. Ao contrário da maioria das ferramentas deste site, esta funciona no nosso servidor: seu PDF é enviado por HTTPS, comprimido, e o resultado volta direto para o seu navegador. O arquivo só existe no servidor enquanto a tarefa é executada, na memória e em uma pasta temporária privada que é excluída assim que a tarefa termina. Não armazenamos o PDF nem o resultado, e nunca registramos o conteúdo dos arquivos."],
+    ["Por que esta ferramenta precisa de um servidor?", "Comprimir PDF de verdade significa decodificar cada imagem do arquivo, reduzi-la ao tamanho da página e recodificá-la, e depois regravar o arquivo inteiro. Isso exige bibliotecas de PDF e de imagem que são lentas ou não existem no navegador, por isso esta ferramenta funciona no nosso servidor e não no seu dispositivo."],
+    ["Quanto meu PDF vai diminuir?", "Depende do conteúdo. Digitalizações e PDFs cheios de fotos costumam cair pela metade ou mais. PDFs quase só de texto em geral já são pequenos e podem diminuir só alguns por cento. Se não conseguirmos deixar o arquivo menor, você é avisado e nada muda."],
+    ["O que fazem os três níveis?", "<em>Recomendado</em> recodifica as fotos em JPEG com qualidade 75 e reduz qualquer imagem com mais de 150 dpi no tamanho impresso. <em>Forte</em> usa qualidade 50 e 96 dpi, para o menor arquivo, com fotos visivelmente mais suaves. <em>Sem perdas</em> não mexe nas imagens e só regrava a estrutura do arquivo. Textos e gráficos vetoriais nunca são rasterizados."],
+    ["A ferramenta remove alguma coisa do meu PDF?", "JavaScript incorporado, arquivos anexados e outros conteúdos ativos são removidos por segurança, e objetos não usados são descartados. Páginas, textos, imagens, links e marcadores continuam."],
+    ["Existe algum limite?", "Arquivos de até 10 MB e 10 tarefas gratuitas no servidor por dia por pessoa, compartilhadas por todas as nossas ferramentas de servidor. Só contam as tarefas concluídas com sucesso, e a contagem reinicia à meia-noite UTC. Para arquivos maiores ou mais tarefas, a <a href=\"/learn/compress-pdf-api.html\">API de compressão de PDF</a> (em inglês) é paga por chamada."],
+    ["O que é a verificação humana?", "Antes de uma tarefa ser executada, o Cloudflare Turnstile verifica se é uma pessoa, e não um robô, que está usando a ferramenta. Em geral é invisível; às vezes pede para você marcar uma caixa. Isso impede que tráfego automatizado esgote a capacidade gratuita."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:compress-pdf drop__mark}}
+  <p class="drop__title">Solte um PDF aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Escolher PDF</span></label>
+  <p class="drop__hint">Ou arraste para qualquer lugar desta página. Até 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts opts--wide">
+    <div class="field">
+      <span class="label" id="level-l">Compressão</span>
+      <div class="seg" role="radiogroup" aria-labelledby="level-l">
+        <label><input type="radio" name="level" value="recommended" checked>Recomendado</label>
+        <label><input type="radio" name="level" value="extreme">Forte</label>
+        <label><input type="radio" name="level" value="lossless">Sem perdas</label>
+      </div>
+      <span class="help">Recomendado serve para a maioria dos arquivos. Forte gera o menor arquivo, com fotos mais suaves. Sem perdas não mexe nas imagens.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Comprimir PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Como funciona a compressão de PDF</h2>
+<p>Quase todo o peso de um PDF grande vem das imagens: páginas digitalizadas, fotos, capturas de tela. Para comprimir o PDF, nosso servidor abre o arquivo, encontra cada imagem do tipo foto e verifica a nitidez dela no tamanho em que aparece impressa na página. O que passar do limite do nível escolhido é reduzido e salvo de novo em JPEG. Uma imagem só é substituída quando isso economiza pelo menos 10 por cento, e a estrutura do arquivo é regravada com todos os fluxos comprimidos ao máximo.</p>
+<p>O resultado nunca fica maior que o original. Quando não há nada a economizar, você é avisado e fica com o arquivo que já tem.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Para e-mail, comece com Recomendado; mude para Forte só se o arquivo ainda estiver grande demais.</li>
+  <li>Precisa só de algumas páginas? Separe-as antes com <a href="/tools/extract-pdf-pages/">Extrair páginas de PDF</a>; menos páginas significa um arquivo menor. Essa ferramenta funciona no seu navegador.</li>
+  <li>Quer diminuir fotos, e não um PDF? <a href="/tools/compress-image/">Comprimir imagem</a> funciona no seu dispositivo, sem enviar nada.</li>
+</ul>

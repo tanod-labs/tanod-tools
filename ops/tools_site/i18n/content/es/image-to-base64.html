@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Convertir imagen a Base64 y data URL | Tanod Tools",
+  "description": "Convierte una imagen PNG, JPG, WebP, GIF o SVG a Base64: data URL, fondo CSS, etiqueta img de HTML o Markdown, lista para copiar. En tu navegador, sin subir nada.",
+  "h1": "Imagen a Base64",
+  "lede": "Convierte una imagen en una data URL en Base64 que puedes pegar directamente en HTML, CSS, Markdown o JSON.",
+  "blurb": "Imagen como data URL para HTML o CSS.",
+  "keywords": "imagen a base64 convertir imagen a base64 data uri data url png a base64 jpg a base64 svg css background incrustar imagen inline",
+  "limits": "Una imagen a la vez, de hasta 10 MB. PNG, JPEG, WebP, GIF, BMP, AVIF y SVG.",
+  "howto_title": "Cómo convertir una imagen a Base64",
+  "howto": [
+    "Elige una imagen o arrástrala a la página.",
+    "Elige el formato que necesitas: data URL, Base64 simple, CSS, una etiqueta img de HTML o Markdown.",
+    "Pulsa <strong>Copiar</strong> o descarga el texto como archivo."
+  ],
+  "faq": [
+    ["¿Qué es una data URL?", "Una forma de meter los bytes de un archivo dentro de un enlace. Empieza con <code>data:</code>, el tipo de archivo, como <code>image/png</code>, y <code>;base64,</code>, seguido del texto en Base64. Los navegadores la muestran exactamente igual que si la imagen se hubiera cargado desde un archivo aparte."],
+    ["¿Por qué el Base64 ocupa más que la imagen?", "Base64 escribe cada 3 bytes como 4 caracteres de texto, así que el texto ocupa alrededor de un 33 por ciento más que el archivo. Los servidores web que comprimen el texto recuperan parte de esa diferencia, pero una imagen incrustada sigue ocupando más que la misma imagen servida por separado."],
+    ["¿Cuándo conviene incrustar una imagen?", "Para cosas pequeñas: íconos, fondos diminutos y marcadores de posición de pocos kilobytes, o cuando se necesita un único archivo HTML o correo independiente. Las imágenes grandes es mejor dejarlas como archivos aparte, porque una data URL no se puede guardar en caché por sí sola y se vuelve a descargar con cada página u hoja de estilos que la contiene. La herramienta te avisa por encima de 100 KB."],
+    ["¿Cómo se decide el tipo de archivo?", "A partir de los bytes del archivo, no de su nombre, así que un PNG guardado con extensión .jpg recibe igualmente <code>image/png</code>. Los archivos SVG se reconocen por su texto y se etiquetan como <code>image/svg+xml</code>."],
+    ["¿Se sube mi imagen?", "No. La imagen se lee y se codifica en tu navegador, en tu dispositivo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-base64 drop__mark}}
+  <p class="drop__title">Suelta una imagen aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg">{{mark:i-plus}}<span data-pick-label>Elegir una imagen</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, AVIF o SVG. O arrástrala a cualquier parte de esta página.</p>
+</div>
+<div id="work" class="b64i" hidden>
+  <div class="b64i__head">
+    <div class="preview b64i__preview"><canvas id="cv" role="img" aria-label="Vista previa de la imagen"></canvas></div>
+    <dl class="stats b64i__stats">
+      <div><dt>Tipo</dt><dd id="s-type">-</dd></div>
+      <div><dt>Píxeles</dt><dd id="s-dims">-</dd></div>
+      <div><dt>Archivo</dt><dd id="s-file">-</dd></div>
+      <div><dt>Base64</dt><dd id="s-b64">-</dd></div>
+    </dl>
+  </div>
+  <p class="note" id="big" hidden></p>
+  <fieldset class="field">
+    <legend>Salida</legend>
+    <div class="seg b64i__seg">
+      <label><input type="radio" name="fmt" value="data" checked>Data URL</label>
+      <label><input type="radio" name="fmt" value="raw">Base64</label>
+      <label><input type="radio" name="fmt" value="css">CSS</label>
+      <label><input type="radio" name="fmt" value="html">HTML</label>
+      <label><input type="radio" name="fmt" value="md">Markdown</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="out">Resultado</label>
+    <textarea id="out" class="mono b64i__out" rows="8" readonly spellcheck="false"></textarea>
+    <p class="help num" id="out-len"></p>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button">Copiar</button>
+    <button class="btn" id="dl" type="button">Descargar .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Incrustar imágenes como texto</h2>
+<p>HTML, CSS, JSON, Markdown y el cuerpo de los correos son texto, pero las imágenes son binarias. Convertir una imagen a Base64 une ambos mundos: los bytes de la imagen se escriben con 64 caracteres seguros, así que la imagen completa puede ir dentro de una regla de una hoja de estilos, una etiqueta <code>img</code> o un archivo de configuración sin una descarga aparte.</p>
+<p>Esta herramienta lee el archivo en tu navegador, comprueba su tipo real a partir de los primeros bytes y arma el fragmento que elijas alrededor del texto codificado. La imagen en sí no cambia: al decodificar el Base64 se obtiene exactamente el archivo original.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Reduce primero la imagen con <a href="/tools/compress-image/">Comprimir imagen</a> o <a href="/tools/resize-image/">Redimensionar imagen</a>; cada byte que ahorras supone un tercio más de ahorro en Base64.</li>
+  <li>Para íconos simples, un SVG suele ocupar menos que cualquier PNG, incluso en Base64.</li>
+  <li>Para decodificar Base64 de vuelta a un archivo, o codificar cualquier otro archivo, usa <a href="/tools/base64-encode-decode/">Codificar y decodificar Base64</a>.</li>
+</ul>

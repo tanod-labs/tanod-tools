@@ -1,0 +1,79 @@
+<!--meta
+{
+  "title": "Text vorlesen lassen – Sprachausgabe im Browser | Tanod Tools",
+  "description": "Text einfügen und mit den Stimmen auf Ihrem Gerät vorlesen lassen. Stimme, Tempo, Tonhöhe und Lautstärke wählen, wortweise mitlesen. Kostenlos, ohne Anmeldung.",
+  "h1": "Text vorlesen lassen",
+  "lede": "Fügen Sie Text ein oder tippen Sie ihn und lassen Sie ihn vorlesen, mit den Stimmen, die in Ihren Browser und Ihr Betriebssystem eingebaut sind.",
+  "blurb": "Text mit den eingebauten Stimmen Ihres Geräts vorlesen.",
+  "keywords": "text vorlesen lassen text to speech tts deutsch sprachausgabe vorlesefunktion vorleser sprachsynthese stimme text anhören anhoeren laut vorlesen korrekturlesen",
+  "limits": "Die Sprachausgabe stammt von den Stimmen Ihres Browsers; was verfügbar ist, hängt von Ihrem Gerät ab. Texte bis 100.000 Zeichen werden in satzgroßen Teilen vorgelesen. Audio lässt sich mit diesem Tool nicht speichern.",
+  "local_text": "Spricht mit den eingebauten Stimmen Ihres Geräts",
+  "howto_title": "So lassen Sie sich Text vom Browser vorlesen",
+  "howto": [
+    "Fügen Sie den Text ein oder tippen Sie ihn. Die Seite zeigt, wie viele Zeichen er hat und in wie vielen Teilen er vorgelesen wird.",
+    "Wählen Sie eine <strong>Stimme</strong> und stellen Sie Tempo, Tonhöhe und Lautstärke ein. Mit <em>(online)</em> markierte Stimmen nutzen einen Sprachdienst des Browserherstellers.",
+    "Klicken Sie auf <strong>Vorlesen</strong>. Nutzen Sie bei Bedarf <strong>Pause</strong>, <strong>Fortsetzen</strong> und <strong>Stopp</strong>; das gesprochene Wort wird hervorgehoben, wenn Ihre Stimme es meldet."
+  ],
+  "faq": [
+    ["Woher kommt die Stimme?", "Von Ihrem eigenen Browser und Betriebssystem, über die Web Speech API. Diese Seite enthält keine Sprachausgabe-Engine und hat keine eigenen Stimmen. Deshalb unterscheidet sich die Liste zwischen einem Windows-Laptop, einem Mac, einem Android-Smartphone und einem Linux-Rechner."],
+    ["Wird mein Text irgendwohin gesendet?", "Das hängt von der gewählten Stimme ab. Stimmen ohne die Markierung <em>(online)</em> laufen auf Ihrem Gerät, und der Text bleibt dort. Manche Stimmen, etwa die Google-Stimmen in Chrome oder die Online-Stimmen (Natural) in Edge, sind Online-Stimmen: Ihr Browser sendet den Text an den Sprachdienst des Browserherstellers, um Audio zurückzubekommen. Diese Seite kann das weder sehen noch steuern. Das Tool wählt standardmäßig eine Stimme auf dem Gerät; wählen Sie eine Online-Stimme nur, wenn Sie damit einverstanden sind, dass der Text an dieses Unternehmen geht."],
+    ["Warum ist die Stimmenliste leer oder warum dauert es einen Moment?", "Manche Browser füllen die Liste erst kurz nach dem Laden der Seite, und die Seite aktualisiert sich dann. Bleibt sie leer, sind auf dem Gerät keine Sprachausgabe-Stimmen installiert; das kommt bei minimalen Linux-Installationen und manchen von der Firma verwalteten Geräten häufig vor. Wenn Sie in den Spracheinstellungen des Systems eine Sprachausgabe-Stimme installieren, ist das behoben."],
+    ["Kann ich die Sprachausgabe als MP3 oder WAV speichern?", "Nein. Die Web Speech API gibt den Ton direkt über Ihre Lautsprecher aus und gewährt Seiten keinen Zugriff auf das Audio, daher kann keine Website es über den Browser aufnehmen. Für eine Audiodatei brauchen Sie ein Desktop-Sprachprogramm oder einen Dienst, der das Audio auf eigenen Servern erzeugt."],
+    ["Warum wird der Text in Teilen vorgelesen?", "Chrome und einige andere Browser brechen eine einzelne lange Äußerung nach etwa 15 Sekunden ab. Die Seite teilt Ihren Text an Satzenden in Stücke von etwa 200 Zeichen und spricht sie nacheinander, sodass auch lange Artikel durchgelesen werden. Zwischen den Teilen kann eine winzige Pause hörbar sein."],
+    ["Warum wandert die Wortmarkierung bei manchen Stimmen nicht mit?", "Nicht jede Stimme teilt dem Browser mit, bei welchem Wort sie ist. Tut sie es, wird das aktuelle Wort hervorgehoben; tut sie es nicht, wird stattdessen der gerade gelesene Satz hervorgehoben. Änderungen an Tempo, Tonhöhe oder Lautstärke während des Vorlesens gelten ab dem nächsten Teil."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack tts">
+  <p class="note tts-note">Die Sprachausgabe nutzt die Stimmen, die in Ihren Browser und Ihr Betriebssystem eingebaut sind. Mit <strong>(online)</strong> markierte Stimmen senden den Text an den Sprachdienst des Browserherstellers; alle anderen Stimmen laufen auf diesem Gerät.</p>
+  <div class="field">
+    <label for="tts-text">Vorzulesender Text</label>
+    <textarea id="tts-text" class="tts-text" rows="8" maxlength="100000" spellcheck="true" placeholder="Fügen Sie Text ein oder tippen Sie ihn, um ihn vorlesen zu lassen."></textarea>
+    <div class="tts-meta">
+      <span id="tts-count" aria-live="polite">0 Zeichen</span>
+      <span id="tts-parts" data-parts="0">Noch nichts zum Vorlesen.</span>
+      <button class="btn btn--quiet btn--sm" id="tts-clear" type="button">Text leeren</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tts-voice">Stimme</label>
+    <select id="tts-voice" aria-describedby="tts-voice-status"></select>
+    <p class="help" id="tts-voice-status" role="status" data-state="loading">Stimmen werden gesucht ...</p>
+    <p class="help tts-online" id="tts-online" hidden>Dies ist eine Online-Stimme. Der Text, den Sie damit vorlesen lassen, wird an den Sprachdienst des Browserherstellers gesendet. Wählen Sie eine Stimme ohne die Markierung (online), damit der Text auf diesem Gerät bleibt.</p>
+  </div>
+  <div class="tts-sliders">
+    <div class="field">
+      <label for="tts-rate">Tempo <output id="tts-rate-v" for="tts-rate"></output></label>
+      <input type="range" id="tts-rate" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-pitch">Tonhöhe <output id="tts-pitch-v" for="tts-pitch"></output></label>
+      <input type="range" id="tts-pitch" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-vol">Lautstärke <output id="tts-vol-v" for="tts-vol"></output></label>
+      <input type="range" id="tts-vol" min="0" max="1" step="0.05" value="1">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="tts-play" type="button" disabled>Vorlesen</button>
+    <button class="btn" id="tts-pause" type="button" disabled>Pause</button>
+    <button class="btn" id="tts-resume" type="button" disabled>Fortsetzen</button>
+    <button class="btn" id="tts-stop" type="button" disabled>Stopp</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="out tts-follow" id="tts-follow" aria-hidden="true" hidden></div>
+  <p class="help">Audio lässt sich mit diesem Tool nicht speichern: Der Browser gibt die Sprache direkt über Ihre Lautsprecher aus und reicht sie nicht an Webseiten weiter.</p>
+</div>
+<!--explain-->
+<h2>Was passiert, wenn eine Webseite spricht</h2>
+<p>Wenn Sie im Browser Text vorlesen lassen, ist das eine Übergabe. Die Seite gibt Ihren Text, einen Stimmennamen, ein Tempo und eine Tonhöhe an den Browser, und der Browser bittet das Betriebssystem, in manchen Fällen auch die Server des Browserherstellers, daraus Ton zu machen. Deshalb hören zwei Menschen auf derselben Seite unterschiedliche Stimmen, und deshalb gibt es hier nichts herunterzuladen: Die Seite selbst erhält nie Audio.</p>
+<p>Stimmen auf dem Gerät sind die, die Ihr System mitbringt, etwa mit Windows, macOS, iOS oder Android installierte, und sie funktionieren offline. Netzwerkstimmen klingen meist natürlicher, weshalb Browser sie anbieten, doch der Text muss dafür an einen Server gehen, um gesprochen zu werden. Dieser Unterschied ist bei vertraulichem Material wichtig; achten Sie also auf die Markierung <em>(online)</em>, bevor Sie etwas Sensibles einfügen.</p>
+<p>Zuhören ist ein guter Trick beim Korrekturlesen. Müde Augen gleiten über ein doppeltes Wort oder einen fehlenden Punkt hinweg, eine Stimme aber liest genau, was dasteht, und stolpert dort, wo der Satz stolpert. Verringern Sie das Tempo etwas und folgen Sie dem hervorgehobenen Wort.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Prüfen Sie vorher mit <a href="/tools/word-counter/">Wörter zählen</a>, wie lange das Vorlesen einer Passage dauert; dort gibt es eine Schätzung der Sprechzeit.</li>
+  <li>Entfernen Sie überzählige Zeilenumbrüche aus kopiertem Text mit <a href="/tools/remove-line-breaks/">Zeilenumbrüche entfernen</a>, damit Sätze nicht bruchstückhaft vorgelesen werden.</li>
+  <li>Stellen Sie vor dem Anhören mit <a href="/tools/case-converter/">Groß- und Kleinschreibung umwandeln</a> sicher, dass die richtigen Zeichen und Großbuchstaben stehen.</li>
+</ul>

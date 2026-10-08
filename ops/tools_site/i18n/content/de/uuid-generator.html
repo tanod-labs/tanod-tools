@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "UUID-Generator: v4 und v7 erzeugen und prüfen | Tanod Tools",
+  "description": "UUIDs v4 (zufällig) oder v7 (zeitlich sortiert) in großer Zahl erzeugen, kopieren oder herunterladen und Version und Zeitstempel prüfen. Kostenlos, im Browser.",
+  "h1": "UUID-Generator",
+  "lede": "Erzeugen Sie UUIDs der Version 4 (zufällig) oder der Version 7 (zeitlich sortiert) und prüfen Sie jede UUID, die Sie bereits haben.",
+  "blurb": "UUIDs v4 und v7 erzeugen und eine UUID prüfen.",
+  "keywords": "uuid generator uuid erzeugen generieren guid generator uuid4 uuid7 v4 v7 eindeutige kennung id prüfen pruefen validieren",
+  "limits": "1 bis 1.000 UUIDs auf einmal.",
+  "howto_title": "So erzeugen Sie UUIDs",
+  "howto": [
+    "Wählen Sie Version 4 für vollständig zufällige Kennungen oder Version 7 für Kennungen, die sich nach Erstellungszeit sortieren.",
+    "Legen Sie fest, wie viele Sie brauchen, und wählen Sie Formatoptionen: Großbuchstaben, ohne Bindestriche oder in geschweiften Klammern.",
+    "Kopieren Sie die Liste oder laden Sie sie als Textdatei herunter. Fügen Sie eine UUID in die Prüfung ein, um ihre Version zu lesen."
+  ],
+  "faq": [
+    ["Welche Version sollte ich verwenden?", "Version 4 besteht aus 122 zufälligen Bits und ist der übliche Standard. Version 7 stellt einen Unix-Zeitstempel in Millisekunden an den Anfang, sodass sich die Werte in Erstellungsreihenfolge sortieren, was Datenbankindizes ordentlich hält. Verwenden Sie v7, wenn die Reihenfolge wichtig ist und es Sie nicht stört, dass die Erstellungszeit aus der ID ablesbar ist."],
+    ["Werden die UUIDs irgendwohin gesendet?", "Nein. Sie werden in Ihrem Browser mit seinem sicheren Zufallszahlengenerator erzeugt und weder gesendet noch gespeichert."],
+    ["Können zwei UUIDs gleich sein?", "Bei Version 4 ist die Wahrscheinlichkeit vernachlässigbar: Sie müssten jahrelang Milliarden pro Sekunde erzeugen, um ein realistisches Risiko zu sehen. Werte der Version 7, die in derselben Millisekunde entstehen, werden durch einen Zähler in den Zufallsbits unterscheidbar und aufsteigend gehalten."],
+    ["Ist eine GUID dasselbe wie eine UUID?", "GUID ist der Name von Microsoft für dasselbe 128-Bit-Format. Manche Tools schreiben GUIDs in Großbuchstaben oder in geschweiften Klammern, was die Optionen hier ebenfalls können."],
+    ["Was liest die Prüfung aus?", "Sie akzeptiert eine UUID mit oder ohne Bindestriche, geschweifte Klammern oder ein Präfix <code>urn:uuid:</code> und meldet Version, Variante und bei Version 7 den Zeitstempel aus den ersten 48 Bits. Ob eine ID tatsächlich von irgendetwas vergeben wurde, kann sie nicht feststellen."],
+    ["Ist das Layout der Version 7 standardisiert?", "Ja. Es folgt RFC 9562: 48 Bit Unix-Millisekunden, die Version, ein 12-Bit-Zähler, die Variante und 62 Zufallsbits."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <span class="label" id="uu-ver-l">Version</span>
+    <div class="seg" role="radiogroup" aria-labelledby="uu-ver-l">
+      <label><input type="radio" name="ver" value="4" checked>Version 4</label>
+      <label><input type="radio" name="ver" value="7">Version 7</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="uu-count">Anzahl</label>
+    <input type="number" id="uu-count" min="1" max="1000" value="5">
+  </div>
+</div>
+<div class="util-checks">
+  <label class="check"><input type="checkbox" id="uu-upper">Großbuchstaben</label>
+  <label class="check"><input type="checkbox" id="uu-nohy">Ohne Bindestriche</label>
+  <label class="check"><input type="checkbox" id="uu-brace">In geschweiften Klammern</label>
+</div>
+<div class="actions">
+  <button class="btn btn--primary btn--lg" id="uu-gen" type="button">Erzeugen</button>
+  <button class="btn" id="uu-copy" type="button">Alle kopieren</button>
+  <button class="btn" id="uu-dl" type="button">.txt herunterladen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out" id="uu-out" tabindex="0" aria-label="Erzeugte UUIDs"></pre>
+
+<h2 class="util-h">UUID prüfen</h2>
+<div class="field">
+  <label for="uu-in">UUID einfügen</label>
+  <input type="text" id="uu-in" class="mono" autocomplete="off" spellcheck="false" placeholder="018f3c1e-2b4a-7c3d-8e5f-0123456789ab">
+</div>
+<div class="status" id="uu-check" role="status" hidden></div>
+<dl class="stats" id="uu-stats" hidden>
+  <div><dt>Version</dt><dd id="uu-v">-</dd></div>
+  <div><dt>Variante</dt><dd id="uu-var" class="util-small">-</dd></div>
+  <div id="uu-tsbox" hidden><dt>Zeitstempel (UTC)</dt><dd id="uu-ts" class="util-small">-</dd></div>
+</dl>
+<!--explain-->
+<h2>Was eine UUID ist, und v4 im Vergleich zu v7</h2>
+<p>Eine UUID ist eine 128-Bit-Kennung, geschrieben als 32 Hexadezimalziffern in fünf Gruppen. Weil der Wertebereich so groß ist, können Systeme IDs unabhängig voneinander erzeugen, ohne zentralen Zähler, und trotzdem davon ausgehen, dass sie eindeutig sind. Mit diesem UUID-Generator erzeugen Sie solche Kennungen direkt im Browser.</p>
+<p>Bei einer UUID der Version 4 sind 122 der 128 Bits zufällig; die übrigen enthalten die Version (4) und die Variante. Eine UUID der Version 7 beginnt mit der Erstellungszeit in Unix-Millisekunden, gefolgt von einem Zähler und Zufallsbits. Weil die Zeit vorne steht, sortieren sich neuere IDs hinter ältere, was für Datenbankindizes günstiger ist als vollständig zufällige Schlüssel. Der Preis ist, dass sich die Erstellungszeit aus der ID ablesen lässt.</p>
+<p>Dieses Tool verwendet den sicheren Zufallsgenerator des Browsers. Innerhalb einer Millisekunde steigen Werte der Version 7 über einen 12-Bit-Zähler an, sodass ein Stapel streng geordnet ist.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie brauchen ein Passwort statt einer ID? Nutzen Sie den <a href="/tools/password-generator/">Passwort-Generator</a>.</li>
+  <li>Machen Sie aus einer ID einen scanbaren Code mit dem <a href="/tools/qr-code-generator/">QR-Code-Generator</a>.</li>
+</ul>

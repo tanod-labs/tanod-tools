@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Zeitzonenrechner und Meeting-Planer | Tanod Tools",
+  "description": "Uhrzeit in mehrere Zeitzonen gleichzeitig umrechnen, mit UTC-Versatz, Datumswechsel, Sommerzeit-Lücken und -Überschneidungen und Meeting-Planer. Kostenlos.",
+  "h1": "Zeitzonenrechner",
+  "lede": "Wählen Sie ein Datum, eine Uhrzeit und deren Zeitzone und sehen Sie denselben Moment in jeder Stadt Ihrer Liste, mit einem Planer, um gemeinsame Arbeitszeiten zu finden.",
+  "blurb": "Eine Uhrzeit in viele Zeitzonen umrechnen und Meetings darüber planen.",
+  "keywords": "zeitzonenrechner zeitzonen umrechnen zeitverschiebung weltzeituhr uhrzeit umrechnen meeting planer zeitunterschied städte utc versatz sommerzeit mez mesz cet est pst gmt ist jst",
+  "limits": "Verwendet die im Browser eingebauten Zeitzonendaten, Versatz und Sommerzeitregeln entsprechen also dem, was Ihr Browser kennt, auch für vergangene und zukünftige Daten. Abkürzungen werden nur angezeigt, wenn der Browser eine kennt. Nichts verlässt Ihr Gerät.",
+  "howto_title": "So rechnen Sie eine Uhrzeit zwischen Zeitzonen um",
+  "howto": [
+    "Wählen Sie das Datum, die Uhrzeit und die Zeitzone, in der diese Uhrzeit gilt. Klicken Sie auf <strong>Jetzt</strong>, um mit dem aktuellen Moment zu beginnen.",
+    "Fügen Sie die benötigten Städte über <em>Ort hinzufügen</em> hinzu. Jede Zeile zeigt die Ortszeit, den Tag (gleicher, nächster oder vorheriger) und den UTC-Versatz. Ihre Liste wird auf diesem Gerät gespeichert.",
+    "Nutzen Sie den Meeting-Planer unter der Liste, um Stunden zu finden, in denen alle zwischen 09:00 und 17:00 Uhr Ortszeit liegen. Schraffierte Zellen sind Arbeitszeit."
+  ],
+  "faq": [
+    ["Was passiert, wenn ich eine Uhrzeit wähle, die es nicht gibt?", "Bei der Umstellung auf Sommerzeit wird eine Ortsstunde übersprungen: In New York springt die Uhr am 8. März 2026 von 01:59 direkt auf 03:00, 02:30 gibt es also nicht. Der Rechner weist darauf hin und folgt der üblichen Konvention: Er verschiebt die Uhrzeit um die Länge der Lücke nach vorn (aus 02:30 wird 03:30) und rechnet dann diesen Moment um."],
+    ["Und eine Uhrzeit, die es zweimal gibt?", "Bei der Rückstellung auf Winterzeit wird eine Stunde wiederholt. Am 1. November 2026 gibt es 01:30 in New York zuerst als 01:30 EDT (UTC-04:00) und eine Stunde später noch einmal als 01:30 EST (UTC-05:00). Der Rechner zeigt beide Möglichkeiten und lässt Sie wählen; voreingestellt ist die frühere."],
+    ["Warum sind manche Versätze keine ganzen Stunden?", "Mehrere Orte verwenden Versätze von einer halben oder einer Dreiviertelstunde: Indien liegt bei UTC+05:30, Nepal bei UTC+05:45, und die Lord-Howe-Insel in Australien bei UTC+10:30 im Winter und UTC+11:00 im Sommer, eine Sommerzeitverschiebung von nur 30 Minuten. Das Tool verwendet den genauen Versatz, der am gewählten Datum gilt."],
+    ["Wird der Datumswechsel angezeigt?", "Ja. Jede Zeile zeigt „Gleicher Tag“, „Nächster Tag“ oder „Vorheriger Tag“, bezogen auf das Datum, das Sie in der Ausgangszeitzone gewählt haben. Kiritimati in Kiribati liegt bei UTC+14, der frühesten Zeitzone der Welt; eine Mittagszeit in London ist dort also schon der nächste Tag."],
+    ["Wie funktioniert der Meeting-Planer?", "Er zeigt für jeden Ort 24 Stundenzellen, nach demselben Zeitpunkt ausgerichtet, beginnend um Mitternacht des gewählten Datums in der Ausgangszeitzone. Zellen zwischen 09:00 und 17:00 Uhr Ortszeit sind schraffiert und gelten als Arbeitszeit, und die unterste Zeile markiert Stunden, die für alle passen. Eine Spalte mit dickem Rahmen ist die eingegebene Uhrzeit."],
+    ["Welche Zeitzonennamen kann ich verwenden?", "Jede IANA-Zeitzone, die Ihr Browser kennt, etwa Europe/Berlin oder Asia/Tokyo, dazu UTC und Ihre eigene Zeitzone. Städtenamen werden gut lesbar angezeigt, mit der vollständigen Zonenkennung darunter. Um einen Unix-Zeitstempel statt einer Uhrzeit umzurechnen, nutzen Sie <a href=\"/tools/unix-timestamp-converter/\">Unix-Zeitstempel umrechnen</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Datum</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Uhrzeit</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Jetzt</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Zeitzone dieser Uhrzeit</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Diese Uhrzeit gibt es zweimal. Welche ist gemeint?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Ort hinzufügen</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Hinzufügen</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Uhr</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24 Std.</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12 Std.</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Umgerechnete Uhrzeiten"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Meeting-Planer</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Legende des Planers">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Arbeitszeit, 09:00 bis 17:00 Uhr Ortszeit (schraffiert)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>Die eingegebene Uhrzeit (dicker Rahmen)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Alle sind in ihrer Arbeitszeit</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Warum das Umrechnen zwischen Zeitzonen schiefgeht</h2>
+<p>Wer Zeitzonen umrechnen will, merkt schnell: Eine Zeitzone ist nicht einfach ein Versatz gegenüber UTC. Sie ist ein Satz von Regeln, gepflegt in der IANA-Zeitzonendatenbank, der festlegt, welcher Versatz an jedem Datum galt und gelten wird. Deshalb liegt dieselbe Stadt im Winter bei UTC-5 und im Sommer bei UTC-4, deshalb können zwei Städte, die heute denselben Versatz haben, nächsten Monat auseinanderliegen, und deshalb verschiebt sich ein Meeting um 9:00 Uhr in London gegenüber New York jedes Frühjahr und jeden Herbst für einige Wochen, weil die beiden Länder ihre Uhren an unterschiedlichen Tagen umstellen.</p>
+<p>Die Zeitumstellung erzeugt zwei heikle Fälle. Im Frühjahr wird ein Abschnitt der Ortszeit übersprungen, eine Uhrzeit darin existiert also nicht. Im Herbst wiederholt sich ein Abschnitt, eine Uhrzeit darin ist also mehrdeutig und braucht den Versatz, um zu klären, welches Vorkommen gemeint ist. Viele Programme wählen stillschweigend eine Antwort; dieser Rechner weist Sie auf die Lücke oder die Überschneidung hin und lässt Sie bei der Überschneidung wählen.</p>
+<p>Beim Planen ist der Vergleich der Uhrzeiten nur die halbe Arbeit. Fair ist ein Termin nur, wenn er in die Arbeitszeit aller fällt. Der Stundenplaner richtet alle Orte nach denselben Zeitpunkten aus, sodass Sie auf einen Blick sehen, wo sich 09:00 bis 17:00 Uhr überschneiden und wo jemand mitten in der Nacht teilnehmen müsste. Auch bei einer sehr guten Überschneidung sollten Sie die Zeitzone in der Einladung ausdrücklich nennen, am besten mit dem UTC-Versatz, damit niemand raten muss.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie lesen einen Zeitstempel aus einem Log oder einer API? <a href="/tools/unix-timestamp-converter/">Unix-Zeitstempel umrechnen</a> zeigt ihn in jeder Zeitzone.</li>
+  <li>Um herauszufinden, auf welches Datum eine Frist nach dem Addieren von Tagen oder Werktagen fällt, nutzen Sie den <a href="/tools/date-calculator/">Datumsrechner</a>.</li>
+  <li>Sie möchten wissen, wie lange ein Projekt oder eine Reise dauert? <a href="/tools/date-difference-calculator/">Tage zwischen zwei Daten</a> zählt es für Sie.</li>
+</ul>

@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Unix-Zeitstempel umrechnen: Epoch in Datum & zurück | Tanod Tools",
+  "description": "Unix-Zeitstempel in Sekunden, Millisekunden, Mikro- oder Nanosekunden in ein Datum in UTC oder jeder Zeitzone umrechnen, und Datum in Timestamp. Kostenlos.",
+  "h1": "Unix-Zeitstempel umrechnen",
+  "lede": "Machen Sie aus einem Epoch-Zeitstempel ein lesbares Datum in jeder Zeitzone, oder aus Datum und Uhrzeit einen Zeitstempel.",
+  "blurb": "Epoch-Zeit in Datum und Datum in Zeitstempel, jede Zeitzone.",
+  "keywords": "unix zeitstempel umrechnen unix timestamp umrechnen konverter epoch converter unixzeit unix zeit posix zeit sekunden seit 1970 millisekunden timestamp in datum datum in timestamp utc zeitzone",
+  "limits": "Zeitstempel bis etwa 270.000 Jahre vor oder nach 1970, so weit ein Browser rechnen kann; eingegebene Daten von Jahr 1 bis 9999. Die Zeitzonenregeln stammen aus den eingebauten Zeitzonendaten Ihres Browsers.",
+  "howto_title": "So rechnen Sie einen Unix-Zeitstempel um",
+  "howto": [
+    "Fügen Sie unter <strong>Zeitstempel in Datum</strong> einen Zeitstempel ein. Die Einheit (Sekunden, Millisekunden, Mikrosekunden oder Nanosekunden) wird an der Länge erkannt, und Sie können sie ändern.",
+    "Wählen Sie eine Zeitzone, um das Datum dort sowie in UTC, im ISO-8601- und RFC-2822-Format zu sehen.",
+    "Für die Gegenrichtung geben Sie unter <strong>Datum in Zeitstempel</strong> Datum und Uhrzeit ein; sie werden in der gewählten Zeitzone gelesen."
+  ],
+  "faq": [
+    ["Was ist ein Unix-Zeitstempel?", "Die Anzahl der Sekunden seit 00:00:00 UTC am 1. Januar 1970, ohne Schaltsekunden. Zu einem bestimmten Zeitpunkt ist er überall auf der Welt gleich, deshalb werden Zeiten so gespeichert; die Zeitzone spielt erst eine Rolle, wenn daraus ein Datum für Menschen wird."],
+    ["Wie wird die Einheit erkannt?", "An der Größe. Ein Wert unter 100 Milliarden wird als Sekunden gelesen (das reicht bis ins Jahr 5138), bis 100 Billionen als Millisekunden, bis 100 Billiarden als Mikrosekunden und alles darüber als Nanosekunden. Eine 10-stellige Zahl sind Sekunden, 13 Stellen Millisekunden, 16 Mikrosekunden und 19 Nanosekunden. Liegt die Vermutung falsch, wählen Sie die Einheit selbst."],
+    ["Was passiert mit einer Uhrzeit, die es wegen der Sommerzeit nicht gibt?", "Wenn die Uhren vorgestellt werden, fällt eine Stunde Ortszeit aus. Ein Zeitpunkt in dieser Lücke wird um die Länge der Lücke nach vorn verschoben, wie es die meiste Software tut, und das Tool weist darauf hin. Wenn die Uhren zurückgestellt werden, gibt es eine Stunde doppelt; das Tool verwendet das erste Vorkommen und zeigt zusätzlich den Zeitstempel des zweiten."],
+    ["Können Zeitstempel negativ sein?", "Ja. Negative Werte sind Zeitpunkte vor 1970: -1 ist 23:59:59 UTC am 31. Dezember 1969. Weit zurückliegende Daten verwenden den proleptischen gregorianischen Kalender, wie ISO 8601."],
+    ["Was ist das Jahr-2038-Problem?", "Systeme, die die Unix-Zeit als vorzeichenbehaftete 32-Bit-Zahl speichern, können nur bis 2.147.483.647 zählen, das ist 03:14:07 UTC am 19. Januar 2038. Eine Sekunde später läuft der Wert über. Das Tool weist darauf hin, wenn ein Zeitstempel außerhalb dieses Bereichs liegt. Die meisten heutigen Systeme verwenden 64-Bit-Zeit und sind nicht betroffen."],
+    ["Werden Schaltsekunden berücksichtigt?", "Nein. Die Unix-Zeit behandelt jeden Tag als genau 86.400 Sekunden, und JavaScript ebenso, daher werden die 27 seit 1972 eingefügten Schaltsekunden nicht gezählt. Das ist normal und entspricht dem, was Server, Datenbanken und Programmiersprachen liefern."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Aktuelle Unix-Zeit</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Sekunden</dt><dd id="now-s">0</dd></div>
+      <div><dt>Millisekunden</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Sekunden kopieren</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Millisekunden kopieren</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Pause</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Zeitzone</label>
+    <select id="tz"></select>
+    <span class="help">Wird für die Anzeige der Daten unten und zum Lesen Ihres eingegebenen Datums verwendet.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Zeitstempel in Datum</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Unix-Zeitstempel</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Einheit</label>
+      <select id="ts-unit">
+        <option value="auto" selected>An der Länge erkennen</option>
+        <option value="s">Sekunden</option>
+        <option value="ms">Millisekunden</option>
+        <option value="us">Mikrosekunden</option>
+        <option value="ns">Nanosekunden</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Geben Sie einen Zeitstempel ein oder fügen Sie ihn ein.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Ihre Zeitzone</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>ISO 8601 mit Offset</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Relativ</dt><dd id="o-rel"></dd></div>
+    <div><dt>Sekunden</dt><dd id="o-s"></dd></div>
+    <div><dt>Millisekunden</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Datum in Zeitstempel</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Datum</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Uhrzeit</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Aktuelle Zeit verwenden</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Wählen Sie ein Datum.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Sekunden</dt><dd id="d-s"></dd></div>
+    <div><dt>Millisekunden</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>So funktioniert die Epoch-Zeit</h2>
+<p>Ein Unix-Zeitstempel zählt die Sekunden seit der Unix-Epoche, Mitternacht UTC am 1. Januar 1970. Weil er einen Zeitpunkt benennt und keine Uhrzeitanzeige, bedeutet dieselbe Zahl denselben Augenblick in Berlin, London und New York. Erst beim Umrechnen in ein Datum kommen Zeitzonen ins Spiel: Das Tool verwendet die Zeitzonendatenbank Ihres Browsers, also dieselben Regeln wie Ihr Betriebssystem, um den lokalen Versatz und die Sommerzeit zu diesem Zeitpunkt zu bestimmen.</p>
+<p>Viele Systeme verwenden feinere Einheiten. JavaScript und Java zählen Millisekunden, manche Datenbanken und Pythons <code>time.time_ns()</code> verwenden Mikro- oder Nanosekunden. Wird ein solcher Wert als Sekunden eingefügt, ergibt sich ein Datum Zehntausende Jahre entfernt, daher schätzt das Tool die Einheit anhand der Größe der Zahl und zeigt an, welche es gewählt hat. Mikro- und Nanosekundenwerte behalten ihre zusätzlichen Stellen in der ISO-8601-Zeile.</p>
+<p>Um ein Datum in einen Zeitstempel umzurechnen, braucht es eine Zeitzone, denn 09:00 Uhr ist in jeder Zone ein anderer Augenblick. Das eingegebene Datum wird als Uhrzeit in der gewählten Zone gelesen. Zeiten, die in eine Lücke oder Überschneidung durch die Sommerzeitumstellung fallen, werden markiert, damit Sie wissen, welchen Augenblick Sie erhalten haben.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Zeitpläne, die als Cron-Ausdruck geschrieben sind, prüfen Sie mit <a href="/tools/cron-expression-explainer/">Cron-Ausdruck erklären</a>; das Tool listet die nächsten Ausführungszeiten in jeder Zone auf.</li>
+  <li>UUIDs der Version 7 enthalten einen Zeitstempel in Millisekunden; der <a href="/tools/uuid-generator/">UUID-Generator</a> kann ihn auslesen.</li>
+  <li>Bringen Sie eine JSON-Antwort voller Zeitstempel mit <a href="/tools/json-formatter/">JSON formatieren und validieren</a> in Form.</li>
+</ul>
