@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Generator VLAN MikroTik: bridge VLAN filtering (v7) | Tanod Tools",
+  "description": "Buat bridge VLAN filtering RouterOS v7: port access, trunk, dan hybrid, tabel bridge VLAN, interface VLAN dan alamat, diaktifkan terakhir agar tidak terkunci.",
+  "h1": "Generator VLAN MikroTik",
+  "lede": "Gambarkan VLAN Anda dan port mana yang membawanya, lalu dapatkan konfigurasi bridge VLAN filtering RouterOS v7, berurutan sehingga filtering dinyalakan paling akhir.",
+  "blurb": "Bridge VLAN filtering dengan port access, trunk, dan hybrid.",
+  "keywords": "konfigurasi vlan mikrotik routeros v7 bridge vlan filtering port trunk port access hybrid pvid tagged untagged frame-types ingress-filtering interface vlan switch crs",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan bridge VLAN filtering RouterOS v7 (metode yang direkomendasikan MikroTik untuk perangkat saat ini) dengan satu bridge. Menu switch-chip lama (/interface ethernet switch) tidak dipakai. Alamat berupa IPv4. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara mengonfigurasi VLAN di bridge MikroTik",
+  "howto": [
+    "Tuliskan VLAN dengan ID, nama, dan, untuk VLAN yang harus di-route router, alamat router di VLAN itu.",
+    "Tuliskan port: port access membawa satu VLAN untagged, port trunk membawa VLAN dengan tag, port hybrid melakukan keduanya.",
+    "Baca catatan risiko terkunci, aktifkan Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> di terminal) dan jalankan skripnya; VLAN filtering diaktifkan pada baris paling akhir."
+  ],
+  "faq": [
+    ["Mengapa mengaktifkan vlan-filtering bisa mengunci orang di luar?", "Selama vlan-filtering mati, bridge meneruskan semuanya dan pengaturan VLAN tidak berpengaruh. Begitu dinyalakan, frame hanya diterima di tempat yang diizinkan tabel VLAN. Jika port yang Anda pakai untuk terhubung bukan anggota VLAN yang punya alamat router, sesi Anda terputus. Itulah sebabnya skrip menyalakannya paling akhir, dan mengapa Safe Mode penting: jika koneksi putus, RouterOS membatalkan perubahan."],
+    ["Apa bedanya port access, trunk, dan hybrid?", "Port access menghubungkan satu perangkat yang tidak tahu apa-apa soal VLAN: frame masuk yang untagged dimasukkan ke PVID port dan keluar dalam keadaan untagged. Port trunk menghubungkan switch lain atau access point dan membawa beberapa VLAN dengan tag 802.1Q. Port hybrid melakukan keduanya, biasanya telepon IP atau access point dengan VLAN manajemen atau data untagged dan VLAN lain bertag."],
+    ["Mengapa bridge sendiri bertag di beberapa VLAN?", "Interface bridge adalah port router sendiri ke dalam switch. Agar router punya alamat di sebuah VLAN, lewat interface VLAN di bridge, bridge harus menjadi anggota bertag VLAN itu. VLAN yang hanya di-switch antar port tidak memerlukannya."],
+    ["Apakah saya masih memerlukan /interface vlan di atas bridge VLAN filtering?", "Hanya untuk VLAN yang diikuti router: interface VLAN adalah tempat alamat IP, DHCP server, dan aturan firewall-nya menempel. VLAN layer 2 murni hanya memerlukan tabel bridge VLAN."],
+    ["Apakah ini di-offload ke hardware?", "Pada switch CRS3xx, dan pada beberapa perangkat lain dengan RouterOS v7 terbaru, bridge VLAN filtering berjalan di switch chip. Pada yang lain berjalan di CPU, yang mengorbankan throughput. Periksa flag H pada port di /interface bridge port print setelah menerapkan."],
+    ["Apakah konfigurasi saya dikirim ke suatu tempat?", "Tidak. Skrip dibuat di browser Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="vl">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Bridge</legend>
+      <div class="field"><label for="vl-bridge">Nama bridge</label><input type="text" id="vl-bridge" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="vl-exists" checked>Bridge sudah ada</label>
+        <label class="check"><input type="checkbox" id="vl-inbridge" checked>Port sudah ada di bridge</label>
+        <label class="check"><input type="checkbox" id="vl-tagonly">Router hanya menerima frame bertag dari bridge (manajemen hanya lewat VLAN)</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>VLAN</legend>
+      <ul class="ros-rows" id="vl-vlans"></ul>
+      <button class="btn btn--sm ros-add" id="vl-vadd" type="button">{{mark:i-plus}}Tambah VLAN</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Port</legend>
+      <ul class="ros-rows" id="vl-ports"></ul>
+      <button class="btn btn--sm ros-add" id="vl-padd" type="button">{{mark:i-plus}}Tambah port</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Risiko terkunci.</strong> Mengaktifkan VLAN filtering memutus port mana pun yang bukan anggota VLAN dengan alamat router. Uji di lab, atau aktifkan Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> di terminal) lebih dulu.</span></p>
+    <label for="vl-out" class="label">Skrip RouterOS v7</label>
+    <textarea id="vl-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="vl-copy" type="button">Salin skrip</button>
+      <button class="btn" id="vl-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="vl-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Bridge VLAN filtering, cara v7</h2>
+<p>Di RouterOS saat ini, cara yang direkomendasikan untuk menjalankan VLAN adalah satu bridge dengan <code>vlan-filtering=yes</code>. Setiap <strong>bridge port</strong> punya <code>pvid</code>, yaitu VLAN tempat frame untagged yang tiba di sana berada, dan <code>frame-types</code>, yang menyatakan apakah port menerima frame untagged, frame bertag, atau keduanya. <strong>Tabel bridge VLAN</strong> di bawah <code>/interface bridge vlan</code> kemudian mendaftar, untuk tiap ID VLAN, port mana yang mengirimnya bertag dan mana yang untagged. Dengan <code>ingress-filtering=yes</code> port juga men-drop frame bertag untuk VLAN yang bukan keanggotaannya.</p>
+<p>Router bergabung ke sebuah VLAN lewat <strong>interface VLAN</strong> yang dibuat di bridge, dengan bridge terdaftar sebagai anggota bertag VLAN itu. Interface tersebut mendapat alamat IP dan menjadi gateway, DHCP server, dan batas firewall untuk VLAN. Panduan lama mengonfigurasi VLAN di menu switch chip atau dengan bridge terpisah per VLAN; pada perangkat yang meng-offload bridge VLAN filtering, metode satu bridge lebih sederhana sekaligus cepat.</p>
+<h3>Menerapkannya dengan aman</h3>
+<ul>
+  <li>Bangun semuanya dengan filtering mati, lalu aktifkan sekaligus di akhir, seperti yang dilakukan skrip. Gunakan Safe Mode atau konsol serial saat bekerja dari jarak jauh.</li>
+  <li>Beri tiap VLAN yang di-route DHCP server sendiri dengan <a href="/tools/mikrotik-dhcp-server-generator/">generator DHCP server</a>, dan jauhkan tamu dari VLAN lain dengan aturan forward chain dari <a href="/tools/mikrotik-firewall-generator/">generator firewall</a>.</li>
+  <li>Bandingkan konfigurasi sebelum dan sesudah dengan <a href="/tools/routeros-export-diff/">RouterOS export diff</a>.</li>
+</ul>

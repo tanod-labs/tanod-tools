@@ -1,0 +1,74 @@
+<!--meta
+{
+  "title": "Dịch mã Morse: văn bản sang Morse và ngược lại | Tanod Tools",
+  "description": "Dịch văn bản sang mã Morse và mã Morse về văn bản, gồm chữ cái, chữ số và dấu câu. Phát thành âm thanh với tốc độ bạn chọn. Chạy ngay trong trình duyệt.",
+  "h1": "Dịch mã Morse",
+  "lede": "Chuyển văn bản thành chấm và gạch, hoặc giải mã Morse về văn bản, rồi nghe thử âm thanh của nó.",
+  "blurb": "Văn bản sang mã Morse và ngược lại, có âm thanh.",
+  "keywords": "dịch mã morse, giải mã morse, chuyển văn bản sang morse, morse sang văn bản, bảng chữ cái morse, chấm và gạch, sos morse, âm thanh morse, morse code translator, morse decoder, text to morse, morse to english, morse alphabet audio",
+  "limits": "Tối đa 100.000 ký tự mỗi lần. Phát âm thanh chỉ giới hạn ở 2.000 ký tự đầu tiên.",
+  "howto_title": "Cách dịch mã Morse",
+  "howto": [
+    "Chọn <strong>Văn bản sang Morse</strong> hoặc <strong>Morse sang văn bản</strong>.",
+    "Gõ hoặc dán vào ô nhập. Với mã Morse, đặt một dấu cách giữa các chữ cái và một dấu gạch chéo (hoặc nhiều dấu cách) giữa các từ.",
+    "Sao chép kết quả, tải xuống, hoặc nhấn <strong>Phát</strong> để nghe mã Morse."
+  ],
+  "faq": [
+    ["Tôi nên gõ mã Morse thế nào để giải mã?", "Dùng dấu chấm cho tín hiệu ngắn và dấu gạch ngang cho tín hiệu dài, một dấu cách giữa các chữ cái và một dấu gạch chéo giữa các từ, ví dụ <code>.... .. / - .... . .-. .</code>. Nhiều dấu cách hoặc một dòng mới cũng ngăn cách các từ. Dấu chấm giữa (·), dấu chấm tròn (•), dấu gạch dưới và gạch ngang dài (– —) cũng được chấp nhận."],
+    ["Những ký tự nào dịch được?", "Các chữ cái từ A đến Z, chữ số từ 0 đến 9 và dấu câu theo chuẩn Morse quốc tế: . , ? ' ! / ( ) & : ; = + - _ \" $ @. Chữ có dấu được gửi dưới dạng chữ cái gốc (é thành E). Những ký tự không có mã Morse, như # hay emoji, bị bỏ qua và được liệt kê bên dưới kết quả để bạn biết chúng bị thiếu."],
+    ["Chuyện gì xảy ra với chuỗi Morse không phải mã thật?", "Nó hiện thành dấu # trong văn bản giải mã và được liệt kê trong báo cáo, chẳng hạn khi thiếu một dấu chấm hoặc hai chữ cái dính liền nhau không có dấu cách."],
+    ["Âm thanh được phát như thế nào?", "Mã Morse được phát dưới dạng âm 600 Hz do trình duyệt của bạn tạo ra, với nhịp chuẩn: một dấu gạch dài bằng ba dấu chấm, các chữ cái cách nhau khoảng lặng dài ba dấu chấm và các từ cách nhau bảy. Tốc độ tính bằng từ mỗi phút quyết định độ dài của một dấu chấm (1,2 giây chia cho tốc độ)."],
+    ["Viết SOS như thế nào?", "SOS là <code>... --- ...</code>. Trong tín hiệu cấp cứu thực tế, nó được gửi thành một tín hiệu liền mạch, không có khoảng nghỉ giữa các chữ cái, nhưng khi viết ra, các chữ cái thường được tách rời như trên."],
+    ["Văn bản của tôi có bị tải lên không?", "Không. Việc dịch và âm thanh đều được tạo ngay trong trình duyệt của bạn, và văn bản không được tải lên hay lưu trữ."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <fieldset>
+    <legend>Dịch</legend>
+    <div class="seg">
+      <label><input type="radio" name="dir" value="encode" checked>Văn bản sang Morse</label>
+      <label><input type="radio" name="dir" value="decode">Morse sang văn bản</label>
+    </div>
+  </fieldset>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Văn bản</label>
+      <textarea id="text" spellcheck="false" placeholder="Nhập văn bản vào đây, ví dụ SOS"></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">Mã Morse</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Nhập văn bản để bắt đầu.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Sao chép kết quả</button>
+    <button class="btn" id="dl" type="button" disabled>Tải xuống .txt</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Đảo chiều: dịch ngược kết quả</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Xóa</button>
+  </div>
+  <div class="actions mc-play">
+    <button class="btn" id="play" type="button" disabled>Phát âm thanh</button>
+    <button class="btn btn--quiet" id="stop" type="button" hidden>Dừng</button>
+    <label class="mc-wpm" for="wpm">Tốc độ</label>
+    <select id="wpm" class="mc-wpm__sel">
+      <option value="10">10 từ mỗi phút</option>
+      <option value="15">15 từ mỗi phút</option>
+      <option value="20" selected>20 từ mỗi phút</option>
+      <option value="25">25 từ mỗi phút</option>
+    </select>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Tóm tắt về mã Morse</h2>
+<p>Mã Morse viết mỗi chữ cái thành một mẫu ngắn gồm các tín hiệu ngắn và dài, tức chấm và gạch. Những chữ cái thông dụng có mã ngắn: E là một dấu chấm duy nhất và T là một dấu gạch duy nhất, còn các chữ cái hiếm hơn như Q (--.-) cần bốn tín hiệu. Phiên bản dùng ở đây là mã Morse quốc tế do ITU chuẩn hóa, chính là phiên bản mà người chơi vô tuyến nghiệp dư, phi công và thủy thủ học.</p>
+<p>Nhịp điệu là một phần của mã. Một dấu gạch kéo dài gấp ba lần dấu chấm, khoảng nghỉ trong một chữ cái dài bằng một dấu chấm, khoảng nghỉ giữa các chữ cái bằng ba dấu chấm và giữa các từ bằng bảy. Khi viết, dấu cách tượng trưng cho khoảng nghỉ giữa các chữ cái và dấu gạch chéo cho khoảng nghỉ giữa các từ.</p>
+<p>Mã Morse không có chữ hoa, nên văn bản giải mã hiện ra bằng chữ in hoa, theo cách các nhân viên điện báo vẫn ghi chép từ xưa.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Thử một cách khác để viết văn bản thành tín hiệu bằng <a href="/tools/text-to-binary/">Văn bản sang nhị phân</a>.</li>
+  <li>Biến phần chữ hoa đã giải mã thành câu bình thường bằng <a href="/tools/case-converter/">Chuyển đổi chữ hoa chữ thường</a> (kiểu viết hoa chữ cái đầu câu).</li>
+</ul>

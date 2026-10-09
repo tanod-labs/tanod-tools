@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Giải mã JWT: đọc các claim của JSON Web Token | Tanod Tools",
+  "description": "Giải mã JSON Web Token trong trình duyệt: header, payload và claim, với exp, nbf, iat dạng ngày giờ và thời gian còn lại. Token không được gửi đi đâu.",
+  "h1": "Giải mã JWT",
+  "lede": "Dán một JSON Web Token để đọc header và payload, với thời điểm hết hạn và phát hành hiển thị dưới dạng ngày giờ thực.",
+  "blurb": "Đọc header, claim và thời hạn của JWT.",
+  "keywords": "giải mã jwt đọc jwt json web token bearer token claim exp iat nbf thời hạn token oauth id token jws jwe decode claims expiry",
+  "limits": "Token tối đa 1 MB. Chỉ giải mã: chữ ký được hiển thị nhưng không được kiểm tra.",
+  "howto_title": "Cách giải mã JWT",
+  "howto": [
+    "Dán token vào ô. Tiền tố <code>Bearer </code> ở đầu cùng khoảng trắng hoặc dấu nháy xung quanh sẽ bị bỏ qua.",
+    "Đọc header và payload bên dưới, cùng các thời điểm hết hạn, bắt đầu hiệu lực và phát hành theo múi giờ của bạn và theo UTC.",
+    "Sao chép payload hoặc header đã giải mã dưới dạng JSON đã định dạng nếu bạn cần dùng ở nơi khác."
+  ],
+  "faq": [
+    ["Công cụ này có kiểm tra chữ ký không?", "Không. Trang này chỉ giải mã token. Ai cũng có thể tạo token với header và payload bất kỳ, nên nội dung hiển thị ở đây là các claim, không phải bằng chứng. Chỉ dịch vụ nắm khóa ký (hoặc khóa công khai, với token RS256 và ES256) mới biết token có thật hay không, và nó còn phải kiểm tra thời hạn, audience và issuer."],
+    ["Dán token vào đây có an toàn không?", "Trang này không gửi token đi đâu cả: token được giải mã bằng mã chạy trong trình duyệt của bạn và không được lưu. Dù vậy, một access token còn hiệu lực chính là mật khẩu trong suốt thời gian nó còn hợp lệ. Tránh dán token môi trường thật vào bất kỳ trang web nào, và nên dùng token đã hết hạn hoặc token thử nghiệm khi gỡ lỗi."],
+    ["Vì sao tôi không đọc được một số token?", "Token có năm phần thay vì ba là JWT được mã hóa (JWE). Header đọc được, nhưng payload đã mã hóa và chỉ đọc được bằng khóa của bên nhận, nên công cụ này hiển thị header và giải thích các phần. Các lỗi khác, như sai số phần hoặc văn bản không phải Base64url hay JSON hợp lệ, được báo kèm điều gì đã sai."],
+    ["Các thời điểm được tính như thế nào?", "Các claim <code>exp</code>, <code>nbf</code> và <code>iat</code> là NumericDate: số giây kể từ 00:00 ngày 1 tháng 1 năm 1970 UTC. Chúng được hiển thị theo múi giờ của thiết bị bạn và theo UTC, và được so với đồng hồ của thiết bị để cho biết token đã hết hạn chưa. Nếu đồng hồ của bạn sai, các thời gian tương đối cũng sẽ sai. Giá trị trông giống mili giây sẽ được đánh dấu, vì đó là lỗi thường gặp."],
+    ["alg, typ và kid nghĩa là gì?", "<code>alg</code> là thuật toán ký, như HS256 (khóa bí mật dùng chung), RS256 hoặc ES256 (cặp khóa). <code>typ</code> thường là JWT. <code>kid</code> là ID khóa mà bên phát hành đã dùng, cho bên xác minh biết nên dùng khóa nào để kiểm tra chữ ký. Token có <code>alg</code> là <code>none</code> thì không có chữ ký và không bao giờ nên được chấp nhận cho bất kỳ việc gì quan trọng."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">Token</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">Thử một token mẫu</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">Xóa</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>Chữ ký chưa được xác minh.</strong> Trang này giải mã token; nó không kiểm tra token có thật hay không. Ai cũng có thể tạo token với nội dung bất kỳ.</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>Thuật toán</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>Loại</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>ID khóa</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>Số phần</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">Thời gian</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Múi giờ của bạn, rồi UTC</th><th scope="col">Tương đối</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">Header</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">Payload</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">Các claim</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Ý nghĩa</th><th scope="col">Giá trị</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">Chữ ký</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}Sao chép payload</button>
+      <button class="btn" id="jw-copy-h" type="button">Sao chép header</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Bên trong một JSON Web Token có gì</h2>
+<p>JWT đã ký gồm ba đoạn văn bản Base64url nối với nhau bằng dấu chấm: header, payload và chữ ký. Header và payload chỉ là JSON được viết dưới dạng Base64url, nên ai cũng đọc được. Base64url là một phép mã hóa dạng ký tự, không phải mã hóa bảo mật, vì vậy đừng bao giờ đặt bí mật vào payload của JWT trừ khi token được mã hóa.</p>
+<p>Payload chứa các claim. Một số tên đã được đăng ký: <code>iss</code> (ai phát hành token), <code>sub</code> (token nói về ai), <code>aud</code> (token dành cho ai), <code>exp</code> (khi nào hết hạn), <code>nbf</code> (không hợp lệ trước thời điểm này), <code>iat</code> (thời điểm phát hành) và <code>jti</code> (ID duy nhất). Các dịch vụ thêm claim riêng của họ, như vai trò, scope hoặc địa chỉ email.</p>
+<p>Chữ ký là thứ làm cho các claim đáng tin, và việc kiểm tra nó cần khóa ký, thứ chỉ bên phát hành và các dịch vụ chấp nhận token mới nên nắm giữ. Công cụ giải mã này cố ý dừng ở việc đọc: nó cho bạn thấy token nói gì và khi nào hết hạn, thường là đủ cho việc gỡ lỗi đăng nhập hoặc một lệnh gọi API.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Chuyển bất kỳ thời gian Unix nào khác thành ngày giờ bằng <a href="/tools/unix-timestamp-converter/">Chuyển đổi Unix timestamp</a>.</li>
+  <li>Định dạng hoặc kiểm tra một payload lớn bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+  <li>Giải mã thủ công từng đoạn Base64url bằng <a href="/tools/base64-encode-decode/">Mã hóa và giải mã Base64</a>.</li>
+</ul>

@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Hash oluşturucu: MD5, SHA-1, SHA-256, SHA-512 | Tanod Tools",
+  "description": "Metnin veya dosyanın MD5, SHA-1, SHA-256, SHA-384 ve SHA-512 hash değerini hex veya Base64 olarak alın, beklenen sağlama toplamıyla karşılaştırın. Tarayıcıda çalışır.",
+  "h1": "Hash oluşturucu",
+  "lede": "Bir metnin veya dosyanın MD5, SHA-1, SHA-256, SHA-384 ve SHA-512 hash değerlerini hesaplayın; indirdiğiniz dosyayı yayımlanan sağlama toplamıyla doğrulayın.",
+  "blurb": "Metin veya dosyaların MD5 ve SHA sağlama toplamları.",
+  "keywords": "hash oluşturucu sağlama toplamı checksum dosya doğrulama özet md5 sha1 sha256 sha384 sha512 sha-2 digest verify",
+  "limits": "En fazla yaklaşık 5 MB metin. 200 MB'a kadar dosya; dosya bu cihazda belleğe okunur.",
+  "howto_title": "Hash nasıl oluşturulur",
+  "howto": [
+    "Metni yazın veya yapıştırın ya da Dosya'ya geçip bir dosya seçin. Beş hash değeri de hemen hesaplanır.",
+    "Çıktı için küçük harfli hex, büyük harfli hex veya Base64 seçin.",
+    "İndirdiğiniz bir dosyayı doğrulamak için yayımlanan sağlama toplamını <strong>Karşılaştır</strong> alanına yapıştırın; eşleşen algoritma vurgulanır. Bir hash'i kopyalayabilir ya da hepsini .txt dosyası olarak indirebilirsiniz."
+  ],
+  "faq": [
+    ["Metnim veya dosyam yükleniyor mu?", "Hayır. Hash değerleri tarayıcınızda hesaplanır: SHA hash'leri tarayıcının yerleşik Web Crypto işlevleriyle, MD5 ise bu sayfadaki kodla. Hiçbir şey gönderilmez veya saklanmaz; sekmeyi kapattığınızda silinir."],
+    ["MD5 veya SHA-1 kullanmak güvenli mi?", "Güvenlik amacıyla değil. İkisi de kırılmıştır: aynı MD5 veya SHA-1 hash değerini veren iki farklı girdiyi kasıtlı olarak üretmek mümkündür. Yine de bir indirmenin eksiksiz geldiğini kontrol etmek gibi kazara bozulmaları fark etmek için yeterlidir. Verinin kurcalanma ihtimali olan her durumda ve imzalar için SHA-256 veya daha güçlüsünü kullanın."],
+    ["Bununla parolaları hash'leyebilir miyim?", "Bir parolanın hash değerini görebilirsiniz ama parolaları düz bir hash ile saklamak yanlıştır: bunlar gibi hızlı hash'ler saniyede milyarlarca kez denenebilir. Parola saklamak için sunucunuzda çalışan, yavaş ve tuzlu (salted) bir algoritma gerekir; örneğin Argon2, scrypt veya bcrypt."],
+    ["Hash'leme şifrelemeyle aynı şey mi?", "Hayır. Şifreleme anahtarla geri çevrilebilir. Hash ise girdiye geri dönüştürülemeyen, sabit uzunlukta bir parmak izidir; bir girdiyi bulmanın tek yolu tahmin edip karşılaştırmaktır. Aynı girdi her zaman aynı hash'i verir, tek karakterlik değişiklik ise tamamen farklı bir hash üretir."],
+    ["Hash değerim komut satırındakiyle neden eşleşmiyor?", "Sondaki satır sonuna bakın: <code>echo \"text\" | sha256sum</code> metne ek olarak bir yeni satır karakterini de hash'ler, bu kutu ise tam olarak yazdığınızı hash'ler. Metin UTF-8 olarak hash'lenir ve kutudaki satır sonları tek bir LF karakteridir; bu yüzden bir Windows dosyasından (CRLF) kopyalanan metin farklı çıkabilir. Birebir eşleşme için dosyanın kendisini Dosya modunda hash'leyin."],
+    ["Burada hex ve Base64 ne anlama geliyor?", "Aynı hash baytlarını yazmanın iki yoludur. Hex bayt başına iki karakter kullanır (bir SHA-256, 64 hex karakterdir); Base64 daha kısadır (44 karakter) ve Subresource Integrity öznitelikleri gibi yerlerde kullanılır. Karşılaştır kutusu ikisini de kabul eder."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Hash</legend>
+  <div class="seg" role="radiogroup" aria-label="Girdi">
+    <label><input type="radio" name="mode" value="text" checked>Metin</label>
+    <label><input type="radio" name="mode" value="file">Dosya</label>
+  </div>
+</fieldset>
+
+<div id="h-textpanel" class="field">
+  <label for="h-in">Metin</label>
+  <textarea id="h-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Hash'lenecek metni yazın veya yapıştırın"></textarea>
+  <span class="help" id="h-tinfo"></span>
+</div>
+
+<div id="h-filepanel" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Hash'lemek için bir dosya bırakın</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Dosya seçin</span></label>
+    <p class="drop__hint">Her türden, 200 MB'a kadar. Dosya bu cihazda okunur, yüklenmez.</p>
+  </div>
+</div>
+
+<div class="opts">
+  <div class="field">
+    <span class="label" id="h-fmt-l">Çıktı</span>
+    <div class="seg" role="radiogroup" aria-labelledby="h-fmt-l">
+      <label><input type="radio" name="fmt" value="hex" checked>hex</label>
+      <label><input type="radio" name="fmt" value="HEX">HEX</label>
+      <label><input type="radio" name="fmt" value="b64">Base64</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="h-expect">Beklenen hash ile karşılaştır</label>
+    <input type="text" id="h-expect" class="mono" autocomplete="off" spellcheck="false" placeholder="Kontrol etmek için bir sağlama toplamı yapıştırın">
+  </div>
+</div>
+<p class="dv-verdict" id="h-verdict" role="status" hidden></p>
+<div class="status" id="status" role="status" hidden></div>
+<div id="h-result" hidden>
+  <p class="help" id="h-info"></p>
+  <dl class="dv-rows" id="h-rows"></dl>
+  <div class="actions">
+    <button class="btn btn--primary" id="h-copyall" type="button">{{mark:i-copy}}Tümünü kopyala</button>
+    <button class="btn" id="h-dl" type="button">{{mark:i-download}}.txt indir</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="h-clear" type="button">Temizle</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Hash ne işe yarar</h2>
+<p>Kriptografik bir hash, tek harften büyük bir dosyaya kadar her girdiyi kısa, sabit uzunlukta bir parmak izine dönüştürür. Aynı girdi her zaman aynı parmak izini verir; tek bir bitin değişmesi bile tamamen farklı bir parmak izi üretir. Bu da hash'leri bir dosyanın değişmeden ulaştığını kontrol etmek, yinelenen dosyaları fark etmek ve imzalarda ve sürüm denetiminde yapı taşı olarak kullanmak için yararlı kılar.</p>
+<p>İndirdiğiniz bir dosyayı doğrulamak için yayımcının dosyanın yanında verdiği sağlama toplamını (çoğunlukla SHA-256) bulun, dosyayı buraya bırakın ve sağlama toplamını Karşılaştır alanına yapıştırın. Eşleşirse dosya, yayımcının hash'lediği dosyayla bayt bayt aynıdır. Eşleşme, dosyanın yayımcının kastettiği dosya olduğunu ancak sağlama toplamının geldiği sayfaya güveniyorsanız kanıtlar.</p>
+<p>SHA-1 ve SHA-2 hash'leri (SHA-256, SHA-384, SHA-512) tarayıcınızın Web Crypto işlevleriyle hesaplanır. Tarayıcılar MD5 sunmadığı için bu sayfa kendi MD5 kodunu içerir; bu kod dosyaları dilimler halinde okur ve büyük dosyalarda ilerlemeyi gösterir. MD5 ve SHA-1 yalnızca eski sağlama toplamlarıyla uyumluluk için tutulmuştur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Parmak izi yerine dosyanın içeriğini metin olarak mı istiyorsunuz? <a href="/tools/base64-encode-decode/">Base64 kodla ve çöz</a> aracını kullanın.</li>
+  <li>Bir sırrı hash'lemek yerine güçlü ve rastgele bir tane oluşturmak için <a href="/tools/password-generator/">Parola oluşturucu</a>yu kullanın.</li>
+  <li>İki metni satır satır karşılaştırmak, iki hash'i karşılaştırmaktan daha kolaydır: <a href="/tools/text-diff/">Metin karşılaştır</a>.</li>
+</ul>

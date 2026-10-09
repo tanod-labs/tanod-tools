@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Generator load balancing PCC dan failover MikroTik | Tanod Tools",
+  "description": "Buat load balancing PCC RouterOS v7 untuk 2 sampai 8 WAN dengan failover rekursif, host pengecekan, routing table, dan masquerade. Berkomentar, di browser Anda.",
+  "h1": "Generator load balancing dan failover MikroTik",
+  "lede": "Masukkan link WAN Anda dan dapatkan load balancing PCC RouterOS v7 dengan failover route rekursif, atau failover saja, dengan setiap blok dijelaskan.",
+  "blurb": "PCC di beberapa WAN dengan failover route rekursif.",
+  "keywords": "load balancing mikrotik pcc per connection classifier dual wan failover routing rekursif check-gateway ping routeros v7 routing table mark-routing multi wan dua isp",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 (routing table dengan fib, routing-table pada route). Hanya IPv4. WAN yang gateway-nya berubah lewat DHCP memerlukan gateway diperbarui secara manual atau lewat skrip DHCP client. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara menyiapkan load balancing PCC di MikroTik",
+  "howto": [
+    "Pilih load balancing PCC dengan failover, atau hanya failover.",
+    "Tambahkan tiap WAN dengan interface-nya, gateway (atau nama interface untuk PPPoE dan LTE), host pengecekan publik yang membalas ping, dan bobot untuk bagiannya dari koneksi.",
+    "Tuliskan jaringan lokal dan interface list LAN, matikan add-default-route pada WAN client, lalu terapkan skrip dengan Safe Mode aktif."
+  ],
+  "faq": [
+    ["Bagaimana PCC membagi lalu lintas?", "per-connection-classifier meng-hash field dari setiap koneksi baru (kedua alamat, atau alamat dan port) ke dalam N bucket, dan tiap WAN mengambil sebagian bucket. Koneksi mempertahankan mark-nya, sehingga semua paketnya memakai WAN yang sama. Bobot 2 memberi WAN dua bucket, dua kali bagian WAN berbobot 1. Pembagian ini per koneksi, bukan per byte, jadi satu unduhan besar tetap memakai satu link."],
+    ["Apa itu failover rekursif dan mengapa dipakai?", "check-gateway=ping pada default route biasa hanya menguji hop pertama ISP, yang sering tetap hidup padahal jaringan ISP di belakangnya rusak. Di sini tiap WAN mendapat host route ke host pengecekan publik, dan default route menunjuk ke host itu, bukan ke gateway. Saat host berhenti menjawab lewat WAN tersebut, RouterOS menonaktifkan route yang melewatinya dan lalu lintas pindah ke WAN berikutnya."],
+    ["Mengapa ada aturan output drop untuk host pengecekan?", "Jika link sebuah WAN putus, host route-nya hilang dan router akan menjangkau host pengecekan lewat WAN lain, sehingga WAN yang mati tampak sehat. Aturan drop mencegah ping ke setiap host pengecekan keluar lewat interface mana pun selain WAN miliknya."],
+    ["Apakah saya perlu menonaktifkan FastTrack?", "Untuk PCC, ya. Routing mark diterapkan oleh mangle pada setiap paket, dan paket yang di-fasttrack melewati mangle, sehingga akan mengikuti tabel main, bukan WAN-nya. Failover biasa tetap berfungsi dengan FastTrack aktif."],
+    ["Apa yang berubah dari panduan PCC RouterOS v6?", "Route v6 memakai routing-mark=, dan mark dibuat secara implisit. Di v7 setiap mark harus berupa routing table yang dibuat di /routing table dengan fib, dan route merujuknya dengan routing-table=. Mangle tetap memakai new-routing-mark. Pembantu migrasi v6 ke v7 mengonversi route lama dan menambahkan tabelnya."],
+    ["Apakah yang saya ketik dikirim ke suatu tempat?", "Tidak. Skrip dibuat di browser Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="lb">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Mode</legend>
+      <div class="seg" role="radiogroup" aria-label="Mode">
+        <label><input type="radio" name="lb-mode" value="pcc" checked>Load balancing PCC + failover</label>
+        <label><input type="radio" name="lb-mode" value="failover">Hanya failover</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Link WAN</legend>
+      <ul class="ros-rows" id="lb-wans"></ul>
+      <button class="btn btn--sm ros-add" id="lb-add" type="button">{{mark:i-plus}}Tambah WAN</button>
+      <span class="help">Diurutkan menurut prioritas untuk failover dan untuk lalu lintas router sendiri.</span>
+    </fieldset>
+    <fieldset class="gen-fs" id="lb-pcc-f">
+      <legend>Penyeimbangan</legend>
+      <div class="opts">
+        <div class="field"><label for="lb-lan">Interface list LAN</label><input type="text" id="lb-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="lb-local">Jaringan lokal</label><input type="text" id="lb-local" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field">
+          <label for="lb-class">Classifier</label>
+          <select id="lb-class">
+            <option value="both-addresses" selected>both-addresses (tetap per klien dan server)</option>
+            <option value="both-addresses-and-ports">both-addresses-and-ports (sebaran lebih halus)</option>
+            <option value="src-address">src-address (satu WAN per klien)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opsi</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="lb-fast" checked>Nonaktifkan FastTrack (diperlukan untuk PCC)</label>
+        <label class="check"><input type="checkbox" id="lb-nat" checked>Masquerade di setiap WAN</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Risiko terkunci.</strong> Mengubah route di router jarak jauh bisa memutus akses Anda. Uji di lab, atau aktifkan Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> di terminal) lebih dulu.</span></p>
+    <label for="lb-out" class="label">Skrip RouterOS v7</label>
+    <textarea id="lb-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="lb-copy" type="button">Salin skrip</button>
+      <button class="btn" id="lb-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="lb-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Cara kerja konfigurasi yang dihasilkan</h2>
+<p>Load balancing PCC punya tiga bagian yang bergerak. <strong>Mangle</strong> menandai setiap koneksi baru dari LAN dengan connection mark yang dipilih oleh per-connection classifier, dan menandai koneksi yang masuk di sebuah WAN dengan WAN itu, sehingga balasan port forward keluar lewat jalur masuknya. Rangkaian aturan mangle kedua mengubah tiap connection mark menjadi <strong>routing mark</strong> pada setiap paket. <strong>Routing table</strong>, satu per WAN, lalu memuat default route lewat WAN itu, dengan WAN lain pada distance lebih tinggi sebagai cadangan.</p>
+<p>Failover memakai <strong>route rekursif</strong>. Sebuah host route mengirim satu host pengecekan publik lewat satu WAN saja. Default route memakai host pengecekan itu sebagai gateway dengan <code>target-scope=11</code>, sehingga RouterOS me-resolve-nya lewat host route tersebut, dan <code>check-gateway=ping</code> mem-ping host pengecekan setiap sepuluh detik. Dua balasan yang terlewat menjatuhkan route, dan distance berikutnya mengambil alih; ketika host menjawab lagi, route kembali.</p>
+<h3>Sebelum menerapkannya</h3>
+<ul>
+  <li>Atur <code>add-default-route=no</code> pada DHCP client atau PPPoE client WAN, atau default route bawaan mereka yang akan menang.</li>
+  <li>Meng-upgrade konfigurasi PCC v6 lama? Jalankan export-nya lewat <a href="/tools/routeros-v7-migration-helper/">pembantu migrasi v6 ke v7</a> untuk melihat apa yang berubah.</li>
+  <li>Pertahankan input dan forward chain firewall; <a href="/tools/mikrotik-firewall-generator/">generator firewall</a> memakai interface list, jadi tambahkan setiap WAN ke list WAN.</li>
+</ul>

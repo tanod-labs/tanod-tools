@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Aide à la migration RouterOS v6 vers v7 (OSPF, BGP) | Tanod Tools",
+  "description": "Collez un export RouterOS v6 pour convertir routing marks, filtres, OSPF et BGP en syntaxe v7, chaque ligne incertaine étant signalée à relire. Dans votre navigateur.",
+  "h1": "Aide à la migration RouterOS v6 vers v7",
+  "lede": "Collez un export v6 et obtenez-le réécrit pour RouterOS v7 : tables de routage, règles de routing filter, modèles OSPF et connexions BGP, avec une liste de relecture pour tout ce qui ne se convertit pas mécaniquement.",
+  "blurb": "Convertit routing marks, filtres, OSPF et BGP de la v6 vers la v7.",
+  "keywords": "migration routeros v6 vers v7 mikrotik mise à jour v7 routing filter rule ospf interface-template bgp connection routing-mark routing-table fib convertir export syntaxe v7",
+  "local_text": "Votre export est converti dans votre navigateur et ne quitte jamais votre appareil",
+  "limits": "Convertit les routes et les règles de routage, les routing marks, les routing filters, OSPFv2, les pairs et réseaux BGP ainsi que le client NTP ; signale à relire tout le reste de ce qui a changé en v7 et laisse le reste inchangé. Restez prudent : testez le résultat sur un routeur de laboratoire avant tout usage. MikroTik et RouterOS sont des marques de SIA Mikrotīkls. Cet outil est indépendant : il n'est ni affilié à MikroTik ni approuvé par MikroTik.",
+  "howto_title": "Comment convertir une configuration RouterOS v6 en v7",
+  "howto": [
+    "Exécutez <code>/export hide-sensitive</code> sur le routeur v6 (ou <code>/export file=v6</code> puis téléchargez le fichier), puis collez le texte ou ouvrez le fichier .rsc ici.",
+    "Lisez le script converti à droite : chaque ligne convertie suit son original, affiché sous la forme <code># v6:</code>, et les lignes incertaines sont mises en commentaire avec une note <code># REVIEW</code>.",
+    "Parcourez la liste de relecture, puis appliquez le résultat sur un routeur v7 de laboratoire avant la production."
+  ],
+  "faq": [
+    ["Ai-je besoin de cet outil pour passer un routeur de la v6 à la v7 ?", "En général non : une mise à jour sur place convertit automatiquement la configuration, et MikroTik recommande cette méthode. Cet outil sert à voir ce qui va changer avant la mise à jour, à vérifier ce que la conversion automatique a fait, et à reconstruire une ancienne configuration sur un nouveau routeur livré avec la v7."],
+    ["Que convertit-il ?", "Les routes avec routing-mark deviennent des routes avec routing-table, et chaque mark utilisée par des routes, des règles ou du mangle reçoit une entrée /routing table avec fib. /ip route rule passe dans /routing rule. Les routes multi-passerelles sont scindées pour l'ECMP de la v7. Les routing filters qui filtrent sur prefix et prefix-length et fixent distance, local-pref, MED ou AS-path prepend deviennent des entrées /routing filter rule. Les instances, zones, réseaux et paramètres par interface d'OSPF deviennent des instances, des areas et des interface templates. Les paramètres d'instance et de pair BGP deviennent des connections, et les réseaux BGP deviennent une address list. Les serveurs du client NTP passent dans le menu servers."],
+    ["Que ne convertit-il pas ?", "Tout ce qu'il ne peut pas convertir avec certitude est mis en commentaire et listé pour relecture : les critères de routing filter comme les communautés BGP et les AS paths, invert-match, les liens virtuels OSPF et les voisins NBMA, OSPFv3, RIP, PIM, les détails MPLS, les VRF, les familles BGP VPN et les options de pair peu courantes, User Manager, et les scripts qui utilisent des commandes modifiées. Il signale aussi les changements de comportement, comme le rejet par la v7 des routes en fin de chaîne de filtres."],
+    ["Pourquoi des règles d'apparence valide sont-elles mises en commentaire ?", "Un routing filter qui perdrait une de ses conditions à la traduction correspondrait à plus de routes qu'avant et pourrait accepter ou rejeter les mauvais préfixes. Quand une partie d'une règle ne peut pas être convertie, la règle entière reste en commentaire avec la traduction la plus proche, si bien que rien de converti à moitié ne devient actif."],
+    ["Mes mots de passe et mes clés sont-ils en sécurité ?", "L'export est converti par le JavaScript de cette page et n'est envoyé nulle part. Avec hide-sensitive, les clés OSPF et BGP restent aussi hors du texte ; remettez-les ensuite sur le routeur v7."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen ros-gen--paste" id="mg">
+  <div class="ros-gen__form ros-paste" id="mg-form">
+    <div class="field">
+      <label for="mg-in">Export RouterOS v6</label>
+      <textarea id="mg-in" class="mono" rows="18" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="# jan/02/2024 10:15:22 by RouterOS 6.49.10&#10;/ip route&#10;add gateway=10.0.0.1 routing-mark=to-isp2&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}Ouvrir un fichier .rsc<input type="file" id="mg-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="mg-sample" type="button">Essayer un export v6 d'exemple</button>
+    </div>
+    <div class="ros-results" id="mg-res" aria-live="polite" hidden></div>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>À relire avant usage.</strong> Les lignes marquées <code># REVIEW</code> demandent un avis humain. Testez le résultat sur un routeur de laboratoire et gardez Safe Mode (mode sécurisé) activé (<kbd>Ctrl</kbd>+<kbd>X</kbd>) pour l'appliquer à distance.</span></p>
+    <label for="mg-out" class="label">Script RouterOS v7</label>
+    <textarea id="mg-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="mg-copy" type="button">Copier le script</button>
+      <button class="btn" id="mg-dl" type="button">{{mark:i-download}}Télécharger en .rsc</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Ce qui change entre RouterOS v6 et v7</h2>
+<p>La plus grande partie d'une configuration RouterOS se lit de la même façon dans les deux versions : interfaces, adresses, règles de firewall, DHCP, PPP et queues gardent leurs menus et leurs propriétés. Le gros changement concerne le routage. La v7 a remplacé le moteur de routage, et avec lui la façon de configurer les routing marks, les routing filters, OSPF et BGP. Les routing marks sont désormais de vraies tables de routage, à créer sous <code>/routing table</code> avec <code>fib</code> avant que des routes, des règles ou du mangle puissent les utiliser, et les routes utilisent <code>routing-table=</code> au lieu de <code>routing-mark=</code>.</p>
+<p>Les routing filters sont passés d'une règle par ligne critère-et-action à de petits scripts : <code>/routing filter rule add chain=ospf-in rule="if (dst in 10.0.0.0/8 &amp;&amp; dst-len in 8-24) { accept }"</code>. Les réseaux OSPF sont devenus des <strong>interface templates</strong> qui sélectionnent les interfaces par réseau, par nom ou les deux, avec les paramètres par interface portés par le template. Les pairs BGP sont devenus des <strong>connections</strong> avec un <code>local.role</code> explicite, et les réseaux annoncés proviennent maintenant d'une address list indiquée dans <code>output.network</code>.</p>
+<h3>Comment fonctionne cet outil</h3>
+<ul>
+  <li>Il ne réécrit que ce qui change mécaniquement, affiche chaque ligne d'origine au-dessus de son remplacement et laisse tout le reste intact.</li>
+  <li>Quand une ligne ne peut pas être convertie avec certitude, elle est mise en commentaire et expliquée, jamais devinée ; la liste à côté de la saisie les regroupe toutes avec leurs numéros de ligne.</li>
+  <li>Comparez le résultat avec un export du routeur mis à jour grâce au <a href="/tools/routeros-export-diff/">comparateur d'exports RouterOS</a>, et vérifiez le firewall avec l'<a href="/tools/mikrotik-firewall-auditor/">audit de firewall</a>.</li>
+</ul>

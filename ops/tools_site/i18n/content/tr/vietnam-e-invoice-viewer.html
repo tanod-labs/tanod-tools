@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Vietnam e-fatura görüntüleyici: hóa đơn điện tử XML açın | Tanod Tools",
+  "description": "Vietnam'ın hóa đơn điện tử faturasını (XML) açıp normal fatura olarak okuyun. Yazdırın, PDF kaydedin, JSON alın. Ücretsiz, yükleme yok.",
+  "h1": "Vietnam e-fatura görüntüleyici",
+  "lede": "Vietnam'ın elektronik faturasını (hóa đơn điện tử) açın ve sıradan bir fatura gibi okuyun: fatura serisi ve numarası, satıcı, alıcı, kalemler, orana göre KDV ve vergi idaresinin kodu. XML tarayıcınızda okunur, hiçbir yere yüklenmez.",
+  "blurb": "Vietnam'ın hóa đơn điện tử faturasını (123/2020 XML) normal fatura olarak okuyun.",
+  "keywords": "vietnam e-fatura görüntüleyici vietnam elektronik fatura hóa đơn điện tử xml açma vietnam faturası okuma vietnam e-fatura xml 123/2020 78/2021 mccqt vergi idaresi kodu vietnam e-invoice viewer",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB; ilk 5.000 fatura kalemi gösterilir. 123/2020 sayılı Kararname ve 78/2021 sayılı Tebliğ'in fatura XML'ini okur (kök öğe HDon; vergi idaresinden gelen TDiep mesajının içindeyse de), kodlu veya kodsuz. Dijital imzalar (DSCKS) doğrulanmaz. Yalnızca görüntüleyicidir: faturayı doğrulamaz ve vergi idaresinde herhangi bir sorgu yapmaz.",
+  "howto_title": "Vietnam e-faturası nasıl açılır",
+  "howto": [
+    "E-fatura sağlayıcınızdan, vergi idaresinin portalından ya da muhasebe yazılımınızdan kaydettiğiniz fatura XML'ini seçin veya sayfaya sürükleyin.",
+    "Faturayı okuyun: seri (KHHDon) ve numara (SHDon), varsa vergi idaresinin kodu (MCCQT), satıcı (NBan), alıcı (NMua), kalemler, orana göre KDV, toplamlar ve ödeme.",
+    "<strong>Yazdır veya PDF olarak kaydet</strong>, <strong>JSON indir</strong> ya da <strong>Ham XML'i göster</strong> düğmesine basın."
+  ],
+  "faq": [
+    [
+      "Fatura yükleniyor veya vergi idaresine gönderiliyor mu?",
+      "Hayır. Bu sayfa Vietnam vergi idaresine, sağlayıcınıza ya da herhangi bir sunucuya bağlanmaz. XML tarayıcınızda okunur ve bu sayfada gösterilir; sekmeyi kapattığınızda her şey silinir."
+    ],
+    [
+      "Dijital imza doğrulanıyor mu?",
+      "Hayır. DSCKS öğesindeki imzalar (satıcınınki ve kodlu faturada vergi idaresinin imzası) doğrulanmaz. İmza taşıyan dosya bir notla işaretlenir; ancak faturayı kimin imzaladığını veya sonradan değiştirilip değiştirilmediğini bu sayfa söyleyemez. Bunun için sağlayıcınızın ya da vergi idaresinin araçlarını kullanın."
+    ],
+    [
+      "Fatura serisi ile MCCQT nedir?",
+      "Fatura serisi, mali form numarasından (KHMSHDon) ve seri işaretinden (KHHDon, örneğin C24TAA) oluşur; fatura numarası SHDon'dur. MCCQT, vergi idaresinin kodlu faturaya (hóa đơn có mã) verdiği koddur; kodsuz faturada MCCQT bulunmaz. Hepsi dosyada yazdığı gibi gösterilir; bir kodun gerçek olup olmadığını bu sayfa denetleyemez."
+    ],
+    [
+      "Vergi idaresinden dönen mesajı açabilir mi?",
+      "Evet. XML, faturayı DLieu içinde taşıyan bir TDiep mesajıysa fatura çıkarılıp gösterilir. Diğer mesaj türleri ve eski biçimdeki faturalar okunmaz."
+    ],
+    [
+      "KDV oranları nasıl gösterilir?",
+      "%10, %8, %5 ve %0 gibi oranlar oran olarak gösterilir. KCT (KDV'ye tabi değil) ve KKKNT (beyan ve ödemeye tabi değil) dosyada yazdığı kodla, ilgili KDV kategorisinin yanında görünür. KHAC:x% biçiminde yazılmış bir oran, x oranı olarak gösterilir."
+    ],
+    [
+      "Faturanın XML'ini nereden alırım?",
+      "E-fatura sağlayıcınız ve vergi idaresinin portalı faturayı XML dosyası olarak indirmenize izin verir; muhasebe yazılımları da dışa aktarabilir. Bu sayfa PDF'i değil, kaydettiğiniz XML dosyasını okur."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Vietnam'ın elektronik faturaları</h2>
+<p>123/2020/ND-CP sayılı Kararname ve 78/2021/TT-BTC sayılı Tebliğ'den bu yana Vietnam'daki işletmeler, vergi idaresinin belirlediği biçimde XML dosyası olarak hóa đơn điện tử, yani elektronik fatura düzenler. Fatura ya vergi idaresinin verdiği bir kod taşır (hóa đơn có mã; MCCQT öğesinde görünür) ya da kodsuz düzenlenir. Fatura XML'in kendisidir; okunabilir hâli onun bir görünümüdür. Bu sayfa, elinizdeki XML'den o görünümü tarayıcınızda üretir. Konu Vietnam sistemidir; Türkiye'deki GİB e-Fatura sistemiyle bir ilgisi yoktur.</p>
+<h2>Görüntüleyici neleri gösterir</h2>
+<p>Fatura adı ve sürümü, form numarası (KHMSHDon), seri (KHHDon), fatura numarası (SHDon), tarih (NLap), varsa vergi idaresinin kodu (MCCQT), vergi kodları (MST), adresleri ve iletişim bilgileriyle satıcı (NBan) ve alıcı (NMua), her kalem birimi, miktarı, fiyatı, iskontosu ve KDV oranıyla, orana göre KDV (THTTLTSuat), toplamlar, yazıyla tutar ve ödeme bilgileri görünür. Düzeltme veya yerine geçen bir faturada (TCHDon) atıf yapılan fatura da gösterilir. Tutarlar dosyadakiyle birebir gösterilir.</p>
+<p>Dijital imzaları (DSCKS) doğrulamaz, faturayı vergi idaresinin şemasına ve kurallarına göre denetlemez ve faturayı sorgulamaz. 32/2011 sayılı Tebliğ dönemindeki gibi başka biçimlerdeki faturalar okunmaz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>JSON indir, Vietnamca alan adları EN 16931 iş terimlerine eşlenmiş hâlde faturayı düz veri olarak verir.</li>
+  <li>Başka biçimler de burada açılır: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol ve Türkiye'nin e-Faturası. Birini açtığınızda sayfa uygun görüntüleyiciyi önerir.</li>
+  <li>Ham XML'i göster, okunabilir faturanın göstermediği bir öğeye ihtiyaç duyduğunuzda işe yarar.</li>
+</ul>

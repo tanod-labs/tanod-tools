@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "Unsichtbare Zeichen und ASCII smuggling erkennen | Tanod Tools",
+  "description": "Finden Sie Zeichen mit Breite null, Bidi- und Unicode-Tag-Zeichen, decodieren Sie versteckten ASCII-Text und erkennen Sie ähnliche Wörter. Kostenlos, im Browser.",
+  "h1": "Detektor für unsichtbare Zeichen und Decoder für ASCII smuggling",
+  "lede": "Fügen Sie einen Text ein, um die Zeichen zu finden, die Sie nicht sehen, und um Text zu lesen, der in unsichtbaren Unicode-Tag-Zeichen versteckt ist: Leerzeichen mit Breite null, Steuerzeichen für die Textrichtung, versteckte Unicode-Tag-Zeichen und Wörter, die lateinische Buchstaben mit zum Verwechseln ähnlichen kyrillischen oder griechischen mischen.",
+  "blurb": "Unsichtbaren Unicode finden, versteckten ASCII-Text decodieren und ähnliche Wörter erkennen.",
+  "keywords": "unsichtbare zeichen finden ascii smuggling decoder zero width space finder versteckte unicode zeichen bidi trojan source unicode tag zeichen ascii smuggling prompt injection homoglyphen kyrillisch ähnliche wörter zero width zeichen entfernen",
+  "local_text": "Läuft in Ihrem Browser; nichts, was Sie eingeben, verlässt Ihr Gerät",
+  "limits": "Text bis zu einigen Millionen Zeichen. Die Prüfung betrachtet Unicode-Codepunkte: Sie findet versteckte Zeichen, kann aber nicht erkennen, ob ein bestimmtes davon in Ihrem Text harmlos ist. Echte Emoji-Sequenzen, etwa Flaggen und Familien-Emoji, werden nicht gemeldet.",
+  "howto_title": "So finden Sie unsichtbare Zeichen",
+  "howto": [
+    "Fügen Sie den zu prüfenden Text ein oder wählen Sie <em>Beispiel laden</em>, um zu sehen, was das Tool findet.",
+    "Lesen Sie die Anzahl je Zeichenart, den markierten Text und die Tabelle mit Zeile, Spalte und Codepunkt jedes Fundes.",
+    "Wählen Sie <em>Bereinigten Text kopieren</em>, um den Text ohne die unsichtbaren Zeichen zu erhalten."
+  ],
+  "faq": [
+    [
+      "Was sind Zeichen mit Breite null?",
+      "Das sind Zeichen, die auf dem Bildschirm keinen Platz einnehmen, etwa das Leerzeichen mit Breite null (U+200B), der Nulltreiber (U+200C), der Wortverbinder (U+2060) und die Bytereihenfolge-Marke (U+FEFF). Sie schleichen sich in Text ein, der von Webseiten und aus Chat-Apps kopiert wird, und können Suchen, Passwörter, Code und Dateinamen ohne sichtbares Anzeichen zerstören. Der Verbinder und der Nichtverbinder werden in manchen Schriften wie Persisch und Hindi auch absichtlich verwendet, prüfen Sie also, bevor Sie sie entfernen."
+    ],
+    [
+      "Was ist ein Trojan-Source-Angriff?",
+      "Unicode kennt Steuerzeichen, die die Anzeigerichtung von Text ändern, etwa die Rechts-nach-links-Überschreibung (U+202E). Im Quellcode können sie eine Zeile anders aussehen lassen, als der Compiler sie liest, sodass ein harmlos wirkender Kommentar echten Code verbirgt. Das Tool listet jedes bidirektionale Steuerzeichen auf, damit Sie es sehen können."
+    ],
+    [
+      "Was sind Unicode-Tag-Zeichen und warum sind sie wichtig?",
+      "Die Tag-Zeichen (U+E0000 bis U+E007F) spiegeln ASCII, werden aber nicht angezeigt. Mit ihnen geschriebener Text ist für Lesende unsichtbar, kann aber von Software gelesen werden, auch von KI-Assistenten. So lassen sich versteckte Anweisungen in einen Prompt oder ein Dokument einschleusen. Das Tool decodiert jede Folge von Tag-Zeichen zurück in den ASCII-Text, den sie buchstabiert, und zeigt ihn deutlich an. Das nennt man ASCII smuggling. Die Flagge von England, Schottland oder Wales besteht absichtlich aus einigen Tag-Zeichen, daher wird eine vollständige Flaggensequenz nicht gemeldet."
+    ],
+    [
+      "Warum wird ein Wort als Mischschrift markiert?",
+      "Kyrillisch und Griechisch haben Buchstaben, die lateinischen gleichen, etwa das kyrillische а und das lateinische a. Ein Wort, das beides mischt, wie pаypal mit kyrillischem а, kann als echter Name durchgehen und doch woandershin führen. Das Tool listet jedes Wort auf, das lateinische Buchstaben mit kyrillischen, griechischen oder armenischen kombiniert, und zeigt, welche Buchstaben nicht dazugehören."
+    ],
+    [
+      "Werden Emoji gemeldet?",
+      "Nein. Ein Zero Width Joiner zwischen zwei Emoji, wie bei Familien- oder Berufs-Emoji, und der Variationsselektor nach einem Emoji gehören zum Aufbau von Emoji und bleiben deshalb unbeachtet. Dieselben Zeichen an anderer Stelle, etwa zwischen zwei Buchstaben, werden gemeldet."
+    ],
+    [
+      "Wird mein Text hochgeladen?",
+      "Nein. Der Text wird in Ihrem Browser geprüft und verlässt Ihr Gerät nie."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Zu prüfender Text</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Text hier einfügen"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Beispiel laden</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Leeren</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Fügen Sie einen Text zur Prüfung ein.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Aus Tag-Zeichen decodierter versteckter Text</h3>
+    <p class="help">Diese unsichtbaren Zeichen buchstabieren den lesbaren Text unten. Behandeln Sie ihn als nicht vertrauenswürdig, besonders wenn der Text an einen KI-Assistenten geht.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Zeichen mit Breite null</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Steuerzeichen für die Textrichtung</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Unicode-Tag-Zeichen</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Steuerzeichen</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Sonstige unsichtbare Zeichen</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Ungewöhnliche Leerzeichen</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Wörter mit gemischten Schriften</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Markierter Text</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Text mit markierten versteckten Zeichen"></div>
+    <h3 class="util-h">Bereinigter Text</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Ungewöhnliche Leerzeichen auch in normale Leerzeichen umwandeln</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Text ohne die unsichtbaren Zeichen</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Bereinigten Text kopieren</button>
+    </div>
+    <h3 class="util-h">Funde</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Tabelle der Funde">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Zeile:Spalte</th><th scope="col">Zeichen-Nr.</th><th scope="col">Codepunkt</th><th scope="col">Was es ist</th><th scope="col">Art</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>So werden versteckte Zeichen gefunden</h2>
+<p>Unicode definiert viele Zeichen, die nichts drucken: Leerzeichen und Verbinder mit Breite null, Marken, die die Textrichtung umkehren, weiche Trennstriche, Leerzeichen ungewöhnlicher Breite und die Tag-Zeichen, die ASCII spiegeln. An der richtigen Stelle sind sie nützlich, an der falschen ein Ärgernis oder eine Waffe. Dieses Tool liest Ihren Text Codepunkt für Codepunkt und ordnet jeden Fund einer Art zu, damit Sie sehen, was vorhanden ist, bevor Sie entscheiden, was zu tun ist.</p>
+<p>Es werden sieben Arten gemeldet. Zu den <strong>Zeichen mit Breite null</strong> gehören das Leerzeichen mit Breite null, die Verbinder und die Bytereihenfolge-Marke. <strong>Steuerzeichen für die Textrichtung</strong> sind die Einbettungen, Überschreibungen, Isolierungen und Marken, die bei Trojan-Source-Angriffen auf Quellcode eingesetzt werden. <strong>Unicode-Tag-Zeichen</strong> sind der Block U+E0000, mit dem unsichtbare Anweisungen in Texte für KI-Assistenten geschmuggelt werden; jede Folge wird decodiert, sodass Sie den ASCII-Text lesen können, den sie buchstabiert. <strong>Steuerzeichen</strong> sind die C0- und C1-Codes außer Tabulator und Zeilenumbrüchen. <strong>Sonstige unsichtbare Zeichen</strong> umfassen den weichen Trennstrich, unsichtbare mathematische Operatoren, Füllzeichen und Variationsselektoren, und <strong>ungewöhnliche Leerzeichen</strong> sind das geschützte Leerzeichen, das Geviert- und das Halbgeviertleerzeichen sowie das ideographische Leerzeichen. Schließlich sind <strong>Wörter mit gemischten Schriften</strong> Wörter, die lateinische Buchstaben mit kyrillischen, griechischen oder armenischen kombinieren, der übliche Weg, einen Domainnamen oder Benutzernamen zu fälschen.</p>
+<p>Leerzeichen mit Breite null tauchen auch in KI-generiertem Text auf. Chat-Assistenten und Textpipelines lassen in ihrer Ausgabe manchmal solche Leerzeichen oder Verbinder zurück, und dieselben Zeichen können als unsichtbares Wasserzeichen dienen, sodass eine eingefügte Antwort mehr enthalten kann, als Sie sehen. Wenn Sie den Text durch diese Prüfung schicken, sehen Sie genau, was darin versteckt ist.</p>
+<p>Manche dieser Zeichen gehören in echten Text, deshalb lässt das Tool sie dort in Ruhe, wo sie normal sind. Eine vollständige Flagge von England, Schottland oder Wales (eine schwarze Flagge, gefolgt von einigen Tag-Buchstaben und einem Abbruch-Tag), ein Zero Width Joiner zwischen zwei Emoji und ein Emoji-Darstellungsselektor nach einem Emoji sind normal. Ein Verbinder oder Nichtverbinder in persischen, Hindi- oder arabischen Wörtern ist ebenfalls normal, wird aber gemeldet, weil das Tool die Sprache Ihres Textes nicht kennt.</p>
+<p>Die bereinigte Kopie entfernt Zeichen mit Breite null sowie Richtungs-, Tag-, Steuer- und andere unsichtbare Zeichen. Wörter mit gemischten Schriften ändert sie nie, weil das Ersetzen eines Buchstabens den Text verändern würde; korrigieren Sie sie von Hand, nachdem Sie das markierte Wort geprüft haben.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Zählen Sie, was übrig bleibt, mit dem <a href="/tools/character-counter/">Zeichenzähler</a>, der Zeichen, Bytes und Zeilen zählt.</li>
+  <li>Vergleichen Sie das Original mit dem bereinigten Text unter <a href="/tools/text-diff/">Texte vergleichen</a>.</li>
+  <li>Um ein bestimmtes Zeichen überall zu entfernen, nutzen Sie <a href="/tools/find-and-replace/">Suchen und Ersetzen</a>.</li>
+</ul>

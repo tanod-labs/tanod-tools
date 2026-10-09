@@ -385,4 +385,43 @@ export default [
       await t.shot("contrast", 375);
     },
   },
+  /* ------------------------------------------------------------ colour contrast checker */
+  {
+    page: "color-contrast-checker",
+    name: "WCAG ratio: #777 on white 4.48, black on white 21, white on white 1, thresholds, names and hsl",
+    async run(t) {
+      const set = async (fg, bg) => { await t.page.setValue("#cc-fg", fg); await t.page.setValue("#cc-bg", bg); };
+      const badges = () => t.page.eval(`[...document.querySelectorAll(".col-badge")].map((e) => e.textContent.trim())`);
+      // defaults are #777777 on #ffffff
+      t.eq(await t.page.eval(txt("#cc-ratio")), "4.48:1", "#777777 on #ffffff");
+      t.eq(await badges(), ["Fail", "Fail", "Pass", "Fail"], "AA normal fail, AAA normal fail, AA large pass, AAA large fail");
+      const raw = Number(await t.page.eval(`document.querySelector("#cc-ratio").dataset.ratio`));
+      t.assert(Math.abs(raw - 4.478089453577214) < 1e-9, "unrounded ratio kept: " + raw);
+      t.assert((await t.page.eval(txt("#cc-raw"))).includes("4.478089"), "unrounded text shown");
+      await set("#000", "#fff");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "21.00:1", "black on white");
+      t.eq(await badges(), ["Pass", "Pass", "Pass", "Pass"], "all pass");
+      await set("#fff", "#fff");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "1.00:1", "white on white");
+      t.eq(await badges(), ["Fail", "Fail", "Fail", "Fail"], "all fail");
+      await set("#767676", "white");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "4.54:1", "#767676 on a CSS name");
+      t.eq((await badges())[0], "Pass", "AA normal pass at 4.54");
+      await set("hsl(0, 0%, 0%)", "rgb(255, 255, 255)");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "21.00:1", "hsl and rgb notations");
+      await set("rebeccapurple", "#fff");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "8.41:1", "rebeccapurple on white");
+      await t.page.setValue("#cc-fg", "notacolour");
+      t.assert((await t.page.eval(txt("#cc-info"))).startsWith("Text colour: That isn't a colour"), "error shown");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "–", "ratio cleared on error");
+      await set("#777777", "#ffffff");
+      await t.page.click("#cc-swap");
+      t.eq(await t.page.eval(`document.querySelector("#cc-fg").value`), "#ffffff", "swap");
+      t.eq(await t.page.eval(txt("#cc-ratio")), "4.48:1", "ratio symmetric");
+      await t.page.setValue("#cc-fg-pick", "#000000");
+      t.eq(await t.page.eval(`document.querySelector("#cc-fg").value`), "#000000", "picker writes the text box");
+      await t.shot("done", 375);
+      await t.shot("done", 1280);
+    },
+  },
 ];

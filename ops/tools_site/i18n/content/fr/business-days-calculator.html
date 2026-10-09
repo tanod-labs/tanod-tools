@@ -1,0 +1,120 @@
+<!--meta
+{
+  "title": "Calcul de jours ouvrés : compter ou ajouter | Tanod Tools",
+  "description": "Comptez les jours ouvrés entre deux dates ou ajoutez-en à une date. Choisissez le week-end et listez les jours fériés. Gratuit, dans le navigateur.",
+  "h1": "Calcul de jours ouvrés",
+  "lede": "Comptez les jours ouvrés entre deux dates, ou ajoutez et retirez des jours ouvrés à une date, avec le week-end que vous utilisez et votre propre liste de jours fériés.",
+  "blurb": "Jours ouvrés entre deux dates ou ajout de jours à une date, avec jours fériés.",
+  "keywords": "calcul jours ouvrés nombre de jours ouvrables entre deux dates networkdays ajouter des jours ouvrés retirer jours ouvrables week-end vendredi samedi jours fériés hors week-end",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Dates de l'an 1 à l'an 9999 dans le calendrier grégorien. Cet outil ne contient aucune donnée sur les jours fériés : il ne saute que les dates que vous listez vous-même, et une date listée qui tombe un week-end n'est pas comptée deux fois. Le décompte suit les mêmes règles que les fonctions de tableur NETWORKDAYS et WORKDAY.",
+  "howto_title": "Comment compter les jours ouvrés",
+  "howto": [
+    "Choisissez <em>Compter les jours ouvrés</em> et saisissez les dates de début et de fin, ou choisissez <em>Ajouter ou retirer des jours ouvrés</em> et saisissez une date de début et un nombre de jours.",
+    "Choisissez votre week-end (samedi et dimanche, vendredi et samedi, dimanche seulement, ou les jours de votre choix) et collez les jours fériés au format <code>YYYY-MM-DD</code>, un par ligne.",
+    "Lisez les jours ouvrés, ou la date obtenue, avec les jours calendaires, les jours de week-end et les jours fériés qui ont été sautés."
+  ],
+  "faq": [
+    ["Compte-t-il la date de début et la date de fin ?", "Par défaut, il compte les deux, comme la fonction de tableur NETWORKDAYS : du lundi au vendredi d'une même semaine, cela fait 5 jours ouvrés. Décochez <em>Compter la date de début</em> ou <em>Compter la date de fin</em> pour en exclure une. Quand vous ajoutez des jours ouvrés, la date de début n'est jamais comptée, comme avec WORKDAY : un jour ouvré après un vendredi, c'est le lundi suivant."],
+    ["Comment utiliser un week-end autre que samedi et dimanche ?", "Choisissez <em>Vendredi et samedi</em> pour le week-end en vigueur dans de nombreux pays du Moyen-Orient, <em>Dimanche seulement</em> pour une semaine de six jours, ou <em>Personnalisé</em> pour cocher n'importe quelle combinaison de jours. Au moins un jour de la semaine doit rester ouvré."],
+    ["Comment saisir les jours fériés ?", "Saisissez ou collez une date par ligne, sous la forme <code>YYYY-MM-DD</code>, par exemple <code>2026-12-25</code>. Le texte placé après la date sur la même ligne, comme le nom du jour férié, est ignoré. Un jour férié qui tombe un week-end ne change pas le résultat, puisque ce jour est déjà sauté."],
+    ["Pourquoi n'y a-t-il pas de jours fériés intégrés ?", "Les jours fériés diffèrent selon le pays, la région et l'année, et certains sont fixés par décret : l'outil ne devine donc rien. Tout se passe dans votre navigateur à partir des dates que vous fournissez. Si vous voulez que les jours fériés d'un pays soient ajoutés pour vous, consultez l'API de jours ouvrés indiquée plus bas."],
+    ["Que se passe-t-il si la date de fin précède la date de début ?", "L'outil échange les deux dates, compte les jours entre elles et vous l'indique, de sorte que le résultat est toujours positif. Les options de début et de fin sont échangées avec les dates."],
+    ["Comment sont traitées les options de début et de fin quand les dates sont identiques ?", "Avec les deux options cochées, une date unique compte pour un jour, qui est un jour ouvré sauf s'il s'agit d'un week-end ou d'un jour férié listé. Si l'une des options est décochée, la plage est vide et le résultat est 0."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">Que voulez-vous faire ?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Compter les jours ouvrés</label>
+      <label><input type="radio" name="bd-mode" value="add">Ajouter ou retirer des jours ouvrés</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Date de début</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">Date de fin</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Compter la date de début</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Compter la date de fin</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Date de début</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Opération</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Ajouter</label>
+          <label><input type="radio" name="bd-op" value="sub">Retirer</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Jours ouvrés</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Week-end</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Samedi et dimanche</option>
+        <option value="fri-sat">Vendredi et samedi</option>
+        <option value="sun">Dimanche seulement</option>
+        <option value="custom">Personnalisé</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Jours de week-end</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Jours fériés (facultatif)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">Une date par ligne au format YYYY-MM-DD. Il n'y a pas de liste de jours fériés intégrée.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Jours ouvrés</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Jours calendaires</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Jours de week-end sautés</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Jours fériés sautés</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment les jours ouvrés sont comptés</h2>
+<p>Un jour ouvré, ou jour ouvrable, est tout jour qui n'est ni un jour de week-end ni un jour férié. Pour les compter entre deux dates, le calculateur prend chaque jour calendaire de la plage, retire les jours de week-end que vous avez choisis, puis retire les jours fériés listés qui tombent sur les jours restants. Ce qui reste est le nombre de jours ouvrés. Les trois chiffres sous le résultat indiquent combien de jours calendaires ont été examinés et combien ont été sautés comme week-end ou jour férié.</p>
+<p>Que le premier et le dernier jour fassent partie de la plage change le résultat. Du lundi au vendredi d'une même semaine, avec les deux extrémités incluses, on obtient 5, et 4 si l'on exclut la date de début. Les valeurs par défaut correspondent à la fonction de tableur <code>NETWORKDAYS</code>, qui compte les deux extrémités.</p>
+<p>L'ajout de jours ouvrés fonctionne à l'inverse, comme <code>WORKDAY</code>. L'outil part du lendemain de la date de début et avance, ou recule quand vous retirez des jours, en ne comptant que les jours qui ne sont ni des jours de week-end ni des jours fériés, jusqu'à atteindre le nombre demandé. La date de début elle-même n'est jamais comptée : ajouter 0 jour renvoie donc la date de début, même si c'est un jour de week-end.</p>
+<p>Le week-end est un réglage, car il n'est pas le même partout. De nombreux pays utilisent samedi et dimanche, plusieurs pays du Moyen-Orient vendredi et samedi, et certains lieux de travail fonctionnent six jours sur sept. Les jours fériés, c'est à vous de les fournir. Les jours fériés décalés ou de remplacement ne sont pas ajoutés automatiquement : listez donc le jour réellement observé.</p>
+<h3>Pour les développeurs et les agents IA</h3>
+<p>Besoin de ce calcul dans du code, ou pour un agent IA ? L'API de jours ouvrés effectue le même décompte et ajoute automatiquement les jours fériés d'un pays, sans que vous ayez à maintenir une liste. Consultez le <a href="https://tanod.dev/learn/business-days-api.html">guide de l'API de jours ouvrés</a>.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Besoin de simples jours calendaires, de semaines ou de mois entre deux dates ? Utilisez le <a href="/tools/date-difference-calculator/">calcul de jours entre deux dates</a>.</li>
+  <li>Vous ajoutez des mois ou des années à une date ? Le <a href="/tools/date-calculator/">calculateur de dates</a> gère les dates de fin de mois.</li>
+  <li>Vous travaillez avec plusieurs pays ? Comparez les horaires de bureau avec le <a href="/tools/time-zone-converter/">convertisseur de fuseaux horaires</a>.</li>
+</ul>

@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "Pendeteksi karakter tak terlihat dan ASCII smuggling | Tanod Tools",
+  "description": "Temukan karakter lebar nol, bidi, dan tag Unicode, dekode teks ASCII tersembunyi, dan kenali kata yang menyerupai. Gratis, di browser Anda.",
+  "h1": "Pendeteksi karakter tak terlihat dan dekoder ASCII smuggling",
+  "lede": "Tempel teks untuk menemukan karakter yang tidak terlihat oleh mata dan membaca teks yang tersembunyi dalam karakter tag Unicode yang tak terlihat: spasi lebar nol, kontrol arah teks, karakter tag Unicode tersembunyi, dan kata yang mencampur huruf Latin dengan huruf Sirilik atau Yunani yang mirip.",
+  "blurb": "Temukan Unicode tak terlihat, dekode teks ASCII tersembunyi, dan kenali kata yang menyerupai.",
+  "keywords": "pendeteksi karakter tak terlihat dekoder ascii smuggling cari spasi lebar nol karakter unicode tersembunyi bidi trojan source karakter tag unicode ascii smuggling prompt injection homoglif sirilik kata menyerupai hapus karakter lebar nol",
+  "local_text": "Berjalan di browser Anda; apa pun yang Anda ketik tidak keluar dari perangkat Anda",
+  "limits": "Teks hingga beberapa juta karakter. Pemeriksaan ini melihat titik kode Unicode, jadi ia menemukan karakter tersembunyi tetapi tidak bisa menentukan apakah karakter tertentu tidak berbahaya dalam teks Anda. Urutan emoji yang sebenarnya, seperti bendera dan emoji keluarga, tidak ditandai.",
+  "howto_title": "Cara menemukan karakter tak terlihat",
+  "howto": [
+    "Tempel teks yang ingin diperiksa, atau pilih <em>Muat contoh</em> untuk melihat apa yang ditemukan alat ini.",
+    "Baca jumlah untuk setiap jenis karakter, teks yang disorot, dan tabel berisi baris, kolom, serta titik kode setiap temuan.",
+    "Pilih <em>Salin teks bersih</em> untuk mendapatkan teks tanpa karakter tak terlihat."
+  ],
+  "faq": [
+    [
+      "Apa itu karakter lebar nol?",
+      "Karakter yang tidak memakan ruang di layar, seperti spasi lebar nol (U+200B), non-penyambung lebar nol (U+200C), word joiner (U+2060), dan penanda urutan byte (U+FEFF). Karakter ini sering terbawa saat menyalin teks dari halaman web dan aplikasi chat, dan bisa merusak pencarian, kata sandi, kode, serta nama file tanpa tanda yang terlihat. Penyambung dan non-penyambung juga sengaja dipakai dalam beberapa aksara, seperti Persia dan Hindi, jadi periksa dulu sebelum menghapusnya."
+    ],
+    [
+      "Apa itu serangan Trojan Source?",
+      "Unicode punya kontrol yang mengubah arah tampilan teks, seperti penimpaan kanan-ke-kiri (U+202E). Dalam kode sumber, kontrol ini dapat membuat satu baris tampak berbeda dari yang dibaca kompiler, sehingga komentar yang tampak tidak berbahaya bisa menyembunyikan kode sungguhan. Alat ini mendaftar setiap kontrol dua arah agar Anda bisa melihatnya."
+    ],
+    [
+      "Apa itu karakter tag Unicode dan mengapa penting?",
+      "Karakter tag (U+E0000 sampai U+E007F) meniru ASCII tetapi tidak tampil apa pun. Teks yang ditulis dengannya tak terlihat oleh pembaca, tetapi bisa dibaca perangkat lunak, termasuk asisten AI, sehingga dapat dipakai menyelundupkan instruksi tersembunyi ke dalam prompt atau dokumen. Alat ini mendekode setiap rangkaian karakter tag kembali menjadi teks ASCII yang dieja dan menampilkannya dengan jelas. Ini dikenal sebagai ASCII smuggling. Bendera Inggris, Skotlandia, atau Wales memang dibuat dengan beberapa karakter tag, sehingga urutan bendera yang lengkap tidak ditandai."
+    ],
+    [
+      "Mengapa sebuah kata ditandai sebagai aksara campuran?",
+      "Huruf Sirilik dan Yunani punya yang tampak sama dengan huruf Latin, seperti а Sirilik dan a Latin. Kata yang mencampurnya, seperti pаypal dengan а Sirilik, bisa tampak seperti nama asli padahal mengarah ke tempat lain. Alat ini mendaftar kata yang menggabungkan huruf Latin dengan huruf Sirilik, Yunani, atau Armenia dan menunjukkan huruf mana yang tidak semestinya ada."
+    ],
+    [
+      "Apakah emoji ditandai?",
+      "Tidak. Zero width joiner di antara dua emoji, seperti pada emoji keluarga atau profesi, dan variation selector setelah emoji adalah bagian dari cara emoji dibentuk, jadi dibiarkan. Karakter yang sama di tempat lain, misalnya di antara dua huruf, akan dilaporkan."
+    ],
+    [
+      "Apakah teks saya diunggah?",
+      "Tidak. Teks diperiksa di browser Anda dan tidak pernah meninggalkan perangkat Anda."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Teks yang diperiksa</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Tempel teks di sini"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Muat contoh</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Hapus</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Tempel teks untuk memeriksanya.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Teks tersembunyi yang didekode dari karakter tag</h3>
+    <p class="help">Karakter tak terlihat ini mengeja teks yang dapat dibaca di bawah. Perlakukan sebagai tidak tepercaya, terutama jika teks akan dikirim ke asisten AI.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Karakter lebar nol</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Kontrol arah teks</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Karakter tag Unicode</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Karakter kontrol</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Karakter tak terlihat lainnya</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Spasi tidak lazim</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Kata dengan aksara campuran</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Teks yang disorot</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Teks dengan karakter tersembunyi yang ditandai"></div>
+    <h3 class="util-h">Teks bersih</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Ubah juga spasi tidak lazim menjadi spasi biasa</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Teks tanpa karakter tak terlihat</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Salin teks bersih</button>
+    </div>
+    <h3 class="util-h">Temuan</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Tabel temuan">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Baris:kolom</th><th scope="col">No. karakter</th><th scope="col">Titik kode</th><th scope="col">Apa itu</th><th scope="col">Jenis</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Cara karakter tersembunyi ditemukan</h2>
+<p>Unicode mendefinisikan banyak karakter yang tidak mencetak apa pun: spasi dan penyambung lebar nol, tanda yang membalik arah teks, tanda hubung lunak, spasi dengan lebar tidak lazim, dan karakter tag yang meniru ASCII. Di tempat yang tepat karakter ini berguna; di tempat yang salah ia menjadi gangguan atau senjata. Alat ini membaca teks Anda satu titik kode demi satu dan memilah setiap temuan ke dalam sebuah jenis, sehingga Anda bisa melihat apa yang ada sebelum memutuskan langkah selanjutnya.</p>
+<p>Tujuh jenis dilaporkan. <strong>Karakter lebar nol</strong> mencakup spasi lebar nol, penyambung, dan penanda urutan byte. <strong>Kontrol arah teks</strong> adalah embedding, override, isolate, dan mark yang dipakai dalam serangan Trojan Source pada kode sumber. <strong>Karakter tag Unicode</strong> adalah blok U+E0000 yang dipakai untuk menyelundupkan instruksi tak terlihat ke dalam teks untuk asisten AI; setiap rangkaian didekode agar Anda bisa membaca ASCII yang dieja. <strong>Karakter kontrol</strong> adalah kode C0 dan C1 selain tab dan pemisah baris. <strong>Karakter tak terlihat lainnya</strong> meliputi tanda hubung lunak, operator matematika tak terlihat, karakter pengisi, dan variation selector, sedangkan <strong>spasi tidak lazim</strong> adalah spasi tanpa putus, spasi em dan en, serta spasi ideografis. Terakhir, <strong>kata dengan aksara campuran</strong> adalah kata yang menggabungkan huruf Latin dengan huruf Sirilik, Yunani, atau Armenia, cara yang lazim untuk memalsukan nama domain atau nama pengguna.</p>
+<p>Spasi lebar nol juga muncul dalam teks buatan AI. Asisten chat dan alur pemrosesan teks kadang meninggalkan spasi atau penyambung lebar nol di keluarannya, dan karakter yang sama bisa dipakai sebagai watermark tak terlihat, jadi jawaban yang Anda tempel mungkin membawa lebih banyak daripada yang terlihat. Menjalankan teks lewat pemeriksaan ini menunjukkan persis apa yang tersembunyi di dalamnya.</p>
+<p>Sebagian karakter ini memang bagian dari teks yang sah, jadi alat ini membiarkannya di tempat yang semestinya. Bendera lengkap Inggris, Skotlandia, atau Wales (bendera hitam diikuti beberapa huruf tag dan tag pembatal), zero width joiner di antara dua emoji, dan emoji presentation selector setelah emoji semuanya normal. Penyambung atau non-penyambung di dalam kata berbahasa Persia, Hindi, atau Arab juga normal tetapi tetap dilaporkan, karena alat ini tidak bisa mengetahui bahasa teks Anda.</p>
+<p>Salinan bersih menghapus karakter lebar nol, arah, tag, kontrol, dan karakter tak terlihat lainnya. Alat ini tidak pernah mengubah kata beraksara campuran, karena mengganti huruf akan mengubah teks; perbaiki secara manual setelah memeriksa kata yang disorot.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Hitung sisa teks dengan <a href="/tools/character-counter/">penghitung karakter</a>, yang menghitung karakter, byte, dan baris.</li>
+  <li>Bandingkan teks asli dengan teks bersih di <a href="/tools/text-diff/">Bandingkan teks</a>.</li>
+  <li>Untuk menghapus satu karakter tertentu di mana-mana, gunakan <a href="/tools/find-and-replace/">Cari dan ganti</a>.</li>
+</ul>

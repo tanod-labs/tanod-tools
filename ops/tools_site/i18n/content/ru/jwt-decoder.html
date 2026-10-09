@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Декодер JWT: прочитать claims токена JSON Web Token | Tanod Tools",
+  "description": "Декодируйте JSON Web Token в браузере: заголовок, полезная нагрузка и claims, а exp, nbf и iat показаны датами с временем до истечения. Токен никуда не отправляется.",
+  "h1": "Декодер JWT",
+  "lede": "Вставьте JSON Web Token, чтобы прочитать его заголовок и полезную нагрузку; время истечения и выпуска показано в виде обычных дат.",
+  "blurb": "Заголовок, claims и срок действия JWT.",
+  "keywords": "декодер jwt расшифровать jwt json web token jws jwe bearer токен claims exp iat nbf срок действия oauth id token декодировать токен",
+  "limits": "Токены до 1 МБ. Только декодирование: подпись показывается, но не проверяется.",
+  "howto_title": "Как декодировать JWT",
+  "howto": [
+    "Вставьте токен в поле. Начальное <code>Bearer </code>, а также окружающие пробелы и кавычки игнорируются.",
+    "Прочитайте ниже заголовок и полезную нагрузку, а также время истечения, начала действия и выпуска в вашем часовом поясе и в UTC.",
+    "Если нужно, скопируйте декодированную полезную нагрузку или заголовок в виде форматированного JSON."
+  ],
+  "faq": [
+    ["Проверяет ли этот инструмент подпись?", "Нет. Эта страница только декодирует токен. Любой может создать токен с любым заголовком и полезной нагрузкой, поэтому показанное здесь содержимое — это заявления (claims), а не доказательство. Определить подлинность токена может только сервис, у которого есть ключ подписи (или открытый ключ для токенов RS256 и ES256), и он же должен проверить срок действия, аудиторию и издателя."],
+    ["Безопасно ли вставлять сюда токен?", "Эта страница никуда не отправляет токен: он декодируется кодом в вашем браузере и не сохраняется. И всё же действующий токен доступа — это пароль на всё время его действия. Не вставляйте рабочие токены ни на какие сайты и при отладке предпочитайте просроченные или тестовые токены."],
+    ["Почему некоторые токены не читаются?", "Токен из пяти частей вместо трёх — это зашифрованный JWT (JWE). Его заголовок читается, но полезная нагрузка зашифрована и читается только с ключом получателя, поэтому инструмент показывает заголовок и объясняет части. О других ошибках, например неверном числе частей или тексте, который не является корректным Base64url или JSON, сообщается с описанием проблемы."],
+    ["Как вычисляется время?", "Claims <code>exp</code>, <code>nbf</code> и <code>iat</code> — это NumericDate: секунды с 1 января 1970 года по UTC. Они показаны в часовом поясе вашего устройства и в UTC и сравниваются с часами вашего устройства, чтобы определить, истёк ли токен. Если ваши часы неверны, относительное время тоже будет неверным. Значение, похожее на миллисекунды, помечается, поскольку это частая ошибка."],
+    ["Что означают alg, typ и kid?", "<code>alg</code> — алгоритм подписи, например HS256 (общий секрет), RS256 или ES256 (пара ключей). <code>typ</code> обычно равен JWT. <code>kid</code> — идентификатор ключа, который использовал издатель; он подсказывает проверяющему, каким ключом проверять подпись. Токен с <code>alg</code>, равным <code>none</code>, не подписан и никогда не должен приниматься там, где это важно."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">Токен</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">Попробовать пример токена</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">Очистить</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>Подпись не проверена.</strong> Эта страница декодирует токен, но не проверяет его подлинность. Любой может создать токен с любым содержимым.</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>Алгоритм</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>Тип</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>ID ключа</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>Части</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">Время</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Ваш часовой пояс, затем UTC</th><th scope="col">Относительно</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">Заголовок</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">Полезная нагрузка</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">Claims</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Claim</th><th scope="col">Значение</th><th scope="col">Содержимое</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">Подпись</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}Копировать полезную нагрузку</button>
+      <button class="btn" id="jw-copy-h" type="button">Копировать заголовок</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Что внутри JSON Web Token</h2>
+<p>Подписанный JWT — это три фрагмента текста в Base64url, соединённые точками: заголовок, полезная нагрузка и подпись. Заголовок и полезная нагрузка — это просто JSON, записанный в Base64url, поэтому их может прочитать любой. Base64url — кодировка, а не шифрование, поэтому никогда не помещайте секреты в полезную нагрузку JWT, если токен не зашифрован.</p>
+<p>Полезная нагрузка содержит claims. Некоторые имена зарегистрированы: <code>iss</code> (кто выпустил токен), <code>sub</code> (о ком он), <code>aud</code> (для кого предназначен), <code>exp</code> (когда истекает), <code>nbf</code> (не действителен до), <code>iat</code> (когда выпущен) и <code>jti</code> (уникальный идентификатор). Сервисы добавляют и собственные claims, например роли, области доступа (scopes) или адрес электронной почты.</p>
+<p>Именно подпись делает claims заслуживающими доверия, а для её проверки нужен ключ подписи, который должен быть только у издателя и у сервисов, принимающих токен. Этот декодер намеренно ограничивается чтением: он показывает, что говорит токен и когда он истекает, а это обычно и нужно при отладке входа или вызова API.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Перевести любое другое время Unix в дату можно в инструменте «<a href="/tools/unix-timestamp-converter/">Конвертер Unix-времени</a>».</li>
+  <li>Отформатировать или проверить большую полезную нагрузку поможет «<a href="/tools/json-formatter/">Форматирование и проверка JSON</a>».</li>
+  <li>Декодировать отдельный фрагмент Base64url вручную можно в инструменте «<a href="/tools/base64-encode-decode/">Кодирование и декодирование Base64</a>».</li>
+</ul>

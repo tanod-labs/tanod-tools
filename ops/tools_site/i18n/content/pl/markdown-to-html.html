@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Konwerter Markdown na HTML z podglądem | Tanod Tools",
+  "description": "Zamień Markdown na czysty HTML w przeglądarce, z tabelami w stylu GitHuba, listami zadań i podglądem na żywo. Niebezpieczny HTML jest usuwany. Bez przesyłania.",
+  "h1": "Konwerter Markdown na HTML",
+  "lede": "Wpisz lub wklej Markdown i uzyskaj czysty HTML na bieżąco, z podglądem jego wyglądu.",
+  "blurb": "Zamień Markdown na HTML, z podglądem.",
+  "keywords": "markdown na html konwersja markdown do html md gfm github tabela podgląd renderowanie readme markdown to html",
+  "limits": "Markdown do ok. 5 MB, wpisany, wklejony lub z pliku .md albo .txt. Wynik aktualizuje się podczas pisania.",
+  "howto_title": "Jak zamienić Markdown na HTML",
+  "howto": [
+    "Wpisz lub wklej Markdown albo otwórz plik .md.",
+    "Odczytaj HTML po prawej stronie lub przełącz na Podgląd, aby zobaczyć wyrenderowany wynik. Włącz opcję pełnego dokumentu, jeśli potrzebujesz kompletnej strony.",
+    "Skopiuj HTML lub pobierz go jako plik .html."
+  ],
+  "faq": [
+    ["Czy mój tekst jest przesyłany?", "Nie. Markdown jest konwertowany w Twojej przeglądarce za pomocą biblioteki open source marked, a nic nie jest nigdzie wysyłane ani zapisywane."],
+    ["Jaka składnia Markdown jest obsługiwana?", "CommonMark plus rozszerzenia GitHuba: tabele, listy zadań (<code>- [x] done</code>), przekreślenie za pomocą <code>~~</code>, ogrodzone bloki kodu i automatyczne linki. Pojedyncze podziały wierszy są łączone w jeden akapit, jak w standardowym Markdownie; włącz <em>Podziały wierszy zamieniaj na &lt;br&gt;</em>, aby je zachować, tak jak w komentarzach GitHuba."],
+    ["Czy HTML jest bezpieczny do umieszczenia na stronie?", "Jest oczyszczany biblioteką open source DOMPurify, zanim go zobaczysz. Skrypty, procedury obsługi zdarzeń takie jak <code>onerror</code>, linki <code>javascript:</code>, ramki iframe i osadzone obiekty są usuwane, a wiersz pod wynikiem wymienia, co usunięto. Zwykły HTML zapisany wewnątrz Markdownu, na przykład <code>&lt;details&gt;</code> lub <code>&lt;sup&gt;</code>, jest zachowywany. Jak przy każdej treści pochodzącej od kogoś innego, zachowaj zabezpieczenia własnej strony."],
+    ["Dlaczego obraz w podglądzie jest pokazany jako symbol zastępczy?", "Podgląd nigdy nie ładuje niczego z innej witryny, więc Twój tekst nie jest ujawniany tej witrynie, a strona pozostaje prywatna. Obrazy spod adresów internetowych pojawiają się jako opisany symbol zastępczy z ich adresem. Kod HTML nadal zawiera zwykły znacznik <code>&lt;img&gt;</code>, więc obraz wyświetli się wszędzie tam, gdzie go opublikujesz."],
+    ["Co dodaje opcja pełnego dokumentu?", "Kompletną stronę wokół HTML: doctype, <code>&lt;head&gt;</code> z kodowaniem UTF-8, znacznik viewport dla urządzeń mobilnych i tytuł pobrany z pierwszego nagłówka. Zostaw ją wyłączoną, gdy wklejasz do istniejącej strony lub CMS-a."],
+    ["Czy nagłówki dostają atrybuty id dla linków?", "Nie. Nagłówki są wypisywane jako zwykłe znaczniki od <code>&lt;h1&gt;</code> do <code>&lt;h6&gt;</code>. Jeśli potrzebujesz kotwic, dodaj id w szablonie swojej strony lub ręcznie."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="md" class="md-label">Markdown</label>
+      <textarea id="md" class="mono md-pane" spellcheck="false" autocomplete="off" placeholder="# Nagłówek&#10;&#10;Trochę **pogrubionego** tekstu i [link](https://example.com).&#10;&#10;- [x] Zrobione&#10;- [ ] Do zrobienia"></textarea>
+    </div>
+    <div class="field md-result">
+      <div class="md-result__head">
+        <span class="label" id="view-l">Wynik</span>
+        <div class="seg" role="radiogroup" aria-labelledby="view-l">
+          <label><input type="radio" name="view" value="code" checked>Kod HTML</label>
+          <label><input type="radio" name="view" value="preview">Podgląd</label>
+        </div>
+      </div>
+      <textarea id="out" class="mono md-pane" readonly aria-label="Kod HTML"></textarea>
+      <div id="preview" class="md-preview md-pane" tabindex="0" role="region" aria-label="Podgląd" hidden></div>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="breaks">Podziały wierszy zamieniaj na &lt;br&gt;</label>
+    <label class="check"><input type="checkbox" id="full">Umieść w pełnym dokumencie HTML</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wpisz lub wklej Markdown, aby zacząć.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj HTML</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Pobierz .html</button>
+    <button class="btn btn--quiet" id="clear" type="button">Wyczyść</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/markdown,.md,.markdown,text/plain,.txt">{{mark:i-upload}}<span>Otwórz plik .md</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Jak Markdown staje się HTML</h2>
+<p>Markdown to sposób zapisu sformatowanego tekstu zwykłymi znakami: <code>#</code> zaczyna nagłówek, <code>**dwie gwiazdki**</code> dają pogrubienie, a wiersz zaczynający się myślnikiem to element listy. Używają go pliki README, wiele aplikacji do notatek i większość for dla programistów. Przeglądarki, szablony e-maili i systemy zarządzania treścią chcą HTML, więc w pewnym momencie Markdown trzeba przetłumaczyć.</p>
+<p>Ten konwerter podąża za CommonMark z dodatkami GitHub Flavored Markdown, więc tabele, listy zadań i przekreślenia działają tak jak na GitHubie. Wygenerowany HTML przechodzi następnie przez sanitizer, który usuwa wszystko, co mogłoby uruchomić kod po wyświetleniu HTML, zostawiając zwykłe formatowanie bez zmian.</p>
+<p>Karta podglądu pokazuje ten sam HTML wyrenderowany na stronie. Linki otwierają się w nowej karcie, a obrazy hostowane gdzie indziej są pokazywane jako symbole zastępcze zamiast być pobierane, więc nic, co piszesz, nie jest wysyłane do innej witryny podczas pracy.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Masz HTML i potrzebujesz Markdownu? Użyj narzędzia <a href="/tools/html-to-markdown/">HTML na Markdown</a>.</li>
+  <li>Sprawdź długość wpisu w narzędziu <a href="/tools/word-counter/">Licznik słów</a>.</li>
+  <li>Porównaj dwa szkice w narzędziu <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+</ul>

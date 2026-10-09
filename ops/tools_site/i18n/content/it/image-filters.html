@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Filtri per foto online: bianco e nero, seppia, sfocatura | Tanod Tools",
+  "description": "Regola luminosità, contrasto, saturazione e tonalità, o trasforma una foto in bianco e nero, seppia, negativo o sfocata. Anteprima in tempo reale, nel browser.",
+  "h1": "Filtri per foto",
+  "lede": "Ritocca una foto con i cursori o con preset a un clic, confrontala con l'originale e salva il risultato a dimensione piena.",
+  "blurb": "Bianco e nero, seppia, luminosità, sfocatura e altro.",
+  "keywords": "filtri foto effetti foto editor bianco e nero scala di grigi seppia vintage negativo inverti luminosità contrasto saturazione tonalità sfocatura instagram image filters",
+  "limits": "Funziona su una sola immagine fino a 50 MB e circa 100 megapixel. Le immagini molto grandi richiedono qualche secondo; la pagina resta utilizzabile mentre lavora.",
+  "howto_title": "Come applicare filtri a un'immagine",
+  "howto": [
+    "Scegli un'immagine. L'anteprima appare a dimensione ridotta, così i cursori rispondono subito.",
+    "Parti da un preset come <strong>Bianco e nero</strong> o <strong>Vivido</strong>, poi regola i cursori. Attiva <strong>Mostra originale</strong> per confrontare.",
+    "Premi <strong>Applica e salva</strong>. I filtri vengono applicati di nuovo all'immagine a dimensione piena e la scarichi."
+  ],
+  "faq": [
+    ["La mia foto viene caricata?", "No. Ogni filtro viene calcolato nel tuo browser, sul tuo dispositivo, pixel per pixel. Nulla viene inviato a un server."],
+    ["I filtri danno lo stesso risultato dei filtri CSS del browser?", "Seguono le stesse formule della specifica CSS Filter Effects: la luminosità moltiplica, il contrasto ruota attorno al grigio medio, mentre saturazione, rotazione della tonalità, scala di grigi e seppia usano le matrici colore della specifica. Fare i calcoli in questa pagina anziché con la funzione filtro del browser significa che funziona anche nei browser in cui quella funzione manca."],
+    ["In che ordine vengono applicati i filtri?", "Luminosità, contrasto, saturazione, rotazione della tonalità, scala di grigi, seppia, negativo e poi sfocatura. L'ordine è fisso, quindi le stesse posizioni dei cursori danno sempre la stessa immagine."],
+    ["Perché la sfocatura è uguale nell'anteprima e nel file salvato?", "La quantità di sfocatura è una frazione della larghezza dell'immagine, non un numero di pixel. Una foto di 4000 pixel mostrata in anteprima a 800 pixel viene sfocata cinque volte meno nei pixel dell'anteprima, il che sembra identico una volta vista alla stessa scala."],
+    ["Che ne è della trasparenza?", "Resta intatta. Il canale alfa non viene mai modificato e la sfocatura pesa i colori in base all'opacità, in modo che i bordi morbidi di un ritaglio non diventino scuri. Salva come PNG o WebP per mantenerla; JPEG riempie di bianco le aree trasparenti."],
+    ["Posso annullare un preset?", "Scegli Reimposta oppure riporta i cursori dov'erano. I preset spostano soltanto i cursori e puoi regolarli dopo. Nulla modifica il tuo file originale."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Rilascia un'immagine qui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Scegli un'immagine</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. Oppure trascinala in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Anteprima con i filtri applicati"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Mostra originale</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Preset</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Bianco e nero</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Seppia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Vivido</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Sbiadito</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Negativo</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Reimposta</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Luminosità: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Contrasto: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Saturazione: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Scala di grigi: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Seppia: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Negativo: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Rotazione tonalità: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Sfocatura: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Salva come</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Stesso formato</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Stesso formato restituisce PNG, JPEG e WebP così come sono; GIF, BMP e AVIF diventano PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Applica e salva</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Che cosa fa ogni filtro ai pixel</h2>
+<p>Ogni pixel è fatto di tre numeri da 0 a 255, per rosso, verde e blu. La luminosità moltiplica quei numeri, quindi il 150% trasforma un valore di 100 in 150 e tutto ciò che supera 255 viene tagliato al bianco. Il contrasto allontana i numeri dal grigio medio (128) o li avvicina, ed è per questo che un contrasto dello 0% dà un'immagine grigia uniforme. Saturazione e rotazione della tonalità mescolano i tre canali con matrici colore fisse, ed è così che una foto scivola verso il grigio o lungo la ruota dei colori.</p>
+<p>La scala di grigi sostituisce ogni pixel con la sua luminanza, una somma pesata che dà più peso al verde (circa il 72%), poi al rosso (21%) e meno al blu (7%), perché l'occhio è più sensibile al verde. Il seppia usa una matrice che dà la calda tinta marrone delle vecchie stampe. Il negativo sottrae ogni valore da 255. La sfocatura fa la media di ogni pixel con i vicini, tre volte in ciascuna direzione, il che approssima bene una sfocatura gaussiana.</p>
+<p>Le piccole anteprime rendono i cursori veloci, ma il file salvato viene elaborato a piena risoluzione a blocchi, così la pagina continua a rispondere e mostra l'avanzamento. Una volta salvato, il file originale resta intatto.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Per leggere un colore esatto dal risultato usa il <a href="/tools/image-color-picker/">Selettore colore da immagine</a>.</li>
+  <li>Applicare i filtri prima di aggiungere una didascalia mantiene il testo nitido: fai così con <a href="/tools/add-text-to-image/">Aggiungi testo a un'immagine</a>.</li>
+  <li>Un'immagine sfocata e ad alto contrasto si comprime in modo molto diverso, quindi controlla le dimensioni dopo con <a href="/tools/compress-image/">Comprimi immagine</a>.</li>
+</ul>

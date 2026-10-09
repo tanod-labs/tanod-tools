@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Konwerter CSV na JSON online, za darmo | Tanod Tools",
+  "description": "Konwertuj CSV na JSON w przeglądarce. Obsługuje pola w cudzysłowach, podziały wierszy w komórkach, średnik, tabulator i wiersz nagłówka. Bezpłatnie, bez przesyłania.",
+  "h1": "Konwerter CSV na JSON",
+  "lede": "Wklej CSV lub otwórz plik .csv i uzyskaj tablicę JSON z obiektami lub wierszami, z automatycznie wykrytym separatorem.",
+  "blurb": "Zamień wiersze CSV na tablicę JSON.",
+  "keywords": "csv na json konwersja csv do json arkusz kalkulacyjny excel eksport tsv średnik tablica obiektów konwerter",
+  "limits": "Dane wejściowe do około 10 MB, wklejone lub z pliku .csv albo .tsv. Wynik aktualizuje się w trakcie pisania.",
+  "howto_title": "Jak skonwertować CSV na JSON",
+  "howto": [
+    "Wklej CSV w polu albo otwórz plik .csv.",
+    "Sprawdź separator (jest wykrywany automatycznie) i to, czy pierwszy wiersz zawiera nazwy kolumn. Włącz konwersję liczb i wartości prawda/fałsz, jeśli chcesz mieć typowane wartości.",
+    "Skopiuj JSON lub pobierz go jako plik .json."
+  ],
+  "faq": [
+    ["Czy moje dane są przesyłane?", "Nie. CSV jest odczytywany i konwertowany w przeglądarce, a nic nie jest nigdzie wysyłane ani zapisywane. Zamknięcie karty je usuwa."],
+    ["Jakie formaty CSV odczytuje?", "Standardowy CSV opisany w RFC 4180: pola rozdzielone separatorem, pola zawierające separator, cudzysłowy lub podziały wierszy ujęte w cudzysłowy oraz cudzysłów wewnątrz pola w cudzysłowach zapisany dwukrotnie (<code>\"\"</code>). Działają zakończenia wierszy Windows (CRLF), Unix (LF) i starego Maca (CR), a znacznik kolejności bajtów na początku jest ignorowany. Obsługiwane są separatory przecinek, średnik, tabulator i kreska pionowa."],
+    ["Jak wykrywany jest separator?", "Narzędzie próbuje przecinka, średnika, tabulatora i kreski pionowej na pierwszych wierszach i wybiera ten, który dzieli najwięcej wierszy na tę samą liczbę pól. Pliki zapisane przez Excela w wielu europejskich ustawieniach regionalnych, w tym polskim, używają średników, dlatego ma to znaczenie. Jeśli zgadnięcie jest błędne, wybierz separator samodzielnie."],
+    ["Dlaczego moje liczby są w cudzysłowach?", "Domyślnie każda wartość pozostaje tekstem, dokładnie tak, jak zapisano w CSV, bo CSV nie ma typów, a zgadywanie może uszkodzić dane, takie jak kody pocztowe lub identyfikatory. Włącz <em>Konwertuj liczby, prawda/fałsz i null</em>, aby uzyskać typowane wartości. Nawet wtedy wartości z zerem na początku (007) i liczby dłuższe niż 15 cyfr pozostają tekstem, aby nie zostały zmienione ani zaokrąglone."],
+    ["Co z powtórzonymi lub pustymi nazwami kolumn albo nierównymi wierszami?", "Puste nazwy kolumn stają się column_1, column_2 i tak dalej, a powtórzona nazwa dostaje dopisane _2, _3, więc żadna wartość nie nadpisuje innej. Wiersze z mniejszą liczbą pól niż nagłówek dostają puste wartości; wiersze z większą liczbą dostają dodatkowe klucze column_N. Oba przypadki są zgłaszane nad wynikiem, aby można było sprawdzić źródło."],
+    ["Czy mogę dostać tablice zamiast obiektów?", "Tak. Wyłącz <em>Pierwszy wiersz to nagłówek</em>, a każdy wiersz, także pierwszy, stanie się tablicą wartości."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="name,email,age&#10;Ana,ana@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Separator</label>
+      <select id="delim">
+        <option value="auto" selected>Wykryj automatycznie</option>
+        <option value=",">Przecinek ( , )</option>
+        <option value=";">Średnik ( ; )</option>
+        <option value="&#9;">Tabulator</option>
+        <option value="|">Kreska pionowa ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Układ</label>
+      <select id="indent">
+        <option value="2" selected>Z wcięciem, 2 spacje</option>
+        <option value="4">Z wcięciem, 4 spacje</option>
+        <option value="min">Zminifikowany</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>Pierwszy wiersz to nagłówek (tablica obiektów)</label>
+    <label class="check"><input type="checkbox" id="types">Konwertuj liczby, prawda/fałsz i null</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wklej CSV, aby zacząć.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj JSON</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Pobierz .json</button>
+    <button class="btn btn--quiet" id="clear" type="button">Wyczyść</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>Otwórz plik .csv</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Od wierszy CSV do JSON</h2>
+<p>CSV to najniższy wspólny mianownik danych: każdy arkusz kalkulacyjny i każda baza danych potrafi go wyeksportować. JSON jest tym, czego oczekuje większość interfejsów API, skryptów i plików konfiguracyjnych. To narzędzie odczytuje CSV parserem zgodnym ze standardem CSV, więc przecinek w adresie ujętym w cudzysłów albo podział wiersza w komentarzu w cudzysłowie zostaje w swojej komórce zamiast dzielić wiersz.</p>
+<p>Z wierszem nagłówka każdy wiersz staje się obiektem, którego kluczami są nazwy kolumn, w kolejności kolumn. Bez niego każdy wiersz staje się tablicą. Wartości pozostają tekstem, chyba że poprosisz o konwersję liczb i wartości prawda/fałsz, ponieważ plik CSV nie zawiera typów, a automatyczne zgadywanie może po cichu zamienić kod pocztowy, taki jak 02134, w liczbę 2134.</p>
+<p>Wiersz pod opcjami informuje, ile wierszy i kolumn odczytano oraz jakiego separatora użyto. Jeśli niektóre wiersze mają więcej lub mniej pól niż nagłówek, uwaga wskazuje, które, co zwykle oznacza zbłąkany separator lub niezamknięty cudzysłów w źródle.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Chcesz zrobić odwrotnie? Użyj narzędzia <a href="/tools/json-to-csv/">JSON na CSV</a>.</li>
+  <li>Aby sprawdzić lub przeformatować wynik, wklej go do narzędzia <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>.</li>
+  <li>Najpierw oczyść powtarzające się wiersze narzędziem <a href="/tools/remove-duplicate-lines/">Usuń zduplikowane wiersze</a>.</li>
+</ul>

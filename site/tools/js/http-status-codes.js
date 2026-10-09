@@ -1,5 +1,5 @@
-import { $, $$, el, debounce, tx, EN, fmtNum } from "./core.js?v=5";
-import { CODES } from "./httpdata.js?v=5";
+import { $, $$, el, debounce, tx, EN, fmtNum } from "./core.js?v=11";
+import { CODES } from "./httpdata.js?v=11";
 
 const list = $("#h-list"), q = $("#h-q"), count = $("#h-count"), none = $("#h-none");
 

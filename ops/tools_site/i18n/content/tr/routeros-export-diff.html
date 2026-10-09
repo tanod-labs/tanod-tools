@@ -1,0 +1,57 @@
+<!--meta
+{
+  "title": "RouterOS export karşılaştırma: iki yapılandırma | Tanod Tools",
+  "description": "İki RouterOS /export çıktısını bölüm bölüm karşılaştırın: menü başına eklenen ve silinen satırlar, birleştirilmiş uzun satırlar, maskelenmiş gizli değerler.",
+  "h1": "RouterOS export karşılaştırma",
+  "lede": "İki export çıktısını yapıştırın (örneğin bir değişiklik öncesi ve sonrası ya da aynı olması gereken iki yönlendirici) ve nelerin farklı olduğunu menü menü görün.",
+  "blurb": "İki RouterOS export çıktısının bölüm bölüm karşılaştırması.",
+  "keywords": "routeros export karşılaştır mikrotik yapılandırma karşılaştırma iki export fark yapılandırma değişiklikleri rsc diff yedek karşılaştırma yönlendirici denetimi değişiklik incelemesi routeros export diff compare mikrotik config compare two exports configuration changes backup compare router config audit change review",
+  "local_text": "Her iki export de tarayıcınızda karşılaştırılır ve cihazınızdan asla çıkmaz",
+  "limits": "Export çıktılarını, sarılmış satırlar birleştirilip üst bilgi atıldıktan sonra her menü içinde satır satır karşılaştırır. Kural sırasındaki değişiklikler silinen ve eklenen satırlar olarak görünür. Gizli değerler varsayılan olarak maskelenir. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "İki RouterOS yapılandırması nasıl karşılaştırılır",
+  "howto": [
+    "Her yönlendiricide ya da bir değişikliğin öncesinde ve sonrasında <code>/export</code> komutunu çalıştırıp (v6: <code>/export hide-sensitive</code>) çıktıyı kopyalayın veya kayıtlı .rsc dosyalarını açın.",
+    "Eski export'u sola, yeni olanı sağa yapıştırın. Karşılaştırma siz yazdıkça güncellenir.",
+    "Vurgulanan bölümleri açıp nelerin eklendiğini (+) ve silindiğini (−) okuyun, değişiklikleri değişiklik günlüğü için metin olarak kopyalayın."
+  ],
+  "faq": [
+    ["Neden tüm dosya yerine bölüm bölüm karşılaştırılıyor?", "Bir export, menülerin listesidir ve aynı menü her zaman aynı yerde görünür. Menü menü karşılaştırmak, /ip firewall filter içindeki bir değişikliğin /ip address satırlarıyla karışmasını önler ve yapılandırmanın hangi bölümlerinin değiştiğini bir bakışta görmenizi sağlar."],
+    ["Export'umdaki uzun satırlar burada neden farklı görünüyor?", "RouterOS, export içindeki uzun satırları sonuna ters eğik çizgi koyarak sarar ve bir sonraki satırdan devam eder. Karşılaştırma bunları tek bir mantıksal satırda birleştirir ve tekrarlanan boşlukları tek boşluğa indirir; böylece yalnızca yeniden sarılmış bir kural değişiklik sayılmaz."],
+    ["Bir kural yalnızca yer değiştirdi ama silinmiş ve eklenmiş görünüyor. Neden?", "Firewall, NAT ve mangle zincirlerinde sıra önemlidir: yeri değişen bir kural yönlendiricinin davranışını değiştirebilir. Bu yüzden karşılaştırma sırayı korur ve taşınan bir kuralı eski konumundan silinmiş, yeni konumuna eklenmiş olarak gösterir."],
+    ["Parolalar ve anahtarlar gizleniyor mu?", "\"Gizli değerleri maskele\" açıkken parolaların, secret değerlerinin, özel ve ön paylaşımlı anahtarların, MD5 anahtarlarının ve SNMP community değerlerinin yerine karşılaştırmada ***** yazılır. Her durumda yapıştırdığınız hiçbir şey tarayıcınızdan çıkmaz."],
+    ["Yalnızca tek bir export için kullanabilir miyim?", "Evet. Tek taraf doldurulduğunda sayfa, o export'un bölümlerini satır sayılarıyla listeler; bu da uzun bir yapılandırmayı okumanın hızlı bir yoludur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-xdiff" id="xd">
+  <div class="ros-pair">
+    <div class="field">
+      <label for="xd-a">Eski export (önce)</label>
+      <textarea id="xd-a" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}.rsc dosyası aç<input type="file" id="xd-file-a" accept=".rsc,.txt,text/plain"></label>
+    </div>
+    <div class="field">
+      <label for="xd-b">Yeni export (sonra)</label>
+      <textarea id="xd-b" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge vlan-filtering=yes&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}.rsc dosyası aç<input type="file" id="xd-file-b" accept=".rsc,.txt,text/plain"></label>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="xd-mask" checked>Gizli değerleri maskele</label>
+    <label class="check"><input type="checkbox" id="xd-nocomments" checked># yorum satırlarını yok say</label>
+    <label class="check"><input type="checkbox" id="xd-all">Değişmeyen bölümleri göster</label>
+  </div>
+  <div class="ros-results" id="xd-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="xd-copy" type="button" hidden>Değişiklikleri metin olarak kopyala</button></div>
+</div>
+<!--explain-->
+<h2>RouterOS yapılandırma farkını okumak</h2>
+<p>Export, yönlendiricinin yapılandırmasının onu yeniden oluşturacak komutlar biçiminde yazılmış halidir: <code>/ip firewall filter</code> gibi bir menü satırı ve ardından o menünün <code>add</code> ile <code>set</code> komutları. Yalnızca varsayılandan farklı ayarlar görünür; bu, export'ları kısa tutar ama varsayılana döndürülen bir ayarın yeni export'tan sadece kaybolması anlamına gelir. Karşılaştırma her menüyü bir bölüm sayar, komutlarını sırayla karşılaştırır ve değişen bölümleri vurgular.</p>
+<p>Bazı farklar değişiklik değil, gürültüdür: export tarihi, yazılım kimliği ve seri numarası içeren üst bilgi atılır, sarılmış satırlar birleştirilir ve yorum satırları yok sayılabilir. Geriye kalan, yönlendiricinin gerçekte farklı yapacağı şeylerdir. Sıra bilinçli olarak korunur: firewall, NAT, mangle ve queue kuralları yukarıdan aşağıya işlenir, dolayısıyla bir kuralı taşımak gerçek bir değişikliktir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Her bakım penceresinden sonra tarihli bir export saklayın ve neyin yapıldığını tam olarak görmek için bir öncekiyle karşılaştırın.</li>
+  <li>v6'dan v7'ye yükseltmeyi mi denetliyorsunuz? <a href="/tools/routeros-v7-migration-helper/">Geçiş yardımcısının</a> dönüştürdüğü betiği, yükseltmeden sonra alınan bir export ile karşılaştırın.</li>
+  <li>Export olmayan düz metinler için genel amaçlı <a href="/tools/text-diff/">metin karşılaştırma</a> aracı da kelime kelime karşılaştırır.</li>
+</ul>

@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Калькулятор chmod: восьмеричные права и команды | Tanod Tools",
+  "description": "Отметьте права на чтение, запись и выполнение и получите число chmod, запись rwxr-xr-x и готовые команды. Или введите режим, и флажки подстроятся.",
+  "h1": "Калькулятор chmod",
+  "lede": "Задайте права доступа Unix флажками, восьмеричным числом вроде 755 или текстом rwxr-xr-x и получите соответствующие команды chmod.",
+  "blurb": "Права Unix флажками, в восьмеричном виде, как текст rwx и командами chmod.",
+  "keywords": "калькулятор chmod права доступа unix права на файлы linux права доступа восьмеричный rwx 755 644 setuid setgid sticky bit umask генератор chmod chmod calculator unix permissions linux file permissions octal",
+  "limits": "Работает с девятью битами прав, а также setuid, setgid и sticky, как в POSIX chmod. Реальные файлы он не читает, владельцев не показывает и не охватывает ACL, атрибуты файлов и umask. Восьмеричные режимы должны состоять из 3 или 4 цифр.",
+  "howto_title": "Как определить режим chmod",
+  "howto": [
+    "Отметьте флажки для владельца, группы и остальных или выберите типовой вариант, например 644 или 755. Можно также ввести восьмеричное число или девять букв, и флажки подстроятся.",
+    "Посмотрите краткое описание того, что может делать каждый класс с файлом и с каталогом, и прочитайте предупреждение, если оно появилось.",
+    "Скопируйте числовую или символьную команду <code>chmod</code>. Если хотите получить команду, готовую для вставки, сначала измените имя файла."
+  ],
+  "faq": [
+    ["Как работает восьмеричное число?", "Каждая цифра складывает чтение (4), запись (2) и выполнение (1) для одного класса в порядке «владелец, группа, остальные». Так, 7 — это чтение, запись и выполнение, 5 — чтение и выполнение, а 4 — только чтение. 755 даёт владельцу всё, а остальным — чтение и выполнение. Необязательная четвёртая цифра спереди хранит setuid (4), setgid (2) и sticky (1)."],
+    ["Что означают буквы s, S, t и T?", "Они заменяют x в позиции владельца, группы или остальных. Строчная буква означает, что специальный бит установлен и выполнение тоже включено; заглавная — что специальный бит установлен, а выполнение выключено, что обычно является ошибкой. Так, 4755 — это <code>rwsr-xr-x</code>, а 4644 — <code>rwSr--r--</code>."],
+    ["Чем 644 отличается от 755?", "644 — обычный режим для обычных файлов: владелец может читать и записывать, остальные — только читать. 755 добавляет выполнение для всех, которое нужно программам, скриптам и каталогам. Чтобы войти в каталог, нужен бит выполнения."],
+    ["Почему 777 считается опасным?", "Он позволяет любому пользователю машины и любой запущенной от его имени программе изменить или заменить файл. Веб-серверу, которому нужно что-то записывать, это не требуется: назначение нужного пользователя или группы владельцем и режим 775 или 770 решают большинство ошибок прав без открытия файла для всех."],
+    ["Что делает sticky-бит?", "На каталоге он не позволяет пользователям удалять или переименовывать чужие файлы, даже если они могут записывать в этот каталог. Поэтому у общих папок вроде <code>/tmp</code> режим 1777. В современном Linux на обычные файлы он не влияет."],
+    ["Меняет ли этот инструмент что-нибудь на моём компьютере?", "Нет. Он только вычисляет число и команды. Введённые данные никуда не отправляются, а команды вы запускаете сами в терминале."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Права доступа</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Владелец</th><th scope="col">Группа</th><th scope="col">Прочие</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Чтение <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Чтение для владельца"></td><td><input type="checkbox" id="m-g-r" aria-label="Чтение для группы"></td><td><input type="checkbox" id="m-o-r" aria-label="Чтение для прочих"></td></tr>
+          <tr><th scope="row">Запись <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Запись для владельца"></td><td><input type="checkbox" id="m-g-w" aria-label="Запись для группы"></td><td><input type="checkbox" id="m-o-w" aria-label="Запись для прочих"></td></tr>
+          <tr><th scope="row">Запуск <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Запуск для владельца"></td><td><input type="checkbox" id="m-g-x" aria-label="Запуск для группы"></td><td><input type="checkbox" id="m-o-x" aria-label="Запуск для прочих"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Установка ID пользователя (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Установка ID группы (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Sticky-бит <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Восьмеричный вид</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Символьный вид</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Типовые режимы">
+    <button class="btn btn--sm" type="button" data-mode="644">644 файл</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 программа или каталог</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 личный файл</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 личный каталог</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 общий для группы</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 для всех</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Имя файла или каталога в командах</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Команды">
+    <div><dt>Числовая</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Копировать числовую команду">Копировать</button></div>
+    <div><dt>Символьная</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Копировать символьную команду">Копировать</button></div>
+  </dl>
+  <h2 class="util-h">Что разрешает этот режим</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Кто</th><th scope="col">Для файла</th><th scope="col">Для каталога</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Как хранятся права доступа к файлам Unix</h2>
+<p>Каждый файл и каталог в Unix-подобной системе несёт короткий режим: три бита прав (чтение, запись, выполнение) для каждого из трёх классов (пользователь-владелец, группа-владелец, все остальные) и ещё три специальных бита. Всего получается двенадцать бит, а восьмеричное число — это те же биты, записанные по три, поэтому цифры доходят только до 7. Девятибуквенная запись из <code>ls -l</code> показывает те же биты буквами.</p>
+<p>Чтение, запись и выполнение на каталоге означают другое. Чтение позволяет увидеть список имён внутри, запись — добавлять, переименовывать и удалять записи, а выполнение — входить в каталог и обращаться к содержимому по имени. Каталог с чтением, но без выполнения показывает имена и запрещает доступ ко всему внутри, что часто становится причиной запутанных ошибок прав.</p>
+<p>Специальные биты меняют поведение режима. Setuid и setgid заставляют программу работать с правами владельца файла или группы, а не вызвавшего её пользователя; это мощный механизм, поэтому в большинстве систем для shell-скриптов он игнорируется. Setgid на каталоге заставляет новые файлы наследовать его группу, а sticky-бит на каталоге не даёт пользователям удалять файлы друг друга. Если вы не уверены, какой режим нужен файлу, начните с ограничительного и добавляйте только то, чего требует сообщение об ошибке.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Двоичная и восьмеричная записи — это одни и те же биты, записанные по-разному; «<a href="/tools/number-base-converter/">Перевод между системами счисления</a>» покажет 755 как 111 101 101.</li>
+  <li>Планируете задание cron, запускающее только что сделанный исполняемым скрипт? Составьте расписание в «<a href="/tools/cron-expression-generator/">Генераторе cron-выражений</a>».</li>
+  <li>Дальше считаете сетевые диапазоны? Попробуйте «<a href="/tools/subnet-calculator/">Калькулятор подсетей</a>».</li>
+</ul>

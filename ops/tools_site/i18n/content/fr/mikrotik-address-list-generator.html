@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Address list MikroTik : dédoublonner, fusionner | Tanod Tools",
+  "description": "Transformez une liste d'IP, de CIDR et de plages en script d'address-list RouterOS. Supprime les doublons, fusionne les réseaux, IPv4 et IPv6, timeout en option.",
+  "h1": "Générateur d'address list MikroTik",
+  "lede": "Collez des adresses IP, réseaux ou plages en vrac, et obtenez un script d'address-list RouterOS propre, sans doublons et avec les réseaux adjacents fusionnés.",
+  "blurb": "Des IP et CIDR vers un script d'address-list dédoublonné et fusionné.",
+  "keywords": "générateur address list mikrotik routeros address-list import liste de blocage liste blanche blocklist allowlist cidr agrégation fusion sous-réseaux dédoublonner liste ip firewall address list script rsc spamhaus drop",
+  "local_text": "Fonctionne dans votre navigateur ; vos listes ne quittent jamais votre appareil",
+  "limits": "Lit les adresses IPv4 et IPv6, les réseaux CIDR et les plages écrites sous la forme première-dernière ; tout ce qui suit # ou ; sur une ligne est ignoré. Les grandes listes (des centaines de milliers d'entrées) fonctionnent mais demandent un moment. MikroTik et RouterOS sont des marques de SIA Mikrotīkls. Cet outil est indépendant : il n'est ni affilié à MikroTik ni approuvé par MikroTik.",
+  "howto_title": "Comment créer une address list MikroTik",
+  "howto": [
+    "Collez les adresses, une par ligne ou séparées par des virgules ou des espaces. Les réseaux (<code>203.0.113.0/24</code>) et les plages (<code>198.51.100.10-198.51.100.20</code>) fonctionnent aussi.",
+    "Donnez un nom à la liste, et ajoutez un timeout ou un commentaire si vous les voulez sur chaque entrée.",
+    "Laissez la fusion activée pour obtenir le moins d'entrées possible, puis copiez le script ou téléchargez le fichier .rsc et exécutez <code>/import file-name=list.rsc</code>."
+  ],
+  "faq": [
+    ["Que fait la fusion ?", "Elle trie toutes les entrées, joint les adresses et réseaux qui se chevauchent ou se touchent, et écrit le résultat sous la forme du plus petit nombre de blocs CIDR couvrant exactement les mêmes adresses. 10.0.0.0/25 et 10.0.0.128/25 deviennent 10.0.0.0/24, et une adresse isolée située dans un réseau déjà présent disparaît. Rien n'est ajouté qui n'était pas couvert auparavant."],
+    ["Pourquoi une plage est-elle devenue plusieurs entrées ?", "Une plage comme 10.0.0.5-10.0.0.20 ne s'aligne pas sur une seule limite de réseau : elle est donc écrite sous forme des blocs CIDR qui la couvrent exactement : 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 et 10.0.0.20/32. RouterOS accepte aussi les plages, mais les entrées CIDR sont plus faciles à lire et à comparer."],
+    ["Mon import s'arrête en cours de route avec « already have such entry ». Pourquoi ?", "RouterOS refuse d'ajouter une adresse déjà présente dans la liste, et un import s'arrête à la première erreur. Cochez « Ignorer les entrées qui existent déjà » : chaque ligne est alors enveloppée dans <code>:do { … } on-error={}</code>, les doublons sont ignorés et l'import continue. Ou cochez « Remplacer la liste » pour la vider d'abord."],
+    ["Comment utiliser la liste dans une règle de firewall ?", "Faites-la correspondre avec <code>src-address-list=</code> ou <code>dst-address-list=</code>, par exemple <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. Rejeter dans la table raw évite le suivi de connexion, ce qui coûte moins cher avec de grandes listes de blocage."],
+    ["Mes listes sont-elles envoyées quelque part ?", "Non. L'analyse et la fusion se font dans votre navigateur, et rien de ce que vous collez n'est envoyé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Adresses, réseaux ou plages</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">Une par ligne ou séparées par des virgules. Le texte après # ou ; est ignoré.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">Nom de la liste</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">Facultatif, par exemple 1h, 1d ou 1w.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Commentaire</label>
+        <input type="text" id="al-comment" value="" placeholder="importé le 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Fusionner les réseaux qui se chevauchent et les réseaux adjacents</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Ignorer les entrées qui existent déjà</label>
+      <label class="check"><input type="checkbox" id="al-replace">Remplacer la liste (supprimer d'abord ses entrées actuelles)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">Script RouterOS</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Copier le script</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}Télécharger en .rsc</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Les address lists sur RouterOS</h2>
+<p>Une address list est un ensemble nommé d'adresses IP et de réseaux sous <code>/ip firewall address-list</code> (et <code>/ipv6 firewall address-list</code> pour IPv6). Les règles de firewall, NAT, mangle et raw peuvent cibler toute une liste avec une seule condition, ce qui garde les jeux de règles courts et rapides : RouterOS cherche l'appartenance à une liste dans un arbre au lieu de parcourir une règle par réseau. Les listes sont le moyen habituel de conserver les réseaux d'administration, les plages de clients, les listes de blocage issues de flux de menaces, ou les adresses qu'une règle ajoute dynamiquement avec <code>action=add-src-to-address-list</code>.</p>
+<p>Une même liste peut contenir des adresses isolées, des réseaux CIDR et des plages, et les entrées qui se chevauchent sont autorisées, ce qui explique que les flux importés deviennent désordonnés. Cette page nettoie une liste avant qu'elle n'arrive sur le routeur : elle normalise chaque entrée (un réseau écrit avec des bits d'hôte, comme 10.1.2.3/24, devient 10.1.2.0/24), supprime les doublons exacts et, avec la fusion activée, ramène le tout à l'ensemble minimal de blocs CIDR. Le script utilise l'adresse simple pour un hôte isolé, comme RouterOS l'affiche lui-même.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vérifiez la taille, la plage et le masque d'un réseau dans le <a href="/tools/subnet-calculator/">calculateur de sous-réseau</a>.</li>
+  <li>Besoin des règles de firewall qui utilisent la liste ? Partez du <a href="/tools/mikrotik-firewall-generator/">générateur de firewall MikroTik</a>.</li>
+  <li>Vous nettoyez plutôt une liste en texte brut ? <a href="/tools/remove-duplicate-lines/">Supprimer les lignes en double</a> conserve l'ordre et le texte d'origine.</li>
+</ul>

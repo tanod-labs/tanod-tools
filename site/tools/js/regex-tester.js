@@ -1,5 +1,5 @@
-import { $, el, live, fmtInt, wireCopy, MAX_TEXT_BYTES } from "./textcore.js?v=5";
-import { $$, tx, txn, fmtNum } from "./core.js?v=5";
+import { $, el, live, fmtInt, wireCopy, MAX_TEXT_BYTES } from "./textcore.js?v=11";
+import { $$, tx, txn, fmtNum } from "./core.js?v=11";
 
 const WORKER_URL = "/tools/js/regex-worker.js";
 const TIMEOUT_MS = 2000;

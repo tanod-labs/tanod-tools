@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Przeglądarka FatturaPA: pliki XML i podpisane P7M | Tanod Tools",
+  "description": "Otwórz włoską fakturę FatturaPA (XML lub podpisany .p7m) i czytaj ją jak zwykłą fakturę. Wydrukuj, zapisz jako PDF lub wyeksportuj JSON. Nic nie jest przesyłane.",
+  "h1": "Przeglądarka FatturaPA",
+  "lede": "Otwórz włoską fakturę elektroniczną (fattura elettronica), także podpisaną jako .p7m, i czytaj ją jak zwykłą fakturę. Plik jest otwierany w przeglądarce i nigdy nie jest przesyłany.",
+  "blurb": "Odczytaj fakturę FatturaPA w XML lub w podpisanym .p7m jak zwykłą fakturę.",
+  "keywords": "przeglądarka fatturapa fattura elettronica podgląd włoska e-faktura jak otworzyć plik p7m otwórz plik xml.p7m faktura włoska xml odczyt fpr12 fpa12 xml sdi faktura elettronica na pdf fatturapa viewer visualizzatore fattura elettronica",
+  "limits": "Jeden plik naraz, do 25 MB; wyświetlanych jest pierwszych 5000 pozycji ze wszystkich faktur w pliku. Odczytuje FatturaPA 1.2.x (FPR12 i FPA12), także pliki z kilkoma fakturami. Z podpisanego pliku .p7m XML jest wyjmowany z koperty, ale podpis nie jest weryfikowany: ta strona nie powie, kto podpisał plik ani czy został zmieniony. Tylko przeglądarka: bez walidacji, nic nie jest wysyłane do SDI.",
+  "howto_title": "Jak otworzyć fattura elettronica",
+  "howto": [
+    "Wybierz plik .xml lub .xml.p7m albo przeciągnij go na stronę.",
+    "W przypadku pliku .p7m strona wyjmuje XML z koperty z podpisem, a następnie pokazuje fakturę: sprzedawcę (cedente), nabywcę (cessionario), pozycje, podsumowanie VAT, sumy i płatność.",
+    "Naciśnij <strong>Drukuj lub zapisz jako PDF</strong>, <strong>Pobierz JSON</strong> albo <strong>Pokaż surowy XML</strong>."
+  ],
+  "faq": [
+    [
+      "Czy moja faktura jest przesyłana?",
+      "Nie. Plik, także podpisany .p7m, jest odczytywany w przeglądarce i wyświetlany na tej stronie. Żaden serwer go nie otrzymuje, a zamknięcie karty wszystko usuwa."
+    ],
+    [
+      "Czy sprawdza podpis cyfrowy pliku .p7m?",
+      "Nie. Plik .p7m to koperta CMS (PKCS#7) wokół faktury XML. Ta strona jedynie odczytuje kopertę, aby wyjąć z niej XML. Nie sprawdza certyfikatu, podpisu ani znacznika czasu, więc nie powie, kto podpisał plik ani czy został zmieniony. Jeśli to ważne, użyj narzędzia, które weryfikuje podpisy."
+    ],
+    [
+      "Które pliki FatturaPA są obsługiwane?",
+      "FatturaPA 1.2, 1.2.1 i 1.2.2 w obu postaciach: FPR12 (faktury dla firm i konsumentów) oraz FPA12 (faktury dla administracji publicznej). Plik może zawierać kilka faktur; każda jest wyświetlana. Faktura uproszczona (FSM10) nie jest obsługiwana."
+    ],
+    [
+      "Dlaczego kwota do zapłaty nie jest równa sumie dokumentu?",
+      "Kwota do zapłaty to suma wierszy płatności (ImportoPagamento), jeśli plik je zawiera. Może się różnić od sumy dokumentu: przy podzielonej płatności (scissione dei pagamenti) VAT nie jest płacony dostawcy, podobnie jak kwota podatku potrąconego u źródła (ritenuta d'acconto). Oba przypadki są oznaczone na fakturze."
+    ],
+    [
+      "Co oznaczają kody takie jak TD01, MP05, N4 i RF01?",
+      "Pochodzą z oficjalnych list kodów formatu FatturaPA: TD01 to faktura, TD04 faktura korygująca (nota kredytowa), MP05 przelew bankowy, N4 transakcja zwolniona, RF01 zwykły reżim podatkowy. Jeśli kod ma potoczną nazwę, jest pokazywany razem z kodem w nawiasie; w przeciwnym razie kod jest pokazywany bez zmian."
+    ],
+    [
+      "Czy to jest oficjalna przeglądarka?",
+      "Nie. Ta strona jest niezależna od Agenzia delle Entrate i od SDI. To nie jest oficjalny arkusz stylów, a plik pokazany tutaj nie został wysłany do SDI ani przez nie sprawdzony."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Upuść e-fakturę tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik</span></label>
+  <p class="drop__hint">Plik XML, PDF z fakturą w środku (ZUGFeRD, Factur-X) albo podpisany plik .p7m. Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drukuj lub zapisz jako PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Pobierz JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Pobierz XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Pokaż surowy XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Surowy XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Tutaj widać tylko początek długiego pliku. Pobierz XML, aby mieć go w całości.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Fattura elettronica w skrócie</h2>
+<p>We Włoszech faktury są wymieniane jako pliki XML za pośrednictwem Sistema di Interscambio (SDI) urzędu Agenzia delle Entrate. Faktury dla podmiotów publicznych korzystają z formatu FatturaPA od 2014 i 2015 r., a firmy muszą go używać w prawie wszystkich fakturach krajowych od 2019 r. Fakturą jest plik XML, a nie jego kopia w PDF, więc to, co przychodzi, bywa plikiem nie do odczytania. Ta strona zamienia go z powrotem w fakturę.</p>
+<h2>Podpisane pliki .p7m</h2>
+<p>Wiele faktur przychodzi jako <code>nazwa.xml.p7m</code>. Plik .p7m to podpisana koperta w formacie CMS (PKCS#7): faktura XML jest w niej zapisana razem z podpisem i certyfikatem podpisującego. Włoscy dostawcy zapisują te koperty na nieco różne sposoby (o stałej lub otwartej długości, z zawartością w kawałkach, a nawet jako tekst base64), a plik może być podpisany dwukrotnie. Ta strona odczytuje kopertę małym parserem napisanym na potrzeby tej witryny, wyjmuje XML i wyraźnie zaznacza, że nie sprawdziła podpisu.</p>
+<h2>Co pokazuje przeglądarka</h2>
+<p>Widzisz cedente/prestatore (sprzedawcę) i cessionario/committente (nabywcę) z numerami VAT i kodami podatkowymi, rodzaj dokumentu, numer i datę, powody wystawienia faktury (Causale), każdą pozycję z ilością, jednostką, ceną, rabatem i stawką VAT, podsumowanie VAT z kodem zwolnienia i podstawą prawną, składki na ubezpieczenie społeczne, podatek potrącony u źródła, opłatę skarbową, wiersze płatności z IBAN i terminami oraz załączone pliki. Nie waliduje faktury i nie łączy się z SDI.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>W przypadku PDF z XML w środku użyj narzędzia <a href="/tools/zugferd-factur-x-viewer/">Przeglądarka ZUGFeRD / Factur-X</a>; ta strona też je przyjmuje.</li>
+  <li>Pobierz JSON, aby uzyskać fakturę jako dane do własnego arkusza kalkulacyjnego lub programu.</li>
+  <li>Pokaż surowy XML pozwala znaleźć pole, którego czytelna faktura nie uwzględnia.</li>
+</ul>

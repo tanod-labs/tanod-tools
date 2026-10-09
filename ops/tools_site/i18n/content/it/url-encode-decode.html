@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Codifica e decodifica URL online, con analizzatore | Tanod Tools",
+  "description": "Codifica o decodifica in percent-encoding il testo per gli URL: componente, URL completo o dati di modulo, UTF-8 sicuro, errori chiari. Divide un URL in parti.",
+  "h1": "Codifica e decodifica URL",
+  "lede": "Codifica il testo in percent-encoding per un URL o decodificalo, e dividi qualsiasi URL nelle sue parti e nei parametri della query.",
+  "blurb": "Codifica, decodifica e analizza gli URL.",
+  "keywords": "codifica url decodifica url urlencode urldecode percent encoding encodeuricomponent query string parametri uri escape caratteri speciali url",
+  "limits": "Testo fino a circa 5 MB. I risultati si aggiornano mentre scrivi.",
+  "howto_title": "Come codificare o decodificare un URL",
+  "howto": [
+    "Scegli Codifica o Decodifica, poi scegli cos'è il testo: un singolo valore (componente), un URL completo o dati di modulo.",
+    "Scrivi o incolla il testo. Il risultato compare sotto mentre scrivi; una sequenza di escape errata viene segnalata con la sua posizione.",
+    "Copia il risultato, oppure incolla un URL completo nell'analizzatore più in basso per vedere host, percorso e parametri della query."
+  ],
+  "faq": [
+    ["Qual è la differenza tra codifica di componente e di URL completo?", "La codifica di componente (<code>encodeURIComponent</code> di JavaScript) applica l'escape a tutto tranne lettere, cifre e <code>- _ . ! ~ * ' ( )</code>, quindi caratteri come <code>/ ? &amp; =</code> diventano <code>%2F %3F %26 %3D</code>. Usala per un singolo valore di query o segmento di percorso. La codifica di URL completo (<code>encodeURI</code>) lascia stare i caratteri che danno struttura a un URL e applica l'escape solo a spazi, lettere non ASCII e pochi altri, così un indirizzo intero resta utilizzabile."],
+    ["Quando devo usare la codifica di modulo?", "La codifica di modulo (<code>application/x-www-form-urlencoded</code>) è ciò che invia un modulo HTML e ciò che usano la maggior parte delle query string. Scrive uno spazio come <code>+</code> e applica l'escape a tutto tranne lettere, cifre e <code>* - . _</code>. Nella decodifica in questa modalità, un <code>+</code> viene letto come spazio; nelle altre modalità resta un segno più."],
+    ["Come vengono codificate le lettere accentate e le emoji?", "Come byte UTF-8, ciascuno scritto come <code>%</code> più due cifre esadecimali, che è ciò che si aspettano browser e server. Per esempio é diventa <code>%C3%A9</code>. La decodifica verifica che i byte formino UTF-8 valido e ti avvisa se non è così."],
+    ["Perché la decodifica segnala un errore?", "Ogni segno di percentuale deve essere seguito da due cifre esadecimali (0-9, A-F). Un <code>%</code> isolato, una sequenza di escape troncata come <code>%A</code> o byte che non sono UTF-8 valido vengono segnalati con la loro posizione, così puoi trovarli. Se il testo contiene un segno di percentuale letterale, va scritto come <code>%25</code>."],
+    ["L'analizzatore di URL visita l'indirizzo?", "No. Usa l'analizzatore di URL integrato nel browser per dividere il testo in parti; non viene scaricato nulla e non viene inviato nulla da nessuna parte. Il testo che scrivi resta in questa scheda."],
+    ["Devo codificare un intero URL più di una volta?", "No. Codificare un testo già codificato trasforma <code>%20</code> in <code>%2520</code>, un bug molto comune. Se in un risultato vedi <code>%25</code> seguito da due cifre esadecimali, l'input era probabilmente già codificato; decodificalo prima."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Direzione</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Codifica</label>
+        <label><input type="radio" name="dir" value="decode">Decodifica</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">Il testo è</label>
+      <select id="u-kind">
+        <option value="component" selected>Un singolo valore (componente)</option>
+        <option value="uri">Un URL completo</option>
+        <option value="form">Dati di modulo (spazio come +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Input</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Scrivi o incolla qui, per esempio caffè latte &amp; tè"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Risultato</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Copia</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Usa il risultato come input</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Cancella</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">Dividi un URL nelle sue parti</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Parametri della query</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Nome</th><th scope="col">Valore (decodificato)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Cosa fa la codifica degli URL</h2>
+<p>Un URL può contenere solo un insieme limitato di caratteri ASCII, e alcuni di essi hanno un compito: <code>/</code> separa i segmenti del percorso, <code>?</code> avvia la query, <code>&amp;</code> e <code>=</code> la dividono in nomi e valori, <code>#</code> avvia il frammento. Il percent-encoding scrive qualsiasi altro byte come <code>%</code> seguito da due cifre esadecimali, così un valore come <code>R&amp;D / 2026</code> può viaggiare in una query string senza essere scambiato per struttura: <code>R%26D%20%2F%202026</code>.</p>
+<p>Il testo viene prima trasformato in byte UTF-8, ed è per questo che una lettera accentata diventa due escape e un'emoji ne diventa quattro. La decodifica inverte il processo e verifica che i byte formino UTF-8 valido. Questo strumento decodifica con un proprio lettore rigoroso, quindi invece di un generico errore "URI malformed" ti dice quale escape è errato e dove.</p>
+<p>Le tre modalità corrispondono alle tre situazioni più comuni. Codifica un singolo valore (componente) quando costruisci un parametro di query o un segmento di percorso. Codifica un URL completo solo quando hai un indirizzo intero con spazi o lettere non ASCII. Usa i dati di modulo per il corpo di un invio di modulo o per una query string costruita come la costruiscono i moduli HTML.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Ti serve un percorso pulito e leggibile invece di escape? Creane uno con il <a href="/tools/text-to-slug/">Generatore di slug</a>.</li>
+  <li>I dati binari in un URL di solito sono Base64url, non percent-encoding: prova <a href="/tools/base64-encode-decode/">Codifica e decodifica Base64</a>.</li>
+  <li>Un token in una query string che inizia con <code>eyJ</code> è probabilmente un JWT. Leggilo con il <a href="/tools/jwt-decoder/">Decodificatore JWT</a>.</li>
+</ul>

@@ -4,7 +4,7 @@ Code marks every user-visible English string with tx("..."), txf("...") or txn(n
 site/tools/js/i18n.js. This module extracts those keys, checks ops/tools_site/i18n/strings/<module>.json for a
 translation in every language, and builds the per-page tables the build writes to site/tools/js/i18n/<lang>/.
 
-strings/<module>.json:  { "<English key>": { "es": "...", "pt-BR": "...", "fr": "...", "de": "...", "id": "..." } }
+strings/<module>.json:  { "<English key>": { "es": "...", "pt-BR": "...", "fr": "...", "de": "...", "id": "...", "it": "...", ... } }
 Plural keys are "<one>|<other>" and map each language to {"one": ..., "other": ...} (plus "few"/"many" where the
 language has them; Indonesian may give a plain string).
 
@@ -19,7 +19,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 JS = HERE.parent.parent.parent / "site" / "tools" / "js"
 TABLES = HERE / "strings"
-LANGS = ["es", "pt-BR", "fr", "de", "id"]
+LANGS = ["es", "pt-BR", "fr", "de", "id", "it", "tr", "vi", "ru", "pl", "hi"]
 
 STR = r'"((?:[^"\\\n]|\\.)*)"'
 RE_TX = re.compile(r"\btxf?\(\s*" + STR)
@@ -98,7 +98,7 @@ def problems(module: str) -> list:
             forms = v.values() if isinstance(v, dict) else [v]
             if isinstance(v, dict) and "other" not in v:
                 out.append(f"{module}: {lang} plural without 'other' for {key!r}")
-            if "|" in key and not isinstance(v, dict) and lang != "id":
+            if "|" in key and not isinstance(v, dict) and lang not in ("id", "vi"):
                 out.append(f"{module}: {lang} plural key needs {{one, other}} for {key!r}")
             for f in forms:
                 if not isinstance(f, str) or not f.strip():

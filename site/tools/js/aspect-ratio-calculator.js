@@ -1,6 +1,6 @@
 // Aspect ratio calculator: reduce a width and height to a ratio, and resize keeping a ratio.
-import { $, tx, txn, fmtNum, EN } from "./core.js?v=5";
-import { parseNum, fmt as fmtG } from "./calccore.js?v=5";
+import { $, tx, txn, fmtNum, EN } from "./core.js?v=11";
+import { parseNum, fmt as fmtG } from "./calccore.js?v=11";
 
 /* Pixel sizes read better without thousands separators (1920 × 1080). */
 const fmt = (n, sig = 10) => fmtG(n, sig, { group: false });

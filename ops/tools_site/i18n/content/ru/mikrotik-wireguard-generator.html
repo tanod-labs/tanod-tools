@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Конфигурация WireGuard для MikroTik (RouterOS v7) | Tanod Tools",
+  "description": "Создайте сервер WireGuard для RouterOS v7 и готовые конфигурации клиентов. Ключи создаются в браузере через Web Crypto и не покидают устройство.",
+  "h1": "Генератор WireGuard для MikroTik",
+  "lede": "Задайте сеть туннеля и своих клиентов и получите конфигурацию WireGuard для RouterOS v7 и файл настроек для каждого ноутбука, телефона или удалённой площадки.",
+  "blurb": "Сервер WireGuard для RouterOS v7 и файлы конфигураций клиентов.",
+  "keywords": "настройка wireguard mikrotik микротик routeros v7 wireguard interface peers allowed-address публичный ключ приватный ключ генератор wg-quick конфиг клиента удалённый доступ site to site vpn",
+  "local_text": "Ключи создаются в браузере и не покидают устройство",
+  "limits": "Нужен RouterOS v7 (в v6 WireGuard недоступен). Ключи создаются средствами Web Crypto X25519 вашего браузера; если их нет, маршрутизатор создаёт собственный ключ, а в конфигурациях остаются заглушки. Только адреса туннеля IPv4. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен компанией.",
+  "howto_title": "Как настроить WireGuard на MikroTik",
+  "howto": [
+    "Введите имя интерфейса, порт прослушивания, адрес маршрутизатора в туннеле (например, <code>10.66.0.1/24</code>) и публичный адрес, к которому будут подключаться клиенты.",
+    "Добавьте строку для каждого клиента с его адресом в туннеле; для связи между площадками добавьте сети за ним. Выберите полный или раздельный туннель.",
+    "Вставьте скрипт RouterOS, поднимите правило файрвола выше правил drop и импортируйте файл .conf каждого клиента в его приложение WireGuard."
+  ],
+  "faq": [
+    ["Безопасно ли, если ключи создаются на веб-странице?", "Их создаёт встроенная в ваш браузер реализация Web Crypto X25519 — та же кривая, что использует WireGuard, — и они существуют только в памяти этой страницы и в показанном вам тексте. Ничего никуда не отправляется: у страницы нет серверной части, а её политика безопасности блокирует соединения с другими сайтами. Закройте вкладку, и ключи исчезнут, поэтому сначала сохраните нужные конфигурации."],
+    ["Что делать, если браузер не умеет создавать ключи X25519?", "Страница сообщит об этом и перейдёт на ключи, созданные в другом месте: в скрипте RouterOS не будет приватного ключа, и маршрутизатор создаст собственный при создании интерфейса. Выполните /interface wireguard print, чтобы узнать его публичный ключ, вставьте его в конфигурации клиентов, а публичный ключ каждого клиента (из его приложения WireGuard) вставьте в таблицу здесь."],
+    ["Что такое allowed-address у клиента MikroTik?", "Это одновременно список доступа и таблица маршрутизации: маршрутизатор принимает от клиента пакеты только с такими адресами источника и отправляет этому клиенту трафик к таким адресам назначения. Для одного устройства это его адрес /32. Для удалённой площадки добавьте её локальную сеть, и скрипт также добавит маршрут к ней."],
+    ["Полный туннель или раздельный?", "Полный туннель (AllowedIPs 0.0.0.0/0 у клиента) направляет весь трафик устройства через маршрутизатор, что полезно в ненадёжной сети Wi-Fi; маршрутизатор при этом должен выполнять маскарадинг адресов туннеля при выходе в интернет. Раздельный туннель отправляет только сеть туннеля и перечисленные вами сети, поэтому обычный сёрфинг остаётся локальным."],
+    ["Зачем клиенту PersistentKeepalive?", "Телефон или ноутбук за NAT может получать пакеты, только пока жива запись в таблице NAT. Keepalive каждые 25 секунд поддерживает её, поэтому маршрутизатор может достучаться до клиента, а туннель быстро восстанавливается после паузы."],
+    ["Что даёт общий ключ (preshared key)?", "Дополнительный симметричный секрет, подмешиваемый в рукопожатие: он добавляет защиту от будущих квантовых атак на обмен открытыми ключами. Он необязателен и должен совпадать с обеих сторон."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Маршрутизатор</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">Имя интерфейса</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Порт прослушивания (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">Адрес маршрутизатора в туннеле</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">Публичный адрес (endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">DNS для клиентов</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Ключи</legend>
+      <div class="seg" role="radiogroup" aria-label="Ключи">
+        <label><input type="radio" name="wg-keys" value="browser" checked>Создать в этом браузере</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">Созданы в другом месте</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>Этот браузер не умеет создавать ключи X25519, поэтому маршрутизатор создаст свой, а публичные ключи клиентов вы вставите ниже.</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>Добавить общий ключ (preshared key) для каждого клиента</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}Новые ключи</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Клиенты</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Добавить клиента</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Трафик клиентов</legend>
+      <div class="seg" role="radiogroup" aria-label="Трафик клиентов">
+        <label><input type="radio" name="wg-route" value="full" checked>Полный туннель (весь трафик)</label>
+        <label><input type="radio" name="wg-route" value="split">Раздельный туннель</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">Сети, к которым клиенты обращаются через туннель</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>Добавить туннель в список интерфейсов LAN</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">Скрипт RouterOS v7</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>WireGuard в RouterOS v7</h2>
+<p>WireGuard появился в RouterOS 7 и настраивается в двух местах: в <code>/interface wireguard</code> хранятся пара ключей маршрутизатора и порт прослушивания, а в <code>/interface wireguard peers</code> — по одной записи на каждое удалённое устройство или площадку, которое определяется по публичному ключу. Затем интерфейсу туннеля назначается IP-адрес, как любому другому интерфейсу, и к нему применяются обычные правила файрвола, маршруты и списки интерфейсов. Ни имени пользователя, ни пароля здесь нет: клиент — это тот, у кого есть приватный ключ, соответствующий настроенному публичному.</p>
+<p>Основа настройки — параметр <code>allowed-address</code> клиента. В нём перечислены адреса источника, которые маршрутизатор принимает от этого клиента, и одновременно адреса назначения, трафик к которым он отправляет этому клиенту. На стороне устройства ту же роль в обратную сторону играет <code>AllowedIPs</code>: 0.0.0.0/0 направляет в туннель всё, а список сетей оставляет туннель только для этих сетей.</p>
+<h3>Перед подключением</h3>
+<ul>
+  <li>Маршрутизатор должен принимать UDP на порту прослушивания в цепочке input выше любого правила drop. <a href="/tools/mikrotik-firewall-generator/">Генератор файрвола MikroTik</a> может открыть его для вас с <code>udp/13231</code>.</li>
+  <li>Если маршрутизатор стоит за другим устройством с NAT, пробросьте на него UDP-порт, как показывает <a href="/tools/mikrotik-port-forwarding/">Генератор проброса портов MikroTik</a>.</li>
+  <li>Конфигурации клиентов содержат приватные ключи. Передавайте их на устройства по надёжному каналу и удаляйте случайные копии.</li>
+</ul>

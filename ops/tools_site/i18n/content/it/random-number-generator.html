@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Generatore di numeri casuali: interi e decimali | Tanod Tools",
+  "description": "Estrai numeri casuali tra un minimo e un massimo qualsiasi, con o senza ripetizioni, ordinati o no, interi o decimali. Usa la fonte casuale sicura del browser.",
+  "h1": "Generatore di numeri casuali",
+  "lede": "Scegli un intervallo e quanti numeri vuoi. Ognuno viene estratto in modo uniforme dalla fonte casuale sicura del tuo browser.",
+  "blurb": "Interi o decimali casuali in qualsiasi intervallo, con modalità senza ripetizioni.",
+  "keywords": "generatore numeri casuali numero a caso estrazione numeri dado lotteria sorteggio tombola intero decimale tra minimo e massimo numeri unici senza ripetizioni random number generator",
+  "limits": "Fino a 10.000 numeri per estrazione, limiti fino a 30 cifre e fino a 10 cifre decimali. I risultati non vengono salvati; ricaricare la pagina li cancella.",
+  "howto_title": "Come generare numeri casuali",
+  "howto": [
+    "Scrivi il valore <strong>più piccolo</strong> e quello <strong>più grande</strong>. Entrambi gli estremi possono uscire e i numeri negativi funzionano.",
+    "Imposta <strong>quanti</strong> numeri vuoi e spunta <em>Senza ripetizioni</em> se ogni numero deve essere diverso.",
+    "Premi <strong>Genera</strong>, poi copia l'elenco o scaricalo come file di testo."
+  ],
+  "faq": [
+    ["I numeri sono davvero casuali?", "Provengono da <code>crypto.getRandomValues</code>, lo stesso generatore sicuro che i browser usano per le chiavi di cifratura, non da <code>Math.random</code>. Ogni valore del tuo intervallo è ugualmente probabile. Il generatore va bene per giochi, estrazioni e campioni; non è stato sottoposto ad audit per lotterie regolamentate."],
+    ["Cos'è il modulo bias e questo strumento ce l'ha?", "Prendere un numero casuale a 32 bit e tenere il resto della divisione per la dimensione dell'intervallo rende alcuni risultati leggermente più probabili ogni volta che l'intervallo non divide esattamente 2<sup>32</sup>. Questo strumento scarta qualsiasi estrazione che cade nel resto irregolare e ne fa un'altra, così ogni valore ha esattamente la stessa probabilità. Vale anche per intervalli enormi, gestiti con interi di grandi dimensioni."],
+    ["Come funziona \"Senza ripetizioni\" e quando fallisce?", "Lo strumento estrae ogni nuovo numero e salta quelli già usciti, oppure, per intervalli piccoli, rimescola l'intero intervallo e prende i primi. Se chiedi più numeri diversi di quanti ne contenga l'intervallo, come 7 da 1 a 6, te lo dice invece di ciclare all'infinito."],
+    ["Cosa succede se il minimo è maggiore del massimo?", "I due valori vengono scambiati e la riga del risultato lo segnala. Scrivere 10 e 1 dà la stessa estrazione di 1 e 10."],
+    ["Come funzionano i decimali?", "Imposta le cifre decimali a 2 e l'intervallo da 0 a 1 diventa i 101 valori 0,00, 0,01 fino a 1,00, tutti ugualmente probabili. I risultati mostrano sempre il numero completo di cifre, quindi 0,50 resta 0,50. I limiti stessi non possono avere più decimali di quelli che hai scelto."],
+    ["Posso usarlo per una giocata alla lotteria o per tirare un dado?", "Per tirare un dado usa da 1 a 6. Per una giocata alla lotteria spunta <em>Senza ripetizioni</em>, per esempio 6 numeri da 1 a 49 ordinati dal più piccolo. Le scelte casuali non danno probabilità migliori di qualsiasi altro numero. Le estrazioni non vengono salvate né inviate da nessuna parte."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Minimo</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Massimo</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">Quanti</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Cifre decimali</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 dà numeri interi.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Ordine</label>
+      <select id="rn-order">
+        <option value="drawn">Come estratti</option>
+        <option value="asc">Dal più piccolo</option>
+        <option value="desc">Dal più grande</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">Senza ripetizioni</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Genera</button>
+    <button class="btn" id="rn-copy" type="button">Copia l'elenco</button>
+    <button class="btn" id="rn-dl" type="button">Scarica .txt</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Risultato</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Numeri generati"></pre>
+</div>
+<!--explain-->
+<h2>Perché un generatore sicuro, e cosa deve significare "casuale" qui</h2>
+<p>Un'estrazione equa significa che ogni valore ammesso è ugualmente probabile e che un'estrazione non dice nulla sulla successiva. <code>Math.random()</code> è veloce ma è una sequenza prevedibile sotto mentite spoglie, va bene per le animazioni, non per l'estrazione di un premio. <code>crypto.getRandomValues</code> del browser è inizializzato dal sistema operativo ed è la fonte giusta per tutto ciò su cui le persone potrebbero discutere.</p>
+<p>Trasformare bit casuali grezzi in un numero da 1 a 6 è il punto in cui molti strumenti sbagliano. Un valore a 32 bit ha 4.294.967.296 possibilità, che 6 non divide, quindi usare il resto rende le facce basse leggermente più probabili. La soluzione è il rejection sampling: il più grande multiplo della dimensione dell'intervallo sotto 2<sup>32</sup> è la soglia, e un'estrazione sopra di essa viene scartata e ripetuta. Per intervalli più larghi di 32 bit lo strumento estrae esattamente tanti bit quanti servono e rifiuta tutto ciò che supera l'intervallo, usando interi di grandi dimensioni così che valori vicini a 9.007.199.254.740.991 restino esatti.</p>
+<p>I decimali usano la stessa idea su una griglia. Con due cifre decimali, l'intervallo da 0 a 5 viene trattato come gli interi da 0 a 500, se ne estrae uno e il punto viene rimesso al suo posto, il che mantiene ugualmente probabile ogni valore della griglia invece di arrotondare un numero continuo.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Per scegliere persone anziché numeri, incolla un elenco in <a href="/tools/random-name-picker/">Estrazione di un nome a caso</a>.</li>
+  <li>Ti serve un segreto, non un numero? Il <a href="/tools/password-generator/">Generatore di password</a> usa la stessa fonte casuale con set di caratteri.</li>
+  <li>Vuoi un identificatore univoco invece di un piccolo numero? Prova il <a href="/tools/uuid-generator/">Generatore di UUID</a>.</li>
+</ul>

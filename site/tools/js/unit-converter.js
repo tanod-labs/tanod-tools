@@ -1,6 +1,6 @@
 // Unit converter: length, weight, temperature, volume, area and speed, with exact defined factors.
-import { $, $$, el, icon, announce, prefs, tx } from "./core.js?v=5";
-import { parseNum, fmt } from "./calccore.js?v=5";
+import { $, $$, el, icon, announce, prefs, tx } from "./core.js?v=11";
+import { parseNum, fmt } from "./calccore.js?v=11";
 
 /* f = size of one unit in the base unit (m, kg, L, m², m/s). All factors are exact definitions. */
 const GAL_US = 3.785411784, GAL_IMP = 4.54609, LB = 0.45359237;

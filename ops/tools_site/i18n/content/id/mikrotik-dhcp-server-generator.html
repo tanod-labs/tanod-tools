@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Generator DHCP server dan IP pool MikroTik | Tanod Tools",
+  "description": "Buat DHCP server RouterOS: IP pool, server, pengaturan network (gateway, DNS, domain, NTP), dan static lease, diperiksa terhadap subnet. Berjalan di browser Anda.",
+  "h1": "Generator DHCP server MikroTik",
+  "lede": "Masukkan interface dan subnet, lalu dapatkan IP pool, DHCP server, pengaturan network, dan static lease sebagai satu skrip RouterOS yang sudah diperiksa.",
+  "blurb": "IP pool, DHCP server, network, dan static lease.",
+  "keywords": "setup dhcp server mikrotik routeros ip pool dhcp-server network gateway dns-server static lease reservasi mac address lease-time skrip dhcp vlan dhcp",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 (juga valid di v6) untuk DHCP server IPv4 pada satu interface. Opsi DHCP kustom dan relay tidak dicakup. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara menyiapkan DHCP server di MikroTik",
+  "howto": [
+    "Masukkan interface tempat klien berada (bridge atau interface VLAN) dan subnet-nya; gateway dan pool disarankan dari situ.",
+    "Sesuaikan pool, server DNS, domain, dan lease time, lalu tambahkan static lease untuk perangkat yang memerlukan alamat tetap.",
+    "Salin skrip atau unduh file .rsc dan jalankan; catatan menunjukkan hal yang perlu dilihat sekali lagi."
+  ],
+  "faq": [
+    ["Apa saja bagian DHCP server RouterOS?", "Tiga menu bekerja bersama: <code>/ip pool</code> menyimpan alamat yang dibagikan, <code>/ip dhcp-server</code> mengikat server ke interface dan pool, dan <code>/ip dhcp-server network</code> menyimpan apa yang diberitahukan ke klien: gateway, server DNS, domain, dan server NTP untuk subnet itu. Router juga memerlukan alamatnya sendiri di interface, yang bisa ditambahkan skrip."],
+    ["Apakah static lease sebaiknya di dalam atau di luar pool?", "Keduanya bisa: RouterOS tidak pernah membagikan alamat yang dipegang static lease. Menempatkan perangkat tetap di luar rentang dinamis, misalnya .2 sampai .9 dengan pool mulai dari .10, membuat rencana lebih mudah dibaca dan menghindari kebingungan bila sebuah lease dihapus."],
+    ["Lease time berapa yang sebaiknya dipakai?", "Untuk LAN rumah atau kantor, satu hari lazim. Jaringan tamu dan hotspot dengan banyak kunjungan singkat lebih baik memakai satu jam atau kurang, agar alamat cepat kembali ke pool. Lease yang sangat pendek berarti lebih banyak perpanjangan tetapi tidak ada biaya berarti di jaringan kecil."],
+    ["Apakah saya perlu allow-remote-requests agar klien memakai router sebagai DNS?", "Ya, dan itu juga yang membuat router menjadi resolver terbuka bila firewall tidak men-drop DNS dari WAN. Alat ini hanya menambahkannya saat Anda mencentang opsinya, dan mengingatkan Anda untuk memeriksa input chain."],
+    ["Apakah rencana jaringan saya dikirim ke suatu tempat?", "Tidak. Pemeriksaan dan skrip dikerjakan di browser Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Network</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Interface</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Subnet</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Gateway (alamat router)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Rentang pool</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Tambahkan alamat gateway ke interface</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Pengaturan klien</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">Server DNS</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Domain</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">Server NTP</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="opsional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Lease time</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Nama server dan pool</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">Router menjawab DNS untuk LAN (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Static lease</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Tambah static lease</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">Skrip RouterOS</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Salin skrip</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>DHCP di RouterOS, bagian demi bagian</h2>
+<p>RouterOS menyimpan DHCP server di tiga tempat, dan bagian yang hilang adalah alasan umum klien tidak mendapat alamat. <strong>Pool</strong> hanyalah kumpulan bernama berisi rentang alamat. <strong>Server</strong> mendengarkan pada satu interface dan meminjamkan alamat dari pool-nya. Entri <strong>network</strong> dicocokkan berdasarkan subnet dan memuat opsi yang dikirim bersama setiap lease: gateway, server DNS, nama domain, dan server NTP. Interface juga memerlukan alamat router sendiri di subnet itu, atau server tidak punya jaringan untuk dilayani.</p>
+<p>Halaman ini memeriksa bagian-bagian itu satu sama lain sebelum menulis apa pun: gateway dan pool harus berada di dalam subnet, pool harus menghindari alamat network, broadcast, dan gateway, dan static lease harus unik serta berada di dalam subnet. Static lease ditulis ke <code>/ip dhcp-server lease</code> dengan nama server, sehingga tiap perangkat selalu mendapat alamat yang sama.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Merencanakan pengalamatan? <a href="/tools/subnet-calculator/">Kalkulator subnet</a> menampilkan rentang host dan ukuran prefix mana pun.</li>
+  <li>Satu DHCP server per VLAN: buat interface VLAN lebih dulu dengan <a href="/tools/mikrotik-vlan-generator/">generator VLAN</a>, lalu jalankan alat ini sekali per VLAN.</li>
+  <li>Jika router menjawab DNS, pastikan <a href="/tools/mikrotik-firewall-generator/">firewall</a> men-drop DNS dari internet.</li>
+</ul>

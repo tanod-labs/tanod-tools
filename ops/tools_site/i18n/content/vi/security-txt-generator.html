@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "Tạo và kiểm tra security.txt (RFC 9116) | Tanod Tools",
+  "description": "Viết security.txt cho thư mục /.well-known/ với đủ các trường, hoặc dán tệp của bạn để kiểm tra theo RFC 9116: Contact, Expires, liên kết https, Canonical và chữ ký.",
+  "h1": "Tạo và kiểm tra security.txt",
+  "lede": "Tạo tệp security.txt hợp lệ theo RFC 9116 để các nhà nghiên cứu biết cách liên hệ với bạn, hoặc dán một tệp có sẵn để xem nó sai ở đâu. Đây là một bước chuẩn bị cho <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">Đạo luật Khả năng chống chịu không gian mạng của EU</a>.",
+  "blurb": "Tạo security.txt và kiểm tra tệp theo RFC 9116.",
+  "keywords": "tạo security.txt kiểm tra security.txt rfc 9116 well-known liên hệ báo cáo lỗ hổng bảo mật công bố lỗ hổng expires canonical pgp đạo luật khả năng chống chịu không gian mạng security.txt generator security.txt checker security.txt validator vulnerability disclosure contact cyber resilience act",
+  "limits": "Công cụ chỉ kiểm tra nội dung theo RFC 9116. Công cụ không truy cập website của bạn (những gì bạn nhập không rời khỏi trang này, nên hãy dán nội dung tệp vào), không xác minh chữ ký OpenPGP và không thử xem một địa chỉ có hoạt động hay không. Đây là mẫu tham khảo, không phải tư vấn pháp lý.",
+  "howto_title": "Cách tạo và kiểm tra security.txt",
+  "howto": [
+    "Nhập ít nhất một Contact (địa chỉ email, số điện thoại hoặc trang https://) và kiểm tra ngày Expires. Điền thêm các trường tùy chọn bạn muốn, chẳng hạn Policy và Preferred-Languages.",
+    "Sao chép hoặc tải tệp xuống, rồi đăng tại <code>/.well-known/security.txt</code> trên tên miền của bạn qua HTTPS, dưới dạng văn bản thuần.",
+    "Để kiểm tra một tệp có sẵn, hãy dán nội dung vào phần kiểm tra. Sửa các lỗi trước, sau đó xem các cảnh báo. Nhập địa chỉ nơi bạn đăng tệp để kiểm tra trường Canonical.",
+    "Đặt lời nhắc trong lịch để gia hạn Expires trước khi ngày đó qua."
+  ],
+  "faq": [
+    ["Đạo luật Khả năng chống chịu không gian mạng (CRA) có bắt buộc phải có security.txt không?", "Không. Quy định này yêu cầu nhà sản xuất có chính sách công bố lỗ hổng bảo mật có phối hợp và có cách được công bố để mọi người báo cáo lỗ hổng. Tệp security.txt là cách phổ biến để công bố đầu mối liên hệ đó và giới chuyên môn khuyến nghị dùng, nhưng quy định không nêu tên định dạng này. Xem <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">hướng dẫn cho nhà cung cấp nhỏ</a>."],
+    ["Chính xác thì tôi đặt tệp ở đâu?", "Tại <code>https://your-domain/.well-known/security.txt</code>, phục vụ qua HTTPS với kiểu nội dung <code>text/plain; charset=utf-8</code>. RFC 9116 cũng cho phép đặt thêm một bản ở <code>/security.txt</code> cho các hệ thống cũ. Hãy đăng tệp trên mọi tên miền hoặc tên miền phụ mà bạn muốn được áp dụng."],
+    ["Expires nên đặt xa đến mức nào?", "RFC 9116 quy định nên đặt cách hiện tại chưa tới một năm, để các nhà nghiên cứu tin rằng thông tin liên hệ luôn được cập nhật. Công cụ mặc định đặt ngay dưới một năm. Khi ngày này qua, người đọc được hướng dẫn bỏ qua tệp, nên hãy gia hạn kịp thời."],
+    ["Tôi có phải ký tệp bằng PGP không?", "Không, việc ký là tùy chọn nhưng được khuyến nghị. Tệp đã ký là một thông điệp ký dạng văn bản rõ OpenPGP, tạo bằng lệnh <code>gpg --clearsign security.txt</code>. Công cụ nhận ra định dạng đã ký và kiểm tra cấu trúc của nó, nhưng không thể xác minh chính chữ ký; hãy dùng <code>gpg --verify</code> để làm việc đó."],
+    ["Vì sao công cụ không tự truy cập website của tôi?", "Để giữ riêng tư cho bạn: trang chạy hoàn toàn trong trình duyệt và không gửi yêu cầu đến bất kỳ website nào khác. Hãy mở tệp trong một thẻ trình duyệt, sao chép nội dung và dán vào đây. Cách này còn cho biết khách truy cập thực sự nhận được gì."],
+    ["Trường Canonical dùng để làm gì?", "Nó liệt kê các địa chỉ nơi tệp được dự định phục vụ, để người đọc xác nhận một tệp tìm thấy ở địa chỉ nào đó đúng là thuộc về địa chỉ đó. Nếu bạn nhập địa chỉ nơi đăng tệp, công cụ sẽ kiểm tra xem có dòng Canonical nào khớp với địa chỉ ấy không."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">Tạo security.txt</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Bắt buộc</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (mỗi dòng một mục)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Địa chỉ email, số điện thoại có mã quốc gia hoặc một trang https://. Dòng đầu tiên là nơi các nhà nghiên cứu liên hệ trước.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (hết ngày này, theo UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>Tùy chọn</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Chính sách công bố lỗ hổng bảo mật của bạn. <a href="/tools/vulnerability-disclosure-policy-generator/">Soạn một chính sách tại đây.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (mỗi dòng một mục)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Liên kết https:// tới khóa công khai của bạn, một bản ghi dns: hoặc dấu vân tay openpgp4fpr:.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="en, de">
+            <span class="help">Mã ngôn ngữ, cách nhau bằng dấu phẩy.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (mỗi dòng một mục)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">Nơi tệp này sẽ được đăng. Nên có, nhất là với tệp đã ký.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Trang cảm ơn những nhà nghiên cứu đã báo cáo vấn đề.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Trang tuyển dụng các vị trí về bảo mật của bạn.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">security.txt của bạn</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Sao chép</button>
+          <button class="btn" id="stx-dl" type="button">Tải xuống security.txt</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Ghi chú về tệp"></ul>
+        <h3 class="util-h">Đặt tệp ở đâu</h3>
+        <p class="help">Lưu tệp với tên <code>security.txt</code> và phục vụ tại <code>https://your-domain/.well-known/security.txt</code> qua HTTPS dưới dạng văn bản thuần (<code>text/plain; charset=utf-8</code>). Làm tương tự trên từng tên miền bạn muốn áp dụng. Để ký tệp, chạy <code>gpg --clearsign security.txt</code> rồi đăng kết quả.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">Kiểm tra security.txt</h2>
+    <div class="field">
+      <label for="stx-in">Dán nội dung của một tệp security.txt</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Địa chỉ nơi tệp được đăng (tùy chọn)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Một tên miền hoặc địa chỉ đầy đủ. Dùng để kiểm tra Canonical có khớp không. Không có gì được tải về.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Nạp ví dụ</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Xóa</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Kết quả kiểm tra"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>security.txt dùng để làm gì</h2>
+<p>Khi một nhà nghiên cứu, một khách hàng hay một CERT phát hiện điểm yếu trong phần mềm của bạn, vấn đề đầu tiên là báo cho ai. security.txt là một tệp văn bản nhỏ đặt ở địa chỉ cố định, <code>/.well-known/security.txt</code>, trả lời câu hỏi đó: một đầu mối liên hệ, một ngày hết hạn và tùy chọn là liên kết tới chính sách công bố lỗ hổng cùng một khóa công khai. RFC 9116 quy định định dạng này, và nhiều công cụ quét, nền tảng bug bounty và CERT quốc gia tìm tệp này trước khi tìm ở bất cứ đâu khác.</p>
+<p>Với nhà cung cấp phần mềm tại EU, tệp này còn hỗ trợ các nghĩa vụ theo Đạo luật Khả năng chống chịu không gian mạng (Cyber Resilience Act, CRA): Phụ lục I yêu cầu có cách được công bố để người bên ngoài báo cáo lỗ hổng và có quy trình xử lý chúng. Quy định không nêu tên định dạng này, nhưng đây là cách thông dụng để công bố đầu mối liên hệ. <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">Hướng dẫn báo cáo cho nhà cung cấp nhỏ</a> trình bày phần thiết lập còn lại, kể cả mốc 24 giờ.</p>
+<h2>Các trường</h2>
+<p>Contact và Expires là bắt buộc. Contact có thể xuất hiện nhiều lần và phải là một URI: <code>mailto:</code>, <code>tel:</code> hoặc <code>https:</code>. Expires chỉ xuất hiện một lần, dưới dạng ngày giờ như <code>2027-12-31T23:59:59Z</code>, và RFC 9116 đề nghị đặt cách hiện tại chưa tới một năm. Encryption, Acknowledgments, Policy, Hiring và Canonical là các liên kết tùy chọn, và mọi địa chỉ web đều phải dùng https. Preferred-Languages chỉ xuất hiện một lần và liệt kê các mã ngôn ngữ. Trường nào RFC không định nghĩa thì người đọc sẽ bỏ qua, nên công cụ báo chúng là cảnh báo: thường đó là lỗi gõ sai.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Dùng hộp thư mà nhiều người cùng đọc, không dùng địa chỉ của riêng một người, và thử gửi thư tới đó để chắc chắn nó hoạt động.</li>
+  <li>Soạn một <a href="/tools/vulnerability-disclosure-policy-generator/">chính sách công bố lỗ hổng bảo mật</a> và liên kết tới nó bằng trường Policy.</li>
+  <li>Hãy nắm rõ các thời hạn trước khi có báo cáo đầu tiên: <a href="/tools/cra-incident-clock/">đồng hồ sự cố 24 giờ của CRA</a> biến thời điểm bạn biết sự việc thành các hạn chót cụ thể theo ngày giờ.</li>
+</ul>

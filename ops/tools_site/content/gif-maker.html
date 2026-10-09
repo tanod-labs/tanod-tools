@@ -1,0 +1,108 @@
+<!--meta
+{
+  "category": "image",
+  "name": "GIF maker",
+  "title": "GIF maker: make an animated GIF from images | Tanod Tools",
+  "description": "Make an animated GIF from several images in your browser: set the order, frame delay and size, preview it and download. Free, no signup, nothing is uploaded.",
+  "h1": "GIF maker",
+  "lede": "Turn a handful of pictures into an animated GIF. Put them in order, choose how long each one shows and how big the GIF is, watch the preview, then download it.",
+  "blurb": "Make an animated GIF from several images.",
+  "keywords": "gif maker create animated gif images to gif photos to gif slideshow gif frames delay loop animation creator",
+  "limits": "2 to 60 images, 50 MB each. The GIF can be up to 1,200 pixels wide, and every frame has the shape of the first picture. A GIF frame holds at most 256 colours, so photos show some banding, and there is no transparency: see-through areas take the background colour. Animated images you add are used from their first frame.",
+  "howto_title": "How to make an animated GIF",
+  "howto": [
+    "Choose two or more images, or drag them onto the page. Use the up and down buttons to set the order.",
+    "Set the delay between frames and the width, and choose how pictures of different shapes fit. Watch the preview.",
+    "Press <strong>Create GIF</strong>, check the result and download it."
+  ],
+  "faq": [
+    ["Are my images uploaded?", "No. The pictures are drawn and the GIF is written by code running in your browser, using the open-source gifenc encoder. Nothing is sent to a server."],
+    ["How do I make the animation faster or slower?", "Change the delay between frames, in milliseconds: 1000 is one second and 100 is ten frames a second. The shortest delay offered is 20 ms, because browsers play shorter delays at a much slower speed."],
+    ["Why does my GIF look grainy or banded?", "A GIF frame can use at most 256 colours, so photos and smooth gradients show banding. This tool picks the best 256 colours for each frame separately, which keeps every frame as close to its picture as the format allows. Flat graphics and screenshots look best."],
+    ["Why is my GIF so big?", "GIF compresses poorly and stores every frame in full, so the size grows with width, height and the number of frames. To shrink it, use a smaller width, fewer images, or fewer colours per frame."],
+    ["What happens to pictures of different sizes or shapes?", "Every frame has the shape of the first picture. <em>Fit inside</em> shows each picture whole and fills the spare space with the background colour, <em>Fill and crop</em> covers the whole frame and trims what overflows from the centre, and <em>Stretch</em> squeezes each picture to the frame."],
+    ["Is transparency kept?", "No. A GIF can mark only one colour as see-through, so the tool fills transparent areas with the background colour you pick. That way every frame looks the same everywhere."],
+    ["What does playing forwards, then backwards do?", "After the last frame it adds the frames again in reverse, without repeating the first and last one, so the animation moves back and forth smoothly instead of jumping back to the start."]
+  ],
+  "related": ["merge-images", "resize-image", "compress-image", "convert-image", "crop-image", "image-to-webp"],
+  "app_category": "MultimediaApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Drop two or more images here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choose images</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP or AVIF. Or drag them anywhere on this page.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Frames, in order" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Delay between frames (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1000 ms is one second. The shortest delay is 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Width (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">The height follows the first picture: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Pictures of other shapes</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Fit inside</label>
+        <label><input type="radio" name="gm-fit" value="cover">Fill and crop</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Stretch</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Background colour</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Repeat</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>Forever</label>
+        <label><input type="radio" name="gm-loop" value="once">Once</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Colours per frame</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (best quality)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (smallest file)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Order</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Play forwards, then backwards</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Preview</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Preview of the animation"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Create GIF</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Clear all</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>How an animated GIF is put together</h2>
+<p>A GIF is a stack of ordinary pictures shown one after another. Each frame carries its own small colour table of at most 256 colours and a delay, a time in hundredths of a second before the next frame appears. A loop setting at the start tells the viewer whether to repeat forever or stop after one pass. There is no video compression: every frame is stored whole, packed with a simple lossless method, which is why GIFs get big quickly.</p>
+<p>Making one from photos means choosing the 256 colours that best stand for each picture and then replacing every pixel with the nearest of them. This tool does that for each frame separately with the open-source gifenc encoder, after drawing every picture at the same size so the frames line up. The size comes from the width you choose and the proportions of the first picture, and the other pictures are fitted inside it, cropped to fill it or stretched, whichever you pick.</p>
+<p>Your pictures are read one at a time while the GIF is written, so a long list of large photos does not have to fit in memory together. The preview above the button plays the same frames at a smaller size so you can judge the order, the speed and the fit before you commit; it pauses with one button, and starts paused if your system asks for reduced motion.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Keep it short: a few seconds at 10 frames a second is plenty, and fewer, smaller frames give a much smaller file.</li>
+  <li>Make the pictures the same shape first with <a href="/tools/crop-image/">Crop image</a>, or shrink big photos with <a href="/tools/resize-image/">Resize image</a>.</li>
+  <li>Want one picture instead of an animation? <a href="/tools/merge-images/">Merge images</a> joins them side by side or in a grid.</li>
+</ul>

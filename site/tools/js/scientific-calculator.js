@@ -1,6 +1,6 @@
 // Scientific calculator: keypad and keyboard in front of the expression engine in exprcore.js.
-import { $, $$, el, announce, prefs, tx, txn } from "./core.js?v=5";
-import { evaluate, CalcError } from "./exprcore.js?v=5";
+import { $, $$, el, announce, prefs, tx, txn } from "./core.js?v=11";
+import { evaluate, CalcError } from "./exprcore.js?v=11";
 
 const input = $("#sc-expr");
 const echo = $("#sc-echo"), result = $("#sc-result"), errBox = $("#sc-error"), note = $("#sc-note");

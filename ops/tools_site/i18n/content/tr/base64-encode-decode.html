@@ -1,0 +1,110 @@
+<!--meta
+{
+  "title": "Base64 kodla ve çöz: metin ve dosyalar için | Tanod Tools",
+  "description": "Metni veya dosyayı Base64'e kodlayın, Base64'ü tekrar metne ya da dosyaya çözün. UTF-8, URL güvenli Base64 ve data URL desteği tarayıcınızda. Yükleme yok.",
+  "h1": "Base64 kodla ve çöz",
+  "lede": "Metinleri veya dosyaları Base64'e çevirin ve geri çözün; UTF-8, URL güvenli ve data URL seçenekleriyle.",
+  "blurb": "Base64 metin ve dosyaları kodlayın ve çözün.",
+  "keywords": "base64 kodlama base64 çözme base64 çevirici base64 decode encode data url utf-8 url güvenli dosya",
+  "limits": "25 MB'a kadar dosyalar. Base64'ten dosyaya çevirme, çözüldüğünde en fazla 25 MB eden girdiyi kabul eder.",
+  "howto_title": "Base64 nasıl kodlanır veya çözülür?",
+  "howto": [
+    "Metin için kutuya yazın veya yapıştırın, Kodla ya da Çöz seçeneğini işaretleyin; sonuç siz yazdıkça görünür.",
+    "Yapıştıracağınız yer gerektiriyorsa URL güvenli Base64'ü veya 76 karakterde satır sarmayı açın.",
+    "Dosya için Dosya'ya geçip dosyayı bırakın; Base64 çıktısını ya da data URL'sini alırsınız. Ters yönde işlem için Base64'ü yapıştırın, dosyaya bir ad verin ve indirin."
+  ],
+  "faq": [
+    ["Metnim veya dosyam yükleniyor mu?", "Hayır. Her şey tarayıcınızda dönüştürülür; hiçbir şey bir yere gönderilmez ya da saklanmaz."],
+    ["Aksanlı harfleri ve emojileri destekliyor mu?", "Evet. Metin, kodlamadan önce UTF-8 baytlarına dönüştürülür ve sonrasında UTF-8 olarak çözülür; böylece é, ö, ğ, ✓ ve emoji gibi karakterler doğru biçimde gidip gelir. (Tarayıcının yerleşik <code>btoa</code> işlevi bunlarda hata verirdi.)"],
+    ["URL güvenli Base64 nedir?", "<code>+</code> ve <code>/</code> karakterlerini <code>-</code> ve <code>_</code> ile değiştirir ve sondaki <code>=</code> dolgusunu atar; böylece sonuç bir URL'ye ya da dosya adına konabilir. Çözerken bu araç her iki alfabeyi de kabul eder."],
+    ["Çözme işlemi neden geçersiz karakter olduğunu söylüyor?", "Base64 yalnızca harfleri, rakamları, artı ve eğik çizgiyi (veya eksi ve alt çizgiyi) kullanır; sonda eşittir işaretleri bulunabilir. Boşluklar ve satır sonları yok sayılır, ancak bunun dışındaki her şey konumuyla birlikte bildirilir, böylece onu bulabilirsiniz."],
+    ["Data URL ile düz Base64 arasında fark var mı?", "Data URL, başına <code>data:image/png;base64,</code> gibi bir önek eklenmiş Base64'tür; böylece tarayıcı onu doğrudan görsel veya dosya kaynağı olarak kullanabilir. Bu biçimi almak için Dosya modunda data URL seçeneğini açın."],
+    ["Base64 neden dosyamdan daha büyük?", "Base64 her 3 baytı 4 karakter olarak yazar; bu yüzden kodlanmış metin özgününden yaklaşık üçte bir oranında büyüktür. İkili veriyi metin olarak taşımanın bir yoludur; bir şifreleme ya da sıkıştırma biçimi değildir."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Dönüştür</legend>
+  <div class="seg" role="radiogroup" aria-label="Mod">
+    <label><input type="radio" name="mode" value="text" checked>Metin</label>
+    <label><input type="radio" name="mode" value="file">Dosya</label>
+  </div>
+</fieldset>
+
+<div id="b-textpanel" class="util-stack">
+  <div class="field">
+    <span class="label" id="b-dir-l">Yön</span>
+    <div class="seg" role="radiogroup" aria-labelledby="b-dir-l">
+      <label><input type="radio" name="dir" value="encode" checked>Kodla</label>
+      <label><input type="radio" name="dir" value="decode">Çöz</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="b-in">Girdi</label>
+    <textarea id="b-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Buraya yazın veya yapıştırın"></textarea>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="b-url">URL güvenli alfabe (- _ ve dolgusuz)</label>
+    <label class="check" id="b-wrap-l"><input type="checkbox" id="b-wrap">Satırları 76 karakterde sar</label>
+  </div>
+  <div class="field">
+    <label for="b-out">Çıktı</label>
+    <textarea id="b-out" class="mono" rows="6" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="b-copy" type="button" disabled>Kopyala</button>
+    <button class="btn" id="b-dl" type="button" disabled>.txt indir</button>
+    <button class="btn btn--quiet" id="b-swap" type="button" disabled>Çıktıyı girdi olarak kullan</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="b-clear" type="button">Temizle</button>
+  </div>
+</div>
+
+<div id="b-filepanel" class="util-stack" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Kodlamak için bir dosya bırakın</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Dosya seçin</span></label>
+    <p class="drop__hint">25 MB'a kadar. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="f-url">URL güvenli alfabe (- _ ve dolgusuz)</label>
+    <label class="check"><input type="checkbox" id="f-wrap">Satırları 76 karakterde sar</label>
+    <label class="check"><input type="checkbox" id="f-data">data: URL oluştur</label>
+  </div>
+  <div id="f-result" hidden>
+    <p class="help" id="f-info"></p>
+    <pre class="out" id="f-out" tabindex="0" aria-label="Base64 önizlemesi"></pre>
+    <div class="actions">
+      <button class="btn btn--primary" id="f-copy" type="button">Kopyala</button>
+      <button class="btn" id="f-dl" type="button">.txt indir</button>
+    </div>
+  </div>
+
+  <h2 class="util-h">Base64'ten dosyaya</h2>
+  <div class="field">
+    <label for="d-in">Base64 (veya bir data: URL)</label>
+    <textarea id="d-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Base64'ü buraya yapıştırın"></textarea>
+  </div>
+  <div class="field">
+    <label for="d-name">Dosya adı</label>
+    <input type="text" id="d-name" value="decoded.bin" autocomplete="off" spellcheck="false">
+    <span class="help" id="d-info"></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="d-dl" type="button" disabled>Çöz ve indir</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Base64 ne işe yarar?</h2>
+<p>Base64, herhangi bir bayt dizisini 64 güvenli metin karakteriyle gösterir: A-Z, a-z, 0-9, artı ve eğik çizgi. Her 3 bayt 4 karaktere dönüşür; son grubu doldurmak için <code>=</code> dolgusu kullanılır. Bu, ikili veriyi e-postaya, JSON'a, HTML'ye, URL'lere ve yalnızca metin işleyen diğer yerlere koymayı güvenli kılar. Bir kodlamadır, şifreleme değildir: herkes onu geri çevirebilir.</p>
+<p>Metin önce baytlara dönüştürülür ve karakter kodlaması önemlidir. Bu araç, web'in standardı olan UTF-8'i kullanır; böylece Türkçe karakterler, başka dillerdeki metinler ve simgeler gidiş dönüşte bozulmaz. Çözme işlemi, sonucun geçerli UTF-8 olup olmadığını denetler ve değilse sizi uyarır; bu genellikle verinin metin değil dosya olduğu anlamına gelir.</p>
+<p>Dosya modu, dosyayı tarayıcınızda okur ve sayfa yanıt vermeye devam etsin diye küçük dilimler hâlinde kodlar. Ters yönde ise araç, yapıştırılan Base64'ü baytlara çözer ve size indirme olarak sunar. PNG, JPEG, GIF, PDF ve ZIP gibi yaygın biçimler için bir dosya uzantısı önermek amacıyla ilk baytlara bakar.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>İçinde Base64 değerleri bulunan bir JSON ile mi çalışıyorsunuz? Onu <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile düzenleyin.</li>
+  <li>Rastgele tanımlayıcılara mı ihtiyacınız var? <a href="/tools/uuid-generator/">UUID oluşturucu</a> aracına bakın.</li>
+  <li>Bir bağlantı veya sorgu dizesi için metni kaçışlamak farklı bir iştir: <a href="/tools/url-encode-decode/">URL kodla ve çöz</a> aracını kullanın. İçinde Base64url bulunan bir JWT'yi okumak için <a href="/tools/jwt-decoder/">JWT çözücü</a> aracını kullanın.</li>
+</ul>

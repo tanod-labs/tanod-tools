@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Codici di stato HTTP: elenco e ricerca | Tanod Tools",
+  "description": "Elenco ricercabile di tutti i codici di stato HTTP registrati IANA, da 100 a 511: significato, quando compaiono, cosa fare come client o gestore del server, e RFC.",
+  "h1": "Codici di stato HTTP",
+  "lede": "Cerca qualsiasi codice di stato HTTP per numero o per parola, con significato in parole semplici, cause comuni, rimedi e l'RFC che lo definisce.",
+  "blurb": "Riferimento ricercabile di ogni codice di stato HTTP e del suo rimedio.",
+  "keywords": "codici di stato http errore 404 pagina non trovata 500 errore interno del server 301 302 redirect 429 troppe richieste 502 bad gateway 503 504 teapot 418 rfc 9110 elenco codici http status codes",
+  "limits": "Elenca i codici del registro IANA HTTP Status Code, con 306 e 418 mostrati come i codici riservati che sono, più un breve insieme di codici non ufficiali molto diffusi di nginx, Cloudflare e Laravel, indicati con la loro fonte. Gli altri codici specifici dei singoli produttori non sono coperti.",
+  "howto_title": "Come cercare un codice di stato",
+  "howto": [
+    "Scrivi nella casella di ricerca il numero, come <code>502</code>, o una parola, come <em>rate limit</em> o <em>redirect</em>.",
+    "Restringi l'elenco con i pulsanti delle classi: da 1xx a 5xx per i codici standard, oppure Non ufficiali per i codici di nginx, Cloudflare e Laravel.",
+    "Apri un codice per vedere quando compare e cosa fare, come client e come gestore del server. Usa il link # per condividere un collegamento diretto a quel codice."
+  ],
+  "faq": [
+    ["Che cosa significano le cinque classi di codici di stato?", "La prima cifra stabilisce la classe. 1xx è informativa e la richiesta è ancora in corso, 2xx indica successo, 3xx significa che il client deve compiere un altro passo (di solito un redirect), 4xx significa che la richiesta ha un problema lato client e 5xx significa che il server ha fallito su una richiesta che sembrava valida."],
+    ["Qual è la differenza tra 401 e 403?", "401 significa che il server non sa chi sei: le credenziali mancano, sono sbagliate o scadute, e accedere può risolvere. 403 significa che sa chi sei e non ti è permesso fare questa operazione, quindi inviare di nuovo le stesse credenziali non serve."],
+    ["Devo usare 301 o 302 per un redirect?", "Usa 301 (o 308) quando lo spostamento è permanente, così browser e motori di ricerca passano al nuovo indirizzo. Usa 302 (o 307) quando il vecchio indirizzo tornerà in uso. 307 e 308 mantengono il metodo della richiesta, mentre con 301 e 302 i client più vecchi possono trasformare un POST in un GET."],
+    ["418 I'm a teapot è un vero codice di stato?", "Nasce come pesce d'aprile nell'RFC 2324, per un protocollo di controllo di caffettiere. Lo IANA oggi elenca 418 come non usato, riservato perché non gli venga dato un significato reale. Alcuni siti lo restituiscono ancora per divertimento o per respingere gli scraper, ma non è una risposta standard."],
+    ["Che cosa sono da 520 a 526 e 499?", "Non fanno parte degli standard HTTP. Da 520 a 526 sono errori di Cloudflare che segnalano problemi tra Cloudflare e il tuo server, e 499 è un codice di log di nginx per un client che si è disconnesso prima della risposta. Sono mostrati nel gruppo Non ufficiali con la loro fonte."],
+    ["Perché un errore 5xx a volte sparisce se riprovo?", "Molti errori 5xx dipendono da sovraccarico, da un backend che si sta riavviando o da un breve guasto di rete, che possono risolversi in pochi secondi. Riprovare con un ritardo crescente è sicuro per le richieste idempotenti come GET; per POST, verifica che il primo tentativo non sia già andato a buon fine."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="h-q">Cerca per numero o per parola</label>
+    <input type="search" id="h-q" class="hs-q" placeholder="404, redirect, rate limit, timeout" autocomplete="off" spellcheck="false" aria-describedby="h-count">
+  </div>
+  <fieldset class="hs-groups">
+    <legend class="visually-hidden">Filtra per classe</legend>
+    <div class="seg">
+      <label><input type="radio" name="h-group" id="h-g-all" value="all" checked>Tutti</label>
+      <label><input type="radio" name="h-group" id="h-g-1" value="1">1xx</label>
+      <label><input type="radio" name="h-group" id="h-g-2" value="2">2xx</label>
+      <label><input type="radio" name="h-group" id="h-g-3" value="3">3xx</label>
+      <label><input type="radio" name="h-group" id="h-g-4" value="4">4xx</label>
+      <label><input type="radio" name="h-group" id="h-g-5" value="5">5xx</label>
+      <label><input type="radio" name="h-group" id="h-g-u" value="u">Non ufficiali</label>
+    </div>
+  </fieldset>
+  <p class="tt__report" id="h-count" aria-live="polite"></p>
+  <p class="note" id="h-none" role="status" hidden></p>
+  <div class="hs-list" id="h-list"></div>
+</div>
+<!--explain-->
+<h2>Leggere i codici di stato HTTP</h2>
+<p>Ogni risposta HTTP inizia con un codice di stato di tre cifre che dice al client che cosa è successo alla sua richiesta. La prima cifra indica la famiglia: 1xx per i messaggi di avanzamento, 2xx per il successo, 3xx per il reindirizzamento, 4xx per un problema con la richiesta e 5xx per un errore del server. Un programma che non conosce un certo codice può comunque comportarsi correttamente guardando quella prima cifra, ed è per questo che si possono aggiungere nuovi codici senza rompere i vecchi client.</p>
+<p>L'elenco ufficiale è mantenuto nel registro IANA HTTP Status Code, e i significati sono scritti nell'RFC 9110 (HTTP Semantics) e in una manciata di altri RFC per WebDAV e le estensioni. La frase dopo il numero, come Not Found, è solo un'etichetta; HTTP/2 e HTTP/3 non la trasportano. Alcune frasi sono state rinominate nel 2022, quindi 413 oggi è Content Too Large e 422 è Unprocessable Content.</p>
+<p>Anche server al di fuori degli standard inventano codici. nginx registra 499 quando un client riaggancia, e Cloudflare usa da 520 a 526 per descrivere errori tra la sua rete e il tuo server di origine. Qui compaiono in un gruppo separato, per non essere scambiati con i codici registrati. Durante il debug ricorda che il codice che vedi può arrivare da un proxy o da una CDN davanti alla tua applicazione, non dall'applicazione stessa.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Hai una richiesta che fallisce con caratteri speciali nell'indirizzo? Codificala o decodificala con <a href="/tools/url-encode-decode/">Codifica e decodifica URL</a>.</li>
+  <li>Leggi il corpo della risposta di un errore API con <a href="/tools/json-formatter/">Formatta e valida JSON</a>.</li>
+  <li>Un 403 per un certo browser o bot? Controlla cosa invia il client con l'<a href="/tools/user-agent-parser/">Analizzatore di user agent</a>.</li>
+</ul>

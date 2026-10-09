@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Visualizzatore FatturaPA: apri fatture XML e P7M | Tanod Tools",
+  "description": "Apri una fattura elettronica italiana (FatturaPA, XML o .p7m firmato) e leggila come una fattura normale. Stampa, salva in PDF o esporta in JSON.",
+  "h1": "Visualizzatore FatturaPA",
+  "lede": "Apri una fattura elettronica italiana, anche se è firmata in formato .p7m, e leggila come una normale fattura. Il file viene aperto nel tuo browser e non viene mai caricato.",
+  "blurb": "Leggi una fattura FatturaPA in XML o .p7m firmato come una fattura normale.",
+  "keywords": "visualizzatore fattura elettronica visualizzatore fatturapa visualizza fattura xml leggere fattura elettronica xml aprire file p7m aprire fattura elettronica p7m file xml.p7m come aprire fattura elettronica convertire fattura xml in pdf fattura pa fpr12 fpa12 sdi sistema di interscambio fatturapa viewer",
+  "limits": "Un file alla volta, fino a 25 MB; vengono mostrate le prime 5.000 righe in totale tra tutte le fatture di un file. Legge FatturaPA 1.2.x (FPR12 e FPA12), compresi i file con più fatture. Da un .p7m firmato l'XML viene estratto dalla busta, ma la firma non viene verificata: questa pagina non può dirti chi ha firmato il file né se è stato modificato. Solo visualizzazione: nessuna validazione e nulla viene inviato allo SDI.",
+  "howto_title": "Come aprire una fattura elettronica",
+  "howto": [
+    "Scegli il file .xml o .xml.p7m, oppure trascinalo sulla pagina.",
+    "Per un .p7m la pagina estrae l'XML dalla busta di firma e poi mostra la fattura: cedente/prestatore, cessionario/committente, righe, riepilogo IVA, totali e pagamento.",
+    "Premi <strong>Stampa o salva come PDF</strong>, <strong>Scarica JSON</strong> oppure <strong>Mostra XML originale</strong>."
+  ],
+  "faq": [
+    [
+      "La mia fattura viene caricata?",
+      "No. Il file, anche se è un .p7m firmato, viene letto nel tuo browser e mostrato in questa pagina. Nessun server lo riceve e, chiudendo la scheda, tutto viene cancellato."
+    ],
+    [
+      "Controlla la firma digitale di un file .p7m?",
+      "No. Un .p7m è una busta CMS (PKCS#7) attorno alla fattura XML. Questa pagina legge la busta solo per estrarne l'XML. Non controlla né il certificato, né la firma, né la marca temporale, quindi non può dire chi ha firmato il file o se è stato modificato. Se ti serve, usa uno strumento che verifica le firme."
+    ],
+    [
+      "Quali file FatturaPA sono supportati?",
+      "FatturaPA 1.2, 1.2.1 e 1.2.2 in entrambe le forme: FPR12 (fatture verso imprese e consumatori) e FPA12 (fatture verso la pubblica amministrazione). Un file può contenere più fatture e ciascuna viene mostrata. La fattura semplificata (FSM10) non è supportata."
+    ],
+    [
+      "Perché l'importo da pagare non coincide con il totale documento?",
+      "L'importo da pagare è la somma delle righe di pagamento (ImportoPagamento), quando il file le contiene. Può essere diverso dal totale documento: con la scissione dei pagamenti (split payment) l'IVA non viene versata al fornitore, e lo stesso vale per l'importo trattenuto con la ritenuta d'acconto. Entrambe le situazioni sono segnalate sulla fattura."
+    ],
+    [
+      "Che cosa significano codici come TD01, MP05, N4 e RF01?",
+      "Provengono dalle tabelle di codici ufficiali del formato FatturaPA: TD01 è una fattura, TD04 una nota di credito, MP05 un bonifico, N4 un'operazione esente, RF01 il regime fiscale ordinario. Quando un codice ha un nome di uso comune, viene mostrato con il codice tra parentesi; altrimenti il codice è mostrato così com'è."
+    ],
+    [
+      "È il visualizzatore ufficiale?",
+      "No. Questa pagina è indipendente dall'Agenzia delle Entrate e dallo SDI. Non usa il foglio di stile ufficiale, e un file mostrato qui non è stato inviato allo SDI né controllato da esso."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Rilascia qui una fattura elettronica</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Scegli un file</span></label>
+  <p class="drop__hint">XML, un PDF con una fattura all'interno (ZUGFeRD, Factur-X) o un file .p7m firmato. Oppure trascinalo in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Stampa o salva come PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Scarica JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Scarica XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostra XML originale</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML originale" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Qui è mostrato solo l'inizio di un file lungo. Scarica l'XML per ottenerlo per intero.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>La fattura elettronica in breve</h2>
+<p>In Italia le fatture vengono scambiate come file XML attraverso il Sistema di Interscambio (SDI) dell'Agenzia delle Entrate. Le fatture verso gli enti pubblici usano il formato FatturaPA dal 2014 e 2015, e le imprese sono tenute a usarlo per quasi tutte le fatture nazionali dal 2019. La fattura è l'XML, non una copia in PDF, quindi spesso ciò che arriva è un file che non si riesce a leggere. Questa pagina lo riporta a una fattura leggibile.</p>
+<h2>I file .p7m firmati</h2>
+<p>Molte fatture arrivano come <code>nome.xml.p7m</code>. Il .p7m è una busta firmata nel formato CMS (PKCS#7): la fattura XML è memorizzata al suo interno insieme alla firma e al certificato del firmatario. I vari provider italiani scrivono queste buste in modi leggermente diversi (lunghezze fisse o indefinite, contenuto a pezzi, perfino testo in base64), e un file può essere firmato due volte. Questa pagina legge la busta con un piccolo parser scritto per questo sito, ne estrae l'XML e dichiara apertamente di non aver verificato la firma.</p>
+<h2>Che cosa mostra il visualizzatore</h2>
+<p>Vedi il cedente/prestatore (venditore) e il cessionario/committente (acquirente) con partita IVA e codice fiscale, il tipo di documento, il numero e la data, la causale della fattura, ogni riga con quantità, unità di misura, prezzo, sconto e aliquota IVA, il riepilogo IVA con il codice di esenzione e il riferimento normativo, i contributi previdenziali, la ritenuta d'acconto, il bollo, le righe di pagamento con IBAN e scadenze, e i file allegati. Non valida la fattura e non comunica con lo SDI.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Per un PDF con un XML all'interno usa il <a href="/tools/zugferd-factur-x-viewer/">Visualizzatore ZUGFeRD / Factur-X</a>; questa pagina accetta anche quelli.</li>
+  <li>Scarica JSON ti dà la fattura sotto forma di dati, da usare nel tuo foglio di calcolo o nel tuo programma.</li>
+  <li>Mostra XML originale ti permette di cercare un campo che la fattura leggibile non riporta.</li>
+</ul>

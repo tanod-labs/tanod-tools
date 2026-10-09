@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "MikroTik VLAN जनरेटर: bridge VLAN फ़िल्टरिंग (v7) | Tanod Tools",
+  "description": "RouterOS v7 bridge VLAN फ़िल्टरिंग बनाएं: access, trunk, hybrid पोर्ट, VLAN टेबल, इंटरफ़ेस और एड्रेस, लॉक-आउट से बचने के लिए फ़िल्टरिंग आख़िर में चालू।",
+  "h1": "MikroTik VLAN जनरेटर",
+  "lede": "अपने VLAN और उन्हें ले जाने वाले पोर्ट बताएं, और RouterOS v7 bridge VLAN फ़िल्टरिंग कॉन्फ़िगरेशन पाएं, ऐसे क्रम में कि फ़िल्टरिंग सबसे आख़िर में चालू हो।",
+  "blurb": "access, trunk और hybrid पोर्ट के साथ bridge VLAN फ़िल्टरिंग।",
+  "keywords": "mikrotik vlan कॉन्फ़िगरेशन, वीलैन, routeros v7 bridge vlan filtering, trunk port, access port, hybrid, pvid, tagged untagged, frame-types, ingress-filtering, vlan interface, crs switch",
+  "limits": "यह एक bridge के साथ RouterOS v7 bridge VLAN फ़िल्टरिंग बनाता है (नए डिवाइस के लिए MikroTik इसी तरीके की सलाह देता है)। पुराने switch-chip मेन्यू (/interface ethernet switch) इस्तेमाल नहीं होते। एड्रेस IPv4 हैं। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik bridge पर VLAN कैसे कॉन्फ़िगर करें",
+  "howto": [
+    "VLAN की सूची बनाएं: ID, नाम और, जिन VLAN को राउटर को रूट करना है उनके लिए, उस VLAN में राउटर का एड्रेस।",
+    "पोर्ट की सूची बनाएं: access पोर्ट एक VLAN untagged ले जाते हैं, trunk पोर्ट VLAN tagged ले जाते हैं, और hybrid पोर्ट दोनों करते हैं।",
+    "लॉक-आउट वाला नोट पढ़ें, Safe Mode चालू करें (टर्मिनल में <kbd>Ctrl</kbd>+<kbd>X</kbd>) और स्क्रिप्ट चलाएं; VLAN फ़िल्टरिंग सबसे आख़िरी लाइन में चालू होती है।"
+  ],
+  "faq": [
+    [
+      "vlan-filtering चालू करने से लोग लॉक-आउट क्यों हो जाते हैं?",
+      "vlan-filtering चालू होने तक bridge सब कुछ फ़ॉरवर्ड करता है और VLAN सेटिंग का कोई असर नहीं होता। चालू करते ही फ़्रेम सिर्फ़ वहीं स्वीकार होते हैं जहाँ VLAN टेबल अनुमति देती है। अगर आप जिस पोर्ट से जुड़े हैं वह router एड्रेस वाली किसी VLAN का सदस्य नहीं है, तो आपका सेशन कट जाता है। इसीलिए स्क्रिप्ट इसे आख़िर में चालू करती है, और इसीलिए Safe Mode मायने रखता है: कनेक्शन टूटे तो RouterOS बदलाव वापस ले लेता है।"
+    ],
+    [
+      "access, trunk और hybrid पोर्ट में क्या फ़र्क है?",
+      "Access पोर्ट ऐसे एक डिवाइस को जोड़ता है जिसे VLAN का कुछ पता नहीं: आने वाले untagged फ़्रेम पोर्ट के PVID में डाले जाते हैं और untagged ही बाहर जाते हैं। Trunk पोर्ट किसी दूसरे स्विच या access point को जोड़ता है और कई VLAN को 802.1Q टैग के साथ ले जाता है। Hybrid पोर्ट दोनों करता है, आमतौर पर IP फ़ोन या access point के लिए, जिसमें एक untagged मैनेजमेंट या डेटा VLAN होता है और बाकी tagged।"
+    ],
+    [
+      "कुछ VLAN में bridge खुद tagged क्यों है?",
+      "Bridge इंटरफ़ेस राउटर का अपना पोर्ट है जो स्विच में जाता है। राउटर का किसी VLAN में एड्रेस हो, bridge पर बने VLAN इंटरफ़ेस के ज़रिए, इसके लिए bridge को उस VLAN का tagged सदस्य होना चाहिए। जो VLAN सिर्फ़ पोर्ट के बीच स्विच होते हैं, उन्हें इसकी ज़रूरत नहीं।"
+    ],
+    [
+      "क्या bridge VLAN फ़िल्टरिंग के ऊपर /interface vlan भी चाहिए?",
+      "सिर्फ़ उन VLAN के लिए जिनमें राउटर शामिल है: VLAN इंटरफ़ेस वह जगह है जहाँ उसका IP एड्रेस, DHCP सर्वर और फ़ायरवॉल रूल जुड़ते हैं। सिर्फ़ layer 2 वाले VLAN को bridge VLAN टेबल ही काफ़ी है।"
+    ],
+    [
+      "क्या यह हार्डवेयर में ऑफ़लोड होता है?",
+      "CRS3xx स्विच पर, और हाल के RouterOS v7 वाले कुछ दूसरे डिवाइस पर, bridge VLAN फ़िल्टरिंग स्विच चिप में चलती है। बाकी पर यह CPU पर चलती है, जिससे थ्रूपुट घटता है। लागू करने के बाद /interface bridge port print में पोर्ट का H फ़्लैग देखें।"
+    ],
+    [
+      "क्या मेरा कॉन्फ़िगरेशन कहीं भेजा जाता है?",
+      "नहीं। स्क्रिप्ट आपके ब्राउज़र में बनती है।"
+    ]
+  ],
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="vl">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Bridge</legend>
+      <div class="field"><label for="vl-bridge">Bridge का नाम</label><input type="text" id="vl-bridge" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="vl-exists" checked>Bridge पहले से मौजूद है</label>
+        <label class="check"><input type="checkbox" id="vl-inbridge" checked>पोर्ट पहले से bridge में हैं</label>
+        <label class="check"><input type="checkbox" id="vl-tagonly">राउटर bridge से सिर्फ़ tagged फ़्रेम स्वीकार करता है (मैनेजमेंट सिर्फ़ VLAN पर)</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>VLAN</legend>
+      <ul class="ros-rows" id="vl-vlans"></ul>
+      <button class="btn btn--sm ros-add" id="vl-vadd" type="button">{{mark:i-plus}}VLAN जोड़ें</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>पोर्ट</legend>
+      <ul class="ros-rows" id="vl-ports"></ul>
+      <button class="btn btn--sm ros-add" id="vl-padd" type="button">{{mark:i-plus}}पोर्ट जोड़ें</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>लॉक-आउट का जोखिम।</strong> VLAN फ़िल्टरिंग चालू करने पर वह हर पोर्ट कट जाता है जो router एड्रेस वाली किसी VLAN का सदस्य नहीं है। पहले lab में टेस्ट करें, या पहले Safe Mode चालू करें (<kbd>Ctrl</kbd>+<kbd>X</kbd> टर्मिनल में)।</span></p>
+    <label for="vl-out" class="label">RouterOS v7 स्क्रिप्ट</label>
+    <textarea id="vl-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="vl-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="vl-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="vl-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Bridge VLAN फ़िल्टरिंग, v7 का तरीका</h2>
+<p>मौजूदा RouterOS पर VLAN चलाने का सुझाया गया तरीका <code>vlan-filtering=yes</code> वाला एक bridge है। हर <strong>bridge पोर्ट</strong> का एक <code>pvid</code> होता है, यानी वह VLAN जिसमें उस पर आने वाले untagged फ़्रेम गिने जाते हैं, और <code>frame-types</code>, जो बताता है कि वह untagged फ़्रेम, tagged फ़्रेम या दोनों स्वीकार करे। <code>/interface bridge vlan</code> के तहत <strong>bridge VLAN टेबल</strong> फिर हर VLAN ID के लिए बताती है कि कौन-से पोर्ट उसे tagged भेजते हैं और कौन-से untagged। <code>ingress-filtering=yes</code> हो तो पोर्ट उन VLAN के tagged फ़्रेम भी ड्रॉप कर देता है जिनका वह सदस्य नहीं है।</p>
+<p>राउटर bridge पर बने <strong>VLAN इंटरफ़ेस</strong> के ज़रिए किसी VLAN से जुड़ता है, और उस VLAN में bridge को tagged सदस्य के रूप में सूचीबद्ध करना होता है। उसी इंटरफ़ेस को IP एड्रेस मिलता है और वह उस VLAN का gateway, DHCP सर्वर और फ़ायरवॉल की सीमा बन जाता है। पुरानी गाइड VLAN को switch chip मेन्यू में या हर VLAN के लिए अलग bridge से कॉन्फ़िगर करती हैं; bridge VLAN फ़िल्टरिंग ऑफ़लोड करने वाले डिवाइस पर एक-bridge वाला तरीका सरल भी है और तेज़ भी।</p>
+<h3>इसे सुरक्षित तरीके से लागू करना</h3>
+<ul>
+  <li>सब कुछ फ़िल्टरिंग बंद रखकर बनाएं, फिर आख़िर में एक ही कदम में उसे चालू करें, जैसा स्क्रिप्ट करती है। दूर से काम करते समय Safe Mode या serial console इस्तेमाल करें।</li>
+  <li>हर रूट होने वाले VLAN को <a href="/tools/mikrotik-dhcp-server-generator/">MikroTik DHCP सर्वर जनरेटर</a> से उसका अपना DHCP सर्वर दें, और <a href="/tools/mikrotik-firewall-generator/">MikroTik फ़ायरवॉल जनरेटर</a> के forward-chain रूल से मेहमानों को दूसरे VLAN से दूर रखें।</li>
+  <li>पहले और बाद के कॉन्फ़िगरेशन की तुलना <a href="/tools/routeros-export-diff/">RouterOS एक्सपोर्ट तुलना</a> से करें।</li>
+</ul>

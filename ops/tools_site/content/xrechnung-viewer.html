@@ -1,0 +1,107 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "XRechnung viewer",
+  "icon": "xrechnung-viewer",
+  "module": "einvoice-viewer",
+  "title": "XRechnung viewer: open XRechnung XML online | Tanod Tools",
+  "description": "Open an XRechnung (UBL or CII XML) and read it as a normal invoice. Print it, save it as PDF or export JSON. Free, nothing is uploaded.",
+  "h1": "XRechnung viewer",
+  "lede": "Open an XRechnung XML file and read it as an ordinary invoice: seller, buyer, line items, VAT and payment details. The file is read in this tab and never uploaded.",
+  "blurb": "Read an XRechnung XML file as a normal invoice, print it or export JSON.",
+  "keywords": "xrechnung viewer xrechnung anzeigen xrechnung lesen xrechnung xml öffnen xrechnung visualisieren e-rechnung viewer xrechnung ubl xrechnung cii leitweg-id xrechnung als pdf",
+  "limits": "One file at a time, up to 25 MB, and the first 5,000 line items are shown. Reads XRechnung 3.x as UBL 2.1 Invoice or CreditNote and as UN/CEFACT CII. This is a viewer, not a validator: it does not check the file against the XRechnung or EN 16931 rules, and it does not send or receive anything.",
+  "howto_title": "How to open an XRechnung",
+  "howto": [
+    "Choose the XRechnung XML file from your computer, or drag it onto the page. A ZUGFeRD PDF or a signed .p7m works too.",
+    "Read the invoice that appears: parties, dates, line items, VAT breakdown and payment details. Nothing leaves your device.",
+    "Press <strong>Print or save as PDF</strong> for a paper or PDF copy, <strong>Download JSON</strong> for the data, or <strong>Show raw XML</strong> to see the source."
+  ],
+  "faq": [
+    [
+      "Is my invoice uploaded?",
+      "No. The file is read in your browser with its built-in XML parser and shown on this page. No server receives it, and closing the tab clears everything. You can check it in your browser's developer tools: the Network tab stays empty while you open a file."
+    ],
+    [
+      "Which XRechnung files does it open?",
+      "XRechnung 3.x in both syntaxes: UBL 2.1 (Invoice and CreditNote) and UN/CEFACT CII. Older XRechnung 2.x files have the same structure and normally open too. The page shows what is in the file; it does not check it against the XRechnung rules."
+    ],
+    [
+      "Is this a validator?",
+      "No, it is a viewer. To find out whether an XRechnung is valid, use a validator such as the KoSIT validator. This page also shows files that a validator would reject, and it does not send an invoice to a platform or to the Peppol network."
+    ],
+    [
+      "Why does it refuse some XML files?",
+      "A file that contains a DOCTYPE or ENTITY declaration is refused before it is parsed, because those can be used to read local files or use up memory. Real XRechnungen never contain them. Files over 25 MB are refused as well, and only the first 5,000 line items are shown."
+    ],
+    [
+      "What happens to attached documents?",
+      "An XRechnung can carry embedded documents, such as a timesheet or a PDF copy. They are listed with a Download button and are never opened or shown on the page. The file name is cleaned and the download uses a generic file type, so open them only if you trust the sender."
+    ],
+    [
+      "How do I get a PDF of the invoice?",
+      "Press <strong>Print or save as PDF</strong> and choose Save as PDF as the printer in your browser's print window. Only the invoice is printed, not the rest of the page."
+    ]
+  ],
+  "related": [
+    "zugferd-factur-x-viewer",
+    "fatturapa-viewer",
+    "ksef-viewer",
+    "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "vietnam-e-invoice-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Why an XRechnung is hard to read</h2>
+<p>An XRechnung is an invoice written for computers. The file is XML: hundreds of tagged values with names like <code>cbc:PayableAmount</code> and no layout at all. Since 1 January 2025 every business in Germany has to be able to receive structured e-invoices, so many people now get these files by email or through a portal and cannot read them. This page turns the XML back into the invoice you would expect: who sells, who buys, what was delivered, how much VAT, and how to pay.</p>
+<p>XRechnung is the German profile of the European standard EN 16931. It comes in two XML syntaxes, UBL 2.1 and UN/CEFACT Cross Industry Invoice (CII). Both are read here and give the same invoice. The buyer reference in the header (for public bodies the Leitweg-ID) and the electronic addresses of seller and buyer are shown too.</p>
+<h2>What is shown, and what is not</h2>
+<p>You see the parties with their VAT IDs and addresses, the dates and references, every line item with quantity, unit, price and VAT, discounts and charges, the VAT breakdown, the totals, the payment details with IBAN and BIC, the notes, and a list of attached documents. The viewer does not check the invoice against the XRechnung rules, the code lists or the arithmetic (use a validator for that), and it does not send the invoice anywhere or fetch it from a platform.</p>
+<p>The JSON download holds the same facts as plain data, named after the EN 16931 business terms: invoice number, dates, currency, parties, lines, VAT breakdown, totals and payment. Amounts are strings with the exact decimals of the invoice, so nothing is rounded.</p>
+<h3>Tips</h3>
+<ul>
+  <li>An invoice that came as a PDF with an XML inside (ZUGFeRD or Factur-X) opens in the <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD / Factur-X viewer</a>; this page takes it as well.</li>
+  <li>Invoices from the Peppol network are usually UBL: the <a href="/tools/peppol-ubl-invoice-viewer/">Peppol / UBL invoice viewer</a> opens them.</li>
+  <li>To keep an invoice as a PDF, press Print or save as PDF and choose Save as PDF.</li>
+</ul>

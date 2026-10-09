@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "FatturaPA görüntüleyici: XML ve imzalı P7M faturalar | Tanod Tools",
+  "description": "İtalyan FatturaPA faturasını (XML veya imzalı .p7m) açıp normal fatura olarak okuyun. Yazdırın, PDF kaydedin, JSON alın. Yükleme yok.",
+  "h1": "FatturaPA görüntüleyici",
+  "lede": "İtalyan e-faturasını (fattura elettronica), .p7m olarak imzalanmış olsa bile açın ve sıradan bir fatura gibi okuyun. Dosya tarayıcınızda açılır, hiçbir yere yüklenmez.",
+  "blurb": "FatturaPA XML veya imzalı .p7m faturayı normal fatura olarak okuyun.",
+  "keywords": "fatturapa görüntüleyici fatturapa viewer fattura elettronica okuma fattura elettronica açma italyan e-fatura xml p7m dosyası açma p7m fatura görüntüleme fattura pa xml fpr12 fpa12 sdi italya e-fatura xml faturayı pdf yapma",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB; bir dosyadaki tüm faturalar boyunca ilk 5.000 kalem gösterilir. FatturaPA 1.2.x (FPR12 ve FPA12) dosyalarını, birden çok fatura içerenler dahil okur. İmzalı bir .p7m dosyasından XML zarfın içinden çıkarılır ancak imza doğrulanmaz: bu sayfa dosyayı kimin imzaladığını ya da değiştirilip değiştirilmediğini söyleyemez. Yalnızca görüntüleyicidir: doğrulama yapmaz, SDI'ya hiçbir şey göndermez.",
+  "howto_title": "Fattura elettronica nasıl açılır",
+  "howto": [
+    ".xml veya .xml.p7m dosyasını seçin ya da sayfaya sürükleyin.",
+    ".p7m dosyasında sayfa XML'i imza zarfının içinden çıkarır, ardından faturayı gösterir: satıcı (cedente), alıcı (cessionario), kalemler, KDV özeti, toplamlar ve ödeme.",
+    "<strong>Yazdır veya PDF olarak kaydet</strong>, <strong>JSON indir</strong> ya da <strong>Ham XML'i göster</strong> düğmesine basın."
+  ],
+  "faq": [
+    [
+      "Faturam yükleniyor mu?",
+      "Hayır. İmzalı bir .p7m dahil dosya tarayıcınızda okunur ve bu sayfada gösterilir. Hiçbir sunucu dosyayı almaz; sekmeyi kapattığınızda her şey silinir."
+    ],
+    [
+      ".p7m dosyasının dijital imzasını denetliyor mu?",
+      "Hayır. .p7m, XML faturanın çevresindeki bir CMS (PKCS#7) zarfıdır. Bu sayfa zarfı yalnızca XML'i çıkarmak için okur. Sertifikayı, imzayı ve zaman damgasını denetlemez; bu yüzden dosyayı kimin imzaladığını ya da değiştirilip değiştirilmediğini söyleyemez. Bu sizin için önemliyse imza doğrulayan bir araç kullanın."
+    ],
+    [
+      "Hangi FatturaPA dosyaları destekleniyor?",
+      "FatturaPA 1.2, 1.2.1 ve 1.2.2, iki biçimiyle: FPR12 (işletmelere ve tüketicilere kesilen faturalar) ve FPA12 (kamu idaresine kesilen faturalar). Bir dosya birden çok fatura içerebilir; hepsi gösterilir. Basitleştirilmiş fatura (FSM10) desteklenmez."
+    ],
+    [
+      "Ödenecek tutar neden belge toplamından farklı?",
+      "Dosyada ödeme satırları (ImportoPagamento) varsa ödenecek tutar bunların toplamıdır. Belge toplamından farklı olabilir: bölünmüş ödemede (scissione dei pagamenti) KDV tedarikçiye ödenmez, stopajda (ritenuta d'acconto) de kesilen tutar ödenmez. İkisi de faturada işaretlenir."
+    ],
+    [
+      "TD01, MP05, N4 ve RF01 gibi kodlar ne anlama geliyor?",
+      "FatturaPA biçiminin resmî kod listelerinden gelirler: TD01 fatura, TD04 iade faturası, MP05 banka havalesi, N4 muaf işlem, RF01 olağan vergi rejimidir. Bir kodun günlük dilde karşılığı varsa kod parantez içinde yanında gösterilir; yoksa kod olduğu gibi gösterilir."
+    ],
+    [
+      "Bu resmî görüntüleyici mi?",
+      "Hayır. Bu sayfa Agenzia delle Entrate'den ve SDI'dan bağımsızdır. Resmî stil sayfası değildir; burada gösterilen bir dosya SDI'ya gönderilmemiş ve SDI tarafından denetlenmemiştir."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Fattura elettronica kısaca</h2>
+<p>İtalya'da faturalar, Agenzia delle Entrate'nin Sistema di Interscambio (SDI) sistemi üzerinden XML dosyaları olarak alınıp verilir. Kamu kurumlarına kesilen faturalar 2014 ve 2015'ten beri FatturaPA biçimini kullanıyor; işletmeler de 2019'dan beri yurt içi faturaların hemen hepsinde bu biçimi kullanmak zorunda. Fatura, PDF kopyası değil XML'dir; bu yüzden elinize çoğu zaman okuyamadığınız bir dosya geçer. Bu sayfa onu yeniden fatura hâline getirir. Araç, Türkiye'deki GİB e-Fatura sistemiyle değil, İtalyan biçimiyle ilgilidir.</p>
+<h2>İmzalı .p7m dosyaları</h2>
+<p>Birçok fatura <code>ad.xml.p7m</code> olarak gelir. .p7m, CMS (PKCS#7) biçiminde imzalı bir zarftır: XML fatura, imza ve imzalayanın sertifikasıyla birlikte bunun içinde saklanır. İtalyan sağlayıcılar bu zarfları biraz farklı biçimlerde yazar (sabit veya açık uçlu uzunluklar, parçalara bölünmüş içerik, hatta base64 metin) ve bir dosya iki kez imzalanmış olabilir. Bu sayfa zarfı bu site için yazılmış küçük bir ayrıştırıcıyla okur, XML'i çıkarır ve imzayı denetlemediğini açıkça belirtir.</p>
+<h2>Görüntüleyici neleri gösterir</h2>
+<p>Cedente/prestatore (satıcı) ile cessionario/committente (alıcı) KDV numaraları ve vergi kodlarıyla; belge türü, numarası ve tarihi; faturanın gerekçeleri (Causale); her kalem miktarı, birimi, fiyatı, iskontosu ve KDV oranıyla; muafiyet kodu ve yasal dayanağıyla KDV özeti; sosyal güvenlik primleri, stopaj, damga vergisi; IBAN ve vade tarihli ödeme satırları ile ekli dosyalar görünür. Faturayı doğrulamaz ve SDI ile hiç iletişim kurmaz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>İçinde XML bulunan bir PDF için <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD / Factur-X görüntüleyici</a> kullanın; bu sayfa onları da kabul eder.</li>
+  <li>JSON indir, faturayı kendi elektronik tablonuz ya da programınız için veri olarak verir.</li>
+  <li>Ham XML'i göster, okunabilir faturanın dışarıda bıraktığı bir alanı aramanızı sağlar.</li>
+</ul>

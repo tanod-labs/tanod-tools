@@ -1,6 +1,6 @@
-import { loadScript } from "./vendorload.js?v=5";
-import { initFormatter, FmtError, loadFailed, $, $$ } from "./fmtcore.js?v=5";
-import { prefs, tx } from "./core.js?v=5";
+import { loadScript } from "./vendorload.js?v=11";
+import { initFormatter, FmtError, loadFailed, $, $$ } from "./fmtcore.js?v=11";
+import { prefs, tx } from "./core.js?v=11";
 
 const SRC = "/tools/vendor/sql-formatter/sql-formatter.min.js";
 let lib = null;

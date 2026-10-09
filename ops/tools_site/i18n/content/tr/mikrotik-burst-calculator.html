@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "MikroTik burst hesaplayıcı (burst-limit, threshold) | Tanod Tools",
+  "description": "RouterOS kuyruğunun max-limit, burst-limit, burst-threshold ve burst-time ile ne kadar süre burst yaptığını görün; hız grafiği ve hazır queue satırlarıyla.",
+  "h1": "MikroTik burst hesaplayıcı",
+  "lede": "max-limit, burst-limit, burst-threshold ve burst-time değerlerini girin; bir istemcinin boştan başlayarak ne kadar süre burst yaptığını, bunun ne kadar veri ettiğini ve yapıştırılacak kuyruk satırını tam olarak görün.",
+  "blurb": "Kuyruk burst ayarları için burst süresi, veri miktarı ve hız grafiği.",
+  "keywords": "mikrotik burst hesaplayıcı burst limit burst threshold burst time max-limit simple queue burst rate-limit ppp profile burst burst nasıl çalışır routeros kuyruk burst calculator how burst works queue",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "RouterOS burst'ünü, sınırsız talebi olan tek bir istemci için ve RouterOS'un yaptığı gibi burst-time/16 adımlarıyla ölçerek modeller. Gerçek trafik daha dalgalıdır ve üst kuyruklar bir istemciyi bu sayıların altında sınırlayabilir. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik burst ayarları nasıl hesaplanır",
+  "howto": [
+    "Yükleme ve indirme için max-limit, burst-limit, burst-threshold ve burst-time değerlerini girin. Hızlar k, M veya G alır; örneğin 20M.",
+    "Burst'ün boştan başlayarak ne kadar sürdüğünü okuyun ve izin verilen hızı ile RouterOS'un eşikle karşılaştırdığı ortalamayı gösteren grafiğe bakın.",
+    "İsterseniz istediğiniz burst süresini girin, onu üreten eşiği alın; sonra simple queue veya PPP rate-limit satırını kopyalayın."
+  ],
+  "faq": [
+    ["MikroTik'te burst nasıl çalışır?", "Her burst-time/16 sürede RouterOS, istemcinin son burst-time boyunca ortalama hızını hesaplar. Bu ortalama burst-threshold değerinin altında olduğu sürece kuyruk, istemcinin burst-limit değerine kadar göndermesine izin verir; ortalama eşiğe ulaşınca istemci max-limit değerine düşer. Boşta kalmış bir istemcinin ortalaması sıfırdır; bu yüzden yeni bir indirme burst-limit ile başlar ve birkaç saniye sonra max-limit değerine geri düşer."],
+    ["Burst ne kadar sürer?", "Boştan başlayıp kendisine sunulan her şeyi alan bir istemciyle burst yaklaşık burst-threshold × burst-time ÷ burst-limit kadar sürer. burst-limit 40M, eşik 16M ve burst-time 8s ile bu 16 × 8 ÷ 40 = 3,2 saniyedir. Ortalama yalnızca her burst-time/16 sürede (burada yarım saniye) yeniden denetlendiği için burst gerçekte bu noktadan sonraki ilk denetimde, 3,5 saniyede biter; hesaplayıcı bu denetimleri adım adım izler ve iki değeri de gösterir."],
+    ["burst-threshold neden max-limit değerinin altında olmalı?", "Eşik max-limit değerinin üzerindeyse, max-limit hızında indiren bir istemcinin ortalaması eşiğin altında kalır; bu yüzden burst yeniden açılır, ortalama yükselir, burst kapanır ve istemci sürekli salınım yapar. Eşik max-limit değerinin altındaysa, indirmeyi sürdüren bir istemci max-limit değerinde kalır ve yalnızca bir duraklamadan sonra yeniden burst yapar."],
+    ["rate-limit satırı ne işe yarar?", "PPP profilleri, PPP secret'ları ve RADIUS (Mikrotik-Rate-Limit özniteliği) aynı sınırları tek bir dize olarak alır: max-limit, burst-limit, burst-threshold ve burst-time; her biri yönlendiricinin tarafından rx/tx olarak, yani istemci için yükleme/indirme olarak. RouterOS, istemci bağlandığında bundan dinamik bir simple queue oluşturur."],
+    ["limit-at burst'ün bir parçası mı?", "Hayır. limit-at, üst kuyruk tıkandığında kuyruğun garanti ettiği hızdır; burst yalnızca bir istemcinin bir süreliğine max-limit değerinin ne kadar üzerine çıkabileceğini değiştirir. limit-at değerini max-limit değerine eşit veya altında tutun."],
+    ["Sunucuya bir şey gönderiliyor mu?", "Hayır. Simülasyon ve grafik tarayıcınızda hesaplanır."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="bc">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Yükleme (istemciden internete)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-up-max">max-limit</label><input type="text" id="bc-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-burst">burst-limit</label><input type="text" id="bc-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-thr">burst-threshold</label><input type="text" id="bc-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-time">burst-time</label><input type="text" id="bc-up-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>İndirme (internetten istemciye)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-down-max">max-limit</label><input type="text" id="bc-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-burst">burst-limit</label><input type="text" id="bc-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-thr">burst-threshold</label><input type="text" id="bc-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-time">burst-time</label><input type="text" id="bc-down-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="bc-want">İstediğiniz burst süresi (saniye)</label>
+      <input type="text" id="bc-want" class="mono" value="" placeholder="5" inputmode="numeric" autocomplete="off" aria-describedby="bc-want-h">
+      <span class="help" id="bc-want-h">İsteğe bağlı: bu uzunlukta bir burst veren eşiği gösterir.</span>
+    </div>
+    <dl class="ros-facts" id="bc-facts" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <div class="seg" role="radiogroup" aria-label="Grafik yönü">
+      <label><input type="radio" name="bc-dir" value="down" checked>İstemci indirmesi</label>
+      <label><input type="radio" name="bc-dir" value="up">İstemci yüklemesi</label>
+    </div>
+    <figure class="ros-fig">
+      <div id="bc-chart"></div>
+      <figcaption id="bc-chart-t" class="help"></figcaption>
+    </figure>
+    <ul class="ros-legend" aria-hidden="true">
+      <li><i></i>İzin verilen hız</li>
+      <li class="k-avg"><i></i>burst-time boyunca ortalama</li>
+      <li class="k-thr"><i></i>burst-threshold</li>
+    </ul>
+    <label for="bc-out" class="label">Kuyruk ayarları</label>
+    <textarea id="bc-out" class="mono gen-out ros-out ros-out--short" rows="8" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="bc-copy" type="button">Kopyala</button>
+      <button class="btn" id="bc-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+    <ul class="ros-notes" id="bc-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS kuyruklarında burst, adım adım</h2>
+<p>Burst, bir istemcinin kısa bir süre max-limit değerinden daha hızlı gitmesine izin verir; böylece web sayfaları ve küçük indirmeler hızlı hissettirirken uzun aktarımlar yine paketin hızına oturur. Bunu dört ayar denetler; her biri simple queue'da yükleme/indirme olarak verilir: olağan tavan olan <code>max-limit</code>; burst sırasındaki daha yüksek tavan olan <code>burst-limit</code>; burst'ün durduğu ortalama hız olan <code>burst-threshold</code>; ve bu ortalamanın ölçüldüğü pencere olan <code>burst-time</code>.</p>
+<p>RouterOS, burst-time değerini 16 dilime böler. Her dilimden sonra istemcinin son 16 dilimdeki hızının ortalamasını alır ve eşikle karşılaştırır: eşiğin altındaysa istemci burst-limit değerini kullanabilir; eşitse veya üstündeyse yalnızca max-limit değerini. Boştan gelen bir istemci sıfır ortalamayla başlar, burst-limit hızında gönderir ve ortalama eşiği geçene kadar yükselir. 8 sn burst-time, 40M burst-limit ve 16M eşikle ortalama eşiğe 3,2 sn sonra ulaşır ve 3,5 sn'deki sonraki denetim burst'ü bitirir; bu noktaya kadar istemci yaklaşık 17,5 MB taşımıştır. Sonra istemci max-limit hızında aktarım yapmayı sürdürdüğü sürece ortalama eşiğin üstünde kalır; bu yüzden bir sonraki burst için bir duraklama gerekir.</p>
+<h3>Değer seçme</h3>
+<ul>
+  <li>burst-limit değerini kısa aktarımların nasıl hissettirmesini istiyorsanız o hıza ayarlayın; çoğu zaman max-limit değerinin 1,5 ila 2 katı.</li>
+  <li>burst-threshold değerini max-limit değerinin altında, tipik olarak yüzde 60 ila 80'inde tutun ve istediğiniz burst uzunluğunu elde etmek için burst-time değerini ayarlayın.</li>
+  <li>FastTrack'i kapatın veya kuyruğa alınmış istemcileri onun dışında bırakın: fasttrack'lenen paketler simple queue'ları tamamen atlar. Kuyrukları <a href="/tools/mikrotik-simple-queue-generator/">MikroTik simple queue oluşturucu</a> ile ya da PPP profilleri olarak <a href="/tools/mikrotik-pppoe-server-generator/">MikroTik PPPoE sunucu oluşturucu</a> ile üretin.</li>
+</ul>

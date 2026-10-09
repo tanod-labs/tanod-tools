@@ -1,5 +1,5 @@
-import { $, $$, el, debounce, copyText, tx, txn, EN } from "./core.js?v=5";
-import { parseCidr, subnetInfo, kindOfSubnet, splitSubnet, fmtV4, fmtV6, fmtV6Full, fmtBig, IpError } from "./dev3core.js?v=5";
+import { $, $$, el, debounce, copyText, tx, txn, EN } from "./core.js?v=11";
+import { parseCidr, subnetInfo, kindOfSubnet, splitSubnet, fmtV4, fmtV6, fmtV6Full, fmtBig, IpError } from "./dev3core.js?v=11";
 
 const input = $("#s-in"), info = $("#s-info"), result = $("#s-result"), rows = $("#s-rows"), note = $("#s-note");
 const splitIn = $("#s-split"), splitInfo = $("#s-split-info"), tableWrap = $("#s-table-wrap"), table = $("#s-table");

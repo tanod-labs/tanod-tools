@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Kreditrechner mit Tilgungsplan | Tanod Tools",
+  "description": "Kredit- und Hypothekenrechner: Monatsrate, Gesamtzinsen und kompletter Tilgungsplan zum Download als CSV. Kostenlos, direkt im Browser.",
+  "h1": "Kreditrechner",
+  "lede": "Geben Sie Betrag, Jahreszins und Laufzeit ein und sehen Sie die Monatsrate, die Gesamtzinsen und einen Tilgungsplan Rate für Rate, den Sie herunterladen können.",
+  "blurb": "Monatsrate, Gesamtzinsen und Tilgungsplan.",
+  "keywords": "kreditrechner darlehensrechner hypothekenrechner monatsrate tilgungsplan tilgung gesamtzinsen autokredit ratenkredit sondertilgung csv download nullzins",
+  "local_text": "Läuft in Ihrem Browser; nichts, was Sie eingeben, verlässt Ihr Gerät",
+  "limits": "Kredite mit festem Zinssatz und gleichbleibenden Monatsraten, Zinsen monatlich mit einem Zwölftel des Jahreszinses berechnet und jeden Monat auf den Cent gerundet. Laufzeiten bis zu 100 Jahren. Gebühren, Versicherungen, Steuern, Schlussraten und variable Zinssätze sind nicht enthalten, daher können die Zahlen einer Bank leicht abweichen. Beträge sind einfache Zahlen in der Währung Ihrer Wahl.",
+  "howto_title": "So berechnen Sie die Rate eines Kredits",
+  "howto": [
+    "Geben Sie den Kreditbetrag, den Jahreszins und die Laufzeit in Jahren oder Monaten ein.",
+    "Fügen Sie optional einen Zusatzbetrag hinzu, den Sie jeden Monat zusätzlich zur vorgeschriebenen Rate zahlen.",
+    "Lesen Sie Monatsrate, Gesamtzinsen und Gesamtzahlung ab, blättern Sie dann durch den Tilgungsplan oder laden Sie ihn als CSV-Datei herunter."
+  ],
+  "faq": [
+    [
+      "Wie wird die Monatsrate berechnet?",
+      "Mit der üblichen Annuitätenformel: Rate = P × r ÷ (1 − (1 + r)^−n), wobei P der Kreditbetrag ist, r der Monatszins (Jahreszins geteilt durch 12) und n die Zahl der Monatsraten. Die Rate wird auf den Cent gerundet, und die letzte Rate wird so angepasst, dass die Restschuld genau bei null endet."
+    ],
+    [
+      "Was gilt bei einem Zinssatz von 0 %?",
+      "Der Kredit wird einfach in gleiche Raten geteilt: der Betrag durch die Zahl der Monate. Die Gesamtzinsen sind dann null. Rundungsdifferenzen, falls vorhanden, kommen in die letzte Rate."
+    ],
+    [
+      "Was zeigt der Tilgungsplan?",
+      "Eine Zeile pro Zahlung: wie viel davon Zinsen sind, wie viel die Schuld tilgt und wie hoch die Restschuld danach ist. Am Anfang besteht der größte Teil jeder Rate aus Zinsen, gegen Ende überwiegend aus Tilgung."
+    ],
+    [
+      "Wie helfen Sondertilgungen?",
+      "Ein Zusatzbetrag pro Monat fließt direkt in die Tilgung, die Restschuld sinkt schneller, es fallen weniger Zinsen an und der Kredit ist früher abbezahlt. Das Ergebnis zeigt, wie viele Raten nötig sind und wie hoch die Gesamtzinsen mit Ihrer Zusatzzahlung ausfallen."
+    ],
+    [
+      "Warum weicht die Zahl meiner Bank ab?",
+      "Banken können Gebühren erheben, Zinsen anders verrechnen, Tage statt Monate zählen oder anders runden. Betrachten Sie dies als gute Schätzung, nicht als Angebot."
+    ],
+    [
+      "Wird das, was ich eingebe, hochgeladen?",
+      "Nein. Alles wird in Ihrem Browser berechnet, und nichts verlässt Ihr Gerät."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Kreditbetrag</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Jahreszins (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Laufzeit</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Einheit der Laufzeit">
+          <option value="years" selected>Jahre</option>
+          <option value="months">Monate</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Zusatzzahlung pro Monat (optional)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Monatsrate</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Gesamtzinsen</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Gesamtzahlung</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Anzahl der Raten</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Tilgungsplan herunterladen (CSV)</button>
+    </div>
+    <h3 class="util-h">Tilgungsplan</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tilgungsplan">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Nr.</th><th scope="col">Rate</th><th scope="col">Tilgung</th><th scope="col">Zinsen</th><th scope="col">Restschuld</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Wie die Rate eines Kredits berechnet wird</h2>
+<p>Die meisten Kredite und Hypotheken sind Annuitätendarlehen: Sie zahlen jeden Monat denselben Betrag, und jede Rate deckt zuerst die aufgelaufenen Zinsen auf die Restschuld und tilgt dann einen Teil der Schuld. Weil die Restschuld am Anfang am höchsten ist, ist der Zinsanteil der ersten Raten groß und der Tilgungsanteil klein. Sinkt die Restschuld, schrumpft der Zinsanteil, und ein größerer Teil jeder Rate fließt in die Tilgung.</p>
+<p>Der Rechner macht aus dem Jahreszins durch Teilen durch 12 einen Monatszins, bestimmt die gleichbleibende Rate mit der üblichen Annuitätenformel und erstellt dann den Plan Monat für Monat. Die Zinsen eines Monats sind die Restschuld mal Monatszins, auf den Cent gerundet, wie es eine Bank tut. Der Rest der Rate verringert die Restschuld. Die letzte Rate ist die, die den Rest tilgt, und kann daher um ein paar Cent von den anderen abweichen. Bei 0 % braucht es keine Formel: Der Betrag wird gleichmäßig auf die Monate verteilt.</p>
+<p>Jeden Monat etwas mehr zu zahlen, ist eine der günstigsten Möglichkeiten, Zinsen zu sparen. Der Zusatzbetrag geht vollständig in die Tilgung, sodass die Restschuld schneller sinkt und der Kredit früher endet. Geben Sie einen Zusatzbetrag ein, um zu sehen, wie viele Raten übrig bleiben und wie viele Zinsen Sie gegenüber dem Verzicht auf Zusatzzahlungen sparen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sehen Sie mit dem <a href="/tools/compound-interest-calculator/">Zinseszins-Rechner</a>, wie Erspartes oder eine Geldanlage wachsen kann.</li>
+  <li>Vergleichen Sie zwei Zinssätze oder berechnen Sie die Änderung einer Rate mit dem <a href="/tools/percentage-calculator/">Prozentrechner</a>.</li>
+  <li>Sie schreiben den Betrag auf einen Scheck? <a href="/tools/number-to-words/">Zahl in Worten</a> schreibt ihn aus.</li>
+</ul>

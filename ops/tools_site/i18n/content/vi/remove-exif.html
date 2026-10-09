@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "Xóa dữ liệu EXIF khỏi ảnh, gồm cả GPS | Tanod Tools",
+  "description": "Xem một bức ảnh tiết lộ gì (vị trí GPS, máy ảnh, ngày chụp), rồi xóa dữ liệu EXIF, XMP và IPTC mà không mã hóa lại ảnh. Chạy trong trình duyệt; không có gì được tải lên.",
+  "h1": "Xóa dữ liệu EXIF khỏi ảnh",
+  "lede": "Xem vị trí, máy ảnh và ngày chụp ẩn trong ảnh, rồi xóa chúng mà không động đến chính bức ảnh.",
+  "blurb": "Xóa GPS, thông tin máy ảnh và metadata khác khỏi ảnh.",
+  "keywords": "xóa exif, xóa dữ liệu exif, xóa metadata ảnh, xóa vị trí gps khỏi ảnh, xóa thông tin ảnh, quyền riêng tư ảnh, metadata gps location privacy strip exif remover xmp iptc photo scrub",
+  "limits": "Tối đa 50 ảnh mỗi loạt, mỗi ảnh 50 MB. JPEG, PNG và WebP được làm sạch mà không mã hóa lại; GIF, BMP và AVIF được vẽ lại và lưu thành PNG.",
+  "howto_title": "Cách xóa dữ liệu EXIF khỏi ảnh",
+  "howto": [
+    "Chọn ảnh của bạn, hoặc kéo thả vào trang. Mỗi ảnh liệt kê những gì nó chứa, vị trí GPS nếu có sẽ được đánh dấu.",
+    "Để bật \"Giữ hướng ảnh\" để những ảnh phụ thuộc vào nó không bị xoay ngang, hoặc tắt để xóa mọi thứ.",
+    "Nhấn <strong>Xóa metadata</strong>, rồi tải xuống các bản đã làm sạch hoặc một tệp .zip. Tệp được đặt tên có thêm \"-clean\"."
+  ],
+  "faq": [
+    ["Ảnh của tôi có được tải lên không?", "Không. Tệp được đọc và ghi lại trong trình duyệt của bạn, và không có gì được gửi đến máy chủ. Bạn có thể xem danh sách những gì mỗi ảnh chứa trước khi bất cứ thứ gì bị thay đổi."],
+    ["Có nén lại JPEG của tôi không?", "Không. Với JPEG, PNG và WebP, công cụ ghi lại phần vỏ của tệp và bỏ các khối metadata. Dữ liệu ảnh được sao chép từng byte, nên không mất chất lượng và các điểm ảnh giữ nguyên."],
+    ["Chính xác thì những gì bị xóa?", "JPEG: EXIF và XMP (APP1), IPTC (APP13), chú thích, và các khối ứng dụng khác ngoài header JFIF, hồ sơ màu và cờ màu Adobe. PNG: các khối văn bản (tEXt, zTXt, iTXt, có thể chứa XMP), EXIF và thời gian sửa đổi. WebP: các khối EXIF và XMP. Dữ liệu gắn thêm phía sau cuối ảnh JPEG hoặc PNG cũng bị bỏ."],
+    ["\"Giữ hướng ảnh\" là gì?", "Nhiều máy ảnh lưu ảnh nằm ngang và thêm một thẻ hướng báo cho trình xem biết cần xoay. Nếu thẻ đó bị xóa, ảnh có thể hiển thị nằm ngang. Khi bật tùy chọn này (mặc định), một khối EXIF rất nhỏ chỉ chứa số hướng ảnh được ghi lại nếu ảnh gốc không đứng thẳng. Nó không chứa vị trí hay chi tiết về máy ảnh. Tắt tùy chọn để xóa cả phần đó."],
+    ["Hồ sơ màu có bị xóa không?", "Không. Hồ sơ màu ICC nhúng sẵn được giữ lại vì xóa nó có thể làm thay đổi cách hiển thị màu. Nó mô tả cách xử lý màu, không cho biết ảnh được chụp ở đâu hay như thế nào."],
+    ["Danh sách những gì tìm thấy đáng tin đến đâu?", "Nó đọc các trường EXIF chuẩn (máy ảnh, ống kính, ngày, phần mềm, GPS, hướng ảnh) và đếm phần còn lại. Nhà sản xuất máy ảnh thêm dữ liệu riêng theo định dạng của họ, được đếm nhưng không mô tả. Tệp đã làm sạch được kiểm tra sau khi ghi để xác nhận không còn vị trí EXIF, máy ảnh, XMP hay metadata văn bản."],
+    ["Các tệp GIF, BMP hoặc AVIF được xử lý thế nào?", "Công cụ này không chỉnh sửa các định dạng vỏ đó. Nó vẽ lại bức ảnh và lưu thành PNG, định dạng không mang metadata. GIF sẽ thành khung hình đầu tiên của nó."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Thả ảnh vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">JPEG, PNG hoặc WebP (cũng nhận GIF, BMP, AVIF). Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<ol class="files" id="files" aria-label="Ảnh cần làm sạch" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Giữ hướng ảnh để ảnh không bị xoay ngang</label>
+      <p class="help">Ghi lại một khối EXIF rất nhỏ chỉ chứa số hướng ảnh, và chỉ khi ảnh chưa đứng thẳng.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Xóa metadata</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Xóa tất cả</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Một bức ảnh có thể tiết lộ gì</h2>
+<p>Hầu hết máy ảnh và điện thoại ghi thêm thông tin vào mỗi bức ảnh: hãng và kiểu máy, thời điểm chụp, phần mềm đã chỉnh sửa và, nếu bật định vị, tọa độ GPS nơi bạn đứng. Khối đó gọi là EXIF. Các chương trình chỉnh sửa thêm khối XMP và IPTC với chú thích, tên tác giả và từ khóa. Nhiều trang web xóa chúng khi bạn tải lên, nhưng không phải tất cả, và một tệp gửi qua email hay chat thường giữ nguyên mọi thứ.</p>
+<p>Công cụ này trước tiên cho thấy mỗi ảnh chứa gì, rồi xóa chúng bằng cách ghi lại phần vỏ của tệp. Một tệp JPEG là chuỗi các khối có nhãn theo sau là bức ảnh đã nén; các khối metadata được bỏ ra và dữ liệu ảnh được sao chép nguyên vẹn. Đó là lý do kết quả không bị nén lại và trông giống hệt.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Kiểm tra danh sách trước khi chia sẻ: vị trí được đánh dấu nghĩa là ảnh mang tọa độ.</li>
+  <li>Ảnh chụp màn hình và bản xuất đã chỉnh sửa vẫn có thể chứa metadata văn bản. Hãy cho chúng chạy qua đây nữa.</li>
+  <li>Để thu nhỏ tệp luôn, hãy dùng <a href="/tools/compress-image/">Nén ảnh</a> sau đó; công cụ đó mã hóa lại và cũng bỏ metadata.</li>
+</ul>

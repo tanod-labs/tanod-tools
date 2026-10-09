@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "Vietnam e-invoice viewer",
+  "icon": "vietnam-e-invoice-viewer",
+  "module": "einvoice-viewer",
+  "title": "Vietnam e-invoice viewer: open hóa đơn điện tử XML | Tanod Tools",
+  "description": "Open a Vietnamese hóa đơn điện tử (XML) and read it as a normal invoice. Print, save as PDF or export JSON. Free, nothing is uploaded.",
+  "h1": "Vietnam e-invoice viewer",
+  "lede": "Open a Vietnamese electronic invoice (hóa đơn điện tử) and read it as an ordinary invoice: invoice symbol and number, seller, buyer, lines, VAT by rate and the tax authority's code. The XML is read in your browser and never uploaded.",
+  "blurb": "Read a Vietnamese hóa đơn điện tử (Decree 123/2020 XML) as a normal invoice.",
+  "keywords": "vietnam e-invoice viewer hóa đơn điện tử xem hoá đơn điện tử xml mở file xml hóa đơn nghị định 123/2020 thông tư 78/2021 mã của cơ quan thuế mccqt đọc hóa đơn xml",
+  "limits": "One file at a time, up to 25 MB; the first 5,000 line items are shown. Reads the invoice XML of Decree 123/2020 and Circular 78/2021 (root element HDon, also when wrapped in a TDiep message from the tax authority), coded or not coded. The digital signatures (DSCKS) are not verified. Viewer only: it does not validate the invoice and does not look anything up with the tax authority.",
+  "howto_title": "How to open a Vietnamese e-invoice",
+  "howto": [
+    "Choose the invoice XML you saved from your e-invoice provider, the tax authority's portal or your accounting software, or drag it onto the page.",
+    "Read the invoice: symbol (KHHDon) and number (SHDon), the tax authority's code (MCCQT) if the invoice has one, seller (NBan), buyer (NMua), lines, VAT by rate, totals and payment.",
+    "Press <strong>Print or save as PDF</strong>, <strong>Download JSON</strong>, or <strong>Show raw XML</strong>."
+  ],
+  "faq": [
+    [
+      "Is the invoice uploaded or sent to the tax authority?",
+      "No. This page does not connect to the tax authority, to your provider or to any server. The XML is read in your browser and shown on this page, and closing the tab clears everything."
+    ],
+    [
+      "Is the digital signature verified?",
+      "No. The signatures in the DSCKS element (the seller's and, on a coded invoice, the tax authority's) are not verified. A file that carries one is flagged with a note, but this page cannot tell you who signed the invoice or whether it was changed afterwards. Use your provider's or the tax authority's tools if you need that."
+    ],
+    [
+      "What are the invoice symbol and the MCCQT?",
+      "The invoice symbol is made of the form number (KHMSHDon) and the symbol (KHHDon, for example C24TAA), and the number is SHDon. The MCCQT is the code that the tax authority gives to a coded invoice (hóa đơn có mã). An invoice without a code has no MCCQT. All of them are shown as the file gives them; this page cannot check that a code is genuine."
+    ],
+    [
+      "Can it open the message that comes back from the tax authority?",
+      "Yes. If the XML is a TDiep message with the invoice inside DLieu, the invoice is taken out and shown. Other message types, and invoices in older formats, are not read."
+    ],
+    [
+      "How are VAT rates shown?",
+      "Rates such as 10%, 8%, 5% and 0% are shown as rates. KCT (not subject to VAT) and KKKNT (not declared or paid) are shown as the code the file gives, next to the matching VAT category. A rate written as KHAC:x% is shown as the rate x."
+    ],
+    [
+      "Where do I get the XML of an invoice?",
+      "Your e-invoice provider and the tax authority's portal let you download the invoice as an XML file, and accounting software can export it. This page reads the XML file you saved, not the PDF."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "zugferd-factur-x-viewer",
+    "fatturapa-viewer",
+    "ksef-viewer",
+    "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Vietnam's electronic invoices</h2>
+<p>Since the Decree 123/2020/ND-CP and Circular 78/2021/TT-BTC, businesses in Vietnam issue hóa đơn điện tử, electronic invoices, as XML files in a format set by the tax authority. An invoice either carries a code from the tax authority (hóa đơn có mã, shown in the element MCCQT) or is issued without one. The XML is the invoice; the readable version is a drawing of it. This page makes that drawing in your browser from the XML you have.</p>
+<h2>What the viewer shows</h2>
+<p>You see the invoice name and version, the form number (KHMSHDon), the symbol (KHHDon), the number (SHDon), the date (NLap), the tax authority's code (MCCQT) when there is one, the seller (NBan) and the buyer (NMua) with their tax codes (MST), addresses and contacts, every line with unit, quantity, price, discount and VAT rate, VAT by rate (THTTLTSuat), the totals, the amount in words and the payment details. For an adjusting or replacing invoice (TCHDon), the invoice it refers to is shown. Amounts are shown exactly as in the file.</p>
+<p>It does not verify the digital signatures (DSCKS), does not validate the invoice against the tax authority's schema and rules and does not look the invoice up. Invoices in other formats, such as the older invoices of Circular 32/2011, are not read.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Download JSON gives you the invoice as plain data, with the Vietnamese field names mapped to the EN 16931 business terms.</li>
+  <li>Other formats open here too: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol and the Turkish e-Fatura. The page suggests the matching viewer when you open one.</li>
+  <li>Show raw XML helps when you need an element that the readable invoice does not show.</li>
+</ul>

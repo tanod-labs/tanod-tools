@@ -1,7 +1,7 @@
 // Exact rational arithmetic on BigInt for the fraction calculator. A rational is {n, d} with d > 0 and
 // gcd(n, d) = 1. Nothing is rounded: every result is an exact fraction.
 
-import { tx, EN } from "./i18n.js?v=5";
+import { tx, EN } from "./i18n.js?v=11";
 
 export class RatError extends Error {}
 const fail = (m) => { throw new RatError(m); };

@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "Tính burst MikroTik (burst-limit, threshold) | Tanod Tools",
+  "description": "Xem hàng đợi RouterOS burst bao lâu với max-limit, burst-limit, burst-threshold và burst-time, kèm biểu đồ tốc độ và dòng lệnh queue, PPP rate-limit sẵn dùng.",
+  "h1": "Tính burst MikroTik",
+  "lede": "Nhập max-limit, burst-limit, burst-threshold và burst-time để thấy chính xác một client burst bao lâu từ trạng thái rảnh, đó là bao nhiêu dữ liệu, và dòng queue để dán.",
+  "blurb": "Thời lượng burst, dữ liệu và biểu đồ tốc độ cho cài đặt burst của queue.",
+  "keywords": "tính burst mikrotik burst limit burst threshold burst time max-limit simple queue burst rate-limit ppp profile burst cách burst hoạt động routeros queue hàng đợi băng thông calculator",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không bao giờ rời khỏi thiết bị",
+  "limits": "Mô phỏng burst của RouterOS cho một client với nhu cầu không giới hạn, đo theo từng bước burst-time/16 như RouterOS làm. Lưu lượng thật có nhiều đợt đột biến hơn, và queue cha có thể giới hạn client thấp hơn các con số này. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập và không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách tính cài đặt burst MikroTik",
+  "howto": [
+    "Nhập max-limit, burst-limit, burst-threshold và burst-time cho upload và download. Tốc độ nhận k, M hoặc G, như 20M.",
+    "Đọc burst kéo dài bao lâu từ trạng thái rảnh và xem biểu đồ, trong đó hiển thị tốc độ cho phép và mức trung bình mà RouterOS so với ngưỡng.",
+    "Tùy chọn nhập thời lượng burst bạn muốn để nhận ngưỡng tạo ra nó, rồi sao chép dòng simple queue hoặc PPP rate-limit."
+  ],
+  "faq": [
+    ["Burst hoạt động thế nào trên MikroTik?", "Cứ mỗi burst-time/16, RouterOS tính tốc độ trung bình của client trong burst-time gần nhất. Khi mức trung bình đó thấp hơn burst-threshold, queue cho phép client gửi tới burst-limit; khi mức trung bình chạm ngưỡng, client bị hạ về max-limit. Client đã rảnh có mức trung bình bằng không, nên một lượt tải xuống mới bắt đầu ở burst-limit và rơi về max-limit sau vài giây."],
+    ["Burst kéo dài bao lâu?", "Bắt đầu từ trạng thái rảnh với client lấy hết mọi thứ được cấp, burst kéo dài khoảng burst-threshold × burst-time ÷ burst-limit. Với burst-limit 40M, ngưỡng 16M và burst-time 8s thì đó là 16 × 8 ÷ 40 = 3,2 giây. Mức trung bình chỉ được kiểm tra lại mỗi burst-time/16 (nửa giây ở đây), nên burst thực sự kết thúc ở lần kiểm tra đầu tiên sau mốc đó, tại 3,5 giây; công cụ tính qua từng lần kiểm tra và hiển thị cả hai con số."],
+    ["Vì sao burst-threshold nên thấp hơn max-limit?", "Nếu ngưỡng cao hơn max-limit, client tải ở max-limit có mức trung bình thấp hơn ngưỡng, nên burst bật lại, mức trung bình tăng lên, burst tắt, và client cứ dao động mãi. Với ngưỡng thấp hơn max-limit, client tiếp tục tải sẽ giữ ở max-limit và chỉ burst lại sau một khoảng nghỉ."],
+    ["Dòng rate-limit dùng để làm gì?", "PPP profile, PPP secret và RADIUS (thuộc tính Mikrotik-Rate-Limit) nhận cùng các giới hạn đó dưới dạng một chuỗi: max-limit, burst-limit, burst-threshold và burst-time, mỗi giá trị dạng rx/tx từ phía router, tức là upload/download của client. RouterOS dựng một simple queue động từ đó khi client kết nối."],
+    ["limit-at có thuộc về burst không?", "Không. limit-at là tốc độ queue đảm bảo khi queue cha bị nghẽn; burst chỉ thay đổi mức client được vượt trên max-limit trong một lúc. Hãy giữ limit-at bằng hoặc thấp hơn max-limit."],
+    ["Có gì được gửi đến máy chủ không?", "Không. Mô phỏng và biểu đồ được tính trong trình duyệt của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="bc">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Upload (từ client lên internet)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-up-max">max-limit</label><input type="text" id="bc-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-burst">burst-limit</label><input type="text" id="bc-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-thr">burst-threshold</label><input type="text" id="bc-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-time">burst-time</label><input type="text" id="bc-up-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Download (từ internet về client)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-down-max">max-limit</label><input type="text" id="bc-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-burst">burst-limit</label><input type="text" id="bc-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-thr">burst-threshold</label><input type="text" id="bc-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-time">burst-time</label><input type="text" id="bc-down-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="bc-want">Thời lượng burst bạn muốn (giây)</label>
+      <input type="text" id="bc-want" class="mono" value="" placeholder="5" inputmode="numeric" autocomplete="off" aria-describedby="bc-want-h">
+      <span class="help" id="bc-want-h">Tùy chọn: hiển thị ngưỡng cho burst dài như vậy.</span>
+    </div>
+    <dl class="ros-facts" id="bc-facts" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <div class="seg" role="radiogroup" aria-label="Hướng của biểu đồ">
+      <label><input type="radio" name="bc-dir" value="down" checked>Client tải xuống</label>
+      <label><input type="radio" name="bc-dir" value="up">Client tải lên</label>
+    </div>
+    <figure class="ros-fig">
+      <div id="bc-chart"></div>
+      <figcaption id="bc-chart-t" class="help"></figcaption>
+    </figure>
+    <ul class="ros-legend" aria-hidden="true">
+      <li><i></i>Tốc độ cho phép</li>
+      <li class="k-avg"><i></i>Trung bình trong burst-time</li>
+      <li class="k-thr"><i></i>burst-threshold</li>
+    </ul>
+    <label for="bc-out" class="label">Cài đặt queue</label>
+    <textarea id="bc-out" class="mono gen-out ros-out ros-out--short" rows="8" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="bc-copy" type="button">Sao chép</button>
+      <button class="btn" id="bc-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="bc-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Burst trong queue RouterOS, từng bước</h2>
+<p>Burst cho phép client chạy nhanh hơn max-limit trong thời gian ngắn, nên các trang web và tệp tải nhỏ có cảm giác nhanh trong khi các lượt truyền dài vẫn ổn định ở tốc độ của gói. Bốn cài đặt điều khiển nó, mỗi cài đặt được ghi dạng upload/download trong simple queue: <code>max-limit</code>, mức trần bình thường; <code>burst-limit</code>, mức trần cao hơn khi đang burst; <code>burst-threshold</code>, tốc độ trung bình mà tại đó burst dừng; và <code>burst-time</code>, khoảng thời gian dùng để đo mức trung bình đó.</p>
+<p>RouterOS chia burst-time thành 16 khe. Sau mỗi khe, nó lấy trung bình tốc độ của client trong 16 khe gần nhất và so với ngưỡng: thấp hơn thì client được dùng burst-limit; bằng hoặc cao hơn thì chỉ max-limit. Client đến từ trạng thái rảnh bắt đầu với mức trung bình bằng không, gửi ở burst-limit, và mức trung bình tăng dần cho đến khi vượt ngưỡng. Với burst-time 8 s, burst-limit 40M và ngưỡng 16M, mức trung bình chạm ngưỡng sau 3,2 s, và lần kiểm tra tiếp theo, tại 3,5 s, kết thúc burst; lúc đó client đã truyền khoảng 17,5 MB. Sau đó mức trung bình vẫn ở trên ngưỡng chừng nào client còn truyền ở max-limit, nên lần burst tiếp theo cần một khoảng nghỉ.</p>
+<h3>Chọn giá trị</h3>
+<ul>
+  <li>Đặt burst-limit bằng tốc độ bạn muốn các lượt truyền ngắn có cảm giác, thường là 1,5 đến 2 lần max-limit.</li>
+  <li>Giữ burst-threshold thấp hơn max-limit, thường ở 60 đến 80% của nó, và điều chỉnh burst-time để có thời lượng burst bạn muốn.</li>
+  <li>Tắt FastTrack, hoặc loại các client có queue khỏi nó: gói tin fasttrack bỏ qua hoàn toàn simple queue. Hãy tạo queue bằng <a href="/tools/mikrotik-simple-queue-generator/">Tạo simple queue MikroTik</a> hoặc dưới dạng PPP profile bằng <a href="/tools/mikrotik-pppoe-server-generator/">Tạo PPPoE server MikroTik</a>.</li>
+</ul>

@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "HTTP durum kodları başvuru kaynağı ve arama | Tanod Tools",
+  "description": "IANA'ya kayıtlı tüm HTTP durum kodlarının 100'den 511'e aranabilir listesi: anlamı, ne zaman görüldüğü, istemci veya sunucu sahibi olarak ne yapılacağı ve RFC'si.",
+  "h1": "HTTP durum kodları",
+  "lede": "Herhangi bir HTTP durum kodunu numarayla veya sözcükle arayın; sade anlamını, yaygın nedenlerini, çözümlerini ve onu tanımlayan RFC'yi görün.",
+  "blurb": "Tüm HTTP durum kodları ve çözümleri için aranabilir başvuru.",
+  "keywords": "http durum kodları 404 sayfa bulunamadı 500 sunucu hatası 301 302 yönlendirme 429 çok fazla istek 502 bad gateway 503 504 teapot 418 rfc 9110 http status codes status code list not found redirect",
+  "limits": "IANA HTTP Status Code Registry'deki kodları listeler; 306 ve 418 olduğu gibi ayrılmış kodlar olarak gösterilir. Buna ek olarak nginx, Cloudflare ve Laravel'den, kaynağıyla etiketlenmiş, sık görülen birkaç resmî olmayan kod da vardır. Diğer üreticiye özgü kodlar kapsanmaz.",
+  "howto_title": "Durum kodu nasıl aranır",
+  "howto": [
+    "Arama kutusuna <code>502</code> gibi bir numara ya da <em>rate limit</em> veya <em>redirect</em> gibi bir sözcük yazın.",
+    "Listeyi sınıf düğmeleriyle daraltın: standart kodlar için 1xx ile 5xx arası, nginx, Cloudflare ve Laravel kodları için Resmî olmayan.",
+    "Bir kodu açarak ne zaman göründüğünü ve istemci ile sunucu sahibi olarak ne yapılacağını görün. O koda doğrudan bağlantı paylaşmak için # bağlantısını kullanın."
+  ],
+  "faq": [
+    ["Durum kodlarının beş sınıfı ne anlama gelir?", "İlk rakam sınıfı belirler. 1xx bilgilendirmedir ve istek hâlâ sürmektedir, 2xx başarı demektir, 3xx istemcinin bir adım daha atması gerektiğini (genellikle yönlendirme) belirtir, 4xx isteğin istemci tarafında bir sorunu olduğunu, 5xx ise geçerli görünen bir istekte sunucunun başarısız olduğunu gösterir."],
+    ["401 ile 403 arasındaki fark nedir?", "401, sunucunun kim olduğunuzu bilmediği anlamına gelir: kimlik bilgileri eksik, yanlış veya süresi dolmuştur ve oturum açmak sorunu çözebilir. 403 ise kim olduğunuzu bildiği ve bunu yapmaya izniniz olmadığı anlamına gelir; aynı kimlik bilgilerini yeniden göndermek işe yaramaz."],
+    ["Yönlendirme için 301 mi 302 mi kullanmalıyım?", "Taşıma kalıcıysa 301 (veya 308) kullanın; böylece tarayıcılar ve arama motorları yeni adrese geçer. Eski adres geri gelecekse 302 (veya 307) kullanın. 307 ve 308 istek yöntemini korur; 301 ve 302 ise eski istemcilerin POST'u GET'e çevirmesine izin verir."],
+    ["418 I'm a teapot gerçek bir durum kodu mu?", "Bir kahve makinesi denetim protokolü için RFC 2324'te 1 Nisan şakası olarak başladı. IANA artık 418'i kullanılmayan olarak listeler; ona gerçek bir anlam verilmemesi için ayrılmıştır. Bazı siteler hâlâ eğlence için ya da veri kazıyıcıları geri çevirmek için döndürür, ancak standart bir yanıt değildir."],
+    ["520 ile 526 arası ve 499 nedir?", "HTTP standartlarında yer almazlar. 520 ile 526 arası, Cloudflare ile kendi sunucunuz arasındaki sorunları bildiren Cloudflare hatalarıdır; 499 ise yanıttan önce bağlantıyı kesen bir istemci için kullanılan bir nginx günlük koludur. Bunlar kaynaklarıyla birlikte Resmî olmayan grupta gösterilir."],
+    ["Bir 5xx hatası yeniden denediğimde neden bazen kayboluyor?", "Birçok 5xx hatası aşırı yükten, yeniden başlayan bir arka uçtan veya kısa bir ağ arızasından kaynaklanır ve saniyeler içinde geçebilir. Artan bir gecikmeyle yeniden denemek GET gibi idempotent istekler için güvenlidir; POST için ilk denemenin zaten başarılı olmadığından emin olun."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="h-q">Numara veya sözcükle ara</label>
+    <input type="search" id="h-q" class="hs-q" placeholder="404, redirect, rate limit, timeout" autocomplete="off" spellcheck="false" aria-describedby="h-count">
+  </div>
+  <fieldset class="hs-groups">
+    <legend class="visually-hidden">Sınıfa göre filtrele</legend>
+    <div class="seg">
+      <label><input type="radio" name="h-group" id="h-g-all" value="all" checked>Tümü</label>
+      <label><input type="radio" name="h-group" id="h-g-1" value="1">1xx</label>
+      <label><input type="radio" name="h-group" id="h-g-2" value="2">2xx</label>
+      <label><input type="radio" name="h-group" id="h-g-3" value="3">3xx</label>
+      <label><input type="radio" name="h-group" id="h-g-4" value="4">4xx</label>
+      <label><input type="radio" name="h-group" id="h-g-5" value="5">5xx</label>
+      <label><input type="radio" name="h-group" id="h-g-u" value="u">Resmî olmayan</label>
+    </div>
+  </fieldset>
+  <p class="tt__report" id="h-count" aria-live="polite"></p>
+  <p class="note" id="h-none" role="status" hidden></p>
+  <div class="hs-list" id="h-list"></div>
+</div>
+<!--explain-->
+<h2>HTTP durum kodlarını okuma</h2>
+<p>Her HTTP yanıtı, istemciye isteğine ne olduğunu söyleyen üç basamaklı bir durum koduyla başlar. İlk rakam aileyi verir: ilerleme iletileri için 1xx, başarı için 2xx, yönlendirme için 3xx, istekteki bir sorun için 4xx ve sunucudaki bir arıza için 5xx. Belirli bir kodu tanımayan bir program, yalnızca bu ilk rakama bakarak yine doğru davranabilir; yeni kodların eski istemcileri bozmadan eklenebilmesinin nedeni budur.</p>
+<p>Resmî liste IANA HTTP Status Code Registry'de tutulur; anlamlar RFC 9110'da (HTTP Semantics) ve WebDAV ile uzantılar için birkaç başka RFC'de yazılıdır. Numaranın ardından gelen Not Found gibi neden ifadesi yalnızca bir etikettir; HTTP/2 ve HTTP/3 bunu taşımaz. Bazı ifadeler 2022'de yeniden adlandırıldı: 413 artık Content Too Large, 422 ise Unprocessable Content'tir.</p>
+<p>Standartların dışındaki sunucular da kod icat eder. nginx, bir istemci bağlantıyı kestiğinde 499 kaydeder; Cloudflare ise kendi ağı ile kaynak sunucunuz arasındaki arızaları anlatmak için 520 ile 526 arasını kullanır. Kayıtlı kodlarla karıştırılmasınlar diye bunlar burada ayrı bir grupta görünür. Hata ayıklarken, gördüğünüz kodun uygulamanın kendisinden değil, önündeki bir proxy'den veya CDN'den gelebileceğini unutmayın.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Adresinde özel karakterler olan başarısız bir isteğiniz mi var? <a href="/tools/url-encode-decode/">URL kodla ve çöz</a> ile kodlayın veya çözün.</li>
+  <li>Bir API hatasının yanıt gövdesini <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile okuyun.</li>
+  <li>Belirli bir tarayıcı veya bot için 403 mü alıyorsunuz? İstemcinin ne gönderdiğini <a href="/tools/user-agent-parser/">User-Agent çözümleyici</a> ile kontrol edin.</li>
+</ul>

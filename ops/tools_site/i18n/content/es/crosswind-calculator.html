@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Calculadora de viento cruzado y de frente | Tanod Tools",
+  "description": "Ingresa una pista y el viento para obtener el viento de frente o de cola y el componente cruzado, con ráfagas, en ambas cabeceras. Nudos, km/h, mph o m/s.",
+  "h1": "Calculadora de viento cruzado y de frente",
+  "lede": "Ingresa la pista y el viento para ver los componentes de viento de frente (o de cola) y cruzado en ambas cabeceras de la pista, con viento constante y con ráfagas.",
+  "blurb": "Componentes de viento de frente, de cola y cruzado en una pista.",
+  "keywords": "calculadora viento cruzado viento de frente viento de cola componente pista direccion del viento rafaga nudos piloto aterrizaje despegue angulo seno coseno",
+  "limits": "Trigonometría simple sobre el viento que ingresas. No sirve para planificar vuelos ni para navegar: usa el límite de viento cruzado demostrado de la aeronave y el reporte oficial de viento, y recuerda que los números de pista y los vientos de la torre son magnéticos, mientras que los vientos del METAR son verdaderos.",
+  "howto_title": "Cómo calcular el componente de viento cruzado",
+  "howto": [
+    "Ingresa el número de pista (como 27 o 09L) o su rumbo en grados (como 275).",
+    "Ingresa la dirección de la que viene el viento, su velocidad y, si se reporta, la velocidad de las ráfagas. Elige la unidad de velocidad.",
+    "Lee el viento de frente o de cola y el viento cruzado de cada cabecera. Comprueba cuál cabecera da viento de frente."
+  ],
+  "faq": [
+    [
+      "¿Cómo se calcula el viento cruzado?",
+      "Toma el ángulo entre la dirección del viento y el rumbo de la pista. El viento cruzado es la velocidad del viento por el seno de ese ángulo, y el viento de frente es la velocidad del viento por su coseno. Un viento a 30 grados de la pista y de 20 nudos da un viento cruzado de 10 nudos y un viento de frente de unos 17 nudos."
+    ],
+    [
+      "¿Debo usar la velocidad de las ráfagas?",
+      "Sí, los pilotos suelen revisar ambas. La columna de ráfagas muestra los componentes para la ráfaga máxima, que es el peor caso que podrías encontrar en el enderezamiento o en la carrera de aterrizaje."
+    ],
+    [
+      "¿Qué significan izquierda y derecha?",
+      "Derecha significa que el viento sopla desde el lado derecho cuando miras a lo largo de la pista en la dirección del aterrizaje o del despegue. Izquierda significa desde el lado izquierdo. Un viento de frente negativo es un viento de cola."
+    ],
+    [
+      "¿El número de pista son grados?",
+      "El número de pista es el rumbo magnético dividido entre diez y redondeado: la pista 27 apunta a unos 270 grados, la pista 09 a unos 090. La cabecera opuesta está a 180 grados (09 y 27, o 36 y 18). Si ingresas un número de tres dígitos, se usa como rumbo exacto."
+    ],
+    [
+      "¿El viento y la pista están en la misma referencia?",
+      "Deberían estarlo. Los vientos de la torre y del ATIS se dan en grados magnéticos, mientras que los del METAR y el TAF están en grados verdaderos. La diferencia es la declinación magnética local, que puede ser de unos pocos grados o de más de diez. Usa la misma referencia para ambos datos."
+    ],
+    [
+      "¿Cuál es un viento cruzado seguro?",
+      "Depende de la aeronave, la pista y el piloto. El manual de la aeronave indica un viento cruzado máximo demostrado, que no es un límite legal pero sí una buena guía. Esta calculadora no da límites."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="cw-rwy">Número de pista o rumbo</label>
+    <input type="text" id="cw-rwy" autocomplete="off" spellcheck="false" value="27" placeholder="27 or 275" aria-describedby="cw-msg">
+    <span class="help">Uno o dos dígitos son un número de pista; tres dígitos, un rumbo en grados.</span>
+  </div>
+  <div class="field">
+    <label for="cw-dir">Dirección del viento, de donde viene (grados)</label>
+    <input type="text" id="cw-dir" inputmode="decimal" autocomplete="off" value="320" placeholder="320" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-spd">Velocidad del viento</label>
+    <input type="text" id="cw-spd" inputmode="decimal" autocomplete="off" value="18" placeholder="18" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-gust">Velocidad de ráfagas (opcional)</label>
+    <input type="text" id="cw-gust" inputmode="decimal" autocomplete="off" value="26" placeholder="26" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-unit">Unidad de velocidad</label>
+    <select id="cw-unit">
+      <option value="kt" selected>nudos</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+      <option value="ms">m/s</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="cw-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="cw-res" hidden>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Componentes del viento en cada cabecera de la pista</caption>
+      <thead><tr><th scope="col">Cabecera</th><th scope="col">Viento</th><th scope="col">Viento de frente o de cola</th><th scope="col">Viento cruzado</th></tr></thead>
+      <tbody id="cw-rows"></tbody>
+    </table>
+  </div>
+  <p class="help" id="cw-info"></p>
+</div>
+<!--explain-->
+<h2>La fórmula</h2>
+<p>Sea θ el ángulo entre el rumbo de la pista y la dirección de la que sopla el viento, y V la velocidad del viento. El componente a lo largo de la pista es viento de frente = V · cos θ (negativo significa viento de cola) y el componente transversal es viento cruzado = V · sin θ, positivo desde la derecha y negativo desde la izquierda. Es la descomposición estándar del triángulo de vientos que se usa en la instrucción de pilotos, por ejemplo en el Pilot's Handbook of Aeronautical Knowledge de la FAA (FAA-H-8083-25, capítulo sobre rendimiento de la aeronave) y en el Airplane Flying Handbook (FAA-H-8083-3).</p>
+<p>La cabecera opuesta de la pista tiene un rumbo 180 grados distinto, por lo que su viento de frente es el negativo del primero y su viento cruzado cambia de lado. El número de pista es el rumbo magnético en decenas de grados, redondeado a la decena más cercana. Las velocidades se convierten con exactitud (1 nudo = 1,852 km/h, 1 mph = 1,609344 km/h, 1 m/s = 3,6 km/h).</p>
+<p>El cálculo ignora la cizalladura del viento, los frentes de ráfagas y los efectos del terreno, y usa un único valor de viento. <strong>No sirve para planificar vuelos ni para navegar.</strong></p>

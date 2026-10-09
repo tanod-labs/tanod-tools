@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Kiểm tra tường lửa MikroTik từ bản export RouterOS | Tanod Tools",
+  "description": "Dán /export của RouterOS để tìm các lỗ hổng bảo mật thường gặp: input chain thiếu drop cuối, WinBox hoặc SSH bị lộ, open DNS resolver, proxy, quy tắc bị che và nhiều hơn.",
+  "h1": "Kiểm tra tường lửa MikroTik",
+  "lede": "Dán /export của router và nhận danh sách ưu tiên các lỗ hổng tường lửa và dịch vụ thường gặp, mỗi mục kèm dòng gốc và cách khắc phục đề xuất.",
+  "blurb": "Tìm dịch vụ bị lộ, open resolver và lỗi quy tắc trong một bản export.",
+  "keywords": "kiểm tra tường lửa mikrotik audit firewall routeros kiểm tra bảo mật đánh giá export winbox bị lộ open dns resolver allow-remote-requests input chain drop quy tắc bị che gia cố danh sách kiểm tra security check review hardening checklist",
+  "local_text": "Bản export của bạn được kiểm tra trong trình duyệt và không bao giờ rời khỏi thiết bị",
+  "limits": "Đánh giá theo heuristic cho một bản export, không phải kiểm toán bảo mật đầy đủ: nó đọc /ip firewall filter và nat, /ip service, DNS, proxy, SOCKS, UPnP, SNMP, bandwidth test server, MAC access và người dùng, rồi đánh giá khả năng truy cập từ WAN. Không kiểm tra tường lửa IPv6, quy tắc raw và mangle, script, wireless và cài đặt VPN. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập và không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách kiểm tra tường lửa MikroTik",
+  "howto": [
+    "Trong terminal trên router, chạy <code>/export hide-sensitive</code> (trên v7 <code>/export</code> đã ẩn các giá trị bí mật) và sao chép kết quả, hoặc lưu bằng <code>/export file=config</code> rồi mở tệp .rsc tại đây.",
+    "Dán vào ô. Có thể dán thêm <code>/user print</code>, vì bản export không bao gồm người dùng.",
+    "Xem các phát hiện từ trên xuống. Mỗi mục hiển thị dòng liên quan và cách khắc phục đề xuất; hãy áp dụng thay đổi khi bật Safe Mode."
+  ],
+  "faq": [
+    ["Dán cấu hình của tôi vào đây có an toàn không?", "Bản export được JavaScript trong trang này đọc và không bao giờ rời khỏi thiết bị của bạn: không có tải lên, không xử lý phía máy chủ, và chính sách bảo mật của trang chặn kết nối đến các trang khác. Dù vậy, hãy dùng <code>/export hide-sensitive</code> trên v6 (v7 mặc định đã ẩn các giá trị bí mật) để mật khẩu và khóa không có trong văn bản."],
+    ["Công cụ quyết định một dịch vụ bị lộ như thế nào?", "Nó xác định các interface WAN từ interface list, quy tắc masquerade, DHCP client và PPPoE client, rồi duyệt input chain như một kết nối mới từ internet đến cổng của dịch vụ, theo cả các lệnh jump. Nếu một quy tắc accept khớp trước, hoặc không có gì drop gói tin trước cuối chain, dịch vụ được tính là có thể truy cập. Quy tắc có điều kiện mà nó không đánh giá được thì được tính là có thể accept chứ không bao giờ là drop, nên nó thiên về cảnh báo bạn."],
+    ["\"Quy tắc không bao giờ khớp\" nghĩa là gì?", "Một quy tắc đứng trước trong cùng chain khớp mọi gói tin mà quy tắc sau sẽ khớp, và accept hoặc drop nó, nên quy tắc sau không bao giờ thấy gói tin nào. Thường đó là quy tắc được thêm vào cuối chain thay vì phía trên quy tắc bắt-tất-cả, và đó là lý do các quy tắc mới \"không hoạt động\"."],
+    ["Vì sao open DNS resolver đáng lo?", "Với allow-remote-requests=yes, router trả lời DNS trên mọi interface. Nếu input chain không drop DNS từ WAN, bất kỳ ai cũng có thể dùng nó để khuếch đại các cuộc tấn công DDoS, và các ISP thường chặn hoặc cảnh báo khách hàng có router như vậy."],
+    ["Công cụ không tìm thấy gì. Router của tôi có an toàn không?", "Không nhất thiết. Công cụ kiểm tra một tập các lỗi phổ biến, có tác động lớn trong những gì bản export cho thấy. Nó không thấy các lỗ hổng riêng của phiên bản firmware ngoài một vài lỗ hổng đã biết, mật khẩu của người dùng, các script theo lịch, hay bất cứ thứ gì ngoài các menu được liệt kê trong phần giới hạn của công cụ. Hãy giữ RouterOS luôn cập nhật và tự xem xét phần còn lại."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-audit" id="au">
+  <div class="ros-paste" id="au-form">
+    <div class="field">
+      <label for="au-in">Bản export RouterOS</label>
+      <textarea id="au-in" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/ip firewall filter&#10;add action=accept chain=input connection-state=established,related&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}Mở tệp .rsc<input type="file" id="au-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="au-sample" type="button">Thử một mẫu yếu</button>
+    </div>
+    <details class="ros-more">
+      <summary>Tùy chọn: tài khoản người dùng (/user print)</summary>
+      <div class="field">
+        <label for="au-users">Kết quả của /user print</label>
+        <textarea id="au-users" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+      </div>
+    </details>
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Dựa trên heuristic, không phải kiểm toán đầy đủ.</strong> Công cụ kiểm tra các lỗi phổ biến trong những gì bản export cho thấy. Kết quả sạch không chứng minh router an toàn.</span></p>
+  </div>
+  <div class="ros-results" id="au-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="au-copy" type="button" hidden>Sao chép báo cáo</button></div>
+</div>
+<!--explain-->
+<h2>Công cụ kiểm tra những gì</h2>
+<p>Công cụ đọc các menu trong bản export quyết định mức độ lộ của một router. Trong tường lửa, nó tìm <strong>input chain không có deny mặc định</strong> (RouterOS chấp nhận mọi thứ đến được cuối chain), thiếu đường nhanh <strong>established/related</strong> và <strong>drop gói invalid</strong>, forward chain cho phép kết nối mới từ WAN vào LAN, các quy tắc accept-tất-cả, và <strong>quy tắc không bao giờ khớp</strong> vì một quy tắc trước đó đã lấy hết gói tin của chúng. Sau đó nó tính, từng cổng một, xem WinBox, SSH, telnet, FTP, WebFig và API có thể truy cập từ internet hay không, có xét đến giới hạn địa chỉ riêng của từng dịch vụ.</p>
+<p>Ngoài tường lửa, nó đánh dấu <strong>open DNS resolver</strong>, web proxy hoặc SOCKS proxy đang bật (dấu hiệu thường gặp của router bị xâm nhập), UPnP, SNMP với community mặc định, bandwidth test server, MAC Telnet và MAC WinBox trên mọi interface, port forward công khai RDP, SMB, cơ sở dữ liệu hoặc SSH ra toàn bộ internet, tài khoản <code>admin</code> mặc định khi bạn dán <code>/user print</code>, và các phiên bản RouterOS dính lỗi rò rỉ thông tin đăng nhập WinBox năm 2018.</p>
+<h3>Công cụ không kiểm tra những gì</h3>
+<ul>
+  <li>Tường lửa IPv6, bảng raw và mangle, script và mục scheduler, bảo mật wireless, cài đặt VPN và IPsec, và độ mạnh của mật khẩu.</li>
+  <li>Quy tắc động và dịch vụ do các gói thêm vào khi chạy, những thứ không bao giờ xuất hiện trong bản export.</li>
+  <li>Bất cứ điều gì phụ thuộc vào mạng của bạn ngoài router. Hãy khắc phục các phát hiện, rồi tạo một cấu hình nền sạch bằng <a href="/tools/mikrotik-firewall-generator/">Tạo tường lửa MikroTik</a> và so sánh kết quả bằng <a href="/tools/routeros-export-diff/">So sánh export RouterOS</a>.</li>
+</ul>

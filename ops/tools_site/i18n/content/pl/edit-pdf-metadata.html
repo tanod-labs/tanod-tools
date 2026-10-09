@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "Edytuj lub usuń metadane PDF online, za darmo | Tanod Tools",
+  "description": "Edytuj tytuł, autora, temat, słowa kluczowe i daty pliku PDF albo usuń wszystkie metadane przed udostępnieniem. W przeglądarce, bezpłatnie, plik nie jest przesyłany.",
+  "h1": "Edytuj metadane PDF",
+  "lede": "Zobacz, co plik PDF mówi o sobie, zmień pola albo usuń je wszystkie przed udostępnieniem.",
+  "blurb": "Edytuj lub usuń tytuł, autora i inne właściwości pliku PDF.",
+  "keywords": "właściwości pdf tytuł autor usuń metadane usuwanie metadanych xmp info edycja metadanych pdf pdf properties metadata",
+  "limits": "Jeden plik PDF naraz, do 200 MB. Plików PDF chronionych hasłem nie można edytować.",
+  "howto_title": "Jak edytować metadane PDF",
+  "howto": [
+    "Wybierz plik PDF albo przeciągnij go na stronę. Jego bieżące właściwości pojawią się w formularzu.",
+    "Zmień wybrane pola albo naciśnij <strong>Usuń wszystkie metadane</strong>, aby je wyczyścić.",
+    "Naciśnij <strong>Zapisz zmiany</strong> i pobierz zaktualizowany plik PDF."
+  ],
+  "faq": [
+    ["Czy mój plik PDF jest przesyłany?", "Nie. Właściwości są odczytywane i zapisywane od nowa w przeglądarce za pomocą otwartoźródłowej biblioteki pdf-lib. Nic nie jest wysyłane na serwer."],
+    ["Co robi Usuń wszystkie metadane?", "Usuwa każdy wpis w słowniku informacji o dokumencie (tytuł, autor, temat, słowa kluczowe, twórca, producent i daty) oraz usuwa osadzony strumień metadanych XMP dokumentu, który wiele programów zapisuje jako drugą kopię tych samych informacji. Nie dotyka zawartości stron, więc tekst, obrazy i wszelkie widoczne na stronach nazwiska zostają. Niektóre pliki zawierają inne prywatne dane, takie jak komentarze lub wartości formularzy, których to narzędzie nie zmienia."],
+    ["Czy zapisany plik będzie miał taką samą nazwę?", "Tak. Pobrany plik ma oryginalną nazwę, na przykład report.pdf, więc upewnij się, że otwierasz nową kopię. Twój oryginalny plik nie jest zmieniany."],
+    ["Dlaczego opcja XMP jest zaznaczona, gdy edytuję pola?", "Wiele przeglądarek i narzędzi wyszukiwania najpierw czyta strumień XMP. Jeśli zostanie w pliku, może nadal pokazywać stary tytuł lub autora, przez co edycja wydawałaby się nieskuteczna. Zaznaczenie opcji usuwa ten strumień przy zapisie."],
+    ["Czy zapis zmienia inne właściwości?", "Zmieniane są tylko edytowane pola. Narzędzie nie dodaje własnej nazwy producenta ani daty modyfikacji, chyba że ustawisz je samodzielnie."],
+    ["Czy można edytować daty?", "Tak. Odznacz <em>Zachowaj oryginalne daty</em> i ustaw nowe wartości w swoim czasie lokalnym. Zostaw zaznaczone, a daty pozostaną bez zmian."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Upuść plik PDF tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <dl class="stats" id="stats">
+    <div><dt>Strony</dt><dd id="s-pages"></dd></div>
+    <div><dt>Wersja PDF</dt><dd id="s-ver"></dd></div>
+    <div><dt>Strumień XMP</dt><dd id="s-xmp"></dd></div>
+  </dl>
+  <div class="opts">
+    <div class="field"><label for="m-title">Tytuł</label><input id="m-title" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-author">Autor</label><input id="m-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-subject">Temat</label><input id="m-subject" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-keywords">Słowa kluczowe</label><input id="m-keywords" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-creator">Twórca (program, który go utworzył)</label><input id="m-creator" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-producer">Producent (program, który go zapisał)</label><input id="m-producer" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-created">Utworzono</label><input id="m-created" type="datetime-local" step="1"></div>
+    <div class="field"><label for="m-modified">Zmodyfikowano</label><input id="m-modified" type="datetime-local" step="1"></div>
+    <div class="field opts__full">
+      <label class="check"><input type="checkbox" id="keep-dates" checked> Zachowaj oryginalne daty</label>
+      <label class="check"><input type="checkbox" id="drop-xmp"> Usuń także osadzony strumień metadanych XMP</label>
+      <span class="help" id="xmp-help"></span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Zapisz zmiany</button>
+    <button class="btn" id="wipe" type="button">Usuń wszystkie metadane</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+  <p class="help">Pobrany plik zachowuje oryginalną nazwę. Puste pola są usuwane z pliku.</p>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Czym są metadane PDF i po co je zmieniać</h2>
+<p>Każdy plik PDF może zawierać kilka pól opisowych: tytuł, autora, temat, słowa kluczowe, program, który go utworzył, oraz daty utworzenia i ostatniej zmiany. Znajdują się w słowniku informacji o dokumencie, a wiele programów zapisuje też drugą kopię jako pakiet XMP, blok XML dołączony do pliku.</p>
+<p>Te pola pojawiają się we właściwościach pliku, wynikach wyszukiwania i kartach przeglądarki, więc błędny tytuł lub zapomniane nazwisko autora mogą być kłopotliwe, gdy dokument opuszcza twoje ręce. To narzędzie odczytuje je w przeglądarce, pozwala je poprawić lub je czyści. Zawartość stron nigdy nie jest zmieniana.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Czyścisz zamiast tego metadane zdjęć? Użyj narzędzia <a href="/tools/remove-exif/">Usuń dane EXIF</a>.</li>
+  <li>Łączysz pliki? <a href="/tools/merge-pdf/">Połącz pliki PDF</a> tworzy nowy dokument, więc tytuł ustaw potem tutaj.</li>
+</ul>

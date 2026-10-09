@@ -4,7 +4,7 @@
 //
 // Each job needs a fresh Cloudflare Turnstile token (a quick, usually invisible human check), and counts toward a
 // small daily free limit that the server reports in /web/v1/status.
-import { $, el, icon, setStatus, UserError, announce, fmtBytes, tx, txf, EN, fmtNum } from "./core.js?v=5";
+import { $, el, icon, setStatus, UserError, announce, fmtBytes, tx, txf, EN, fmtNum } from "./core.js?v=11";
 
 export const API = "/web/v1";
 export const MAX_FILE_BYTES = 10_000_000;               // the server's limit: 10 MB per file

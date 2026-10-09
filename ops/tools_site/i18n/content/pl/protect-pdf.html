@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Zabezpiecz PDF hasłem online, bezpłatnie (AES-256) | Tanod Tools",
+  "description": "Dodaj hasło do PDF-a, aby nie dało się go otworzyć bez niego. Silne szyfrowanie AES-256, opcjonalne ograniczenia drukowania i kopiowania. Plik jest zaraz usuwany.",
+  "h1": "Zabezpiecz PDF hasłem",
+  "lede": "Zablokuj PDF hasłem, zanim go wyślesz. Bez hasła nie da się go otworzyć.",
+  "blurb": "Dodaj hasło do PDF-a (AES-256).",
+  "keywords": "zabezpiecz pdf hasłem, hasło do pdf, szyfrowanie pdf, zablokuj pdf, ochrona pdf, dodaj hasło do pdf, password protect pdf, encrypt pdf, lock pdf, secure pdf",
+  "limits": "Jeden PDF do 10 MB, który nie ma jeszcze hasła. Przetwarzane na naszym serwerze, potem usuwane. 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich narzędzi serwerowych. Więcej: <a href=\"/learn/password-protect-pdf-api.html\">API zabezpieczania PDF</a> (płatne za wywołanie).",
+  "howto_title": "Jak zabezpieczyć PDF hasłem",
+  "howto": [
+    "Wybierz PDF do 10 MB lub przeciągnij go na stronę.",
+    "Wpisz hasło dwa razy. Odznacz drukowanie lub kopiowanie, jeśli czytelnicy nie powinni tego robić.",
+    "Naciśnij <strong>Zabezpiecz PDF</strong>, pobierz zablokowaną kopię i zachowaj hasło w bezpiecznym miejscu."
+  ],
+  "faq": [
+    ["Czy mój PDF i hasło są przesyłane?", "Tak. W przeciwieństwie do większości narzędzi na tej stronie to działa na naszym serwerze: Twój PDF i hasło są wysyłane przez HTTPS, plik jest szyfrowany, a zablokowana kopia wraca prosto do Twojej przeglądarki. Plik i hasło istnieją na serwerze tylko podczas wykonywania zadania, w pamięci i w prywatnym folderze tymczasowym, który jest usuwany w chwili zakończenia zadania. Nigdy nie zapisujemy pliku ani hasła i nie rejestrujemy ich w logach."],
+    ["Jak silna jest ochrona?", "PDF jest szyfrowany algorytmem AES-256, najsilniejszym standardowym szyfrowaniem PDF, które obsługuje każda aktualna przeglądarka PDF. Prawdziwą siłą jest Twoje hasło: użyj długiego, którego nie używasz nigdzie indziej. Nasz <a href=\"/tools/password-generator/\">Generator haseł</a> tworzy je w przeglądarce."],
+    ["Co jeśli zapomnę hasła?", "Pliku nie da się otworzyć, a my nie możemy pomóc: nigdy nie przechowujemy hasła ani pliku. Zachowaj niezabezpieczony oryginał albo trzymaj hasło w menedżerze haseł."],
+    ["Co robią opcje drukowania i kopiowania?", "Ograniczają to, co może zrobić osoba znająca hasło: wydrukować dokument lub skopiować jego tekst. Większość przeglądarek PDF respektuje te ograniczenia, ale nie są one tak silne jak samo hasło. Ograniczeń pilnuje osobne, losowe hasło właściciela, którego nikt nie zna."],
+    ["Czy mogę zabezpieczyć PDF, który już ma hasło?", "Nie bezpośrednio. Najpierw usuń stare hasło w narzędziu <a href=\"/tools/unlock-pdf/\">Odblokuj PDF</a>, a potem zabezpiecz kopię nowym."],
+    ["Czy jest jakiś limit?", "Pliki do 10 MB i 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich naszych narzędzi serwerowych. Liczą się tylko zadania zakończone powodzeniem, a licznik odnawia się o północy UTC."],
+    ["Na czym polega weryfikacja, że nie jesteś botem?", "Przed uruchomieniem zadania Cloudflare Turnstile sprawdza, czy z narzędzia korzysta człowiek, a nie bot. Zwykle jest niewidoczna; czasami prosi o zaznaczenie pola."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:protect-pdf drop__mark}}
+  <p class="drop__title">Upuść tutaj plik PDF</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie. Do 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Hasło</label>
+      <input id="pw" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <div class="field">
+      <label for="pw2">Wpisz je ponownie</label>
+      <input id="pw2" type="password" autocomplete="new-password" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+    </div>
+    <p class="help opts__full" id="pw-help">Użyj długiego hasła, którego nie używasz nigdzie indziej. Nie możemy go dla Ciebie odzyskać.</p>
+    <div class="field opts__full">
+      <span class="label">Po podaniu hasła czytelnicy mogą</span>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="allow-print" checked>Drukować</label>
+        <label class="check"><input type="checkbox" id="allow-copy" checked>Kopiować tekst</label>
+        <label class="check"><input type="checkbox" id="show">Pokaż hasło</label>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Zabezpiecz PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Co robi zabezpieczenie hasłem</h2>
+<p>Zabezpieczony PDF jest zaszyfrowany: jego strony są zaszyfrowane kluczem wyprowadzonym z hasła, więc przeglądarka niczego nie pokazuje, dopóki hasło nie zostanie wpisane. Nasz serwer szyfruje plik algorytmem AES-256 za pomocą biblioteki qpdf o otwartym kodzie źródłowym i odsyła zablokowaną kopię.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Wyślij hasło osobno od pliku, na przykład SMS-em, a nie w tej samej wiadomości e-mail.</li>
+  <li>Chcesz też widocznego oznaczenia „Poufne”? Najpierw dodaj je w narzędziu <a href="/tools/watermark-pdf/">Dodaj znak wodny do PDF</a>; działa w przeglądarce.</li>
+</ul>

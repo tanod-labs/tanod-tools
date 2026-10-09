@@ -1,0 +1,108 @@
+<!--meta
+{
+  "title": "ISP और WISP के लिए MikroTik PPPoE सर्वर जनरेटर | Tanod Tools",
+  "description": "RouterOS PPPoE सर्वर बनाएं: address pool, rate-limit वाले स्पीड-प्लान प्रोफ़ाइल, सर्वर, प्लेसहोल्डर secrets, वैकल्पिक RADIUS और NAT। आपके ब्राउज़र में।",
+  "h1": "MikroTik PPPoE सर्वर जनरेटर",
+  "lede": "ग्राहकों वाला इंटरफ़ेस, address pool और स्पीड प्लान तय करें, और प्रोफ़ाइल, secrets टेम्पलेट और वैकल्पिक RADIUS के साथ पूरा RouterOS PPPoE सर्वर पाएं।",
+  "blurb": "Pool, प्लान प्रोफ़ाइल, PPPoE सर्वर, secrets और RADIUS।",
+  "keywords": "mikrotik pppoe सर्वर सेटअप, routeros pppoe-server, ppp profile rate-limit, ppp secret, radius, wisp isp ग्राहक प्लान, ip pool, local-address remote-address, change-tcp-mss",
+  "limits": "यह RouterOS v7 सिंटैक्स बनाता है (v6 में भी मान्य)। secrets में जानबूझकर प्लेसहोल्डर पासवर्ड रखे जाते हैं; यह पेज असली पासवर्ड कभी नहीं माँगता। सिर्फ़ IPv4; PPPoE के लिए IPv6 prefix delegation शामिल नहीं है। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर PPPoE सर्वर कैसे सेट करें",
+  "howto": [
+    "ग्राहकों की ओर वाला इंटरफ़ेस (Ethernet पोर्ट, bridge या VLAN) और एक सर्विस नाम डालें।",
+    "ग्राहकों का address pool नेटवर्क के रूप में, DNS सर्वर, और हर स्पीड प्लान के लिए एक प्रोफ़ाइल उसकी अपलोड और डाउनलोड स्पीड के साथ दें।",
+    "Authentication, RADIUS और NAT चुनें, तय करें कि कितने प्लेसहोल्डर अकाउंट बनाने हैं, और स्क्रिप्ट कॉपी या डाउनलोड करें। ग्राहकों के जुड़ने से पहले हर CHANGE_ME बदल दें।"
+  ],
+  "faq": [
+    [
+      "PPP प्रोफ़ाइल में स्पीड कैसे काम करती है?",
+      "प्रोफ़ाइल का rate-limit राउटर के नज़रिए से rx/tx में लिखा जाता है: rx वह है जो राउटर ग्राहक से पाता है (उसका अपलोड) और tx वह जो वह भेजता है (उसका डाउनलोड)। सेशन शुरू होने पर RouterOS इन सीमाओं के साथ एक डायनेमिक simple queue बना देता है। RADIUS इसे हर ग्राहक के लिए Mikrotik-Rate-Limit attribute से बदल सकता है।"
+    ],
+    [
+      "पासवर्ड CHANGE_ME क्यों हैं?",
+      "ग्राहकों के पासवर्ड गोपनीय होते हैं, और कॉन्फ़िगरेशन जनरेटर को उन्हें जानने की कोई ज़रूरत नहीं। स्क्रिप्ट साफ़ दिखने वाले प्लेसहोल्डर के साथ अकाउंट बना देती है ताकि ढाँचा तैयार रहे; असली पासवर्ड राउटर पर सेट करें, अपने बिलिंग सिस्टम से इम्पोर्ट करें, या authentication RADIUS सर्वर पर छोड़ दें।"
+    ],
+    [
+      "only-one और one-session-per-host क्या करते हैं?",
+      "प्रोफ़ाइल पर only-one एक ही यूज़रनेम के दो सेशन एक साथ चलने से रोकता है। सर्वर पर one-session-per-host एक MAC एड्रेस को कई सेशन खोलने से रोकता है। दोनों मिलकर ज़्यादातर अकाउंट-शेयरिंग रोक देते हैं।"
+    ],
+    [
+      "MTU 1480 क्यों है?",
+      "PPPoE, Ethernet फ़्रेम के अंदर 8 बाइट का हेडर जोड़ता है, इसलिए 1500 बाइट के सामान्य लिंक पर एक सेशन अधिकतम 1492 बाइट ले जा सकता है। RouterOS का डिफ़ॉल्ट 1480 है, जो VLAN टैग और अजीब CPE व्यवहार के लिए जगह छोड़ता है; प्रोफ़ाइल में change-tcp-mss फिर TCP को सीमित कर देता है ताकि बड़े पैकेट fragment न हों।"
+    ],
+    [
+      "कौन-से authentication तरीके अनुमत करूँ?",
+      "CHAP और MS-CHAPv2 पासवर्ड को सादे टेक्स्ट में नहीं भेजते। PAP भेजता है, और उसे सिर्फ़ उन पुराने CPE के लिए चालू करना ठीक है जो कुछ और सपोर्ट नहीं करते। RADIUS इन सबके साथ चलता है, हालाँकि कुछ RADIUS बैकएंड को हैश किए पासवर्ड जाँचने के लिए PAP चाहिए होता है।"
+    ],
+    [
+      "क्या इसमें से कुछ कहीं भेजा जाता है?",
+      "नहीं। स्क्रिप्ट आपके ब्राउज़र में बनती है।"
+    ]
+  ],
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pp">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>सर्वर</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-if">ग्राहक इंटरफ़ेस</label><input type="text" id="pp-if" class="mono" value="ether2" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-svc">सर्विस नाम</label><input type="text" id="pp-svc" class="mono" value="isp" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-net">ग्राहकों का pool नेटवर्क</label><input type="text" id="pp-net" class="mono" value="10.10.0.0/22" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-dns">DNS सर्वर</label><input type="text" id="pp-dns" class="mono" value="1.1.1.1, 8.8.8.8" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <fieldset class="field">
+        <legend>Authentication</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="pp-auth" value="pap">PAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="chap" checked>CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap1" checked>MS-CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap2" checked>MS-CHAPv2</label>
+        </div>
+      </fieldset>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>स्पीड प्लान (प्रोफ़ाइल)</legend>
+      <ul class="ros-rows" id="pp-profiles"></ul>
+      <button class="btn btn--sm ros-add" id="pp-add" type="button">{{mark:i-plus}}प्लान जोड़ें</button>
+      <span class="help">पहला प्लान सर्वर का डिफ़ॉल्ट प्रोफ़ाइल है, और बनाए गए अकाउंट उसी का इस्तेमाल करते हैं।</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>अकाउंट और विकल्प</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-count">प्लेसहोल्डर अकाउंट</label><input type="text" id="pp-count" class="mono" value="3" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pp-user">यूज़रनेम पैटर्न</label><input type="text" id="pp-user" class="mono" value="customer{n}" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pp-one" checked>हर यूज़रनेम पर एक सेशन (only-one)</label>
+        <label class="check"><input type="checkbox" id="pp-nat" checked>ग्राहकों को WAN पर masquerade करें</label>
+        <label class="check"><input type="checkbox" id="pp-radius">RADIUS सर्वर इस्तेमाल करें</label>
+      </div>
+      <div class="opts" id="pp-radius-f" hidden>
+        <div class="field"><label for="pp-rad-ip">RADIUS सर्वर का एड्रेस</label><input type="text" id="pp-rad-ip" class="mono" value="10.0.0.5" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <label class="check"><input type="checkbox" id="pp-coa" checked>CoA और disconnect अनुरोध स्वीकार करें</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pp-out" class="label">RouterOS स्क्रिप्ट</label>
+    <textarea id="pp-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pp-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="pp-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="pp-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS PPPoE सर्वर की बनावट</h2>
+<p>RouterOS पर PPPoE सर्वर चार हिस्सों से बनता है। <strong>IP pool</strong> में ग्राहकों के एड्रेस रहते हैं। <strong>PPP प्रोफ़ाइल</strong> हर प्लान बताते हैं: हर सेशन पर राउटर का local एड्रेस, remote एड्रेस लेने का pool, बाँटे जाने वाले DNS सर्वर, और <code>rate-limit</code>, जो ग्राहक की queue बन जाता है। <strong>PPPoE सर्वर</strong> खुद ग्राहकों की ओर वाले इंटरफ़ेस पर discovery अनुरोध सुनता है। <strong>Secrets</strong>, या RADIUS सर्वर, तय करते हैं कि कौन किस प्रोफ़ाइल के साथ लॉग इन कर सकता है।</p>
+<p>हर सेशन एक point-to-point लिंक है, इसलिए ग्राहकों को अपना अलग सबनेट नहीं चाहिए: राउटर सभी सेशन के लिए एक ही local एड्रेस इस्तेमाल करता है और हर ग्राहक को pool से एक अकेला एड्रेस मिलता है। इसीलिए ग्राहक इंटरफ़ेस पर न IP एड्रेस चाहिए, न DHCP सर्वर; अगर bridge या VLAN पर दूसरी सर्विस भी चलती हैं, तो PPPoE और IP ट्रैफ़िक को अलग रखें।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>burst वाले प्लान चाहिए? मान <a href="/tools/mikrotik-burst-calculator/">MikroTik बर्स्ट कैलकुलेटर</a> से निकालें; वह प्रोफ़ाइल या RADIUS के लिए पूरी rate-limit स्ट्रिंग देता है।</li>
+  <li>हर टावर या बिल्डिंग के लिए अलग VLAN हैं? VLAN <a href="/tools/mikrotik-vlan-generator/">MikroTik VLAN जनरेटर</a> से बनाएं और हर VLAN पर एक PPPoE सर्वर चलाएं, या उन पर एक bridge रखें।</li>
+  <li>राउटर को खुद भी <a href="/tools/mikrotik-firewall-generator/">MikroTik फ़ायरवॉल जनरेटर</a> से सुरक्षित करें: ग्राहकों वाले इंटरफ़ेस से WinBox या SSH तक पहुँच नहीं होनी चाहिए।</li>
+</ul>

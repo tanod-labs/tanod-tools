@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Penampil FatturaPA: buka faktur XML dan P7M | Tanod Tools",
+  "description": "Buka faktur FatturaPA Italia (XML atau .p7m bertanda tangan) dan baca sebagai faktur biasa. Cetak, simpan PDF, atau ekspor JSON. Tanpa unggah.",
+  "h1": "Penampil FatturaPA",
+  "lede": "Buka faktur elektronik Italia (fattura elettronica), termasuk yang bertanda tangan sebagai .p7m, dan baca sebagai faktur biasa. File dibuka di browser Anda dan tidak pernah diunggah.",
+  "blurb": "Baca faktur FatturaPA XML atau .p7m bertanda tangan sebagai faktur biasa.",
+  "keywords": "penampil fatturapa fatturapa viewer buka fatturapa buka file p7m faktur elektronik italia fattura elettronica baca fattura elettronica xml buka xml.p7m fatturapa fpr12 fpa12 fatturapa ke pdf faktur sdi italia visualizzatore fattura elettronica",
+  "limits": "Satu file sekali proses, hingga 25 MB; 5.000 baris item pertama ditampilkan dari seluruh faktur dalam satu file. Membaca FatturaPA 1.2.x (FPR12 dan FPA12), termasuk file dengan beberapa faktur. Dari .p7m bertanda tangan, XML dikeluarkan dari amplopnya, tetapi tanda tangannya tidak diverifikasi: halaman ini tidak dapat memberi tahu siapa yang menandatangani file atau apakah file telah diubah. Hanya penampil: tanpa validasi, dan tidak ada yang dikirim ke SDI.",
+  "howto_title": "Cara membuka fattura elettronica",
+  "howto": [
+    "Pilih file .xml atau .xml.p7m, atau seret ke halaman ini.",
+    "Untuk .p7m, halaman ini mengeluarkan XML dari amplop tanda tangan, lalu menampilkan fakturnya: penjual (cedente), pembeli (cessionario), baris, ringkasan PPN, total, dan pembayaran.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong>, <strong>Unduh JSON</strong>, atau <strong>Tampilkan XML mentah</strong>."
+  ],
+  "faq": [
+    [
+      "Apakah faktur saya diunggah?",
+      "Tidak. File, termasuk .p7m bertanda tangan, dibaca di browser Anda dan ditampilkan di halaman ini. Tidak ada server yang menerimanya, dan semuanya terhapus begitu Anda menutup tab."
+    ],
+    [
+      "Apakah tanda tangan digital file .p7m diperiksa?",
+      "Tidak. .p7m adalah amplop CMS (PKCS#7) yang membungkus faktur XML. Halaman ini hanya membaca amplopnya untuk mengambil XML. Halaman ini tidak memeriksa sertifikat, tanda tangan, maupun stempel waktunya, sehingga tidak dapat memberi tahu siapa yang menandatangani file atau apakah file telah diubah. Gunakan alat yang memverifikasi tanda tangan jika hal itu penting bagi Anda."
+    ],
+    [
+      "File FatturaPA apa saja yang didukung?",
+      "FatturaPA 1.2, 1.2.1, dan 1.2.2 dalam kedua bentuk: FPR12 (faktur ke pelaku usaha dan konsumen) dan FPA12 (faktur ke instansi pemerintah). Satu file dapat memuat beberapa faktur; semuanya ditampilkan. Faktur yang disederhanakan (FSM10) tidak didukung."
+    ],
+    [
+      "Mengapa jumlah yang harus dibayar berbeda dari total dokumen?",
+      "Jumlah yang harus dibayar adalah jumlah baris pembayaran (ImportoPagamento) bila file memilikinya. Angkanya bisa berbeda dari total dokumen: pada split payment (scissione dei pagamenti) PPN tidak dibayarkan kepada pemasok, dan pada pajak yang dipotong (ritenuta d'acconto) jumlah yang dipotong juga tidak dibayarkan. Keduanya ditandai pada faktur."
+    ],
+    [
+      "Apa arti kode seperti TD01, MP05, N4, dan RF01?",
+      "Kode-kode itu berasal dari daftar kode resmi format FatturaPA: TD01 adalah faktur, TD04 nota kredit, MP05 transfer bank, N4 transaksi bebas pajak, dan RF01 rezim pajak biasa. Jika sebuah kode memiliki nama sehari-hari, nama itu ditampilkan dengan kodenya dalam tanda kurung; jika tidak, kode ditampilkan apa adanya."
+    ],
+    [
+      "Apakah ini penampil resmi?",
+      "Bukan. Halaman ini independen dari Agenzia delle Entrate dan SDI. Ini bukan stylesheet resmi, dan file yang ditampilkan di sini tidak dikirim ke atau diperiksa oleh SDI."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Ringkasan fattura elettronica</h2>
+<p>Di Italia, faktur dipertukarkan sebagai file XML melalui Sistema di Interscambio (SDI) milik Agenzia delle Entrate. Faktur ke badan publik memakai format FatturaPA sejak 2014 dan 2015, dan pelaku usaha wajib memakainya untuk hampir semua faktur dalam negeri sejak 2019. XML-nya, bukan salinan PDF, yang merupakan fakturnya, sehingga yang sampai kepada Anda sering berupa file yang tidak bisa dibaca. Halaman ini mengubahnya kembali menjadi faktur.</p>
+<h2>File .p7m bertanda tangan</h2>
+<p>Banyak faktur datang sebagai <code>nama.xml.p7m</code>. .p7m adalah amplop bertanda tangan dalam format CMS (PKCS#7): faktur XML disimpan di dalamnya bersama tanda tangan dan sertifikat penandatangan. Penyedia layanan Italia menulis amplop ini dengan cara yang sedikit berbeda (panjang tetap atau terbuka, isi dipecah menjadi beberapa bagian, bahkan berupa teks base64), dan sebuah file bisa ditandatangani dua kali. Halaman ini membaca amplop tersebut dengan parser kecil yang dibuat khusus untuk situs ini, mengeluarkan XML-nya, dan menyatakan dengan jelas bahwa tanda tangannya tidak diperiksa.</p>
+<h2>Apa yang ditampilkan penampil</h2>
+<p>Anda melihat cedente/prestatore (penjual) dan cessionario/committente (pembeli) beserta nomor PPN dan kode pajaknya, jenis, nomor, dan tanggal dokumen, alasan faktur (Causale), setiap baris dengan kuantitas, satuan, harga, diskon, dan tarif PPN, ringkasan PPN dengan kode pembebasan dan acuan hukumnya, iuran jaminan sosial, pajak yang dipotong, bea meterai, baris pembayaran dengan IBAN dan tanggal jatuh tempo, serta file terlampir. Halaman ini tidak memvalidasi faktur dan tidak berkomunikasi dengan SDI.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Untuk PDF yang berisi XML, gunakan <a href="/tools/zugferd-factur-x-viewer/">Penampil ZUGFeRD / Factur-X</a>; halaman ini juga menerimanya.</li>
+  <li>Unduh JSON memberi Anda faktur sebagai data untuk spreadsheet atau program Anda sendiri.</li>
+  <li>Tampilkan XML mentah membantu Anda mencari field yang tidak dimuat pada faktur yang mudah dibaca.</li>
+</ul>

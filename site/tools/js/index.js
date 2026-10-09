@@ -1,12 +1,16 @@
 // Tools index: search-as-you-type filter over the category boards.
-import { $, $$, txn, tx } from "./core.js?v=5";
+import { $, $$, txn, tx } from "./core.js?v=11";
 
 const input = $("#find");
 const count = $("#find-count");
 const rows = $$(".stops li");
 const routes = $$(".route");
 
-function norm(s) { return s.toLowerCase().replace(/ß/g, "ss").normalize("NFKD").replace(/[^\w\s]/g, " "); }
+/* Keep letters, digits and combining marks of every script (Cyrillic, Devanagari…); drop Latin accents so "pagina" finds "página". Mirrored by search_norm() in ops/tools_site/build.py. */
+function norm(s) {
+  return s.toLowerCase().replace(/ß/g, "ss").replace(/đ/g, "d").replace(/ł/g, "l").replace(/ı/g, "i")
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^\p{L}\p{N}\p{M}_\s]/gu, " ");
+}
 
 function apply() {
   const terms = norm(input.value).split(/\s+/).filter(Boolean);

@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "FatturaPA-Viewer: XML und signierte P7M-Rechnungen | Tanod Tools",
+  "description": "Öffnen Sie eine italienische FatturaPA-Rechnung (XML oder signiertes .p7m) und lesen Sie sie wie eine normale Rechnung. Drucken, PDF oder JSON. Ohne Upload.",
+  "h1": "FatturaPA-Viewer",
+  "lede": "Öffnen Sie eine italienische elektronische Rechnung (fattura elettronica), auch als signierte .p7m-Datei, und lesen Sie sie wie eine gewöhnliche Rechnung. Die Datei wird in Ihrem Browser geöffnet und nie hochgeladen.",
+  "blurb": "FatturaPA-XML oder signierte .p7m-Rechnung als normale Rechnung lesen.",
+  "keywords": "fatturapa viewer fatturapa anzeigen fatturapa lesen fatturapa xml öffnen fattura elettronica anzeigen italienische e-rechnung lesen italienische rechnung xml p7m öffnen p7m datei lesen xml.p7m anzeigen fpr12 fpa12 sdi rechnung lesen fattura elettronica als pdf",
+  "limits": "Eine Datei auf einmal, bis 25 MB; über alle Rechnungen einer Datei hinweg werden die ersten 5.000 Rechnungspositionen angezeigt. Gelesen wird FatturaPA 1.2.x (FPR12 und FPA12), auch bei Dateien mit mehreren Rechnungen. Aus einer signierten .p7m-Datei wird das XML aus dem Umschlag herausgelöst, die Signatur wird aber nicht geprüft: Diese Seite kann Ihnen nicht sagen, wer die Datei signiert hat oder ob sie verändert wurde. Nur Viewer: keine Validierung, nichts wird an das SDI gesendet.",
+  "howto_title": "So öffnen Sie eine fattura elettronica",
+  "howto": [
+    "Wählen Sie die .xml- oder .xml.p7m-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Bei einer .p7m-Datei löst die Seite das XML aus dem Signaturumschlag heraus und zeigt dann die Rechnung an: Verkäufer (cedente), Käufer (cessionario), Positionen, Umsatzsteuer-Übersicht, Summen und Zahlung.",
+    "Mit <strong>Drucken oder als PDF speichern</strong>, <strong>JSON herunterladen</strong> oder <strong>Roh-XML anzeigen</strong> geht es weiter."
+  ],
+  "faq": [
+    [
+      "Wird meine Rechnung hochgeladen?",
+      "Nein. Die Datei, auch eine signierte .p7m, wird in Ihrem Browser gelesen und auf dieser Seite angezeigt. Kein Server erhält sie, und beim Schließen des Tabs ist alles gelöscht."
+    ],
+    [
+      "Wird die digitale Signatur einer .p7m-Datei geprüft?",
+      "Nein. Eine .p7m ist ein CMS-Umschlag (PKCS#7) um die XML-Rechnung. Diese Seite liest den Umschlag nur, um das XML herauszuholen. Zertifikat, Signatur und Zeitstempel werden nicht geprüft; die Seite kann also nicht sagen, wer die Datei signiert hat oder ob sie verändert wurde. Verwenden Sie ein Werkzeug, das Signaturen prüft, wenn das für Sie wichtig ist."
+    ],
+    [
+      "Welche FatturaPA-Dateien werden unterstützt?",
+      "FatturaPA 1.2, 1.2.1 und 1.2.2 in beiden Formen: FPR12 (Rechnungen an Unternehmen und Verbraucher) und FPA12 (Rechnungen an die öffentliche Verwaltung). Eine Datei kann mehrere Rechnungen enthalten; jede wird angezeigt. Die vereinfachte Rechnung (FSM10) wird nicht unterstützt."
+    ],
+    [
+      "Warum weicht der Zahlbetrag von der Gesamtsumme des Dokuments ab?",
+      "Der Zahlbetrag ist die Summe der Zahlungszeilen (ImportoPagamento), sofern die Datei welche enthält. Er kann von der Gesamtsumme des Dokuments abweichen: Beim Split Payment (scissione dei pagamenti) wird die Umsatzsteuer nicht an den Lieferanten gezahlt, und bei der Quellensteuer (ritenuta d'acconto) wird auch der einbehaltene Betrag nicht gezahlt. Beides ist auf der Rechnung gekennzeichnet."
+    ],
+    [
+      "Was bedeuten Codes wie TD01, MP05, N4 und RF01?",
+      "Sie stammen aus den offiziellen Codelisten des FatturaPA-Formats: TD01 ist eine Rechnung, TD04 eine Gutschrift, MP05 eine Banküberweisung, N4 ein steuerbefreiter Vorgang, RF01 die ordentliche Besteuerung. Hat ein Code eine gebräuchliche Bezeichnung, wird sie mit dem Code in Klammern angezeigt; andernfalls erscheint der Code unverändert."
+    ],
+    [
+      "Ist das der offizielle Viewer?",
+      "Nein. Diese Seite ist unabhängig von der Agenzia delle Entrate und vom SDI. Es ist nicht das offizielle Stylesheet, und eine hier angezeigte Datei wurde weder an das SDI gesendet noch von ihm geprüft."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Die fattura elettronica in Kürze</h2>
+<p>In Italien werden Rechnungen als XML-Dateien über das Sistema di Interscambio (SDI) der Agenzia delle Entrate ausgetauscht. Rechnungen an öffentliche Stellen nutzen das FatturaPA-Format seit 2014 und 2015, und Unternehmen müssen es seit 2019 für nahezu alle inländischen Rechnungen verwenden. Das XML, nicht eine PDF-Kopie, ist die Rechnung; was ankommt, ist deshalb oft eine Datei, die sich nicht lesen lässt. Diese Seite verwandelt sie wieder in eine Rechnung.</p>
+<h2>Signierte .p7m-Dateien</h2>
+<p>Viele Rechnungen kommen als <code>name.xml.p7m</code>. Die .p7m ist ein signierter Umschlag im CMS-Format (PKCS#7): Die XML-Rechnung liegt darin zusammen mit der Signatur und dem Zertifikat des Signierenden. Italienische Anbieter schreiben diese Umschläge auf leicht unterschiedliche Weise (feste oder offene Längen, in Stücken abgelegter Inhalt, sogar Base64-Text), und eine Datei kann doppelt signiert sein. Diese Seite liest den Umschlag mit einem kleinen, eigens für diese Website geschriebenen Parser, holt das XML heraus und sagt klar, dass sie die Signatur nicht geprüft hat.</p>
+<h2>Was der Viewer anzeigt</h2>
+<p>Sie sehen den cedente/prestatore (Verkäufer) und den cessionario/committente (Käufer) mit Umsatzsteuer-Nummern und Steuernummern, die Dokumentart, Nummer und Datum, die Gründe für die Rechnung (Causale), jede Position mit Menge, Einheit, Preis, Rabatt und Umsatzsteuersatz, die Umsatzsteuer-Übersicht mit Befreiungscode und Rechtsgrundlage, Sozialversicherungsbeiträge, Quellensteuer, Stempelsteuer, die Zahlungszeilen mit IBAN und Fälligkeitsdaten sowie angehängte Dateien. Die Rechnung wird nicht validiert, und es findet keine Kommunikation mit dem SDI statt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Für ein PDF mit eingebettetem XML nutzen Sie den <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD-Viewer (Factur-X)</a>; diese Seite nimmt solche Dateien aber ebenfalls an.</li>
+  <li>„JSON herunterladen“ liefert Ihnen die Rechnung als Daten für Ihre eigene Tabelle oder Ihr eigenes Programm.</li>
+  <li>Mit „Roh-XML anzeigen“ suchen Sie ein Feld, das die lesbare Rechnung auslässt.</li>
+</ul>

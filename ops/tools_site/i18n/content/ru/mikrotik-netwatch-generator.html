@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Генератор Netwatch для MikroTik: оповещения | Tanod Tools",
+  "description": "Создайте скрипт /tool netwatch для RouterOS, который следит за хостами и шлёт оповещения через ntfy, Telegram или e-mail при падении и восстановлении. В браузере.",
+  "h1": "Генератор Netwatch для MikroTik",
+  "lede": "Следите за шлюзом провайдера и другими хостами прямо с роутера: перечислите хосты, выберите интервал и способ уведомления, и получите готовый скрипт Netwatch с оповещениями о падении и восстановлении.",
+  "blurb": "Записи Netwatch с оповещениями через ntfy, Telegram или e-mail.",
+  "keywords": "mikrotik netwatch генератор routeros tool netwatch up-script down-script ntfy telegram бот e-mail оповещение tool fetch ping мониторинг шлюз провайдера падение уведомление v7 v6",
+  "local_text": "Работает в вашем браузере; ничто из введённого не покидает ваше устройство",
+  "limits": "Создаёт записи RouterOS /tool netwatch, которые пингуют IPv4-хосты (type=icmp в v7, старая форма host= в v6) и запускают скрипт при каждой смене состояния. Проверить на вашем роутере здесь нельзя, поэтому просмотрите каждую строку перед применением. Токен бота и настройки почты хранятся на роутере открытым текстом. Netwatch работает на роутере и не может сообщить, что сам роутер ушёл в офлайн. MikroTik и RouterOS — товарные знаки SIA Mikrotīkls. Этот инструмент независим, не связан с MikroTik и не одобрен MikroTik.",
+  "howto_title": "Как настроить оповещения Netwatch на MikroTik",
+  "howto": [
+    "Перечислите хосты для наблюдения, дав каждому метку: сначала шлюз провайдера, затем надёжные публичные адреса, например 8.8.8.8 и 1.1.1.1.",
+    "Выберите интервал и таймаут, версию RouterOS (v7 или v6) и способ уведомления: тема ntfy, бот Telegram или e-mail.",
+    "Скопируйте скрипт или скачайте файл .rsc, вставьте его в терминал роутера и проверьте /tool netwatch print и /log print."
+  ],
+  "faq": [
+    [
+      "Что делает Netwatch?",
+      "Netwatch пингует каждый хост с заданным интервалом. Когда хост перестаёт отвечать в пределах таймаута, он помечается как недоступный и один раз выполняется его down-script; когда отвечает снова, выполняется up-script. Созданные скрипты пишут строку в лог и, если вы выбрали способ, отправляют сообщение через /tool fetch или /tool e-mail."
+    ],
+    [
+      "Почему Netwatch не может сообщить, что сам роутер офлайн?",
+      "Netwatch — часть роутера. Если роутер лишился питания, завис или потерял аплинк, больше некому выполнить скрипт и отправить сообщение. Для этого нужна внешняя проверка, которая заметит, что роутер перестал отвечать. См. <a href=\"https://tanod.dev/learn/mikrotik-router-offline-alert.html\">руководство по оповещениям о недоступности роутера</a> и бесплатный <a href=\"https://tanod.dev/monitor/\">внешний heartbeat</a>."
+    ],
+    [
+      "Придёт ли мне сообщение о падении, когда откажет интернет-канал?",
+      "Часто не в тот же момент. Сообщение уходит через тот же роутер, поэтому если наблюдаемый хост — шлюз вашего единственного аплинка, down-script выполнится, но сообщение уйдёт только после восстановления канала. Тогда сообщение UP сообщит, что связь вернулась. Наблюдение за вторым каналом или хостом в LAN даёт оповещения, не зависящие от упавшего канала."
+    ],
+    [
+      "Чем отличается вывод для v7 и v6?",
+      "В RouterOS v7 записи содержат type=icmp, который выбирает ping-проверку. В RouterOS v6 параметра type нет, поэтому записи используют только host, interval и timeout. Если ваша версия v7 старая и отклоняет type=icmp, удалите его из каждой строки."
+    ],
+    [
+      "Как обрабатываются кавычки, обратные косые черты и знаки доллара в метках?",
+      "Метки и имя роутера экранируются для строк RouterOS: обратная косая черта, двойная кавычка, знак доллара и вопросительный знак получают по обратной косой черте. Скрипты хранятся в записи Netwatch как строки, поэтому экранирование применяется дважды: для сообщения и для сохранённого скрипта."
+    ],
+    [
+      "Отправляется ли куда-либо моя конфигурация или токен бота?",
+      "Нет. Всё создаётся в вашем браузере. После вставки скрипта к ntfy или Telegram обращается сам роутер, когда хост меняет состояние."
+    ]
+  ]
+}
+-->
+<!--tool-->
+
+<div class="ros-gen" id="nw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Хосты для наблюдения</legend>
+      <ul class="ros-rows" id="nw-hosts"></ul>
+      <button class="btn btn--sm ros-add" id="nw-add" type="button">{{mark:i-plus}}Добавить хост</button>
+      <span class="help">Замените 203.0.113.1 адресом шлюза вашего провайдера.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Время и версия</legend>
+      <div class="opts">
+        <div class="field"><label for="nw-interval">Интервал</label><input type="text" id="nw-interval" class="mono" value="30s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-timeout">Таймаут</label><input type="text" id="nw-timeout" class="mono" value="1s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-router">Имя роутера (показывается в сообщениях)</label><input type="text" id="nw-router" class="mono" value="MikroTik" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Версия RouterOS">
+        <label><input type="radio" name="nw-ver" value="v7" checked>RouterOS v7</label>
+        <label><input type="radio" name="nw-ver" value="v6">RouterOS v6</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Уведомление</legend>
+      <div class="seg" role="radiogroup" aria-label="Способ уведомления">
+        <label><input type="radio" name="nw-notify" value="none">Нет (только лог)</label>
+        <label><input type="radio" name="nw-notify" value="ntfy" checked>ntfy</label>
+        <label><input type="radio" name="nw-notify" value="telegram">Telegram</label>
+        <label><input type="radio" name="nw-notify" value="email">E-mail</label>
+      </div>
+      <div class="field" id="nw-ntfy-f">
+        <label for="nw-ntfy">URL темы ntfy</label>
+        <input type="text" id="nw-ntfy" class="mono" value="https://ntfy.sh/my-router-alerts" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="nw-telegram-f" hidden>
+        <div class="field"><label for="nw-tg-token">Токен бота</label><input type="text" id="nw-tg-token" class="mono" value="" placeholder="123456789:ABC-DEF" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-tg-chat">ID чата</label><input type="text" id="nw-tg-chat" class="mono" value="" placeholder="-1001234567890" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="field" id="nw-email-f" hidden>
+        <label for="nw-mail-to">Куда отправлять оповещения</label>
+        <input type="text" id="nw-mail-to" class="mono" value="" placeholder="ops@example.com" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="nw-out" class="label">Скрипт RouterOS</label>
+    <textarea id="nw-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="nw-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="nw-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="nw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Netwatch в RouterOS</h2>
+<p>Netwatch, находящийся в <code>/tool netwatch</code>, опрашивает хост каждые <code>interval</code> и хранит его состояние: доступен или недоступен. Хост считается недоступным, если не ответил в пределах <code>timeout</code>. При каждой смене состояния RouterOS выполняет <code>down-script</code> или <code>up-script</code> записи, и именно там отправляется оповещение: <code>/tool fetch</code> публикует в тему ntfy или вызывает URL Telegram <code>sendMessage</code>, а <code>/tool e-mail send</code> использует почтовые настройки, уже заданные на роутере.</p>
+<p>Наблюдайте больше чем за одним хостом. Один публичный адрес может отказать по причинам, не связанным с вашим каналом, поэтому сочетание шлюза провайдера с двумя независимыми публичными адресами показывает, где проблема — на последней миле или в интернете в целом. Держите таймаут короче интервала и избегайте очень коротких интервалов при большом числе хостов.</p>
+<h3>О чём Netwatch не расскажет</h3>
+<p>Netwatch работает на роутере, поэтому не может сообщить, что сам роутер ушёл в офлайн: отключение питания, сбой или мёртвый аплинк не оставляют ничего, что выполнило бы скрипт. Для этого нужна внешняя проверка, которая заметит, что роутер перестал отвечать. Прочитайте <a href="https://tanod.dev/learn/mikrotik-router-offline-alert.html">как получить оповещение, когда роутер MikroTik уходит в офлайн</a> и используйте бесплатный <a href="https://tanod.dev/monitor/">внешний heartbeat</a>. Если вы управляете трафиком на тех же каналах, сравните с <a href="/tools/mikrotik-load-balancing/">генератором балансировки нагрузки</a>, у которого failover использует собственные проверочные хосты.</p>

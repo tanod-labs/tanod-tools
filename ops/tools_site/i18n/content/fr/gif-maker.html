@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Créateur de GIF : créer un GIF animé en ligne | Tanod Tools",
+  "description": "Créez un GIF animé à partir de plusieurs images, dans votre navigateur : ordre, délai et taille au choix, aperçu. Gratuit, sans inscription, rien n'est envoyé.",
+  "h1": "Créateur de GIF",
+  "lede": "Transformez quelques images en GIF animé. Mettez-les dans l'ordre, choisissez la durée d'affichage de chacune et la taille du GIF, regardez l'aperçu, puis téléchargez-le.",
+  "blurb": "Créer un GIF animé à partir de plusieurs images.",
+  "keywords": "createur de gif creer gif anime gif anime images en gif photos en gif faire un gif diaporama gif animation delai entre images boucle generateur de gif gif maker",
+  "limits": "De 2 à 60 images, 50 Mo chacune. Le GIF peut atteindre 1 200 pixels de large, et chaque image de l'animation a la forme de la première. Une image de GIF contient au plus 256 couleurs, si bien que les photos présentent un léger effet de bandes, et il n'y a pas de transparence : les zones transparentes prennent la couleur de fond. Si vous ajoutez une image animée, seule sa première image est utilisée.",
+  "howto_title": "Comment créer un GIF animé",
+  "howto": [
+    "Choisissez deux images ou plus, ou glissez-les sur la page. Utilisez les boutons haut et bas pour définir leur ordre.",
+    "Réglez le délai entre les images et la largeur, puis choisissez comment s'ajustent les images de formes différentes. Regardez l'aperçu.",
+    "Cliquez sur <strong>Créer le GIF</strong>, vérifiez le résultat et téléchargez-le."
+  ],
+  "faq": [
+    ["Mes images sont-elles envoyées ?", "Non. Les images sont dessinées et le GIF est écrit par du code qui s'exécute dans votre navigateur, avec l'encodeur open source gifenc. Rien n'est envoyé à un serveur."],
+    ["Comment accélérer ou ralentir l'animation ?", "Modifiez le délai entre les images, en millisecondes : 1 000 correspond à une seconde, et 100 à dix images par seconde. Le délai le plus court proposé est de 20 ms, car les navigateurs ralentissent fortement les animations dont le délai est plus court."],
+    ["Pourquoi mon GIF est-il granuleux, avec des effets de bandes ?", "Une image de GIF peut utiliser 256 couleurs au maximum : les photos et les dégradés doux présentent donc des bandes. Cet outil choisit les 256 meilleures couleurs pour chaque image séparément, ce qui garde chaque image aussi fidèle à l'original que le format le permet. Les graphismes en aplats et les captures d'écran donnent les meilleurs résultats."],
+    ["Pourquoi mon GIF est-il si lourd ?", "Le GIF se compresse mal et enregistre chaque image en entier : sa taille augmente donc avec la largeur, la hauteur et le nombre d'images. Pour l'alléger, choisissez une largeur plus petite, moins d'images ou moins de couleurs par image."],
+    ["Que se passe-t-il avec des images de tailles ou de formes différentes ?", "Chaque image de l'animation a la forme de la première. <em>Ajuster dans le cadre</em> affiche chaque image en entier et remplit l'espace libre avec la couleur de fond, <em>Remplir et recadrer</em> couvre tout le cadre et rogne ce qui dépasse en gardant le centre, et <em>Étirer</em> déforme chaque image pour qu'elle occupe tout le cadre."],
+    ["La transparence est-elle conservée ?", "Non. Un GIF ne peut déclarer qu'une seule couleur comme transparente : l'outil remplit donc les zones transparentes avec la couleur de fond que vous choisissez. Ainsi, chaque image a le même aspect partout."],
+    ["Que fait « Lire à l'endroit, puis à l'envers » ?", "Après la dernière image, l'outil rajoute les images en sens inverse, sans répéter la première ni la dernière, si bien que l'animation va et vient en douceur au lieu de revenir brusquement au début."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Déposez deux images ou plus ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Choisir des images</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP ou AVIF. Ou glissez-les n'importe où sur cette page.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Images de l'animation, dans l'ordre" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Délai entre les images (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1 000 ms correspondent à une seconde. Le délai le plus court est de 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Largeur (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">La hauteur dépend des proportions de la première image : <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Images de forme différente</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Ajuster dans le cadre</label>
+        <label><input type="radio" name="gm-fit" value="cover">Remplir et recadrer</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Étirer</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Couleur de fond</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Lecture</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>En boucle</label>
+        <label><input type="radio" name="gm-loop" value="once">Une seule fois</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Couleurs par image</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (meilleure qualité)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (fichier le plus léger)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Ordre</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Lire à l'endroit, puis à l'envers</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Aperçu</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Aperçu de l'animation"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Créer le GIF</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tout effacer</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Comment un GIF animé est construit</h2>
+<p>Un GIF est une pile d'images ordinaires affichées l'une après l'autre. Chaque image porte sa propre petite table de couleurs, de 256 couleurs au maximum, et un délai, c'est-à-dire un temps en centièmes de seconde avant l'apparition de l'image suivante. Un réglage de boucle, placé au début du fichier, indique au lecteur s'il doit répéter l'animation indéfiniment ou s'arrêter après un seul passage. Il n'y a aucune compression vidéo : chaque image est stockée en entier, compactée par une méthode simple sans perte, ce qui explique que les GIF deviennent vite volumineux.</p>
+<p>Pour en fabriquer un à partir de photos, il faut choisir les 256 couleurs qui représentent le mieux chaque image, puis remplacer chaque pixel par la plus proche d'entre elles. Cet outil le fait image par image avec l'encodeur open source gifenc, après avoir dessiné chaque image à la même taille pour qu'elles s'alignent. La taille découle de la largeur que vous choisissez et des proportions de la première image ; les autres images sont ajustées dans le cadre, recadrées pour le remplir ou étirées, selon votre choix.</p>
+<p>Vos images sont lues une par une pendant l'écriture du GIF : une longue liste de grandes photos n'a donc pas besoin de tenir en mémoire en même temps. L'aperçu situé au-dessus du bouton affiche les mêmes images en plus petit, pour que vous puissiez juger l'ordre, la vitesse et l'ajustement avant de créer le GIF ; un bouton permet de le mettre en pause, et il démarre en pause si votre système demande de réduire les animations.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Faites court : quelques secondes à 10 images par seconde suffisent largement, et moins d'images, de plus petite taille, donnent un fichier bien plus léger.</li>
+  <li>Donnez d'abord la même forme à vos images avec <a href="/tools/crop-image/">Recadrer une image</a>, ou réduisez les grandes photos avec <a href="/tools/resize-image/">Redimensionner une image</a>.</li>
+  <li>Vous voulez une seule image plutôt qu'une animation ? Utilisez <a href="/tools/merge-images/">Fusionner des images</a> pour les assembler côte à côte ou en grille.</li>
+</ul>

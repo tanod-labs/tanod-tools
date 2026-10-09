@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Estrazione di un nome a caso: ruota o squadre | Tanod Tools",
+  "description": "Incolla un elenco di nomi ed estrai uno o più vincitori con una ruota che gira, oppure dividi tutti in squadre casuali equilibrate. Estrazioni eque, nulla caricato.",
+  "h1": "Estrazione di un nome a caso",
+  "lede": "Incolla i nomi, uno per riga, poi fai girare la ruota per un vincitore o distribuisci tutti in squadre.",
+  "blurb": "Fai girare una ruota per estrarre i vincitori, o dividi i nomi in squadre.",
+  "keywords": "ruota della fortuna estrazione a sorte sorteggio nomi concorso giveaway lotteria generatore di squadre gruppi casuali scegliere vincitore classe sorteggio online",
+  "limits": "La ruota mostra le etichette fino a 100 nomi; con più nomi estrae comunque in modo equo ma mostra spicchi senza etichetta. L'elenco vive solo in questa pagina e sparisce quando la chiudi o la ricarichi.",
+  "howto_title": "Come estrarre un nome a caso",
+  "howto": [
+    "Scrivi o incolla i nomi nella casella, <strong>uno per riga</strong>. Le righe vuote vengono ignorate.",
+    "Scegli <em>Estrai i vincitori</em> e quanti, oppure <em>Dividi in squadre</em> e quante squadre.",
+    "Premi il pulsante. Spunta <em>Rimuovi i nomi estratti</em> se la stessa persona non deve vincere due volte."
+  ],
+  "faq": [
+    ["L'estrazione è equa?", "Sì. Il vincitore viene scelto per primo, con un'estrazione non distorta dalla fonte casuale sicura del tuo browser, e la ruota viene poi fatta girare per fermarsi su quel nome. L'animazione è solo decorazione, quindi uno spicchio lungo o un giro fortunato non cambia le probabilità di nessuno. Ogni riga ha la stessa probabilità."],
+    ["Cosa succede se un nome compare due volte nell'elenco?", "Ogni riga è una voce a sé, quindi un nome scritto due volte ha due possibilità, e la pagina ti dice quali nomi si ripetono. Se è un errore, elimina la riga in più; se è voluto, per esempio due biglietti di una lotteria, lasciala."],
+    ["Come estraggo più vincitori di seguito?", "Spunta <em>Rimuovi i nomi estratti dall'elenco</em>, poi premi di nuovo il pulsante per ogni estrazione. Oppure imposta il numero di vincitori a 3 e ottieni tre voci diverse in un colpo solo. I vincitori di una singola estrazione sono sempre voci diverse."],
+    ["Come vengono formate le squadre?", "L'elenco viene rimescolato con un rimescolamento di Fisher-Yates non distorto e poi distribuito un nome alla volta, come le carte. Così le dimensioni delle squadre differiscono al massimo di uno: 10 nomi in 3 squadre dà 4, 3 e 3."],
+    ["Posso disattivare la rotazione?", "Se il tuo dispositivo è impostato per ridurre il movimento, la ruota salta direttamente al risultato senza animazione, e il risultato viene annunciato agli screen reader in ogni caso. I risultati sono anche elencati come testo sotto la ruota."],
+    ["Il mio elenco viene inviato da qualche parte?", "No. I nomi sono letti solo dalla pagina nel tuo browser e nulla viene salvato, quindi chiudere la scheda li cancella. Copia la cronologia se ti serve una traccia di chi è stato estratto."]
+  ]
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Nomi, uno per riga</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Giulia&#10;Marco&#10;Chen"></textarea>
+      <p class="help" id="rp-info">Ancora nessun nome</p>
+    </div>
+    <fieldset class="field">
+      <legend>Cosa fare</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Estrai i vincitori</label>
+        <label><input type="radio" name="rp-mode" value="teams">Dividi in squadre</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">Quanti vincitori</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">Quante squadre</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Rimuovi i nomi estratti dall'elenco</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Estrai</button>
+      <button class="btn" id="rp-sample" type="button">Usa nomi di esempio</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Ruota vuota: aggiungi dei nomi per riempirla"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">Cronologia</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Cancella la cronologia</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Estrarre in modo equo, e perché la ruota è solo scena</h2>
+<p>Un'estrazione equa dà a ogni voce la stessa probabilità. La trappola più comune è far girare un'animazione, leggere dove si ferma e chiamarlo risultato: la fisica di una ruota disegnata, un fotogramma lento o un errore di arrotondamento possono allora favorire alcuni spicchi. Qui l'ordine è invertito. La voce vincente viene scelta per prima estraendo un indice casuale con rejection sampling, che scarta il resto irregolare che un semplice modulo lascerebbe, e la ruota viene poi ruotata per terminare su quello spicchio.</p>
+<p>Estrarre più vincitori funziona allo stesso modo, senza reinserimento. La pagina esegue un rimescolamento parziale di Fisher-Yates sulle posizioni del tuo elenco e prende le prime, quindi una posizione non può mai essere scelta due volte nella stessa estrazione. Le squadre usano il rimescolamento completo, poi distribuiscono i nomi uno a uno tra le squadre. Questo garantisce che le dimensioni differiscano al massimo di uno, mentre chi finisce insieme a chi resta casuale.</p>
+<p>Per qualsiasi cosa con una posta in gioco, come un giveaway, tieni l'elenco visibile quando estrai e spiega come è stato fatto. Leggere la cronologia ad alta voce o pubblicarla dopo è una traccia di verifica migliore di uno screenshot di una ruota.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Ripulisci prima un elenco incollato: <a href="/tools/remove-duplicate-lines/">Rimuovi righe duplicate</a> se ogni persona deve avere una sola voce.</li>
+  <li>Ti servono numeri, non nomi, come i biglietti da 1 a 500? Usa il <a href="/tools/random-number-generator/">Generatore di numeri casuali</a>.</li>
+  <li>Stai organizzando un quiz o un intervento? Dai un limite a ogni turno con il <a href="/tools/countdown-timer/">Timer con conto alla rovescia</a>.</li>
+</ul>

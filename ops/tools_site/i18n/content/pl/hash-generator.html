@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Generator hashy: MD5, SHA-1, SHA-256, SHA-512 | Tanod Tools",
+  "description": "Oblicz hash MD5, SHA-1, SHA-256, SHA-384 i SHA-512 tekstu lub pliku w hex albo Base64 i porównaj z oczekiwaną sumą kontrolną. Działa w przeglądarce.",
+  "h1": "Generator hashy",
+  "lede": "Oblicz hashe MD5, SHA-1, SHA-256, SHA-384 i SHA-512 tekstu lub pliku i sprawdź pobrany plik z opublikowaną sumą kontrolną.",
+  "blurb": "Sumy kontrolne MD5 i SHA tekstu lub plików.",
+  "keywords": "generator hash md5 sha1 sha256 sha384 sha512 sha-2 suma kontrolna skrót pliku checksum weryfikacja hash generator",
+  "limits": "Tekst do ok. 5 MB. Pliki do 200 MB, wczytywane do pamięci na tym urządzeniu.",
+  "howto_title": "Jak wygenerować hash",
+  "howto": [
+    "Wpisz lub wklej tekst albo przełącz na Plik i wybierz plik. Wszystkie pięć hashy jest obliczanych od razu.",
+    "Wybierz wyjście: hex małymi literami, hex wielkimi literami lub Base64.",
+    "Aby zweryfikować pobrany plik, wklej opublikowaną sumę kontrolną w polu <strong>Porównaj</strong>; pasujący algorytm zostanie wyróżniony. Skopiuj hash albo pobierz wszystkie jako plik .txt."
+  ],
+  "faq": [
+    ["Czy mój tekst lub plik jest przesyłany?", "Nie. Hashe są obliczane w Twojej przeglądarce: SHA za pomocą wbudowanych funkcji Web Crypto, a MD5 za pomocą kodu na tej stronie. Nic nie jest wysyłane ani zapisywane, a zamknięcie karty to wszystko usuwa."],
+    ["Czy MD5 i SHA-1 są bezpieczne?", "Nie, jeśli chodzi o bezpieczeństwo. Oba algorytmy zostały złamane: można celowo stworzyć dwa różne dane wejściowe o tym samym hashu MD5 lub SHA-1. Nadal nadają się do wykrywania przypadkowego uszkodzenia danych, na przykład do sprawdzenia, czy pobrany plik dotarł w całości. Wszędzie tam, gdzie ktoś mógłby zmanipulować dane, oraz przy podpisach używaj SHA-256 lub silniejszego."],
+    ["Czy można tym hashować hasła?", "Można zobaczyć hash hasła, ale zwykły hash to zły sposób przechowywania haseł: tak szybkie hashe da się zgadywać miliardy razy na sekundę. Do przechowywania haseł potrzebny jest wolny algorytm z solą, taki jak Argon2, scrypt lub bcrypt, uruchamiany przez Twój serwer."],
+    ["Czy hashowanie to to samo co szyfrowanie?", "Nie. Szyfrowanie można odwrócić za pomocą klucza. Hash to odcisk o stałej długości, którego nie da się zamienić z powrotem na dane wejściowe; jedyny sposób to zgadywanie i porównywanie. Te same dane zawsze dają ten sam hash, a zmiana jednego znaku daje zupełnie inny."],
+    ["Dlaczego mój hash różni się od tego z wiersza poleceń?", "Sprawdź, czy nie ma końcowego znaku nowej linii: <code>echo \"text\" | sha256sum</code> hashuje tekst wraz z nową linią, a to pole hashuje dokładnie to, co wpisano. Tekst jest hashowany jako UTF-8, a podziały wierszy w polu to pojedyncze znaki LF, więc tekst skopiowany z pliku z Windows (CRLF) może dać inny wynik. Aby uzyskać dokładną zgodność, zahashuj sam plik w trybie Plik."],
+    ["Co oznaczają tu hex i Base64?", "To dwa sposoby zapisu tych samych bajtów hashu. Hex używa dwóch znaków na bajt (SHA-256 to 64 znaki hex); Base64 jest krótszy (44 znaki) i jest używany m.in. w atrybutach Subresource Integrity. Pole Porównaj przyjmuje oba formaty."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Hash</legend>
+  <div class="seg" role="radiogroup" aria-label="Dane wejściowe">
+    <label><input type="radio" name="mode" value="text" checked>Tekst</label>
+    <label><input type="radio" name="mode" value="file">Plik</label>
+  </div>
+</fieldset>
+
+<div id="h-textpanel" class="field">
+  <label for="h-in">Tekst</label>
+  <textarea id="h-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Wpisz lub wklej tekst do zahashowania"></textarea>
+  <span class="help" id="h-tinfo"></span>
+</div>
+
+<div id="h-filepanel" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Upuść plik, aby go zahashować</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Wybierz plik</span></label>
+    <p class="drop__hint">Dowolny typ, do 200 MB. Plik jest odczytywany na tym urządzeniu i nie jest przesyłany.</p>
+  </div>
+</div>
+
+<div class="opts">
+  <div class="field">
+    <span class="label" id="h-fmt-l">Wyjście</span>
+    <div class="seg" role="radiogroup" aria-labelledby="h-fmt-l">
+      <label><input type="radio" name="fmt" value="hex" checked>hex</label>
+      <label><input type="radio" name="fmt" value="HEX">HEX</label>
+      <label><input type="radio" name="fmt" value="b64">Base64</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="h-expect">Porównaj z oczekiwanym hashem</label>
+    <input type="text" id="h-expect" class="mono" autocomplete="off" spellcheck="false" placeholder="Wklej sumę kontrolną, aby ją sprawdzić">
+  </div>
+</div>
+<p class="dv-verdict" id="h-verdict" role="status" hidden></p>
+<div class="status" id="status" role="status" hidden></div>
+<div id="h-result" hidden>
+  <p class="help" id="h-info"></p>
+  <dl class="dv-rows" id="h-rows"></dl>
+  <div class="actions">
+    <button class="btn btn--primary" id="h-copyall" type="button">{{mark:i-copy}}Kopiuj wszystko</button>
+    <button class="btn" id="h-dl" type="button">{{mark:i-download}}Pobierz .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="h-clear" type="button">Wyczyść</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Do czego służy hash</h2>
+<p>Kryptograficzna funkcja skrótu zamienia dowolne dane wejściowe, od jednej litery po duży plik, w krótki odcisk o stałej długości. Te same dane zawsze dają ten sam odcisk, a zmiana choćby jednego bitu daje zupełnie inny. Dzięki temu hashe przydają się do sprawdzania, czy plik dotarł bez zmian, do wykrywania duplikatów plików oraz jako element podpisów i systemów kontroli wersji.</p>
+<p>Aby sprawdzić pobrany plik, znajdź sumę kontrolną podaną przez wydawcę obok pliku (często SHA-256), upuść plik tutaj i wklej sumę w polu Porównaj. Jeśli się zgadza, plik jest bajt w bajt taki, jaki wydawca zahashował. Zgodność dowodzi, że to właściwy plik, tylko jeśli ufasz stronie, z której pochodzi suma kontrolna.</p>
+<p>Hashe SHA-1 i SHA-2 (SHA-256, SHA-384, SHA-512) są obliczane przez funkcje Web Crypto Twojej przeglądarki. Przeglądarki nie oferują MD5, dlatego ta strona zawiera własny kod MD5, który czyta pliki we fragmentach i pokazuje postęp przy dużych plikach. MD5 i SHA-1 pozostawiono wyłącznie ze względu na zgodność ze starszymi sumami kontrolnymi.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz zawartości pliku jako tekstu, a nie odcisku? Użyj narzędzia <a href="/tools/base64-encode-decode/">Koduj i dekoduj Base64</a>.</li>
+  <li>Aby utworzyć silny losowy sekret zamiast go hashować, użyj narzędzia <a href="/tools/password-generator/">Generator haseł</a>.</li>
+  <li>Porównywanie dwóch tekstów wiersz po wierszu jest łatwiejsze w narzędziu <a href="/tools/text-diff/">Porównaj teksty</a> niż przy dwóch hashach.</li>
+</ul>

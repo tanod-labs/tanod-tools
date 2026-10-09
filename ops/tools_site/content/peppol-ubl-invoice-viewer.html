@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "Peppol / UBL invoice viewer",
+  "icon": "peppol-ubl-invoice-viewer",
+  "module": "einvoice-viewer",
+  "title": "Peppol and UBL invoice viewer: read BIS Billing 3.0 | Tanod Tools",
+  "description": "Open a Peppol BIS Billing 3.0 invoice or credit note (UBL XML) and read it as a normal invoice. Print, save as PDF or export JSON. Nothing is uploaded.",
+  "h1": "Peppol / UBL invoice viewer",
+  "lede": "Open a Peppol or other UBL 2.1 invoice or credit note and read it as an ordinary invoice, with parties, lines, VAT and payment details. It is read in your browser and never uploaded.",
+  "blurb": "Read a Peppol BIS Billing 3.0 or UBL invoice as a normal invoice.",
+  "keywords": "peppol invoice viewer ubl invoice viewer peppol bis billing 3.0 viewer ubl 2.1 invoice xml open peppol xml read ubl credit note en 16931 viewer peppol factuur bekijken peppol faktura",
+  "limits": "One file at a time, up to 25 MB; the first 5,000 line items are shown. Reads UBL 2.1 Invoice and CreditNote as used by Peppol BIS Billing 3.0 and other EN 16931 profiles, also inside a Peppol envelope (SBDH). Not read: other UBL documents such as orders or despatch advices. Viewer only: no validation, and nothing is sent to the Peppol network.",
+  "howto_title": "How to open a Peppol invoice",
+  "howto": [
+    "Choose the UBL XML file, or drag it onto the page.",
+    "Read the invoice: seller and buyer with their Peppol addresses, dates, line items, VAT breakdown, totals and payment details.",
+    "Press <strong>Print or save as PDF</strong>, <strong>Download JSON</strong>, or <strong>Show raw XML</strong>."
+  ],
+  "faq": [
+    [
+      "Is my invoice uploaded?",
+      "No. The XML is read in your browser with its built-in parser and shown on this page. No server receives it, and closing the tab clears everything."
+    ],
+    [
+      "What is Peppol BIS Billing 3.0?",
+      "It is the invoice and credit note format used on the Peppol network. It is a UBL 2.1 document that follows the European standard EN 16931 with a few extra Peppol rules. Many countries use it, and XRechnung is a close relative with German additions."
+    ],
+    [
+      "Does it open other Peppol documents, such as orders?",
+      "No. Invoices and credit notes only. If you open an order, an order response or a despatch advice, the page tells you which document it is and that it cannot show it."
+    ],
+    [
+      "Can it open an invoice that is wrapped in an envelope?",
+      "Yes. If the invoice arrives inside a Standard Business Document Header (SBDH), the invoice inside is found and shown."
+    ],
+    [
+      "Are the Peppol addresses shown?",
+      "Yes. The electronic address of the seller and of the buyer is shown with its scheme, for example 0088 for a GLN or 0007 for a Swedish organisation number."
+    ],
+    [
+      "What if the VAT is stated in a second currency?",
+      "Some countries require VAT in the national currency. When the invoice gives it, the VAT amount in that currency is shown under the totals."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "zugferd-factur-x-viewer",
+    "fatturapa-viewer",
+    "ksef-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "vietnam-e-invoice-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Peppol, UBL and EN 16931</h2>
+<p>Peppol is a network for exchanging business documents between companies and public bodies, used in much of Europe and beyond. Its invoices are UBL 2.1 XML files: a standard from OASIS that the European standard EN 16931 builds on. A Peppol BIS Billing 3.0 invoice therefore has a fixed set of business terms, such as the seller's VAT identifier, the invoice lines and the VAT breakdown, which this page reads and lays out as a normal invoice.</p>
+<p>Many countries use the same structure with their own additions, for example XRechnung in Germany. If the file names its profile in the customization identifier, it is shown in the header. Since 1 January 2025 every business in Germany has to be able to receive structured e-invoices, and France requires it from 1 September 2026, so files like this reach more and more people who have never seen the XML.</p>
+<h2>What is shown, and what is not</h2>
+<p>You see the parties with VAT identifiers, legal and electronic addresses, delivery and payee where given, the dates and references, every line item with quantity, unit, price and VAT, discounts and charges, the VAT breakdown with exemption reasons, totals (also VAT in a second currency), payment means with IBAN, BIC and reference, notes, and attached documents. It does not validate the invoice and does not use the Peppol network.</p>
+<h3>Tips</h3>
+<ul>
+  <li>German XRechnung files also open in the <a href="/tools/xrechnung-viewer/">XRechnung viewer</a>.</li>
+  <li>A PDF with an invoice inside opens here as well, but the <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD / Factur-X viewer</a> is made for it.</li>
+  <li>Download JSON gives you the invoice as plain data with the EN 16931 business term names.</li>
+</ul>

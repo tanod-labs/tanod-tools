@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Décodeur METAR et TAF : météo aéro en clair | Tanod Tools",
+  "description": "Collez un METAR, SPECI ou TAF brut et obtenez une lecture en clair : vent, visibilité, temps, nuages, température, pression et catégorie de vol.",
+  "h1": "Décodeur METAR et TAF",
+  "lede": "Collez un message METAR ou TAF brut et lisez-le en clair : vent, visibilité, temps présent, nuages, température, calage altimétrique et périodes de prévision.",
+  "blurb": "Messages météo METAR et TAF bruts, expliqués.",
+  "keywords": "metar taf decodeur decoder meteo aviation speci cavok vent visibilite plafond categorie de vol vfr ifr qnh calage altimetrique decoder traduire message meteo aeroport",
+  "limits": "Pour apprendre et lire rapidement uniquement. Ne convient pas à la préparation de vol ni à la navigation : utilisez toujours les dossiers de vol officiels. Les remarques (RMK) sont affichées telles quelles, et tout groupe que le décodeur ne comprend pas est listé, jamais deviné.",
+  "howto_title": "Comment décoder un METAR ou un TAF",
+  "howto": [
+    "Collez le message brut dans la zone, en commençant par METAR, SPECI, TAF ou le code de station à quatre lettres. Plusieurs messages séparés par = ou sur des lignes distinctes sont décodés l'un après l'autre.",
+    "Lisez le détail ci-dessous : chaque groupe du code est traduit en mots, avec les unités converties en nœuds, km/h, pieds et mètres, °C et °F, hPa et inHg.",
+    "Vérifiez la catégorie de vol et toute ligne marquée comme non décodée. Les groupes inconnus sont affichés exactement comme écrits."
+  ],
+  "faq": [
+    [
+      "Quelle différence entre un METAR et un TAF ?",
+      "Un METAR est une observation de la météo d'un aéroport à l'instant présent, en général émise toutes les heures (un SPECI est une mise à jour hors horaire après un changement significatif). Un TAF est une prévision pour l'aéroport, couvrant normalement 24 à 30 heures, découpée en une prévision de base et des groupes de changement."
+    ],
+    [
+      "Comment lire le groupe de vent, par exemple 29016G25KT ?",
+      "Les trois premiers chiffres donnent la direction d'où souffle le vent, en degrés vrais (290 correspond à l'ouest-nord-ouest), les deux ou trois chiffres suivants la vitesse (16), G ajoute la vitesse des rafales (25), et les dernières lettres l'unité : KT pour les nœuds, MPS pour les mètres par seconde, KMH pour les kilomètres par heure. VRB signifie direction variable ; 00000KT signifie calme."
+    ],
+    [
+      "Que signifient les groupes de changement d'un TAF ?",
+      "FM (from, à partir de) démarre de nouvelles conditions à une heure donnée et remplace tout ce qui précède. BECMG indique un changement progressif pendant la période indiquée. TEMPO désigne des fluctuations brèves, de moins d'une heure à chaque fois et sur moins de la moitié de la période. PROB30 et PROB40 donnent la probabilité des conditions qui suivent. INTER est un ancien terme pour TEMPO."
+    ],
+    [
+      "Comment les catégories de vol sont-elles déterminées ?",
+      "Le décodeur applique les seuils de la FAA américaine à partir de la couche nuageuse fragmentée ou couverte la plus basse (le plafond) et de la visibilité : VFR au-dessus de 3 000 ft et 5 SM, MVFR de 1 000 à 3 000 ft ou 3 à 5 SM, IFR de 500 à moins de 1 000 ft ou 1 à moins de 3 SM, et LIFR sous 500 ft ou 1 SM. CAVOK compte comme VFR. D'autres pays utilisent des limites différentes : considérez cela comme une indication."
+    ],
+    [
+      "Pourquoi une partie de mon message est-elle indiquée comme non décodée ?",
+      "Le décodeur couvre les groupes de base de l'OACI et de la FAA. Les groupes régionaux, les codes de couleur militaires, les groupes d'état de piste et tout ce qui est mal orthographié sont listés tels quels au lieu d'être devinés. Les remarques après RMK ne sont jamais interprétées."
+    ],
+    [
+      "La page envoie-t-elle mon message quelque part ?",
+      "Non. Le message est décodé par du JavaScript dans votre navigateur et rien n'est envoyé. Pour décoder des messages depuis du code, l'API de décodage décrite dans le guide ci-dessous fait le même travail."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">METAR ou TAF brut</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Un message, ou plusieurs séparés par = ou par des lignes commençant par METAR, SPECI ou TAF.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Essayer un autre exemple</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Effacer</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>Comment le décodeur lit un message</h2>
+<p>Un METAR ou un TAF est une suite de groupes séparés par des espaces, dans un ordre fixe défini par l'Annexe 3 de l'OACI et le Manuel des codes n° 306 de l'OMM (FM 15 METAR et FM 51 TAF) et, pour les États-Unis, par l'Aeronautical Information Manual 7-1-30 de la FAA. Le décodeur lit le code de station, le jour et l'heure en UTC (DDHHMMZ), le vent (direction, vitesse, rafales et variation), la visibilité en mètres ou en milles terrestres, la portée visuelle de piste, le temps présent, les couches nuageuses, la visibilité verticale, la température et le point de rosée, ainsi que le calage altimétrique (Q en hPa, A en inHg en centièmes).</p>
+<p>Les codes de temps présent combinent une intensité (- faible, + fort, VC à proximité), des descripteurs (TS, SH, FZ et d'autres) et des phénomènes (RA pluie, SN neige, FG brouillard, BR brume, etc.). Les groupes de nuages donnent la quantité (FEW, SCT, BKN, OVC) et la base en centaines de pieds au-dessus du sol, avec CB ou TCU pour les nuages convectifs. L'humidité relative est estimée à partir de la température et du point de rosée avec la formule de Magnus, es = 6.1094 e^(17.625 T / (T + 243.04)) ; elle reste donc approximative.</p>
+<p>Les catégories de vol suivent les définitions de la FAA : le plafond est la couche fragmentée ou couverte la plus basse, ou la visibilité verticale, et la catégorie est fixée par la plus défavorable du plafond et de la visibilité. Pour un TAF, chaque groupe de base ou de changement est décodé séparément, avec sa plage horaire en UTC et sa propre catégorie. Les heures sont données sous forme de jour du mois et d'heure UTC, car les messages n'indiquent ni mois ni année.</p>
+<p><strong>Ne convient pas à la préparation de vol ni à la navigation.</strong> Il s'agit d'un lecteur pédagogique. Obtenez toujours la météo auprès d'une source officielle avant de voler.</p>

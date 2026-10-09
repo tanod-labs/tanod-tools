@@ -1,5 +1,5 @@
-import { $, debounce, setStatus, announce, tx, EN, fmtNum } from "./core.js?v=5";
-import { makeQr, geometry, drawQr, qrSvg, saveBlob, canvasBlob, MARGIN } from "./qrcore.js?v=5";
+import { $, debounce, setStatus, announce, tx, EN, fmtNum } from "./core.js?v=11";
+import { makeQr, geometry, drawQr, qrSvg, saveBlob, canvasBlob, MARGIN } from "./qrcore.js?v=11";
 
 /* Whole numbers in text keep plain digits on English pages (no thousands separators), as before. */
 const dig = (v) => (EN ? String(v) : fmtNum(v));

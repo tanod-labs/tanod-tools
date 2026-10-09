@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Peppol ve UBL fatura görüntüleyici: BIS Billing 3.0 | Tanod Tools",
+  "description": "Peppol BIS Billing 3.0 faturasını veya iade faturasını (UBL XML) açıp normal fatura olarak okuyun. Yazdırın, PDF kaydedin, JSON alın. Yükleme yok.",
+  "h1": "Peppol / UBL fatura görüntüleyici",
+  "lede": "Bir Peppol veya başka bir UBL 2.1 faturasını ya da iade faturasını açın ve sıradan bir fatura gibi okuyun: taraflar, kalemler, KDV ve ödeme bilgileriyle. Tarayıcınızda okunur, hiçbir yere yüklenmez.",
+  "blurb": "Peppol BIS Billing 3.0 veya UBL faturayı normal fatura olarak okuyun.",
+  "keywords": "peppol fatura görüntüleyici ubl fatura görüntüleyici peppol viewer ubl viewer peppol bis billing 3.0 ubl 2.1 xml fatura açma peppol xml okuma ubl iade faturası en 16931 görüntüleyici peppol e-fatura peppol nedir ubl xml fatura görüntüleme",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB; ilk 5.000 fatura kalemi gösterilir. Peppol BIS Billing 3.0 ve diğer EN 16931 profillerinde kullanılan UBL 2.1 Invoice ve CreditNote belgelerini okur; bir Peppol zarfı (SBDH) içindekileri de. Okunmayanlar: sipariş veya sevk irsaliyesi bildirimi gibi diğer UBL belgeleri. Yalnızca görüntüleyicidir: doğrulama yapmaz ve Peppol ağına hiçbir şey göndermez.",
+  "howto_title": "Peppol faturası nasıl açılır",
+  "howto": [
+    "UBL XML dosyasını seçin ya da sayfaya sürükleyin.",
+    "Faturayı okuyun: Peppol adresleriyle satıcı ve alıcı, tarihler, kalemler, KDV dökümü, toplamlar ve ödeme bilgileri.",
+    "<strong>Yazdır veya PDF olarak kaydet</strong>, <strong>JSON indir</strong> ya da <strong>Ham XML'i göster</strong> düğmesine basın."
+  ],
+  "faq": [
+    [
+      "Faturam yükleniyor mu?",
+      "Hayır. XML, tarayıcınızın yerleşik ayrıştırıcısıyla okunur ve bu sayfada gösterilir. Hiçbir sunucu dosyayı almaz; sekmeyi kapattığınızda her şey silinir."
+    ],
+    [
+      "Peppol BIS Billing 3.0 nedir?",
+      "Peppol ağında kullanılan fatura ve iade faturası biçimidir. Avrupa standardı EN 16931'i izleyen, birkaç ek Peppol kuralı bulunan bir UBL 2.1 belgesidir. Birçok ülke bunu kullanır; XRechnung ise Almanya'ya özgü eklerle onun yakın akrabasıdır."
+    ],
+    [
+      "Sipariş gibi diğer Peppol belgelerini açıyor mu?",
+      "Hayır, yalnızca faturalar ve iade faturaları. Bir sipariş, sipariş yanıtı ya da sevk irsaliyesi bildirimi açarsanız sayfa size belgenin ne olduğunu ve gösteremeyeceğini söyler."
+    ],
+    [
+      "Zarf içine sarılmış bir faturayı açabilir mi?",
+      "Evet. Fatura bir Standard Business Document Header (SBDH) içinde geliyorsa, içindeki fatura bulunur ve gösterilir."
+    ],
+    [
+      "Peppol adresleri gösteriliyor mu?",
+      "Evet. Satıcının ve alıcının elektronik adresi şemasıyla birlikte gösterilir; örneğin GLN için 0088 ya da bir İsveç kurum numarası için 0007."
+    ],
+    [
+      "KDV ikinci bir para biriminde belirtilmişse ne olur?",
+      "Bazı ülkeler KDV'nin ulusal para biriminde belirtilmesini ister. Fatura bunu veriyorsa, o para birimindeki KDV tutarı toplamların altında gösterilir."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Peppol, UBL ve EN 16931</h2>
+<p>Peppol, şirketler ile kamu kurumları arasında iş belgelerinin alınıp verildiği, Avrupa'nın büyük bölümünde ve ötesinde kullanılan bir ağdır. Faturaları UBL 2.1 XML dosyalarıdır: bu, OASIS'in bir standardıdır ve Avrupa standardı EN 16931 onun üzerine kuruludur. Bu yüzden bir Peppol BIS Billing 3.0 faturası, satıcının KDV kimliği, fatura kalemleri ve KDV dökümü gibi sabit bir iş terimleri kümesine sahiptir; bu sayfa bunları okur ve normal bir fatura olarak yerleştirir. Türkiye'deki GİB e-Fatura sistemi ayrı bir sistemdir; bu araç Avrupa biçimleri içindir.</p>
+<p>Birçok ülke aynı yapıyı kendi eklerle kullanır, örneğin Almanya'da XRechnung. Dosya profilini özelleştirme tanımlayıcısında belirtiyorsa başlıkta gösterilir. Almanya'da her işletme 1 Ocak 2025'ten beri yapılandırılmış e-faturaları alabilmek zorundadır, Fransa da bunu 1 Eylül 2026'dan itibaren zorunlu kılıyor; bu yüzden bu tür dosyalar XML'i hiç görmemiş giderek daha çok kişiye ulaşıyor.</p>
+<h2>Neler gösterilir, neler gösterilmez</h2>
+<p>KDV kimlikleri, yasal ve elektronik adresleriyle taraflar; belirtilmişse teslimat ve ödeme alacaklısı; tarihler ve referanslar; her fatura kalemi miktarı, birimi, fiyatı ve KDV'siyle; iskontolar ve ek ücretler; muafiyet gerekçeleriyle KDV dökümü; toplamlar (ikinci para birimindeki KDV dahil); IBAN, BIC ve referans içeren ödeme yöntemleri; notlar ve ekli belgeler görünür. Faturayı doğrulamaz ve Peppol ağını kullanmaz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Alman XRechnung dosyaları <a href="/tools/xrechnung-viewer/">XRechnung görüntüleyici</a> ile de açılır.</li>
+  <li>İçinde fatura bulunan bir PDF burada da açılır, ancak bunun için <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD / Factur-X görüntüleyici</a> hazırlanmıştır.</li>
+  <li>JSON indir, faturayı EN 16931 iş terimi adlarıyla düz veri olarak verir.</li>
+</ul>

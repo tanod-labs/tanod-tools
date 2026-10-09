@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Kody statusu HTTP: lista i wyszukiwarka | Tanod Tools",
+  "description": "Przeszukiwalna lista wszystkich kodów statusu HTTP z rejestru IANA, od 100 do 511: znaczenie, kiedy się pojawiają, co robić jako klient lub właściciel serwera, oraz RFC.",
+  "h1": "Kody statusu HTTP",
+  "lede": "Wyszukaj dowolny kod statusu HTTP po numerze lub słowie: prosty opis, typowe przyczyny, sposoby naprawy i RFC, które go definiuje.",
+  "blurb": "Przeszukiwalny opis każdego kodu statusu HTTP i jego naprawy.",
+  "keywords": "kody statusu http kod 404 nie znaleziono 500 błąd serwera 301 302 przekierowanie 429 zbyt wiele żądań 502 bad gateway 503 504 teapot 418 rfc 9110 lista kodów http status codes",
+  "limits": "Zawiera kody z rejestru IANA HTTP Status Code Registry, przy czym 306 i 418 są pokazane jako kody zarezerwowane, którymi są, oraz krótki zestaw szeroko spotykanych kodów nieoficjalnych z nginx, Cloudflare i Laravel, oznaczonych źródłem. Inne kody specyficzne dla dostawców nie są uwzględnione.",
+  "howto_title": "Jak wyszukać kod statusu",
+  "howto": [
+    "Wpisz w polu wyszukiwania numer, na przykład <code>502</code>, albo słowo, na przykład <em>limit</em> lub <em>przekierowanie</em>.",
+    "Zawęź listę przyciskami klas: od 1xx do 5xx dla kodów standardowych albo Nieoficjalne dla kodów nginx, Cloudflare i Laravel.",
+    "Otwórz kod, aby zobaczyć, kiedy się pojawia i co z nim zrobić jako klient oraz jako właściciel serwera. Odnośnik # pozwala udostępnić bezpośredni link do danego kodu."
+  ],
+  "faq": [
+    ["Co oznaczają pięć klas kodów statusu?", "Pierwsza cyfra określa klasę. 1xx to informacje i żądanie wciąż trwa, 2xx oznacza sukces, 3xx oznacza, że klient musi wykonać kolejny krok (zwykle przekierowanie), 4xx oznacza, że żądanie ma problem po stronie klienta, a 5xx oznacza, że serwer zawiódł przy żądaniu, które wyglądało poprawnie."],
+    ["Czym różni się 401 od 403?", "401 oznacza, że serwer nie wie, kim jesteś: dane logowania są brakujące, błędne lub wygasły, a zalogowanie może pomóc. 403 oznacza, że serwer wie, kim jesteś, i nie masz pozwolenia na tę czynność, więc ponowne wysłanie tych samych danych nie pomoże."],
+    ["Którego użyć do przekierowania: 301 czy 302?", "Użyj 301 (lub 308), gdy przeniesienie jest stałe, aby przeglądarki i wyszukiwarki przełączyły się na nowy adres. Użyj 302 (lub 307), gdy stary adres kiedyś wróci. Kody 307 i 308 zachowują metodę żądania, a przy 301 i 302 starsi klienci mogą zamienić POST w GET."],
+    ["Czy 418 I'm a teapot to prawdziwy kod statusu?", "Zaczął się jako żart primaaprilisowy w RFC 2324 dla protokołu sterowania dzbankiem do kawy. IANA wymienia obecnie 418 jako nieużywany i zarezerwowany, aby nie nadawać mu prawdziwego znaczenia. Niektóre strony wciąż zwracają go dla zabawy lub by odpędzić scrapery, ale nie jest to standardowa odpowiedź."],
+    ["Czym są 520–526 i 499?", "Nie występują w standardach HTTP. Kody 520–526 to błędy Cloudflare zgłaszające problemy między Cloudflare a Twoim serwerem, a 499 to kod z logów nginx dla klienta, który rozłączył się przed odpowiedzią. Są pokazane w grupie Nieoficjalne wraz ze źródłem."],
+    ["Dlaczego błąd 5xx czasem znika po ponowieniu?", "Wiele błędów 5xx wynika z przeciążenia, restartu zaplecza lub krótkiej awarii sieci, które mogą ustąpić w ciągu sekund. Ponawianie ze wzrastającym opóźnieniem jest bezpieczne dla żądań idempotentnych, takich jak GET; w przypadku POST sprawdź, czy pierwsza próba nie zakończyła się już sukcesem."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="h-q">Szukaj po numerze lub słowie</label>
+    <input type="search" id="h-q" class="hs-q" placeholder="404, przekierowanie, limit żądań, przekroczony czas" autocomplete="off" spellcheck="false" aria-describedby="h-count">
+  </div>
+  <fieldset class="hs-groups">
+    <legend class="visually-hidden">Filtruj według klasy</legend>
+    <div class="seg">
+      <label><input type="radio" name="h-group" id="h-g-all" value="all" checked>Wszystkie</label>
+      <label><input type="radio" name="h-group" id="h-g-1" value="1">1xx</label>
+      <label><input type="radio" name="h-group" id="h-g-2" value="2">2xx</label>
+      <label><input type="radio" name="h-group" id="h-g-3" value="3">3xx</label>
+      <label><input type="radio" name="h-group" id="h-g-4" value="4">4xx</label>
+      <label><input type="radio" name="h-group" id="h-g-5" value="5">5xx</label>
+      <label><input type="radio" name="h-group" id="h-g-u" value="u">Nieoficjalne</label>
+    </div>
+  </fieldset>
+  <p class="tt__report" id="h-count" aria-live="polite"></p>
+  <p class="note" id="h-none" role="status" hidden></p>
+  <div class="hs-list" id="h-list"></div>
+</div>
+<!--explain-->
+<h2>Jak czytać kody statusu HTTP</h2>
+<p>Każda odpowiedź HTTP zaczyna się od trzycyfrowego kodu statusu, który informuje klienta, co stało się z jego żądaniem. Pierwsza cyfra wskazuje rodzinę: 1xx to komunikaty o postępie, 2xx sukces, 3xx przekierowanie, 4xx problem z żądaniem, a 5xx awaria po stronie serwera. Program, który nie zna danego kodu, i tak może zachować się poprawnie, patrząc na tę pierwszą cyfrę, dlatego nowe kody można dodawać bez psucia starych klientów.</p>
+<p>Oficjalna lista jest prowadzona w rejestrze IANA HTTP Status Code Registry, a znaczenia opisano w RFC 9110 (HTTP Semantics) i kilku innych RFC dla WebDAV i rozszerzeń. Fraza opisowa po numerze, na przykład Not Found, jest tylko etykietą; HTTP/2 i HTTP/3 jej nie przesyłają. Kilka fraz zmieniono w 2022 roku, więc 413 to teraz Content Too Large, a 422 to Unprocessable Content.</p>
+<p>Serwery spoza standardów też wymyślają własne kody. nginx zapisuje w logach 499, gdy klient się rozłączy, a Cloudflare używa 520–526 do opisu awarii między swoją siecią a Twoim serwerem źródłowym. Tutaj są w osobnej grupie, aby nie pomylić ich z kodami zarejestrowanymi. Podczas diagnozowania pamiętaj, że widziany kod może pochodzić z serwera proxy lub CDN przed aplikacją, a nie z samej aplikacji.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Żądanie z błędem ma w adresie znaki specjalne? Zakoduj lub zdekoduj go w narzędziu <a href="/tools/url-encode-decode/">Koduj i dekoduj URL</a>.</li>
+  <li>Treść odpowiedzi z błędem API odczytasz w narzędziu <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>.</li>
+  <li>Kod 403 dla konkretnej przeglądarki lub bota? Sprawdź, co wysyła klient, w narzędziu <a href="/tools/user-agent-parser/">Analizator user agent</a>.</li>
+</ul>

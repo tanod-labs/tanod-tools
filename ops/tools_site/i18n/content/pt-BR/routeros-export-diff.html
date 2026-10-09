@@ -1,0 +1,57 @@
+<!--meta
+{
+  "title": "Diff de export RouterOS: compare duas configs MikroTik | Tanod Tools",
+  "description": "Compare dois /export do RouterOS seção por seção: linhas adicionadas e removidas por menu, linhas longas unidas, cabeçalho ignorado e segredos mascarados. No navegador.",
+  "h1": "Diff de export do RouterOS",
+  "lede": "Cole dois exports, como antes e depois de uma mudança ou dois roteadores que deveriam ser iguais, e veja exatamente o que difere, menu por menu.",
+  "blurb": "Diff seção por seção de dois exports do RouterOS.",
+  "keywords": "diff export routeros comparar config mikrotik comparar dois exports mudanças de configuração diff rsc comparar backup auditoria revisão de mudanças configuração do roteador",
+  "local_text": "Os dois exports são comparados no navegador e nunca saem do seu dispositivo",
+  "limits": "Compara os exports linha a linha dentro de cada menu, depois de unir as linhas quebradas e descartar o cabeçalho. Mudanças na ordem das regras aparecem como linhas removidas e adicionadas. Os valores secretos são mascarados por padrão. MikroTik e RouterOS são marcas registradas da SIA Mikrotīkls. Esta ferramenta é independente e não é afiliada nem endossada pela MikroTik.",
+  "howto_title": "Como comparar duas configurações do RouterOS",
+  "howto": [
+    "Em cada roteador, ou antes e depois de uma mudança, execute <code>/export</code> (v6: <code>/export hide-sensitive</code>) e copie a saída, ou abra os arquivos .rsc salvos.",
+    "Cole o export mais antigo à esquerda e o mais novo à direita. A comparação é atualizada enquanto você digita.",
+    "Expanda as seções destacadas para ler o que foi adicionado (+) e removido (−) e copie as mudanças como texto para um registro de mudanças."
+  ],
+  "faq": [
+    ["Por que comparar por seção em vez do arquivo inteiro?", "Um export é uma lista de menus, e o mesmo menu sempre aparece no mesmo lugar. Comparar menu por menu evita que uma mudança em /ip firewall filter se misture com linhas de /ip address e permite ver de relance quais partes da configuração mudaram."],
+    ["Por que as linhas longas do meu export aparecem diferentes aqui?", "O RouterOS quebra as linhas longas de um export com uma barra invertida no final e continua na linha seguinte. O diff as une de novo em uma linha lógica e colapsa os espaços repetidos, então uma regra que apenas foi requebrada não conta como mudança."],
+    ["Uma regra só mudou de posição, mas aparece como removida e adicionada. Por quê?", "A ordem importa nas chains de firewall, NAT e mangle: uma regra que muda de lugar pode alterar o que o roteador faz. Por isso o diff mantém a ordem e mostra uma regra movida como removida da posição antiga e adicionada na nova."],
+    ["As senhas e chaves ficam ocultas?", "Com \"Mascarar segredos\" ligado, os valores de senhas, secrets, chaves privadas e pré-compartilhadas, chaves MD5 e communities SNMP são substituídos por ***** na comparação. De qualquer forma, nada do que você cola sai do seu navegador."],
+    ["Posso usar com apenas um export?", "Sim. Com apenas um lado preenchido, a página lista as seções desse export com a contagem de linhas de cada uma, o que é um jeito rápido de ler uma configuração longa."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-xdiff" id="xd">
+  <div class="ros-pair">
+    <div class="field">
+      <label for="xd-a">Export mais antigo (antes)</label>
+      <textarea id="xd-a" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}Abrir arquivo .rsc<input type="file" id="xd-file-a" accept=".rsc,.txt,text/plain"></label>
+    </div>
+    <div class="field">
+      <label for="xd-b">Export mais novo (depois)</label>
+      <textarea id="xd-b" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge vlan-filtering=yes&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}Abrir arquivo .rsc<input type="file" id="xd-file-b" accept=".rsc,.txt,text/plain"></label>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="xd-mask" checked>Mascarar segredos</label>
+    <label class="check"><input type="checkbox" id="xd-nocomments" checked>Ignorar linhas de comentário #</label>
+    <label class="check"><input type="checkbox" id="xd-all">Mostrar seções sem mudanças</label>
+  </div>
+  <div class="ros-results" id="xd-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="xd-copy" type="button" hidden>Copiar as mudanças como texto</button></div>
+</div>
+<!--explain-->
+<h2>Lendo um diff de configuração do RouterOS</h2>
+<p>Um export é a configuração do roteador escrita como os comandos que a recriariam: uma linha de menu como <code>/ip firewall filter</code> seguida dos comandos <code>add</code> e <code>set</code> daquele menu. Só aparecem os ajustes que diferem dos padrões, o que mantém os exports curtos, mas significa que um ajuste que voltou ao padrão simplesmente desaparece do export mais novo. O diff trata cada menu como uma seção, compara os seus comandos em ordem e destaca as seções que mudaram.</p>
+<p>Algumas diferenças são ruído e não mudanças: o cabeçalho com a data do export, o ID do software e o número de série é descartado, as linhas quebradas são unidas e as linhas de comentário podem ser ignoradas. O que sobra é o que o roteador faria de fato de modo diferente. A ordem é mantida de propósito: as regras de firewall, NAT, mangle e queue são processadas de cima para baixo, então mover uma regra é uma mudança real.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Guarde um export datado depois de cada janela de mudança e compare-o com o anterior para ver exatamente o que foi feito.</li>
+  <li>Conferindo uma atualização da v6 para a v7? Compare o script convertido do <a href="/tools/routeros-v7-migration-helper/">assistente de migração</a> com um export feito depois da atualização.</li>
+  <li>Para texto simples que não é um export, o <a href="/tools/text-diff/">diff de texto</a> geral também compara palavra por palavra.</li>
+</ul>

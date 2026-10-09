@@ -1,0 +1,122 @@
+<!--meta
+{
+  "title": "MikroTik सिंपल क्यू जनरेटर: हर IP की बैंडविड्थ | Tanod Tools",
+  "description": "हर IP या सबनेट के हर होस्ट के लिए RouterOS simple queue बनाएं: max-limit, limit-at, burst और कुल प्लान के लिए parent queue। कमेंट सहित, आपके ब्राउज़र में।",
+  "h1": "MikroTik सिंपल क्यू जनरेटर",
+  "lede": "बैंडविड्थ प्लान एक बार तय करें और हर क्लाइंट एड्रेस के लिए simple queue पाएं, वैकल्पिक burst और पूरे ग्रुप को सीमित करने वाली parent queue के साथ।",
+  "blurb": "हर IP की बैंडविड्थ सीमा, burst और parent queue के साथ।",
+  "keywords": "mikrotik simple queue जनरेटर, सिंपल क्यू, हर IP की बैंडविड्थ सीमा, routeros queue simple, max-limit, limit-at, burst limit, parent queue, wisp बैंडविड्थ मैनेजमेंट, hotspot क्लाइंट स्पीड लिमिट स्क्रिप्ट",
+  "limits": "यह IPv4 target के लिए RouterOS v7 सिंटैक्स बनाता है (v6 में भी मान्य), अधिकतम 2048 queue तक। हर queue को वही प्लान मिलता है; एक लिंक साझा करने वाले बहुत सारे क्लाइंट के लिए PCQ CPU पर हल्का पड़ता है। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर हर IP की बैंडविड्थ कैसे सीमित करें",
+  "howto": [
+    "क्लाइंट एड्रेस की सूची दें (हर लाइन में एक, चाहें तो उसके बाद नाम), या किसी सबनेट के हर होस्ट की queue बनाने के लिए सबनेट दें।",
+    "प्लान को अपलोड और डाउनलोड max-limit के रूप में डालें, और इस्तेमाल करते हों तो limit-at और burst भी। स्पीड में k, M या G लिखा जा सकता है।",
+    "चाहें तो कुल लिंक क्षमता के लिए parent queue जोड़ें, फिर स्क्रिप्ट कॉपी करें या .rsc फ़ाइल डाउनलोड करें।"
+  ],
+  "faq": [
+    [
+      "max-limit में अपलोड कौन-सा हिस्सा है?",
+      "Simple queue की स्पीड target के नज़रिए से अपलोड/डाउनलोड क्रम में लिखी जाती है: max-limit=5M/20M का मतलब है कि क्लाइंट 5 Mbit/s भेज सकता है और 20 Mbit/s पा सकता है। जनरेटर फ़ील्ड पर इसी तरह लेबल लगाता है, इसलिए आपको क्रम याद रखने की ज़रूरत नहीं।"
+    ],
+    [
+      "मेरी queue कुछ सीमित क्यों नहीं कर रही?",
+      "सबसे आम वजह FastTrack है: fasttrack हुए कनेक्शन simple queue को छोड़ देते हैं। /ip firewall filter में fasttrack रूल बंद करें, या queue वाले एड्रेस को उससे बाहर रखें। क्रम भी जाँचें: simple queue ऊपर से मैच होती हैं, और ओवरलैप करने वाले target वाली पहले की queue ट्रैफ़िक पहले ले लेती है।"
+    ],
+    [
+      "limit-at और parent queue क्या करते हैं?",
+      "Parent queue पूरे ग्रुप को लिंक की असली क्षमता पर सीमित करती है। limit-at वह स्पीड है जो parent के भर जाने पर हर child को गारंटी से मिलती है; उससे ऊपर child बाकी बैंडविड्थ अपने max-limit तक आपस में बाँटते हैं। अगर limit-at का जोड़ parent से ज़्यादा हो जाए, तो सब पूरे नहीं हो सकते।"
+    ],
+    [
+      "एक राउटर कितनी simple queue सँभाल सकता है?",
+      "यह CPU और ट्रैफ़िक पर निर्भर है, लेकिन हर पैकेट सूची में ऊपर से चलता है, इसलिए हज़ारों queue महँगी पड़ती हैं। बड़े एक-जैसे प्लान के लिए PCQ queue type एक ही queue से हर क्लाइंट को बराबर हिस्सा देता है; PCQ जनरेटर वही लिखता है।"
+    ],
+    [
+      "क्या /32 target में prefix लिखना ज़रूरी है?",
+      "RouterOS एक एड्रेस वाले target को हर हाल में /32 के रूप में रखता है। जनरेटर उन्हें /32 के साथ लिखता है, ताकि एक्सपोर्ट में target एक जैसे दिखें।"
+    ],
+    [
+      "क्या मेरा प्लान कहीं भेजा जाता है?",
+      "नहीं। queue आपके ब्राउज़र में बनती हैं और आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता।"
+    ]
+  ],
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="sq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>क्लाइंट</legend>
+      <div class="seg" role="radiogroup" aria-label="क्लाइंट">
+        <label><input type="radio" name="sq-mode" value="list" checked>एड्रेस की सूची</label>
+        <label><input type="radio" name="sq-mode" value="subnet">सबनेट का हर होस्ट</label>
+      </div>
+      <div class="field" id="sq-list-f">
+        <label for="sq-list">एड्रेस या नेटवर्क, हर एक के बाद चाहें तो नाम</label>
+        <textarea id="sq-list" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">192.168.88.10 alice
+192.168.88.11 bob
+192.168.88.64/28 office</textarea>
+      </div>
+      <div class="opts" id="sq-net-f" hidden>
+        <div class="field">
+          <label for="sq-net">सबनेट</label>
+          <input type="text" id="sq-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="sq-skip">ये एड्रेस छोड़ दें</label>
+          <input type="text" id="sq-skip" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sq-prefix">नाम का उपसर्ग (बिना नाम वाली लाइनों के लिए)</label>
+        <input type="text" id="sq-prefix" class="mono" value="client-" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>हर क्लाइंट का प्लान</legend>
+      <div class="opts">
+        <div class="field"><label for="sq-up-max">अपलोड max-limit</label><input type="text" id="sq-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-max">डाउनलोड max-limit</label><input type="text" id="sq-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-at">अपलोड limit-at</label><input type="text" id="sq-up-at" class="mono" value="" placeholder="वैकल्पिक" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-at">डाउनलोड limit-at</label><input type="text" id="sq-down-at" class="mono" value="" placeholder="वैकल्पिक" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-burst">burst की अनुमति दें</label></div>
+      <div class="opts" id="sq-burst-f" hidden>
+        <div class="field"><label for="sq-up-burst">अपलोड burst-limit</label><input type="text" id="sq-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-burst">डाउनलोड burst-limit</label><input type="text" id="sq-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-thr">अपलोड burst-threshold</label><input type="text" id="sq-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-thr">डाउनलोड burst-threshold</label><input type="text" id="sq-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-time">burst-time</label><input type="text" id="sq-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Parent queue</legend>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-parent">ग्रुप को parent queue से सीमित करें</label></div>
+      <div class="opts" id="sq-parent-f" hidden>
+        <div class="field"><label for="sq-pname">Parent का नाम</label><input type="text" id="sq-pname" class="mono" value="total" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-ptarget">Parent का target</label><input type="text" id="sq-ptarget" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pup">कुल अपलोड</label><input type="text" id="sq-pup" class="mono" value="50M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pdown">कुल डाउनलोड</label><input type="text" id="sq-pdown" class="mono" value="200M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="sq-out" class="label">RouterOS स्क्रिप्ट</label>
+    <textarea id="sq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="sq-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="sq-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="sq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Simple queue, संक्षेप में</h2>
+<p><code>/queue simple</code> के तहत बनी simple queue अपने <em>target</em> (एक एड्रेस, नेटवर्क या इंटरफ़ेस) के आने-जाने वाले ट्रैफ़िक को सीमित करती है। RouterOS हर पैकेट को सूची में ऊपर से जाँचता है और उसे पहली उस queue में डालता है जिसका target किसी भी दिशा में मैच हो, इसलिए एक ही queue क्लाइंट के अपलोड और डाउनलोड दोनों को संभाल लेती है। इसी वजह से हर ग्राहक या डिवाइस को अलग प्लान देने का सबसे तेज़ तरीका simple queue है, और छोटे WISP और hotspot राउटर पर यही आम चुनाव है।</p>
+<p>हर queue में एक <code>max-limit</code> (ऊपरी सीमा), एक वैकल्पिक <code>limit-at</code> (वह स्पीड जो उसे parent के भीड़ में होने पर गारंटी से मिलती है) और वैकल्पिक burst सेटिंग होती हैं। <code>parent</code> queue कई child को एक कुल सीमा के नीचे इकट्ठा करती है: parent का max-limit लिंक की असली क्षमता होना चाहिए, ISP जो देता है उससे थोड़ा कम, ताकि पैकेट मॉडेम के बजाय राउटर में कतार में लगें और प्लान की प्राथमिकताएँ लागू हों।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>burst-threshold और burst-time <a href="/tools/mikrotik-burst-calculator/">MikroTik बर्स्ट कैलकुलेटर</a> से निकालें।</li>
+  <li>एक ही प्लान पर सैकड़ों क्लाइंट हैं? एक <a href="/tools/mikrotik-pcq-generator/">MikroTik PCQ जनरेटर</a> वाली queue हर एक को बराबर हिस्सा देती है, और CPU बहुत कम लगता है।</li>
+  <li>PPPoE ग्राहकों की queue प्रोफ़ाइल के rate-limit से बनती है; देखें <a href="/tools/mikrotik-pppoe-server-generator/">MikroTik PPPoE सर्वर जनरेटर</a>।</li>
+</ul>

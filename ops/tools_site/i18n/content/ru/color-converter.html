@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Конвертер цветов: HEX, RGB, HSL, CMYK и контраст | Tanod Tools",
+  "description": "Переводите цвета между HEX, RGB, HSL, HSV и CMYK, находите названия цветов CSS и проверяйте контрастность текста на фоне по WCAG. Бесплатно, в браузере.",
+  "h1": "Конвертер цветов и проверка контрастности",
+  "lede": "Переведите цвет между HEX, RGB, HSL, HSV и CMYK и проверьте, достаточно ли контраста между двумя цветами для читаемого текста.",
+  "blurb": "HEX, RGB, HSL, CMYK и проверка контрастности по WCAG.",
+  "keywords": "конвертер цветов hex в rgb rgb в hex hsl cmyk hsv выбор цвета контрастность проверка контраста wcag доступность названия цветов css colour converter color picker contrast ratio checker accessibility css color names",
+  "limits": "Понимает HEX (3, 4, 6 или 8 цифр), rgb(), hsl(), hsv(), cmyk() и названия цветов CSS; другие записи цвета CSS читает ваш браузер, если может. HSL, HSV и CMYK показываются с одним знаком после запятой.",
+  "howto_title": "Как перевести цвет",
+  "howto": [
+    "Введите или вставьте цвет в любом распространённом формате, например <code>#1636a3</code>, <code>rgb(22, 54, 163)</code>, <code>hsl(226, 76%, 36%)</code> или <code>navy</code>, либо выберите его палитрой.",
+    "Скопируйте из списка нужный формат. Значения обновляются по мере ввода.",
+    "В разделе <strong>Проверка контрастности</strong> введите цвет текста и цвет фона, и вы увидите коэффициент контрастности и то, проходят ли они уровни WCAG AA и AAA."
+  ],
+  "faq": [
+    ["Подходит ли значение CMYK для печати?", "Лишь приблизительно. Здесь CMYK получен по простой формуле, которая переводит экранный RGB без цветового профиля, как это делает большинство онлайн-конвертеров. Типографии работают с конкретными красками и бумагой, которые описывает профиль ICC, поэтому для печати конвертируйте цвета в дизайнерской программе с профилем, который вам даст типография."],
+    ["Как рассчитывается коэффициент контрастности?", "По формуле WCAG 2: относительная яркость каждого цвета вычисляется по его значениям sRGB, а коэффициент равен (более светлый + 0,05), делённому на (более тёмный + 0,05). Он лежит в пределах от 1:1 (нет контраста) до 21:1 (чёрный на белом). В действующем тексте WCAG в формуле используется порог 0,04045; в старых редакциях стояло 0,03928, что даёт тот же результат для любого 8-битного цвета."],
+    ["Какие коэффициенты требуют AA и AAA?", "Обычному тексту нужно 4,5:1 для AA и 7:1 для AAA. Крупному тексту, то есть не менее 24 px обычного начертания или примерно 18,7 px полужирного, нужно 3:1 для AA и 4,5:1 для AAA. Значкам, границам полей ввода и другим элементам интерфейса нужно 3:1 (WCAG 1.4.11). Коэффициент не округляется вверх: 4,49:1 не проходит AA для обычного текста."],
+    ["Как обрабатываются прозрачные цвета?", "Частично прозрачный цвет текста сначала смешивается с фоном так, как это показал бы экран, и измеряется смешанный цвет. Частично прозрачный фон считается лежащим на белом. После смешивания каналы округляются до целых значений, как это отображал бы дисплей."],
+    ["Почему значения HSL немного меняются после обратного перевода?", "У экранных цветов 256 уровней на канал, поэтому большинство значений HSL и HSV не попадают точно ни на один из них. Конвертер хранит полную точность внутри и округляет только для показа: HEX и RGB до целых, HSL, HSV и CMYK до одного знака после запятой."],
+    ["Знает ли он названия цветов CSS?", "Да, все 148 именованных цветов CSS, например <code>rebeccapurple</code> и <code>cornflowerblue</code>. Введите название, чтобы перевести цвет; если цвет точно совпадает с названием, оно тоже показывается. У некоторых цветов два названия, например <code>aqua</code> и <code>cyan</code>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="col-top">
+    <div class="util-stack">
+      <div class="col-in">
+        <div class="field">
+          <label for="c-in">Цвет</label>
+          <input type="text" id="c-in" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+        </div>
+        <div class="field">
+          <label for="c-pick">Палитра</label>
+          <input type="color" id="c-pick" value="#1636a3">
+        </div>
+      </div>
+      <p class="tt__report" id="c-info" aria-live="polite"></p>
+    </div>
+    <div class="col-swatch" aria-hidden="true"><i id="c-swatch"></i></div>
+  </div>
+  <dl class="dv-rows" id="c-out">
+    <div><dt>HEX</dt><dd id="o-hex"></dd></div>
+    <div><dt>RGB</dt><dd id="o-rgb"></dd></div>
+    <div><dt>HSL</dt><dd id="o-hsl"></dd></div>
+    <div><dt>HSV / HSB</dt><dd id="o-hsv"></dd></div>
+    <div><dt>CMYK</dt><dd id="o-cmyk"></dd></div>
+    <div><dt>Название в CSS</dt><dd id="o-name"></dd></div>
+  </dl>
+
+  <h2 class="util-h">Проверка контрастности</h2>
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="k-fg">Цвет текста</label>
+        <input type="text" id="k-fg" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-fg-pick">Палитра</label>
+        <input type="color" id="k-fg-pick" value="#1636a3">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="k-bg">Цвет фона</label>
+        <input type="text" id="k-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-bg-pick">Палитра</label>
+        <input type="color" id="k-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="k-swap" type="button">Поменять цвета местами</button>
+    <button class="btn btn--sm btn--quiet" id="k-use" type="button">Использовать переведённый цвет как цвет текста</button>
+  </div>
+  <p class="tt__report" id="k-info" aria-live="polite"></p>
+  <div class="col-sample" id="k-sample" aria-hidden="true">
+    <span class="col-sample__big">Крупный текст, 24 px</span>
+    <span class="col-sample__small">Обычный текст абзаца размером 15 px, как в большинстве абзацев.</span>
+  </div>
+  <p>Коэффициент контрастности <span class="col-ratio" id="k-ratio" aria-live="polite">–</span></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Назначение</th><th scope="col">Требуется</th><th scope="col">Результат</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Обычный текст, AA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Обычный текст, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Крупный текст, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Крупный текст, AAA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Значки и элементы интерфейса, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="k-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Форматы цвета и контраст</h2>
+<p>HEX и RGB описывают экранный цвет как количества красного, зелёного и синего от 0 до 255; HEX просто записывает каждое количество двумя шестнадцатеричными цифрами, при желании с третьей парой для непрозрачности. HSL и HSV описывают те же цвета через тон (угол на цветовом круге), насыщенность и светлоту или значение, что упрощает выбор более светлого или более блёклого варианта цвета. Это разные координаты одних и тех же цветов sRGB, поэтому переводы между ними точны с точностью до округления.</p>
+<p>CMYK устроен иначе: он описывает краску, и точный перевод зависит от процесса печати. Показанное значение получено по наивной формуле (чёрный равен 1 минус самый яркий канал, а остальные краски добирают остаток): для грубой работы этого достаточно, но печатный профиль она не заменяет.</p>
+<p>Проверка контрастности использует формулу контраста WCAG 2, ту же, что применяют при аудитах доступности и в инструментах разработчика браузеров. Она измеряет только контраст по яркости, поэтому не скажет вам о сочетаниях, трудных при дальтонизме, например красного на зелёном, а для очень тонких или мелких шрифтов может потребоваться контраст выше минимального.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Нужен цвет пикселя на фото или скриншоте? Используйте «<a href="/tools/image-color-picker/">Определить цвет на изображении</a>».</li>
+  <li>Делаете QR-код в фирменных цветах? «<a href="/tools/qr-code-generator/">Генератор QR-кодов</a>» предупредит, если контраста слишком мало для считывания.</li>
+  <li>Переводите шестнадцатеричные числа, которые не являются цветами? Попробуйте «<a href="/tools/number-base-converter/">Перевод между системами счисления</a>».</li>
+  <li>Проверяете контраст в коде или для ИИ-агента? Смотрите <a href="https://tanod.dev/learn/color-contrast-checker-api.html">руководство по API проверки контрастности цветов</a>.</li>
+</ul>

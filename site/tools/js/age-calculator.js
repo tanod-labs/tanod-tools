@@ -1,6 +1,6 @@
 // Age calculator: calendar arithmetic on dates only, so time zones and daylight saving can't shift a day.
-import { $, el, setStatus, tx, txn, fmtNum } from "./core.js?v=5";
-import { parseDate, isoDate, today, dayNumber, diffYMD, addMonths, cmpDate, longDate, ymdText } from "./calccore.js?v=5";
+import { $, el, setStatus, tx, txn, fmtNum } from "./core.js?v=11";
+import { parseDate, isoDate, today, dayNumber, diffYMD, addMonths, cmpDate, longDate, ymdText } from "./calccore.js?v=11";
 
 const dob = $("#ag-dob"), on = $("#ag-on"), status = $("#status"), res = $("#ag-res");
 const fmtInt = (n) => fmtNum(n);

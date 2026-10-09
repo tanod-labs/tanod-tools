@@ -1,0 +1,147 @@
+<!--meta
+{
+  "title": "Resme yazı ekleyin: altyazı ve filigran | Tanod Tools",
+  "description": "Fotoğrafa altyazı ya da filigran yazın: yazı tipi, boyut, renk, kontur, gölge ve arka plan kutusu seçin, önizlemeye dokunarak konumlandırın. Yükleme yok.",
+  "h1": "Resme yazı ekle",
+  "lede": "Resme altyazı, başlık ya da filigran ekleyin, tam istediğiniz yere yerleştirin ve tam boyutlu sonucu kaydedin.",
+  "blurb": "Fotoğrafa biçimlendirilmiş yazıyla altyazı veya filigran ekleyin.",
+  "keywords": "resme yazı ekle fotoğrafa yazı yaz altyazı filigran başlık yazı yerleştirme etiket meme caption watermark overlay text on photo",
+  "limits": "Aynı anda tek resme yazı eklenir (en fazla 50 MB, yaklaşık 100 megapiksel). Yazı tipleri: Archivo, Bungee ve cihazınızın serif, sans-serif ve monospace yazı tipleri.",
+  "howto_title": "Resme yazı nasıl eklenir?",
+  "howto": [
+    "Bir resim seçin, ardından yazınızı girin. Yeni satır için Enter'a basın.",
+    "Yazı tipini, boyutu ve rengi seçin. Yazı zor okunuyorsa kontur, gölge veya arka plan kutusu ekleyin. Dokuz konumdan birini seçin ya da yazıyı dokunduğunuz yere koymak için önizlemeye dokunun.",
+    "Resmi özgün boyutunda almak için <strong>Yazıyı ekle ve kaydet</strong> düğmesine basın."
+  ],
+  "faq": [
+    ["Resmim yükleniyor mu?", "Hayır. Yazı, resminizin üzerine cihazınızda, tarayıcınızın içinde çizilir. Sunucuya hiçbir şey gönderilmez."],
+    ["Yazı boyutu nasıl ölçülüyor?", "Resim genişliğinin yüzdesi olarak ölçülür; böylece yazı, küçük önizlemede de tam boyutlu dosyada da resmin aynı payını kaplar. Çoğu fotoğrafta yüzde 6 okunaklı bir altyazıdır; başlık için 10 veya daha fazlasını kullanın."],
+    ["Yazıyı tam olarak nasıl yerleştirebilirim?", "Dokuz konumdan birini seçin, ardından X ve Y kaydırma kutularıyla resmin yüzdesi kadar kaydırın. Yazıyı o noktaya ortalamak için önizlemeye dokunabilir veya tıklayabilirsiniz. Önizleme odaktayken ok tuşları yazıyı yüzde yarım, Shift basılıyken yüzde beş kaydırır."],
+    ["Hangi yazı tiplerini kullanabilirim?", "Archivo ve Bungee bu siteden yüklenir. Serif, sans-serif ve monospace için cihazınızın bu adlara atadığı yazı tipi kullanılır; bu yüzden başka bir bilgisayarda biraz farklı görünebilirler. Harfler piksellerin içine çizildiği için kaydedilen resim görünümünü aynen korur."],
+    ["PNG'deki saydamlık korunuyor mu?", "Evet. Yalnızca yazının, konturun, gölgenin ve kutunun altındaki pikseller değişir; şeffaf bir PNG'nin geri kalanı şeffaf kalır. JPEG saydamlığı saklayamaz, bu yüzden JPEG olarak kaydederseniz bu alanlar beyaz olur."],
+    ["Aksanlı harfler, başka alfabeler veya emoji kullanabilir miyim?", "Evet, cihazınızın yazı tiplerinde bu karakterler varsa. Archivo ve Bungee aksanlı Latin harflerini kapsar. Diğer yazılar ve emojiler için tarayıcı, bunları içeren bir cihaz yazı tipine geçer."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Resmi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Resim seçin</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP veya AVIF. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview txt-stage">
+    <canvas id="preview" tabindex="0" role="img" aria-label="Yazınızla önizleme. Yazıyı yerleştirmek için dokunun veya tıklayın." aria-describedby="place-help"></canvas>
+  </div>
+  <p class="help" id="place-help">Yazıyı oraya koymak için resme dokunun veya tıklayın. Resim odaktayken ok tuşları yazıyı %0,5, Shift ile ok tuşları %5 kaydırır.</p>
+  <div class="opts txt-opts">
+    <div class="field txt-opts__wide">
+      <label for="text">Yazı</label>
+      <textarea id="text" rows="3" autocomplete="off" spellcheck="false" placeholder="Altyazınız">Altyazınız</textarea>
+    </div>
+    <div class="field">
+      <label for="font">Yazı tipi</label>
+      <select id="font">
+        <option value="archivo" selected>Archivo</option>
+        <option value="bungee">Bungee</option>
+        <option value="serif">Serif</option>
+        <option value="sans">Sans-serif</option>
+        <option value="mono">Monospace</option>
+      </select>
+      <label class="check"><input type="checkbox" id="bold" checked>Kalın</label>
+    </div>
+    <div class="field">
+      <label for="size">Boyut: genişliğin <span class="num" id="size-out">6</span>%'i</label>
+      <input type="range" id="size" min="1" max="40" step="0.5" value="6">
+    </div>
+    <div class="field">
+      <label for="color">Yazı rengi</label>
+      <input type="color" id="color" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Yazı hizalaması</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="left">Sola</label>
+        <label><input type="radio" name="align" value="center" checked>Ortaya</label>
+        <label><input type="radio" name="align" value="right">Sağa</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <span class="label">Kontur</span>
+      <label class="check"><input type="checkbox" id="outline" checked>Harflerin konturunu çiz</label>
+      <div class="txt-pair"><input type="color" id="outline-color" value="#111417" aria-label="Kontur rengi"><input type="range" id="outline-w" min="1" max="30" value="8" aria-label="Kontur kalınlığı"></div>
+    </div>
+    <div class="field">
+      <span class="label">Gölge</span>
+      <label class="check"><input type="checkbox" id="shadow">Gölge ekle</label>
+      <input type="color" id="shadow-color" value="#000000" aria-label="Gölge rengi">
+    </div>
+    <div class="field">
+      <span class="label">Arka plan kutusu</span>
+      <label class="check"><input type="checkbox" id="box">Yazının arkasına kutu çiz</label>
+      <div class="txt-pair"><input type="color" id="box-color" value="#111417" aria-label="Kutu rengi"></div>
+    </div>
+    <div class="field">
+      <label for="box-opacity">Kutu opaklığı: %<span class="num" id="box-opacity-out">70</span></label>
+      <input type="range" id="box-opacity" min="0" max="100" value="70">
+    </div>
+    <div class="field">
+      <label for="box-pad">Kutu iç boşluğu: yazı boyutunun %<span class="num" id="box-pad-out">40</span>'ı</label>
+      <input type="range" id="box-pad" min="0" max="150" value="40">
+    </div>
+    <fieldset class="field">
+      <legend>Konum</legend>
+      <div class="pos" role="radiogroup" aria-label="Resim üzerindeki konum">
+        <label><input type="radio" name="pos" value="0,0"><span class="visually-hidden">Sol üst</span></label>
+        <label><input type="radio" name="pos" value="1,0"><span class="visually-hidden">Üst orta</span></label>
+        <label><input type="radio" name="pos" value="2,0"><span class="visually-hidden">Sağ üst</span></label>
+        <label><input type="radio" name="pos" value="0,1"><span class="visually-hidden">Sol orta</span></label>
+        <label><input type="radio" name="pos" value="1,1"><span class="visually-hidden">Orta</span></label>
+        <label><input type="radio" name="pos" value="2,1"><span class="visually-hidden">Sağ orta</span></label>
+        <label><input type="radio" name="pos" value="0,2"><span class="visually-hidden">Sol alt</span></label>
+        <label><input type="radio" name="pos" value="1,2" checked><span class="visually-hidden">Alt orta</span></label>
+        <label><input type="radio" name="pos" value="2,2"><span class="visually-hidden">Sağ alt</span></label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="ox">Sağa kaydır (genişliğin %'si)</label>
+      <input type="number" id="ox" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="oy">Aşağı kaydır (yüksekliğin %'si)</label>
+      <input type="number" id="oy" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <fieldset class="field">
+      <legend>Şu biçimde kaydet</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Aynı</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">"Aynı" seçiliyken PNG, JPEG veya WebP biçimini korur, diğer her şey PNG olarak yazılır.</p>
+    </fieldset>
+  </div>
+  <p class="help" id="fit-help" aria-live="polite"></p>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Yazıyı ekle ve kaydet</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Fotoğraf üzerindeki yazıyı okunaklı yapmak</h2>
+<p>Resim üzerindeki yazının arkasındaki her şeyden ayrışması gerekir; fotoğraflar ise nadiren düz bir arka plan sunar. Üç araç yardımcı olur. Koyu renkli bir kontur, beyaz harflerin parlak alanlarda okunaklı kalmasını sağlar. Yumuşak bir gölge, sert bir kenar oluşturmadan yazıyı hafifçe öne çıkarır. Satırların arkasındaki yarı saydam bir kutu en sağlam kontrastı verir, ancak resmin bir kısmını örter.</p>
+<p>Boyut, resim genişliğinin yüzdesi olduğu için önizlemede gördüğünüz yerleşim, özgün resim ne kadar büyük olursa olsun dosyada da aynen çıkar. İç boşluk, kontur kalınlığı ve gölge de yazıyla birlikte ölçeklenir; böylece tam boyutta hiçbir şey ekrandakinden daha ağır görünmez.</p>
+<p>Altyazıları izleyicilerin beklediği alt üçte birlik bölüme koyun, satırları kısa tutun ve kenardan boşluk bırakın; dokuz noktalı ızgara küçük bir boşluğu kendiliğinden korur. Ortalanmış yazı başlıklara, sola hizalı yazı ise birkaç satırlık altyazılara uygundur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Resim yazı için fazla kalabalıksa önce <a href="/tools/image-filters/">Resim filtreleri</a> ile parlaklığı veya kontrastı ayarlayın.</li>
+  <li>Bitmiş resmi <a href="/tools/add-border-to-image/">Resme çerçeve ekle</a> ile çerçeveleyin.</li>
+  <li>Yazıyı bir PDF'e mi eklemeniz gerekiyor? <a href="/tools/watermark-pdf/">PDF'e filigran ekle</a> her sayfaya yazı basar.</li>
+</ul>

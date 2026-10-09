@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "MikroTik-DHCP-Server- und IP-Pool-Generator | Tanod Tools",
+  "description": "RouterOS-DHCP-Server erzeugen: IP-Pool, Server, Netzeinstellungen (Gateway, DNS, Domain, NTP) und statische Leases, gegen das Subnetz geprüft. Läuft im Browser.",
+  "h1": "MikroTik-DHCP-Server-Generator",
+  "lede": "Geben Sie Interface und Subnetz ein und erhalten Sie IP-Pool, DHCP-Server, Netzeinstellungen und statische Leases als ein geprüftes RouterOS-Skript.",
+  "blurb": "IP-Pool, DHCP-Server, Netz und statische Leases.",
+  "keywords": "mikrotik dhcp server einrichten routeros ip pool dhcp-server network gateway dns-server statische lease mac-adresse reservierung lease-time dhcp skript vlan dhcp",
+  "local_text": "Läuft in Ihrem Browser; nichts, was Sie eingeben, verlässt Ihr Gerät",
+  "limits": "Erzeugt RouterOS-v7-Syntax (auch unter v6 gültig) für einen IPv4-DHCP-Server auf einem Interface. Eigene DHCP-Optionen und Relays sind nicht abgedeckt. MikroTik und RouterOS sind Marken der SIA Mikrotīkls. Dieses Tool ist unabhängig und weder mit MikroTik verbunden noch von MikroTik unterstützt.",
+  "howto_title": "So richten Sie einen DHCP-Server auf MikroTik ein",
+  "howto": [
+    "Geben Sie das Interface, an dem die Clients hängen (eine Bridge oder ein VLAN-Interface), und dessen Subnetz ein; Gateway und Pool werden daraus vorgeschlagen.",
+    "Passen Sie Pool, DNS-Server, Domain und Lease-Zeit an und fügen Sie statische Leases für Geräte hinzu, die eine feste Adresse brauchen.",
+    "Kopieren Sie das Skript oder laden Sie die .rsc-Datei herunter und führen Sie sie aus; die Hinweise weisen auf alles hin, was einen zweiten Blick verdient."
+  ],
+  "faq": [
+    ["Aus welchen Teilen besteht ein RouterOS-DHCP-Server?", "Drei Menüs arbeiten zusammen: <code>/ip pool</code> enthält die zu vergebenden Adressen, <code>/ip dhcp-server</code> bindet einen Server an ein Interface und einen Pool, und <code>/ip dhcp-server network</code> enthält, was den Clients mitgeteilt wird: Gateway, DNS-Server, Domain und NTP-Server für dieses Subnetz. Der Router braucht außerdem seine eigene Adresse auf dem Interface, die das Skript hinzufügen kann."],
+    ["Sollen statische Leases innerhalb oder außerhalb des Pools liegen?", "Beides funktioniert: RouterOS vergibt nie eine Adresse, die eine statische Lease hält. Feste Geräte außerhalb des dynamischen Bereichs zu halten, zum Beispiel .2 bis .9 bei einem Pool ab .10, macht den Plan übersichtlicher und vermeidet Verwirrung, falls eine Lease gelöscht wird."],
+    ["Welche Lease-Zeit soll ich verwenden?", "Für ein Heim- oder Büro-LAN ist ein Tag üblich. Gästenetze und Hotspots mit vielen kurzen Besuchen fahren mit einer Stunde oder weniger besser, damit Adressen schnell in den Pool zurückkehren. Sehr kurze Leases bedeuten mehr Erneuerungen, aber in einem kleinen Netz keine nennenswerten Kosten."],
+    ["Brauche ich allow-remote-requests, damit Clients den Router als DNS nutzen?", "Ja, und genau das macht einen Router zum offenen Resolver, wenn die Firewall DNS aus dem WAN nicht verwirft. Das Tool fügt es nur hinzu, wenn Sie die Option anhaken, und erinnert Sie daran, die Input-Chain zu prüfen."],
+    ["Wird mein Netzplan irgendwohin gesendet?", "Nein. Prüfungen und Skript laufen in Ihrem Browser."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Netz</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Interface</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Subnetz</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Gateway (Router-Adresse)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Pool-Bereich</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Gateway-Adresse zum Interface hinzufügen</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Client-Einstellungen</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">DNS-Server</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Domain</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">NTP-Server</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="optional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Lease-Zeit</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Name von Server und Pool</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">Der Router beantwortet DNS für das LAN (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Statische Leases</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Statische Lease hinzufügen</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">RouterOS-Skript</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Skript kopieren</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}.rsc herunterladen</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>DHCP unter RouterOS, Teil für Teil</h2>
+<p>RouterOS hält einen DHCP-Server an drei Stellen, und ein fehlendes Teil ist der übliche Grund, warum Clients keine Adresse bekommen. Der <strong>Pool</strong> ist nur eine benannte Menge von Adressbereichen. Der <strong>Server</strong> lauscht auf einem Interface und vergibt Adressen aus seinem Pool. Der <strong>Network</strong>-Eintrag wird über das Subnetz zugeordnet und enthält die mit jeder Lease gesendeten Optionen: Gateway, DNS-Server, Domainname und NTP-Server. Das Interface braucht außerdem die eigene Adresse des Routers in diesem Subnetz, sonst hat der Server kein Netz zu bedienen.</p>
+<p>Die Seite prüft die Teile gegeneinander, bevor sie etwas schreibt: Gateway und Pool müssen im Subnetz liegen, der Pool muss Netz-, Broadcast- und Gateway-Adresse meiden, und statische Leases müssen eindeutig sein und im Subnetz liegen. Statische Leases werden mit dem Namen des Servers nach <code>/ip dhcp-server lease</code> geschrieben, sodass jedes Gerät stets dieselbe Adresse erhält.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie planen die Adressierung? Der <a href="/tools/subnet-calculator/">Subnetzrechner</a> zeigt Host-Bereich und Größe jedes Präfixes.</li>
+  <li>Ein DHCP-Server pro VLAN: Legen Sie zuerst die VLAN-Interfaces mit dem <a href="/tools/mikrotik-vlan-generator/">VLAN-Generator</a> an und führen Sie dieses Tool dann einmal pro VLAN aus.</li>
+  <li>Beantwortet der Router DNS, stellen Sie sicher, dass die <a href="/tools/mikrotik-firewall-generator/">Firewall</a> DNS aus dem Internet verwirft.</li>
+</ul>

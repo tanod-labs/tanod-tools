@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "Stima visibilità aurora: la vedrai? | Tanod Tools",
+  "description": "Inserisci un indice Kp e la tua posizione per stimare se l'aurora boreale o australe può essere visibile allo zenit o all'orizzonte, con la latitudine geomagnetica.",
+  "h1": "Stima della visibilità dell'aurora",
+  "lede": "Inserisci l'indice Kp e la tua posizione per stimare se l'aurora può essere vista allo zenit, bassa sull'orizzonte o per nulla da dove ti trovi.",
+  "blurb": "Stima la visibilità dell'aurora da Kp e latitudine geomagnetica.",
+  "keywords": "stima visibilità aurora indice kp aurora boreale aurora australe luci del nord latitudine geomagnetica ovale aurorale previsioni meteo spaziale la vedrò posso vedere",
+  "limits": "Una regola pratica approssimativa, non una previsione. Usa una latitudine geomagnetica di dipolo centrato e un margine lineare dell'ovale, e non può conoscere la posizione reale dell'ovale, la copertura nuvolosa o il buio locale. Per i valori Kp in tempo reale usa un servizio di meteo spaziale. Non per la navigazione.",
+  "howto_title": "Come stimare la visibilità dell'aurora",
+  "howto": [
+    "Inserisci latitudine e longitudine, oppure premi il pulsante della posizione.",
+    "Inserisci l'indice Kp che ti interessa, da 0 a 9 (il valore attuale o previsto da un servizio di meteo spaziale).",
+    "Leggi la tua latitudine geomagnetica, il margine stimato dell'ovale aurorale e se l'aurora può essere allo zenit o all'orizzonte. La tabella mostra ogni Kp per la tua posizione."
+  ],
+  "faq": [
+    ["Che cos'è l'indice Kp?", "Kp è una misura planetaria del disturbo geomagnetico da 0 (quiete) a 9 (tempesta estrema), calcolata ogni tre ore da magnetometri di tutto il mondo. Il Space Weather Prediction Center della NOAA pubblica i valori stimati e previsti. Un Kp più alto significa che l'aurora si sposta più vicino all'equatore."],
+    ["Che cos'è la latitudine geomagnetica?", "È la tua latitudine misurata dal polo magnetico terrestre anziché da quello geografico. L'aurora segue il campo geomagnetico, quindi è la latitudine geomagnetica, non quella geografica, a decidere fino a quanto a sud (o a nord) arrivano le luci. Alla stessa latitudine, il Nord America è più vicino al polo magnetico dell'Europa."],
+    ["Come stima lo strumento?", "Calcola la tua latitudine rispetto a un dipolo centrato il cui polo è a 80,65° N, 72,68° O, e la confronta con il margine dell'ovale aurorale vicino alla mezzanotte magnetica, assunto come 66,5° meno 2° per unità di Kp. Allo zenit significa che sei sul margine o più verso il polo. La fascia dell'orizzonte arriva a 8° di latitudine verso l'equatore rispetto ad esso."],
+    ["Quanto è buona questa approssimazione?", "È grossolana. Un dipolo ideale ignora le irregolarità del campo reale, che spostano la latitudine geomagnetica di alcuni gradi, e l'ovale è una fascia che cambia nel corso di una notte e con il vento solare. Considera il risultato una prima ipotesi. Per i dati in tempo reale, consulta la nostra guida a Kp e aurora."],
+    ["Che altro serve per vedere l'aurora?", "Buio (non crepuscolo e, idealmente, senza Luna luminosa), cielo sereno e una vista sull'orizzonte verso il polo senza luci cittadine. Il momento migliore è di solito entro un paio d'ore dalla mezzanotte magnetica locale, che è vicina alla mezzanotte locale attorno agli equinozi."],
+    ["Funziona nell'emisfero australe?", "Sì. Le luci australi (aurora australis) seguono le stesse regole attorno al polo geomagnetico sud, quindi lo strumento usa il valore assoluto della latitudine geomagnetica e ti indica l'orizzonte sud."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="ao-lat">Latitudine</label>
+    <input type="text" id="ao-lat" inputmode="decimal" autocomplete="off" value="64.8378" aria-describedby="ao-msg">
+  </div>
+  <div class="field">
+    <label for="ao-lon">Longitudine</label>
+    <input type="text" id="ao-lon" inputmode="decimal" autocomplete="off" value="-147.7164" aria-describedby="ao-msg">
+  </div>
+  <div class="field">
+    <label for="ao-kp">Indice Kp (da 0 a 9)</label>
+    <input type="text" id="ao-kp" inputmode="decimal" autocomplete="off" value="4" aria-describedby="ao-msg">
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="ao-locate" type="button">Usa la mia posizione</button>
+</div>
+<p class="note" id="ao-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="ao-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Stima</span> <span class="calc-main__val" id="ao-main"></span></p>
+  <dl class="stats" id="ao-stats"></dl>
+  <p class="help" id="ao-hint"></p>
+  <h2 class="util-h" id="ao-tab-h">Ogni Kp per questa posizione</h2>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Margine dell'ovale e visibilità per ogni valore di Kp nella tua posizione</caption>
+      <thead><tr><th scope="col">Kp</th><th scope="col">Margine dell'ovale (latitudine geomagnetica)</th><th scope="col">Dalla tua posizione</th></tr></thead>
+      <tbody id="ao-table"></tbody>
+    </table>
+  </div>
+</div>
+<p class="help">Dati Kp e aurora in tempo reale: vedi la <a href="/learn/space-weather-kp-index-aurora-api.html">guida al meteo spaziale, all'indice Kp e all'API dell'aurora</a>.</p>
+<!--explain-->
+<h2>Come funziona la stima</h2>
+<p>La latitudine geomagnetica è calcolata con un'approssimazione di dipolo centrato: sin Φ = sin φ · sin φ0 + cos φ · cos φ0 · cos(λ − λ0), dove (φ, λ) è la tua posizione e (φ0, λ0) è il polo nord geomagnetico. Il polo usato è 80,65° N, 72,68° O, il dipolo IGRF-13 per l'epoca 2020 (International Association of Geomagnetism and Aeronomy). Il polo geomagnetico sud è l'antipodo, quindi la stessa formula dà latitudini negative a sud e lo strumento ne usa il valore assoluto.</p>
+<p>Il margine verso l'equatore dell'ovale aurorale vicino alla mezzanotte magnetica è assunto come 66,5° − 2° × Kp di latitudine geomagnetica (circa 66,5° a Kp 0 e 48,5° a Kp 9). È un'approssimazione lineare degli ovali statistici di Feldstein e Starkov (1967) e dei confini basati su Kp nelle previsioni aurorali della NOAA, e non è un modello ufficiale. L'aurora si forma a 100-300 km di quota, quindi può essere vista bassa sull'orizzonte fino a circa 8° di latitudine oltre il margine quando il cielo è buio e sereno.</p>
+<p>Il dipolo centrato può discostarsi di diversi gradi dalle coordinate geomagnetiche corrette usate dagli scienziati, l'ovale cambia nel giro di ore, e nuvole, luce diurna e chiaro di luna decidono ciò che puoi effettivamente vedere. Usalo per una prima idea e controlla i dati in tempo reale prima di metterti in viaggio. Per il Kp attuale e la previsione, vedi la <a href="/learn/space-weather-kp-index-aurora-api.html">guida ai dati in tempo reale</a>. <strong>Non per la navigazione.</strong></p>

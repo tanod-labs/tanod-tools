@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Xóa dòng trùng lặp và sắp xếp dòng | Tanod Tools",
+  "description": "Xóa các dòng trùng lặp khỏi danh sách và sắp xếp dòng từ A đến Z, Z đến A, tự nhiên, theo độ dài, đảo ngược hoặc xáo trộn. Miễn phí, trong trình duyệt, không tải lên.",
+  "h1": "Xóa dòng trùng lặp",
+  "lede": "Dán một danh sách, xóa các dòng lặp lại và sắp xếp phần còn lại.",
+  "blurb": "Xóa dòng trùng lặp và sắp xếp dòng.",
+  "keywords": "xóa dòng trùng lặp, lọc dòng trùng, loại bỏ dòng trùng, xóa dòng giống nhau, sắp xếp dòng, sắp xếp danh sách theo abc, xáo trộn danh sách, xóa dòng trống, dedupe unique lines sort lines alphabetical shuffle list natural sort empty lines",
+  "limits": "Văn bản tối đa khoảng 5 MB. Kết quả cập nhật khi bạn thay đổi các tùy chọn.",
+  "howto_title": "Cách xóa dòng trùng lặp",
+  "howto": [
+    "Dán danh sách vào ô nhập, mỗi mục một dòng, hoặc mở một tệp .txt.",
+    "Chọn cách so sánh các dòng, giữ bản nào và, nếu muốn, thứ tự sắp xếp.",
+    "Sao chép kết quả hoặc tải xuống dưới dạng tệp .txt."
+  ],
+  "faq": [
+    ["Thế nào được coi là trùng lặp?", "Hai dòng trùng lặp khi chúng giống hệt nhau, từng ký tự một. Bật \"Bỏ qua chữ hoa và chữ thường\" để coi Apple và apple là cùng một dòng, và \"Cắt khoảng trắng trước khi so sánh\" để bỏ qua dấu cách và tab ở đầu và cuối mỗi dòng."],
+    ["Việc cắt khoảng trắng có thay đổi các dòng trong kết quả không?", "Có. Khi bật cắt khoảng trắng, các dấu cách ở đầu và cuối mỗi dòng bị xóa khỏi cả các dòng bạn nhận lại lẫn phép so sánh."],
+    ["Các dòng trống được xử lý thế nào?", "Khi bật \"Xóa dòng trống\", các dòng rỗng hoặc chỉ chứa dấu cách bị loại bỏ. Khi tắt, các dòng trống được giữ nguyên và không bao giờ bị coi là trùng nhau."],
+    ["Sắp xếp tự nhiên là gì?", "Sắp xếp tự nhiên hiểu các con số bên trong văn bản, nên item2 đứng trước item10. A đến Z sắp xếp từng ký tự một theo quy tắc ngôn ngữ của trình duyệt, khiến item10 đứng trước item2. Sắp xếp theo độ dài đặt các dòng ngắn nhất lên đầu và giữ thứ tự ban đầu giữa các dòng cùng độ dài."],
+    ["Việc xáo trộn có ngẫu nhiên không?", "Nó dùng bộ tạo số ngẫu nhiên an toàn của trình duyệt với thuật toán xáo trộn Fisher-Yates, nên mọi thứ tự đều có khả năng như nhau. Nhấn Xáo trộn lại để có thứ tự mới."],
+    ["Danh sách của tôi có được tải lên không?", "Không. Mọi thứ được thực hiện trong trình duyệt của bạn và không có gì được lưu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Các dòng đầu vào</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Mỗi mục một dòng."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Kết quả</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci">Bỏ qua chữ hoa và chữ thường</label>
+    <label class="check"><input type="checkbox" id="trim">Cắt khoảng trắng trước khi so sánh</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Xóa dòng trống</label>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="keep">Giữ lại</label>
+      <select id="keep"><option value="first">Lần xuất hiện đầu tiên</option><option value="last">Lần xuất hiện cuối cùng</option></select>
+    </div>
+    <div class="field">
+      <label for="sort">Sắp xếp dòng</label>
+      <select id="sort">
+        <option value="none">Giữ thứ tự ban đầu</option>
+        <option value="az">A đến Z</option>
+        <option value="za">Z đến A</option>
+        <option value="natural">Tự nhiên (số theo đúng thứ tự)</option>
+        <option value="length">Theo độ dài, ngắn nhất trước</option>
+        <option value="reverse">Thứ tự đảo ngược</option>
+        <option value="shuffle">Xáo trộn</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Dán các dòng để bắt đầu.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Sao chép kết quả</button>
+    <button class="btn" id="dl" type="button" disabled>Tải xuống .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Xáo trộn lại</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Dùng kết quả làm đầu vào</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Xóa</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Mở tệp .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Xóa dòng trùng lặp và sắp xếp dòng</h2>
+<p>Danh sách hay tích tụ các mục lặp: địa chỉ email dán từ nhiều nguồn, từ khóa, dòng log, tên tệp. Công cụ này đọc văn bản từng dòng một, ghi nhớ mỗi dòng đã thấy và bỏ các bản sao về sau (hoặc các bản trước, nếu bạn chọn giữ lần xuất hiện cuối cùng). Những dòng còn lại giữ nguyên thứ tự ban đầu trừ khi bạn chọn một kiểu sắp xếp.</p>
+<p>Báo cáo phía trên các nút cho biết có bao nhiêu dòng vào, bao nhiêu dòng ra và bao nhiêu dòng bị xóa vì trùng lặp, để bạn đối chiếu kết quả với dự kiến. Các dòng trống bị xóa theo tùy chọn được báo riêng.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Để dọn các dòng trước, hãy dùng <a href="/tools/find-and-replace/">Tìm và thay thế</a>, rồi quay lại đây.</li>
+  <li>Kiểm tra điều gì đã thay đổi giữa hai phiên bản của một danh sách bằng <a href="/tools/text-diff/">So sánh văn bản</a>.</li>
+  <li>Chỉ cần sắp xếp danh sách, với nhiều lựa chọn sắp xếp hơn? Hãy dùng <a href="/tools/sort-lines-alphabetically/">Sắp xếp dòng theo thứ tự abc</a>.</li>
+  <li>Đếm phần còn lại bằng <a href="/tools/word-counter/">Đếm từ</a>.</li>
+</ul>

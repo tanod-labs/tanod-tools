@@ -1,7 +1,7 @@
-import { $, $$, el, debounce, announce, copyText, textBlob, tx, EN, fmtNum } from "./core.js?v=5";
+import { $, $$, el, debounce, announce, copyText, textBlob, tx, EN, fmtNum } from "./core.js?v=11";
 import {
   parseHex, hexToRgb, hexToOklch, oklchToHex, wrapHue, contrastRatio, fmtRatio, wcagLabel,
-} from "./colorcore.js?v=5";
+} from "./colorcore.js?v=11";
 
 const pick = $("#cp-pick"), hexIn = $("#cp-hex"), msg = $("#cp-msg");
 const harmonies = $("#cp-harmonies"), randomOut = $("#cp-random-out");

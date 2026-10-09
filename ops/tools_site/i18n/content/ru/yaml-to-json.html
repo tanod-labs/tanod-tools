@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "YAML в JSON онлайн-конвертер | Tanod Tools",
+  "description": "YAML в JSON в браузере. Поддерживаются якоря, алиасы, ключи слияния и многодокументные файлы, ошибки указывают строку и столбец. Бесплатно и приватно.",
+  "h1": "Конвертер YAML в JSON",
+  "lede": "Вставьте YAML и получите JSON: якоря и ключи слияния раскрыты, а у любой синтаксической ошибки указана точная строка.",
+  "blurb": "Преобразование YAML в JSON.",
+  "keywords": "yaml в json конвертер yaml преобразовать yml в json разбор yaml kubernetes docker compose openapi конфигурация якоря алиасы yaml to json convert parse yml config anchors aliases",
+  "limits": "Ввод до 10 МБ. Читается YAML 1.2 только со стандартными типами; пользовательские теги вроде <code>!!python/object</code> отклоняются, а не выполняются.",
+  "howto_title": "Как преобразовать YAML в JSON",
+  "howto": [
+    "Вставьте YAML в поле или нажмите <strong>Вставить пример</strong>.",
+    "Выберите оформление JSON: 2 пробела, 4 пробела, табуляцию или <strong>Минифицировать</strong>.",
+    "Если в YAML есть синтаксическая ошибка, вы увидите её строку и столбец. В противном случае скопируйте JSON или скачайте его как файл <code>.json</code>."
+  ],
+  "faq": [
+    ["Загружается ли мой YAML?", "Нет. Разборщик YAML загружается с этого сайта при первой вставке и работает в вашем браузере. Конфигурация с паролями или ключами никуда не отправляется."],
+    ["Почему yes остаётся текстом «yes»?", "Этот инструмент следует YAML 1.2, где логическими значениями являются только <code>true</code> и <code>false</code>. Слова <code>yes</code>, <code>no</code>, <code>on</code> и <code>off</code> остаются строками, что позволяет избежать так называемой проблемы Норвегии, когда код страны <code>NO</code> превращается в <code>false</code> в парсерах YAML 1.1. Если ваш потребитель — парсер YAML 1.1, он может прочитать эти слова иначе."],
+    ["Что происходит с датами и метками времени?", "Значение вроде <code>2024-05-01</code> сохраняется как строка «2024-05-01». В JSON нет типа даты, а преобразование её в число или другой формат привело бы к потере информации."],
+    ["Что насчёт очень больших целых чисел?", "Целые числа больше 9 007 199 254 740 991 (2<sup>53</sup> − 1) записываются цифра в цифру, а не округляются, поэтому идентификатор вроде 12345678901234567890 сохраняется. Учтите, что программа, которая позже прочитает JSON обычными числами JavaScript, округлит его."],
+    ["Поддерживаются ли якоря, алиасы и ключи слияния?", "Да. Якоря <code>&amp;name</code> и алиасы <code>*name</code> раскрываются, а <code>&lt;&lt;: *name</code> сливает отображение с другим. Поскольку в JSON нет ссылок, каждый алиас записывается полностью."],
+    ["Что за предел алиасов и ограничение в 20 МБ?", "Небольшой файл YAML может использовать алиасы, которые раскрываются во что-то огромное; это называется алиас-бомбой. Файлы с более чем 10 000 алиасов отклоняются, а преобразование останавливается, если JSON превысит 20 МБ, чтобы ваша вкладка не зависла."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Вставить пример</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Очистить</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="name: example
+tags: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Оформление</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 пробела</label>
+      <label><input type="radio" name="indent" value="4">4 пробела</label>
+      <label><input type="radio" name="indent" value="tab">Табуляция</label>
+      <label><input type="radio" name="indent" value="min">Минифицировать</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Исходный текст</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Результат</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Изменение</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Результат</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Копировать</button>
+    <button class="btn" id="f-dl" type="button">Скачать .json</button>
+  </div>
+</div>
+<!--explain-->
+<h2>От YAML к JSON</h2>
+<p>YAML и JSON описывают данные одного и того же рода: отображения, списки и простые значения. YAML пишут люди, с отступами вместо фигурных скобок, комментариями и такими сокращениями, как якоря; JSON — то, чего ожидает большинство программ и API. Преобразование между ними распространено, когда манифест Kubernetes, файл Compose или описание OpenAPI нужно передать тому, что читает только JSON.</p>
+<p>У некоторых возможностей YAML нет эквивалента в JSON, поэтому конвертер их раскрывает. Якорь (<code>&amp;base</code>) помечает блок, который может использовать алиас (<code>*base</code>), а ключ слияния (<code>&lt;&lt;</code>) копирует записи отображения в другое; в JSON каждый из них превращается в полную копию. Комментарии отбрасываются, потому что JSON не может их хранить. Файл с несколькими документами, разделёнными <code>---</code>, становится массивом JSON.</p>
+<p>Правила типов соответствуют YAML 1.2: <code>true</code> и <code>false</code> — логические значения, <code>null</code> и <code>~</code> — null, числа — числа, а всё остальное, включая <code>yes</code> и <code>2024-05-01</code>, — текст. У синтаксических ошибок указаны строка и столбец, а чаще всего их причины — табуляция вместо пробелов в отступе, повторяющийся в одном отображении ключ и значение, не сдвинутое под своим ключом.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Нужно в обратную сторону? «<a href="/tools/json-to-yaml/">JSON в YAML</a>» заключает в кавычки значения вроде «yes», чтобы они пережили преобразование.</li>
+  <li>Проверьте или приведите в порядок результат с помощью «<a href="/tools/json-formatter/">Форматирования и проверки JSON</a>».</li>
+  <li>Есть табличные данные? «<a href="/tools/csv-to-json/">CSV в JSON</a>» подходит для электронных таблиц.</li>
+</ul>

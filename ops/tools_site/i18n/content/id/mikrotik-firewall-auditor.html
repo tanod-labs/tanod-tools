@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Auditor firewall MikroTik: periksa export RouterOS | Tanod Tools",
+  "description": "Tempel /export RouterOS untuk menemukan celah hardening: input chain tanpa drop akhir, WinBox atau SSH terbuka, DNS resolver terbuka, proxy, dan aturan tertutup.",
+  "h1": "Auditor firewall MikroTik",
+  "lede": "Tempel /export router Anda dan dapatkan daftar celah firewall dan hardening layanan yang umum, berurutan menurut prioritas, masing-masing dengan baris asalnya dan saran perbaikan.",
+  "blurb": "Temukan layanan terbuka, resolver terbuka, dan kesalahan aturan di export.",
+  "keywords": "audit firewall mikrotik pemeriksaan keamanan routeros tinjau export winbox terbuka dns resolver terbuka allow-remote-requests input chain drop aturan tertutup shadowed rules checklist hardening",
+  "local_text": "Export Anda diperiksa di browser dan tidak pernah meninggalkan perangkat Anda",
+  "limits": "Tinjauan heuristik atas satu export, bukan audit keamanan penuh: alat ini membaca /ip firewall filter dan nat, /ip service, DNS, proxy, SOCKS, UPnP, SNMP, server bandwidth test, akses MAC, dan user, lalu menilai keterjangkauan dari WAN. Firewall IPv6, aturan raw dan mangle, skrip, wireless, dan pengaturan VPN tidak diperiksa. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara mengaudit firewall MikroTik",
+  "howto": [
+    "Di terminal router, jalankan <code>/export hide-sensitive</code> (di v7 <code>/export</code> sudah menyembunyikan secret) lalu salin hasilnya, atau simpan dengan <code>/export file=config</code> dan buka file .rsc di sini.",
+    "Tempel ke kotak yang tersedia. Opsional, tempel juga <code>/user print</code>, karena export tidak memuat user.",
+    "Kerjakan temuan dari atas. Masing-masing menunjukkan baris yang dimaksud dan saran perbaikan; terapkan perubahan dengan Safe Mode (mode aman) aktif."
+  ],
+  "faq": [
+    ["Amankah menempel konfigurasi saya di sini?", "Export dibaca oleh JavaScript di halaman ini dan tidak pernah meninggalkan perangkat Anda: tidak ada upload, tidak ada pemrosesan di server, dan kebijakan keamanan halaman memblokir koneksi ke situs lain. Meski begitu, gunakan <code>/export hide-sensitive</code> di v6 (v7 menyembunyikan secret secara default) agar password dan key sama sekali tidak ada di teks."],
+    ["Bagaimana auditor memutuskan sebuah layanan terbuka?", "Alat ini mengenali interface WAN dari interface list, aturan masquerade, DHCP client, dan PPPoE client, lalu menelusuri input chain seperti koneksi baru dari internet ke port layanan itu, mengikuti jump. Jika aturan accept cocok lebih dulu, atau tidak ada yang men-drop paket sebelum akhir chain, layanan dianggap terjangkau. Aturan dengan kondisi yang tidak bisa dinilai dihitung sebagai kemungkinan menerima dan tidak pernah sebagai drop, sehingga alat ini cenderung memperingatkan Anda."],
+    ["Apa arti \"aturan tidak akan pernah cocok\"?", "Aturan sebelumnya di chain yang sama mencocokkan semua paket yang akan dicocokkan aturan berikutnya, lalu menerima atau men-drop-nya, sehingga aturan berikutnya tidak pernah melihat paket. Biasanya ini aturan yang ditambahkan di akhir chain, bukan di atas aturan catch-all, dan itu sebabnya aturan baru \"tidak berfungsi\"."],
+    ["Mengapa DNS resolver terbuka berbahaya?", "Dengan allow-remote-requests=yes router menjawab DNS di semua interface. Jika input chain tidak men-drop DNS dari WAN, siapa pun bisa memakainya untuk memperkuat serangan DDoS, dan ISP rutin memblokir atau memperingatkan pelanggan yang routernya begitu."],
+    ["Auditor tidak menemukan apa pun. Apakah router saya aman?", "Belum tentu. Alat ini memeriksa sekumpulan kesalahan umum berdampak besar pada apa yang terlihat di export. Alat ini tidak melihat kerentanan firmware di luar beberapa yang diketahui, password user, skrip terjadwal, atau apa pun di luar menu yang tercantum di bawah alat. Jaga RouterOS tetap terbaru dan periksa sisanya secara manual."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-audit" id="au">
+  <div class="ros-paste" id="au-form">
+    <div class="field">
+      <label for="au-in">Export RouterOS</label>
+      <textarea id="au-in" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/ip firewall filter&#10;add action=accept chain=input connection-state=established,related&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}Buka file .rsc<input type="file" id="au-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="au-sample" type="button">Coba contoh yang lemah</button>
+    </div>
+    <details class="ros-more">
+      <summary>Opsional: akun user (/user print)</summary>
+      <div class="field">
+        <label for="au-users">Output /user print</label>
+        <textarea id="au-users" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+      </div>
+    </details>
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Heuristik, bukan audit penuh.</strong> Alat ini memeriksa kesalahan umum pada apa yang terlihat di export. Hasil bersih tidak membuktikan router aman.</span></p>
+  </div>
+  <div class="ros-results" id="au-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="au-copy" type="button" hidden>Salin laporan</button></div>
+</div>
+<!--explain-->
+<h2>Apa yang diperiksa auditor</h2>
+<p>Auditor membaca menu-menu export yang menentukan seberapa terbuka sebuah router. Di firewall, alat ini mencari <strong>input chain tanpa default deny</strong> (RouterOS menerima apa pun yang sampai di akhir chain), jalur cepat <strong>established/related</strong> dan <strong>drop paket invalid</strong> yang hilang, forward chain yang membiarkan koneksi baru dari WAN menjangkau LAN, aturan accept-semua, dan <strong>aturan yang tidak akan pernah cocok</strong> karena aturan sebelumnya sudah mengambil semua paketnya. Setelah itu alat ini menghitung, port demi port, apakah WinBox, SSH, telnet, FTP, WebFig, dan API bisa dijangkau dari internet, dengan memperhitungkan pembatasan alamat pada tiap layanan.</p>
+<p>Di luar firewall, alat ini menandai <strong>DNS resolver terbuka</strong>, web proxy atau SOCKS proxy yang aktif (tanda umum router yang dibobol), UPnP, SNMP dengan community default, server bandwidth test, MAC Telnet dan MAC WinBox di semua interface, port forward yang mempublikasikan RDP, SMB, database, atau SSH ke seluruh internet, akun <code>admin</code> bawaan jika Anda menempel <code>/user print</code>, dan versi RouterOS dengan kebocoran kredensial WinBox tahun 2018.</p>
+<h3>Yang tidak diperiksa</h3>
+<ul>
+  <li>Firewall IPv6, tabel raw dan mangle, skrip dan entri scheduler, keamanan wireless, pengaturan VPN dan IPsec, serta kekuatan password.</li>
+  <li>Aturan dan layanan dinamis yang ditambahkan paket saat runtime, yang tidak pernah muncul di export.</li>
+  <li>Apa pun yang bergantung pada jaringan Anda di luar router. Perbaiki temuannya, lalu buat baseline bersih dengan <a href="/tools/mikrotik-firewall-generator/">generator firewall MikroTik</a> dan bandingkan hasilnya dengan <a href="/tools/routeros-export-diff/">RouterOS export diff</a>.</li>
+</ul>

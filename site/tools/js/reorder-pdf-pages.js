@@ -1,6 +1,6 @@
-import { $, baseName, runJob, showResults, clearNode, announce, tx, txn } from "./core.js?v=5";
-import { pagesToNewDoc, saveDoc } from "./pdfcore.js?v=5";
-import { singlePdf, lazyThumbs, pageGrid } from "./pdfpages.js?v=5";
+import { $, baseName, runJob, showResults, clearNode, announce, tx, txn } from "./core.js?v=11";
+import { pagesToNewDoc, saveDoc } from "./pdfcore.js?v=11";
+import { singlePdf, lazyThumbs, pageGrid } from "./pdfpages.js?v=11";
 
 const picker = $("#picker");
 const gridBox = $("#grid");

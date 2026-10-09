@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Trova e sostituisci testo online, con regex | Tanod Tools",
+  "description": "Trova e sostituisci testo nel browser con maiuscole/minuscole, parola intera ed espressioni regolari facoltative con gruppi $1. Gratis, nulla viene caricato.",
+  "h1": "Trova e sostituisci testo",
+  "lede": "Sostituisci parole o pattern in un blocco di testo e guarda quante corrispondenze ci sono prima di sostituire.",
+  "blurb": "Trova e sostituisci con maiuscole/minuscole, parola intera e regex.",
+  "keywords": "trova e sostituisci sostituire testo cerca e sostituisci find replace regex espressione regolare sostituzione di massa ricerca",
+  "limits": "Testo fino a circa 5 MB. I pattern regex che richiedono più di 2 secondi vengono interrotti.",
+  "howto_title": "Come trovare e sostituire il testo",
+  "howto": [
+    "Incolla il testo nella casella oppure apri un file .txt.",
+    "Scrivi cosa cercare e con cosa sostituirlo. Il numero di corrispondenze si aggiorna mentre scrivi.",
+    "Premi <strong>Sostituisci tutto</strong>, poi copia il risultato o scaricalo."
+  ],
+  "faq": [
+    ["La ricerca è letterale o per pattern?", "Letterale per impostazione predefinita: ciò che scrivi viene cercato esattamente, compresi caratteri come . e *. Attiva \"Espressione regolare\" per usare la sintassi delle espressioni regolari di JavaScript."],
+    ["Come si usano i gruppi nella sostituzione?", "In modalità espressione regolare, $1, $2 e così via inseriscono il testo trovato dal primo, dal secondo (e così via) gruppo tra parentesi, $& inserisce l'intera corrispondenza e $&lt;name&gt; inserisce un gruppo con nome. Per esempio, cercando (\\w+)@(\\w+) e sostituendo con $2 at $1, bob@example diventa example at bob. In modalità letterale la sostituzione viene inserita esattamente come l'hai scritta."],
+    ["Che cosa fa Parola intera?", "Cerca il testo solo quando non fa parte di una parola più lunga: cercando gatto non trova gattino. In modalità letterale, lettere, cifre e trattino basso contano come caratteri di parola in qualsiasi alfabeto. In modalità espressione regolare il tuo pattern viene racchiuso tra delimitatori di parola (\\b), che riconoscono solo A-Z, cifre e trattino basso."],
+    ["Che cos'è il limite di 2 secondi?", "Alcuni pattern, come (a+)+$, possono richiedere un tempo lunghissimo su certi testi. La modalità espressione regolare gira in un worker separato in background; se dopo 2 secondi non ha finito viene interrotta e ti viene detto che il pattern ha impiegato troppo, così la pagina non si blocca mai."],
+    ["Il pattern funziona su più righe?", "In modalità espressione regolare ^ e $ corrispondono all'inizio e alla fine di ogni riga e il punto non corrisponde a un'interruzione di riga. Le maiuscole/minuscole vengono ignorate a meno che non sia attiva l'opzione Maiuscole/minuscole."],
+    ["Il mio testo viene caricato?", "No. Tutto funziona nel tuo browser e nulla viene conservato né inviato."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Il tuo testo</label>
+    <textarea id="text" spellcheck="false" placeholder="Scrivi o incolla qui il tuo testo."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Trova</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Sostituisci con</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Maiuscole/minuscole</label>
+    <label class="check"><input type="checkbox" id="whole">Parola intera</label>
+    <label class="check"><input type="checkbox" id="regex">Espressione regolare</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Sintassi delle espressioni regolari di JavaScript. Nella sostituzione usa $1, $2 per i gruppi e $&amp; per l'intera corrispondenza.</p>
+  <p class="tt__report" id="info" aria-live="polite">Scrivi cosa vuoi trovare.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Sostituisci tutto</button>
+    <button class="btn btn--quiet" id="clear" type="button">Cancella testo</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Apri un file .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Risultato</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Copia risultato</button>
+      <button class="btn" id="dl" type="button">Scarica .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Usa il risultato come testo</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Sostituire il testo in blocco</h2>
+<p>Trova e sostituisci modifica ogni occorrenza di una parola o di un pattern in un solo passaggio. Il conteggio delle corrispondenze si aggiorna mentre scrivi, così vedi fin dove arriva una modifica prima di applicarla, e il risultato compare in una casella separata: il testo originale non viene mai sovrascritto finché non scegli "Usa il risultato come testo".</p>
+<p>Le espressioni regolari permettono di descrivere una forma anziché una stringa fissa: una sequenza di cifre, una data, una parola seguita da una virgola. I gruppi tra parentesi possono essere riordinati nella sostituzione con $1, $2 e così via. Poiché un pattern scritto male può girare per moltissimo tempo, i pattern vengono eseguiti in un worker in background che si interrompe dopo due secondi.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Costruisci e correggi prima il pattern nel <a href="/tools/regex-tester/">Tester di regex</a>, che elenca ogni corrispondenza e i suoi gruppi.</li>
+  <li>Cambia le maiuscole con <a href="/tools/case-converter/">Converti maiuscole e minuscole</a>.</li>
+  <li>Controlla la modifica con <a href="/tools/text-diff/">Confronta due testi</a>.</li>
+  <li>Elimina le righe ripetute con <a href="/tools/remove-duplicate-lines/">Rimuovi righe duplicate</a>.</li>
+</ul>

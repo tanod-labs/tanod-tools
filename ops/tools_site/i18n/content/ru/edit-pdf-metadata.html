@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "Изменить или удалить метаданные PDF онлайн | Tanod Tools",
+  "description": "Просматривайте и редактируйте название, автора, тему, ключевые слова и даты PDF или удалите все метаданные перед отправкой. Файл не загружается.",
+  "h1": "Изменить метаданные PDF",
+  "lede": "Посмотрите, что PDF сообщает о себе, измените поля или удалите их все перед отправкой.",
+  "blurb": "Изменение или удаление названия, автора и других свойств PDF.",
+  "keywords": "метаданные pdf свойства pdf название автор удалить метаданные очистить метаданные xmp info pdf properties title author remove metadata strip",
+  "limits": "Один PDF за раз, до 200 МБ. PDF, защищённые паролем, редактировать нельзя.",
+  "howto_title": "Как изменить метаданные PDF",
+  "howto": [
+    "Выберите файл PDF или перетащите его на страницу. Его текущие свойства появятся в форме.",
+    "Измените нужные поля или нажмите <strong>Удалить все метаданные</strong>, чтобы очистить их.",
+    "Нажмите <strong>Сохранить изменения</strong> и скачайте обновлённый PDF."
+  ],
+  "faq": [
+    ["Загружается ли мой PDF?", "Нет. Свойства читаются и перезаписываются в вашем браузере открытой библиотекой pdf-lib. Ничего не отправляется на сервер."],
+    ["Что делает «Удалить все метаданные»?", "Она удаляет все записи словаря сведений о документе (название, автор, тема, ключевые слова, создатель, производитель и даты) и убирает встроенный поток метаданных XMP, который многие программы записывают как вторую копию тех же сведений. Содержимое страниц не затрагивается, поэтому текст, изображения и любые видимые на страницах имена остаются. В некоторых файлах есть другие личные данные, например комментарии или значения полей формы; этот инструмент их не меняет."],
+    ["Будет ли у сохранённого файла то же имя?", "Да. Скачанный файл получает исходное имя, например report.pdf, поэтому убедитесь, что открываете новую копию. Ваш исходный файл не меняется."],
+    ["Почему при редактировании полей отмечен пункт XMP?", "Многие программы просмотра и поиска сначала читают поток XMP. Если он остаётся в файле, он может по-прежнему показывать старое название или автора, и правка будет казаться безрезультатной. Отмеченный пункт удаляет этот поток при сохранении."],
+    ["Меняет ли сохранение другие свойства?", "Меняются только те поля, которые вы редактируете. Инструмент не добавляет своё название производителя или дату изменения, если вы не зададите их сами."],
+    ["Можно ли изменять даты?", "Да. Снимите флажок <em>Сохранить исходные даты</em> и задайте новые значения по вашему местному времени. Если оставить флажок, даты не изменятся."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Перетащите сюда PDF</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Выбрать PDF</span></label>
+  <p class="drop__hint">Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <dl class="stats" id="stats">
+    <div><dt>Страниц</dt><dd id="s-pages"></dd></div>
+    <div><dt>Версия PDF</dt><dd id="s-ver"></dd></div>
+    <div><dt>Поток XMP</dt><dd id="s-xmp"></dd></div>
+  </dl>
+  <div class="opts">
+    <div class="field"><label for="m-title">Название</label><input id="m-title" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-author">Автор</label><input id="m-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-subject">Тема</label><input id="m-subject" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-keywords">Ключевые слова</label><input id="m-keywords" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-creator">Создатель (программа, создавшая файл)</label><input id="m-creator" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-producer">Производитель (программа, сохранившая файл)</label><input id="m-producer" type="text" autocomplete="off"></div>
+    <div class="field"><label for="m-created">Создан</label><input id="m-created" type="datetime-local" step="1"></div>
+    <div class="field"><label for="m-modified">Изменён</label><input id="m-modified" type="datetime-local" step="1"></div>
+    <div class="field opts__full">
+      <label class="check"><input type="checkbox" id="keep-dates" checked> Сохранить исходные даты</label>
+      <label class="check"><input type="checkbox" id="drop-xmp"> Также удалить встроенный поток метаданных XMP</label>
+      <span class="help" id="xmp-help"></span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Сохранить изменения</button>
+    <button class="btn" id="wipe" type="button">Удалить все метаданные</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+  </div>
+  <p class="help">Скачанный файл сохраняет исходное имя. Пустые поля удаляются из файла.</p>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Что такое метаданные PDF и зачем их менять</h2>
+<p>Каждый PDF может нести несколько описательных полей: название, автора, тему, ключевые слова, программу, создавшую файл, и даты создания и последнего изменения. Они хранятся в словаре сведений о документе, а многие программы записывают и вторую копию в виде пакета XMP — блока XML, прикреплённого к файлу.</p>
+<p>Эти поля видны в свойствах файла, результатах поиска и заголовках вкладок браузера, поэтому неверное название или забытое имя автора могут оказаться неловкими, когда документ уходит из ваших рук. Инструмент читает их в вашем браузере, позволяет исправить или очистить. Содержимое страниц никогда не меняется.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Очищаете метаданные у фотографий? Используйте «<a href="/tools/remove-exif/">Удалить EXIF-данные</a>».</li>
+  <li>Объединяете файлы? «<a href="/tools/merge-pdf/">Объединить PDF</a>» создаёт новый документ, поэтому название задайте потом здесь.</li>
+</ul>

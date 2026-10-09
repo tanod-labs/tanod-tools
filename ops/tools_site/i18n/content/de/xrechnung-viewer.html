@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "XRechnung-Viewer: XRechnung XML online anzeigen | Tanod Tools",
+  "description": "Öffnen Sie eine XRechnung (UBL oder CII XML) und lesen Sie sie wie eine normale Rechnung. Drucken, als PDF speichern oder JSON exportieren. Kostenlos, ohne Upload.",
+  "h1": "XRechnung-Viewer",
+  "lede": "Öffnen Sie eine XRechnung als XML-Datei und lesen Sie sie wie eine gewöhnliche Rechnung: Verkäufer, Käufer, Rechnungspositionen, Umsatzsteuer und Zahlungsangaben. Die Datei wird in diesem Tab gelesen und nie hochgeladen.",
+  "blurb": "XRechnung-XML als normale Rechnung lesen, drucken oder als JSON exportieren.",
+  "keywords": "xrechnung viewer xrechnung anzeigen xrechnung lesen xrechnung xml öffnen xrechnung visualisieren xrechnung online ansehen e-rechnung viewer e-rechnung lesen e-rechnung anzeigen xrechnung ubl xrechnung cii leitweg-id xrechnung als pdf xrechnung in pdf umwandeln",
+  "limits": "Eine Datei auf einmal, bis 25 MB; angezeigt werden die ersten 5.000 Rechnungspositionen. Gelesen wird XRechnung 3.x als UBL 2.1 Invoice oder CreditNote sowie als UN/CEFACT CII. Das ist ein Viewer, kein Validator: Die Datei wird weder gegen die Regeln der XRechnung oder von EN 16931 geprüft, noch wird etwas gesendet oder empfangen.",
+  "howto_title": "So öffnen Sie eine XRechnung",
+  "howto": [
+    "Wählen Sie die XRechnung-XML-Datei auf Ihrem Computer aus oder ziehen Sie sie auf die Seite. Auch ein ZUGFeRD-PDF oder eine signierte .p7m-Datei funktioniert.",
+    "Lesen Sie die Rechnung, die erscheint: Beteiligte, Datumsangaben, Rechnungspositionen, Umsatzsteuer-Aufschlüsselung und Zahlungsangaben. Nichts verlässt Ihr Gerät.",
+    "Mit <strong>Drucken oder als PDF speichern</strong> erhalten Sie eine Papier- oder PDF-Kopie, mit <strong>JSON herunterladen</strong> die Daten und mit <strong>Roh-XML anzeigen</strong> den Quelltext."
+  ],
+  "faq": [
+    [
+      "Wird meine Rechnung hochgeladen?",
+      "Nein. Die Datei wird in Ihrem Browser mit dessen eingebautem XML-Parser gelesen und auf dieser Seite angezeigt. Kein Server erhält sie, und beim Schließen des Tabs ist alles gelöscht. Sie können das in den Entwicklertools Ihres Browsers prüfen: Der Reiter „Netzwerk“ bleibt leer, während Sie eine Datei öffnen."
+    ],
+    [
+      "Welche XRechnung-Dateien lassen sich öffnen?",
+      "XRechnung 3.x in beiden Syntaxen: UBL 2.1 (Invoice und CreditNote) und UN/CEFACT CII. Ältere XRechnung-Dateien der Version 2.x haben dieselbe Struktur und lassen sich in der Regel ebenfalls öffnen. Die Seite zeigt, was in der Datei steht; gegen die XRechnung-Regeln wird sie nicht geprüft."
+    ],
+    [
+      "Ist das ein Validator?",
+      "Nein, es ist ein Viewer. Ob eine XRechnung gültig ist, finden Sie mit einem Validator wie dem KoSIT-Validator heraus. Diese Seite zeigt auch Dateien an, die ein Validator ablehnen würde, und sie übermittelt keine Rechnung an eine Plattform oder an das Peppol-Netzwerk."
+    ],
+    [
+      "Warum lehnt die Seite manche XML-Dateien ab?",
+      "Eine Datei mit einer DOCTYPE- oder ENTITY-Deklaration wird abgelehnt, bevor sie verarbeitet wird, denn damit lassen sich lokale Dateien auslesen oder Arbeitsspeicher aufbrauchen. Echte XRechnungen enthalten so etwas nie. Dateien über 25 MB werden ebenfalls abgelehnt, und es werden nur die ersten 5.000 Rechnungspositionen angezeigt."
+    ],
+    [
+      "Was passiert mit angehängten Dokumenten?",
+      "Eine XRechnung kann eingebettete Dokumente enthalten, etwa einen Leistungsnachweis oder eine PDF-Kopie. Sie werden mit einer Schaltfläche zum Herunterladen aufgelistet und nie geöffnet oder auf der Seite angezeigt. Der Dateiname wird bereinigt und der Download nutzt einen allgemeinen Dateityp; öffnen Sie sie nur, wenn Sie dem Absender vertrauen."
+    ],
+    [
+      "Wie erhalte ich ein PDF der Rechnung?",
+      "Klicken Sie auf <strong>Drucken oder als PDF speichern</strong> und wählen Sie im Druckdialog Ihres Browsers „Als PDF speichern“ als Drucker. Gedruckt wird nur die Rechnung, nicht der Rest der Seite."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Warum eine XRechnung schwer zu lesen ist</h2>
+<p>Eine XRechnung ist eine Rechnung, die für Computer geschrieben wurde. Die Datei ist XML: Hunderte ausgezeichnete Werte mit Namen wie <code>cbc:PayableAmount</code> und ganz ohne Layout. Seit dem 1. Januar 2025 muss jedes Unternehmen in Deutschland strukturierte E-Rechnungen empfangen können, sodass viele diese Dateien nun per E-Mail oder über ein Portal erhalten und nicht lesen können. Diese Seite verwandelt das XML wieder in die Rechnung, die Sie erwarten: wer verkauft, wer kauft, was geliefert wurde, wie viel Umsatzsteuer anfällt und wie gezahlt wird.</p>
+<p>Die XRechnung ist das deutsche Profil der europäischen Norm EN 16931. Es gibt sie in zwei XML-Syntaxen, UBL 2.1 und UN/CEFACT Cross Industry Invoice (CII). Beide werden hier gelesen und ergeben dieselbe Rechnung. Auch die Käuferreferenz im Kopf (bei öffentlichen Auftraggebern die Leitweg-ID) und die elektronischen Adressen von Verkäufer und Käufer werden angezeigt.</p>
+<h2>Was angezeigt wird und was nicht</h2>
+<p>Sie sehen die Beteiligten mit USt-IdNr. und Adressen, die Datumsangaben und Referenzen, jede Rechnungsposition mit Menge, Einheit, Preis und Umsatzsteuer, Nachlässe und Zuschläge, die Umsatzsteuer-Aufschlüsselung, die Summen, die Zahlungsangaben mit IBAN und BIC, die Hinweise und eine Liste der angehängten Dokumente. Der Viewer prüft die Rechnung nicht gegen die XRechnung-Regeln, die Codelisten oder die Rechenwerte (dafür brauchen Sie einen Validator), und er sendet die Rechnung nirgendwohin und ruft sie auch nicht von einer Plattform ab.</p>
+<p>Der JSON-Download enthält dieselben Angaben als reine Daten, benannt nach den Geschäftsbegriffen (Business Terms) der EN 16931: Rechnungsnummer, Datumsangaben, Währung, Beteiligte, Positionen, Umsatzsteuer-Aufschlüsselung, Summen und Zahlung. Beträge sind Zeichenketten mit genau den Nachkommastellen der Rechnung, es wird also nichts gerundet.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Eine Rechnung, die als PDF mit eingebettetem XML (ZUGFeRD oder Factur-X) eingegangen ist, öffnen Sie im <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD-Viewer (Factur-X)</a>; diese Seite nimmt sie aber ebenfalls an.</li>
+  <li>Rechnungen aus dem Peppol-Netzwerk sind meist UBL: Der <a href="/tools/peppol-ubl-invoice-viewer/">Peppol-/UBL-Viewer</a> öffnet sie.</li>
+  <li>Um eine Rechnung als PDF aufzubewahren, klicken Sie auf „Drucken oder als PDF speichern“ und wählen „Als PDF speichern“.</li>
+</ul>

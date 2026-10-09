@@ -1,5 +1,5 @@
-import { $, $$, el, copyText, tx, EN, LOCALE, dateFormat } from "./core.js?v=5";
-import { fillZoneSelect, zoneOf, wallFields, offsetMinutes, fmtOffset, fmtWall, weekday, zoneAbbr, resolveWall, pad, fmtYear } from "./tzcore.js?v=5";
+import { $, $$, el, copyText, tx, EN, LOCALE, dateFormat } from "./core.js?v=11";
+import { fillZoneSelect, zoneOf, wallFields, offsetMinutes, fmtOffset, fmtWall, weekday, zoneAbbr, resolveWall, pad, fmtYear } from "./tzcore.js?v=11";
 
 const MAX_MS = 8.64e15;
 const UNIT_EXP = { s: 9n, ms: 6n, us: 3n, ns: 0n };

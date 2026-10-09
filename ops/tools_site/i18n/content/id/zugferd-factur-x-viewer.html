@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Penampil ZUGFeRD / Factur-X: baca XML di dalam PDF | Tanod Tools",
+  "description": "Ambil faktur XML dari PDF ZUGFeRD atau Factur-X dan baca sebagai faktur biasa. Cetak atau ekspor JSON. Gratis, tanpa unggah.",
+  "h1": "Penampil ZUGFeRD / Factur-X",
+  "lede": "Buka PDF ZUGFeRD atau Factur-X dan lihat data faktur yang tersembunyi di dalamnya. XML terlampir diambil dari PDF di browser Anda dan ditampilkan sebagai faktur. File tidak pernah meninggalkan perangkat Anda.",
+  "blurb": "Ambil faktur XML dari PDF ZUGFeRD atau Factur-X dan baca isinya.",
+  "keywords": "penampil zugferd zugferd viewer penampil factur-x factur-x viewer baca pdf zugferd buka pdf factur-x ambil xml dari pdf faktur elektronik pdf xml tertanam pdf/a-3 zugferd xml factur-x xml cara membaca faktur zugferd",
+  "limits": "Satu file sekali proses, hingga 25 MB. Memerlukan PDF/A-3 dengan file faktur terlampir (factur-x.xml, zugferd-invoice.xml, atau xrechnung.xml); PDF biasa tidak memiliki data faktur, dan halaman ini akan memberi tahu. Halaman PDF tidak ditampilkan, hanya data di dalamnya. Hanya penampil: tanpa validasi, dan tidak ada yang dikirim ke mana pun.",
+  "howto_title": "Cara membaca PDF ZUGFeRD atau Factur-X",
+  "howto": [
+    "Pilih PDF ZUGFeRD atau Factur-X, atau seret ke halaman ini. File XML juga bisa.",
+    "Halaman ini menemukan XML terlampir di dalam PDF dan menampilkannya sebagai faktur: para pihak, baris, PPN, total, dan rincian pembayaran.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong> untuk salinan yang rapi, <strong>Unduh JSON</strong> untuk datanya, atau <strong>Unduh XML</strong> untuk file yang ada di dalam PDF."
+  ],
+  "faq": [
+    [
+      "Apakah PDF saya diunggah?",
+      "Tidak. PDF dibuka di browser Anda dengan pustaka open source pdf.js, XML terlampir dibaca di sana, dan tidak ada yang dikirim ke server. Semuanya terhapus begitu Anda menutup tab."
+    ],
+    [
+      "Apa bedanya ZUGFeRD dan Factur-X?",
+      "Keduanya standar yang sama. ZUGFeRD adalah nama Jerman dan Factur-X nama Prancis; ZUGFeRD 2 dan Factur-X 1 identik secara teknis. Keduanya berupa dokumen PDF/A-3 dengan faktur XML (UN/CEFACT CII) sebagai lampiran. Profilnya (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED, atau XRECHNUNG) menentukan seberapa banyak data yang dibawa XML."
+    ],
+    [
+      "Mengapa muncul pesan bahwa PDF saya tidak berisi data faktur?",
+      "PDF biasa hanyalah gambar sebuah faktur. Data terstruktur hanya ada jika program yang membuat PDF itu melampirkan XML-nya. Periksa apakah ada file terlampir di aplikasi pembaca PDF Anda. Jika tidak ada, PDF tersebut bukan faktur elektronik; untuk membaca teksnya, coba <a href=\"/tools/pdf-to-text/\">PDF ke teks</a>."
+    ],
+    [
+      "Profil mana saja yang bisa dibaca?",
+      "Semua profil yang memakai XML CII. MINIMUM dan BASIC WL memuat total tanpa baris item, dan halaman ini menyebutkannya; BASIC, EN 16931, EXTENDED, dan XRECHNUNG memuat baris item. Format ZUGFeRD 1.0 yang lama tidak didukung."
+    ],
+    [
+      "Apakah halaman PDF dibandingkan dengan XML-nya?",
+      "Tidak. Halaman PDF tidak ditampilkan dan tidak ada yang dibandingkan. Pada format hibrida, XML umumnya dianggap sebagai data faktur yang sah, jadi itulah yang Anda lihat di sini."
+    ],
+    [
+      "Apakah dokumen lampiran dibuka?",
+      "Tidak. Dokumen yang dilampirkan di dalam XML (misalnya lembar kerja jam kerja) hanya dicantumkan dengan tombol Unduh. Nama file dibersihkan dan unduhan memakai tipe file generik; buka hanya jika Anda memercayai pengirimnya."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>PDF yang sekaligus faktur</h2>
+<p>File ZUGFeRD atau Factur-X tampak seperti PDF faktur biasa, tetapi membawa salinan kedua faktur dalam bentuk XML, yang dilampirkan pada PDF seperti lampiran email pada sebuah pesan. Manusia membaca halamannya; program membaca XML-nya. Sejak 1 Januari 2025 setiap usaha di Jerman wajib mampu menerima faktur elektronik terstruktur, dan Prancis mewajibkan hal yang sama mulai 1 September 2026, sehingga PDF hibrida seperti ini kini makin sering ditemui.</p>
+<p>Halaman ini membuka PDF di browser Anda, membaca daftar file terlampir, lalu mencoba file XML dengan urutan berikut: <code>factur-x.xml</code>, <code>zugferd-invoice.xml</code>, <code>xrechnung.xml</code>, lalu file XML lainnya. File pertama yang berupa faktur dalam format yang didukung akan ditampilkan. Halaman PDF-nya sendiri tidak digambar.</p>
+<h2>Profil</h2>
+<p>Profil menunjukkan seberapa banyak data yang dimuat XML. MINIMUM dan BASIC WL hanya berisi data kepala dan total. BASIC menambahkan baris item. EN 16931 (pada ZUGFeRD lama disebut COMFORT) adalah standar Eropa lengkap. EXTENDED melampauinya, dan XRECHNUNG adalah profil sektor publik Jerman. Halaman ini menampilkan isi setiap file dan tidak memeriksanya terhadap aturan profil.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Jika PDF faktur tidak memiliki lampiran, minta XML-nya atau versi ZUGFeRD / Factur-X kepada pengirim.</li>
+  <li>File XML polos dari standar yang sama juga bisa dibuka di sini; XML XRechnung juga dibaca oleh <a href="/tools/xrechnung-viewer/">Penampil XRechnung</a>.</li>
+  <li>Gunakan Unduh XML untuk menyimpan data terstruktur yang ada di dalam PDF.</li>
+</ul>

@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Tạo DHCP server và IP pool MikroTik | Tanod Tools",
+  "description": "Tạo DHCP server RouterOS: IP pool, server, cài đặt network (gateway, DNS, domain, NTP) và static lease, được kiểm tra theo subnet. Chạy trong trình duyệt.",
+  "h1": "Tạo DHCP server MikroTik",
+  "lede": "Nhập interface và subnet, rồi nhận IP pool, DHCP server, cài đặt network và static lease dưới dạng một script RouterOS đã được kiểm tra.",
+  "blurb": "IP pool, DHCP server, network và static lease.",
+  "keywords": "cài đặt dhcp server mikrotik routeros ip pool dhcp-server network gateway dns-server static lease giữ địa chỉ theo mac lease-time script dhcp vlan dhcp mikrotik dhcp server setup mac address reservation",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không bao giờ rời khỏi thiết bị",
+  "limits": "Tạo cú pháp RouterOS v7 (cũng hợp lệ trên v6) cho DHCP server IPv4 trên một interface. Không bao gồm tùy chọn DHCP tùy chỉnh và relay. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập và không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách thiết lập DHCP server trên MikroTik",
+  "howto": [
+    "Nhập interface mà các client đang dùng (bridge hoặc interface VLAN) và subnet của nó; gateway và pool sẽ được gợi ý từ đó.",
+    "Điều chỉnh pool, DNS server, domain và lease time, rồi thêm static lease cho các thiết bị cần địa chỉ cố định.",
+    "Sao chép script hoặc tải tệp .rsc xuống và chạy; các ghi chú chỉ ra mọi chỗ cần xem lại."
+  ],
+  "faq": [
+    ["DHCP server trên RouterOS gồm những phần nào?", "Ba menu phối hợp với nhau: <code>/ip pool</code> chứa các địa chỉ sẽ cấp phát, <code>/ip dhcp-server</code> gắn một server với một interface và một pool, và <code>/ip dhcp-server network</code> chứa những gì client được thông báo: gateway, DNS server, domain và NTP server cho subnet đó. Router cũng cần địa chỉ riêng của nó trên interface, mà script có thể thêm."],
+    ["Static lease nên nằm trong hay ngoài pool?", "Cách nào cũng được: RouterOS không bao giờ cấp một địa chỉ mà static lease đang giữ. Giữ thiết bị cố định ngoài dải động, ví dụ .2 đến .9 với pool bắt đầu từ .10, giúp kế hoạch dễ đọc hơn và tránh nhầm lẫn nếu một lease bị xóa."],
+    ["Tôi nên dùng lease time bao lâu?", "Với mạng LAN gia đình hay văn phòng, một ngày là phổ biến. Mạng khách và hotspot có nhiều lượt ghé ngắn nên dùng một giờ hoặc ít hơn, để địa chỉ quay lại pool nhanh. Lease rất ngắn nghĩa là gia hạn nhiều hơn nhưng không tốn gì đáng kể trên một mạng nhỏ."],
+    ["Tôi có cần allow-remote-requests để client dùng router làm DNS không?", "Có, và đó cũng là điều biến router thành open resolver khi tường lửa không chặn DNS từ WAN. Công cụ chỉ thêm nó khi bạn đánh dấu tùy chọn, và nhắc bạn kiểm tra input chain."],
+    ["Kế hoạch mạng của tôi có được gửi đi đâu không?", "Không. Các bước kiểm tra và script được thực hiện trong trình duyệt của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Mạng</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Interface</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Subnet</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Gateway (địa chỉ router)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Dải pool</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Thêm địa chỉ gateway vào interface</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Cài đặt cho client</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">DNS server</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Domain</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">NTP server</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="tùy chọn" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Lease time</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Tên server và pool</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">Router trả lời DNS cho LAN (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Static lease</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Thêm static lease</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">Script RouterOS</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Sao chép script</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>DHCP trên RouterOS, từng phần một</h2>
+<p>RouterOS đặt DHCP server ở ba nơi, và thiếu một phần là lý do thường gặp khiến client không nhận được địa chỉ. <strong>Pool</strong> chỉ là một tập có tên gồm các dải địa chỉ. <strong>Server</strong> lắng nghe trên một interface và cấp phát địa chỉ từ pool của nó. Mục <strong>network</strong> được khớp theo subnet và chứa các tùy chọn gửi kèm mỗi lease: gateway, DNS server, tên domain và NTP server. Interface cũng cần địa chỉ riêng của router trong subnet đó, nếu không server không có mạng nào để phục vụ.</p>
+<p>Trang kiểm tra các phần với nhau trước khi ghi bất cứ thứ gì: gateway và pool phải nằm trong subnet, pool phải tránh địa chỉ network, broadcast và gateway, còn static lease phải duy nhất và nằm trong subnet. Static lease được ghi vào <code>/ip dhcp-server lease</code> kèm tên server, để mỗi thiết bị luôn nhận cùng một địa chỉ.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Đang lập kế hoạch địa chỉ? <a href="/tools/subnet-calculator/">Tính subnet</a> hiển thị dải host và kích thước của mọi tiền tố.</li>
+  <li>Một DHCP server cho mỗi VLAN: tạo trước các interface VLAN bằng <a href="/tools/mikrotik-vlan-generator/">Tạo VLAN MikroTik</a>, rồi chạy công cụ này một lần cho mỗi VLAN.</li>
+  <li>Nếu router trả lời DNS, hãy bảo đảm <a href="/tools/mikrotik-firewall-generator/">tường lửa</a> chặn DNS từ internet.</li>
+</ul>

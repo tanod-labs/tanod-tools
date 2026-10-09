@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Генератор файрвола MikroTik для RouterOS v7 | Tanod Tools",
+  "description": "Создайте защищённый файрвол RouterOS v7: цепочки input и forward, FastTrack, drop invalid, ping с ограничением, NAT и закрытие служб. Работает в браузере.",
+  "h1": "Генератор файрвола MikroTik",
+  "lede": "Выберите интерфейсы WAN и LAN и подсети управления и получите прокомментированную основу файрвола RouterOS v7, которую можно проверить и вставить.",
+  "blurb": "Защищённая основа файрвола RouterOS v7 с закрытием служб.",
+  "keywords": "правила файрвола mikrotik routeros v7 firewall filter цепочка input цепочка forward fasttrack drop invalid winbox ограничить ip service укрепление защиты безопасный маршрутизатор mikrotik скрипт rsc",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт синтаксис RouterOS v7 для IPv4 с необязательной основой для IPv6. Имена интерфейсов и списков проверяются; скрипт не тестируется на вашем маршрутизаторе, поэтому прочитайте его перед применением. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен этой компанией.",
+  "howto_title": "Как создать файрвол MikroTik",
+  "howto": [
+    "Введите интерфейсы, обращённые в интернет (например, <code>ether1</code> или <code>pppoe-out1</code>), и локальные (обычно <code>bridge</code>).",
+    "Перечислите подсети, из которых вы управляете маршрутизатором. Только они получат доступ к WinBox и SSH, поэтому добавьте адрес, с которого подключаетесь сейчас.",
+    "Выберите параметры, прочитайте скрипт и примечания рядом с ним, затем включите Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> в терминале) и вставьте скрипт либо скачайте файл .rsc и импортируйте его."
+  ],
+  "faq": [
+    ["Почему цепочка input отделена от цепочки forward?", "Цепочка input фильтрует пакеты, адресованные самому маршрутизатору: WinBox, SSH, DNS, API. Цепочка forward фильтрует пакеты, проходящие через него между LAN и интернетом. Маршрутизатор может быть широко открыт по input, пока сеть за ним полностью безопасна, и именно так многие устройства MikroTik становятся открытыми DNS-резолверами или прокси."],
+    ["Почему сначала принимаются established и related соединения?", "Почти каждый пакет относится к соединению, которое файрвол уже разрешил. Принятие таких пакетов в первом правиле означает, что каждый пакет проверяется один раз, а не проходит всю цепочку, а ответы на собственные запросы маршрутизатора к DNS или NTP проходят без дополнительных правил. Невалидные пакеты отбрасываются сразу после этого."],
+    ["Что делает FastTrack и когда его стоит отключить?", "FastTrack помечает установленные соединения, чтобы их пакеты обходили большую часть файрвола, что на небольших маршрутизаторах может многократно повысить пропускную способность. Подвох в том, что пакеты, прошедшие FastTrack, также обходят simple queue, queue tree, правила mangle и политики IPsec. Если вы ограничиваете скорость по клиентам или используете политику маршрутизации, оставьте FastTrack выключенным или исключите такие соединения."],
+    ["Заблокирует ли это мне доступ?", "Может, если компьютер, с которого вы управляете, не входит в подсеть управления, а LAN не является доверенной. Сначала включите Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> в терминале или кнопка Safe Mode в WinBox): если сеанс оборвётся, RouterOS отменит всё, что сделано с начала Safe Mode."],
+    ["Можно ли вставить это на маршрутизатор с конфигурацией по умолчанию?", "Да. Списки интерфейсов, их участники и записи address-list добавляются, только если их нет. Без режима замены новые правила добавляются после правил по умолчанию, поэтому правило по умолчанию «drop all not coming from LAN» может оказаться первым; проверьте порядок или используйте режим замены на маршрутизаторе, к которому у вас есть локальный доступ."],
+    ["Моя конфигурация куда-нибудь отправляется?", "Нет. Скрипт собирается JavaScript на этой странице. Ничего из введённого не загружается, не сохраняется и не записывается в журналы, а после загрузки страница работает и без сети."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Интерфейсы</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">Интерфейсы WAN</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">Обращённые в интернет, через запятую. Попадают в список интерфейсов WAN.</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">Интерфейсы LAN</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">Обычно мост. Попадают в список интерфейсов LAN.</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Управление</legend>
+      <div class="field">
+        <label for="fw-mgmt">Подсети управления</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">Только они получат доступ к WinBox (8291) и SSH (22). Добавьте адрес, с которого подключаетесь.</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">Порты, открываемые на маршрутизаторе</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">Необязательно, для служб, которые сам маршрутизатор предоставляет в интернет, например WireGuard.</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>Доверять LAN (принимать всё из LAN к маршрутизатору)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>Ограничить WinBox и SSH подсетями управления и отключить telnet, FTP, WebFig и API</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>Ограничить обнаружение соседей и доступ по MAC сетью LAN; отключить сервер bandwidth test, прокси, SOCKS и UPnP</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Параметры</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>FastTrack для установленных соединений</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>Отвечать на ping с ограничением частоты</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>Masquerade (source NAT) в сторону WAN</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">Туннели IPsec заканчиваются на этом маршрутизаторе</label>
+        <label class="check"><input type="checkbox" id="fw-v6">Добавить и файрвол IPv6</label>
+        <label class="check"><input type="checkbox" id="fw-replace">Режим замены: сначала удалить существующие правила filter и NAT</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Риск потери доступа.</strong> Проверьте в лаборатории или включите Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> в терминале), прежде чем применять это на удалённом маршрутизаторе.</span></p>
+    <label for="fw-out" class="label">Скрипт RouterOS v7</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Что делает созданный файрвол</h2>
+<p>Скрипт повторяет структуру собственной конфигурации MikroTik по умолчанию, но строже. <strong>Цепочка input</strong> защищает сам маршрутизатор: она принимает пакеты уже разрешённых соединений, отбрасывает невалидные, отвечает на ограниченное число ping, пускает подсети управления к WinBox и SSH, принимает LAN (или только DNS, DHCP, NTP и ICMP из неё) и отбрасывает всё остальное финальным правилом без условий. Именно финальное безусловное отбрасывание превращает список исключений в политику «запрещено по умолчанию».</p>
+<p><strong>Цепочка forward</strong> защищает сеть за маршрутизатором. Установленный и связанный трафик принимается (и при желании проходит FastTrack), невалидные пакеты отбрасываются, а новые соединения из WAN отбрасываются, если их не создало правило destination NAT (проброс порта). Это последнее правило не даёт интернету напрямую достучаться до частных адресов за маршрутизатором, чего один masquerade не делает.</p>
+<h3>Службы и вспомогательные функции</h3>
+<p>RouterOS по умолчанию слушает несколько служб управления. Скрипт отключает незащищённые (telnet, FTP, WebFig по HTTP) и API, а для WinBox и SSH добавляет ограничение по адресам как второй рубеж после файрвола. MAC Telnet, MAC WinBox и обнаружение соседей работают на втором уровне и игнорируют правила IP-файрвола, поэтому они ограничены списком интерфейсов LAN. Сервер bandwidth test, веб-прокси, SOCKS и UPnP выключены; включайте обратно только то, чем пользуетесь.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Файрвол уже есть? Вставьте свой экспорт в инструмент «<a href="/tools/mikrotik-firewall-auditor/">Аудит файрвола MikroTik</a>», чтобы увидеть, чего не хватает.</li>
+  <li>Публикуете сервер за маршрутизатором? Инструмент «<a href="/tools/mikrotik-port-forwarding/">Генератор проброса портов MikroTik</a>» создаёт правила dst-nat с hairpin NAT.</li>
+  <li>Нужен чёрный или белый список? Создайте его в инструменте «<a href="/tools/mikrotik-address-list-generator/">Генератор Address List для MikroTik</a>».</li>
+</ul>

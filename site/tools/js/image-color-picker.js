@@ -1,7 +1,7 @@
 // Image color picker: reads exact pixel values from the full-resolution image (one pixel at a time from the decoded
 // bitmap) and builds a median-cut palette from a small sample. Everything runs in the browser.
-import { $, el, fmtBytes, setStatus, announce, copyText, tx } from "./core.js?v=5";
-import { singleImage, decode, previewInto, dims, LABEL } from "./imgcore.js?v=5";
+import { $, el, fmtBytes, setStatus, announce, copyText, tx } from "./core.js?v=11";
+import { singleImage, decode, previewInto, dims, LABEL } from "./imgcore.js?v=11";
 
 const drop = $("#drop"), work = $("#work"), status = $("#status"), cv = $("#cv"), target = $("#target");
 const cross = $("#cross"), loupe = $("#loupe"), pick = drop.querySelector("[data-pick-label]");

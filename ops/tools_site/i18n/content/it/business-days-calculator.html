@@ -1,0 +1,138 @@
+<!--meta
+{
+  "title": "Giorni lavorativi: conta o aggiungi giorni | Tanod Tools",
+  "description": "Conta i giorni lavorativi tra due date o aggiungi e sottrai giorni a una data. Scegli il fine settimana, gli estremi ed elenca le festività. Gratis, nel browser.",
+  "h1": "Calcolatore di giorni lavorativi",
+  "lede": "Conta i giorni lavorativi tra due date, oppure aggiungi e sottrai giorni lavorativi a una data, con il fine settimana che usi tu e il tuo elenco di festività.",
+  "blurb": "Giorni lavorativi tra due date, o aggiungi giorni a una data, con le festività.",
+  "keywords": "calcolatore giorni lavorativi giorni lavorativi tra due date networkdays workday aggiungere giorni lavorativi sottrarre giorni lavorativi fine settimana venerdì sabato festività esclusi i weekend",
+  "local_text": "Funziona nel browser; nulla di ciò che scrivi lascia il tuo dispositivo",
+  "limits": "Date dall'anno 1 al 9999 nel calendario gregoriano. Questo strumento non ha dati sulle festività: salta solo le date che elenchi tu, e una data elencata che cade nel fine settimana non viene contata due volte. Il conteggio segue le stesse regole delle funzioni di foglio di calcolo NETWORKDAYS e WORKDAY.",
+  "howto_title": "Come contare i giorni lavorativi",
+  "howto": [
+    "Scegli <em>Conta i giorni lavorativi</em> e inserisci la data di inizio e quella di fine, oppure scegli <em>Aggiungi o sottrai giorni lavorativi</em> e inserisci una data di inizio e un numero di giorni.",
+    "Scegli il fine settimana (sabato e domenica, venerdì e sabato, solo domenica, o i giorni che preferisci) e incolla le festività come <code>YYYY-MM-DD</code>, una per riga.",
+    "Leggi i giorni lavorativi, o la data risultante, insieme ai giorni di calendario, ai giorni di fine settimana e alle festività saltati."
+  ],
+  "faq": [
+    [
+      "Conta la data di inizio e quella di fine?",
+      "Per impostazione predefinita conta entrambe, come la funzione di foglio di calcolo NETWORKDAYS: dal lunedì al venerdì della stessa settimana sono 5 giorni lavorativi. Deseleziona <em>Conta la data di inizio</em> o <em>Conta la data di fine</em> per escluderne una. Quando aggiungi giorni lavorativi, la data di inizio non viene mai contata, come con WORKDAY: un giorno lavorativo dopo un venerdì è il lunedì seguente."
+    ],
+    [
+      "Come uso un fine settimana diverso da sabato e domenica?",
+      "Scegli <em>Venerdì e sabato</em> per il fine settimana usato in molti paesi del Medio Oriente, <em>Solo domenica</em> per una settimana di sei giorni, oppure <em>Personalizzato</em> per selezionare qualsiasi combinazione di giorni. Almeno un giorno della settimana deve restare lavorativo."
+    ],
+    [
+      "Come inserisco le festività?",
+      "Scrivi o incolla una data per riga nel formato <code>YYYY-MM-DD</code>, per esempio <code>2026-12-25</code>. Il testo dopo la data sulla stessa riga, come il nome della festività, viene ignorato. Una festività che cade nel fine settimana non cambia il risultato, perché quel giorno è già saltato."
+    ],
+    [
+      "Perché non ci sono festività integrate?",
+      "Le festività variano per paese, regione e anno, e alcune sono stabilite per decreto, quindi lo strumento non tira a indovinare. Tutto qui funziona nel browser a partire dalle date che inserisci. Se vuoi che le festività di un paese siano aggiunte per te, vedi l'API dei giorni lavorativi indicata più sotto."
+    ],
+    [
+      "E se la data di fine è prima di quella di inizio?",
+      "Lo strumento scambia le due date, conta i giorni tra di esse e ti avvisa di averlo fatto, così il risultato è sempre un numero positivo. Le opzioni di inizio e di fine si scambiano insieme alle date."
+    ],
+    [
+      "Come vengono trattate le opzioni di inizio e di fine quando le date coincidono?",
+      "Con entrambe le opzioni selezionate, una data singola vale un giorno, che è lavorativo a meno che sia nel fine settimana o tra le festività elencate. Con una delle due opzioni deselezionata, l'intervallo è vuoto e il risultato è 0."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">Che cosa vuoi fare?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Conta i giorni lavorativi</label>
+      <label><input type="radio" name="bd-mode" value="add">Aggiungi o sottrai giorni lavorativi</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Data di inizio</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">Data di fine</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Conta la data di inizio</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Conta la data di fine</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Data di inizio</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Operazione</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Aggiungi</label>
+          <label><input type="radio" name="bd-op" value="sub">Sottrai</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Giorni lavorativi</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Fine settimana</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Sabato e domenica</option>
+        <option value="fri-sat">Venerdì e sabato</option>
+        <option value="sun">Solo domenica</option>
+        <option value="custom">Personalizzato</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Giorni del fine settimana</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Festività (facoltativo)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">Una data per riga come YYYY-MM-DD. Non esiste un elenco di festività integrato.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Giorni lavorativi</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Giorni di calendario</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Giorni di fine settimana saltati</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Festività saltate</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Come si contano i giorni lavorativi</h2>
+<p>Un giorno lavorativo è qualsiasi giorno che non sia né un giorno di fine settimana né una festività. Per contarli tra due date, il calcolatore prende ogni giorno di calendario dell'intervallo, toglie i giorni di fine settimana che hai scelto, poi toglie le festività elencate che cadono sui giorni rimasti. Ciò che resta è il numero di giorni lavorativi. I tre valori sotto il risultato mostrano quanti giorni di calendario sono stati esaminati e quanti di essi sono stati saltati perché di fine settimana o festivi.</p>
+<p>Conta anche se il primo e l'ultimo giorno fanno parte dell'intervallo. Dal lunedì al venerdì della stessa settimana, con entrambi gli estremi inclusi, si ottiene 5, e senza la data di inizio si ottiene 4. Le impostazioni predefinite corrispondono alla funzione di foglio di calcolo <code>NETWORKDAYS</code>, che conta entrambi gli estremi.</p>
+<p>Aggiungere giorni lavorativi funziona al contrario, come <code>WORKDAY</code>. Lo strumento parte dal giorno dopo la data di inizio e va avanti, o indietro quando sottrai, contando solo i giorni che non sono di fine settimana né festività, finché non ha contato il numero richiesto. La data di inizio stessa non viene mai contata, quindi aggiungere 0 giorni restituisce la data di inizio, anche se è nel fine settimana.</p>
+<p>Il fine settimana è un'impostazione perché non è uguale ovunque. Molti paesi usano sabato e domenica, diversi paesi del Medio Oriente usano venerdì e sabato, e alcuni luoghi di lavoro lavorano sei giorni. Le festività le fornisci tu. Le festività spostate o sostitutive non vengono aggiunte automaticamente, quindi elenca il giorno effettivamente osservato.</p>
+<h3>Per sviluppatori / agenti IA</h3>
+<p>Ti serve nel codice, o per un agente IA? L'API dei giorni lavorativi fa lo stesso conteggio e aggiunge automaticamente le festività nazionali di un paese, così non devi mantenere un elenco di festività. Vedi la <a href="https://tanod.dev/learn/business-days-api.html">guida all'API dei giorni lavorativi</a>.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Ti servono semplici giorni di calendario, settimane o mesi tra due date? Usa il <a href="/tools/date-difference-calculator/">calcolatore della differenza tra date</a>.</li>
+  <li>Devi aggiungere mesi o anni a una data? Il <a href="/tools/date-calculator/">calcolatore di date</a> gestisce le date di fine mese.</li>
+  <li>Lavori con più paesi? Confronta gli orari d'ufficio con il <a href="/tools/time-zone-converter/">convertitore di fusi orari</a>.</li>
+</ul>

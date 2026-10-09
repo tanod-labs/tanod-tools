@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Conversor de hora Zulu: hora local para UTC | Tanod Tools",
+  "description": "Converta hora local para Zulu (UTC) e de volta em qualquer fuso, com grupos de hora no formato METAR (DDHHMMZ). Usa o banco de fusos do seu navegador.",
+  "h1": "Conversor de hora Zulu (UTC)",
+  "lede": "Converta uma hora local para Zulu (UTC) ou o contrário, em qualquer fuso horário, e leia grupos de hora no estilo METAR (DDHHMMZ).",
+  "blurb": "Hora local para Zulu (UTC) e grupos METAR DDHHMMZ.",
+  "keywords": "conversor hora zulu utc gmt hora local aviacao hora z ddhhmmz metar grupo de hora conversor de fuso horario hora militar 24 horas horario de verao",
+  "limits": "Usa os dados de fuso horário do seu navegador, incluindo as regras de horário de verão. Não serve para planejamento de voo nem para navegação: confira você mesmo a hora oficial e a validade dos NOTAM.",
+  "howto_title": "Como converter hora local para Zulu",
+  "howto": [
+    "Escolha a data, a hora do relógio e o fuso horário em que ela está. O primeiro campo começa com o seu próprio fuso.",
+    "Escolha o fuso em que quer ver o resultado: o padrão é UTC, também chamado de hora Zulu ou Z.",
+    "Leia a hora convertida e o grupo DDHHMMZ. Para decodificar um grupo de hora de um METAR ou TAF, digite-o na segunda seção."
+  ],
+  "faq": [
+    ["O que é hora Zulu?", "A hora Zulu é o Tempo Universal Coordenado (UTC), escrito com a letra Z, que é o nome fonético da OTAN para o fuso horário militar sem deslocamento. A aviação, a meteorologia e as forças armadas a usam para que todos tenham um único relógio, sem mudanças de horário de verão."],
+    ["Como leio um grupo de hora como 081405Z?", "Os dois primeiros dígitos são o dia do mês (08), os dois seguintes a hora (14) e os dois últimos os minutos (05), sempre em UTC, então 081405Z é o dia 8 às 14:05 UTC. Os horários de METAR, TAF e NOTAM usam esse formato. O mês e o ano não aparecem, então a ferramenta escolhe os mais próximos da data de referência."],
+    ["UTC é a mesma coisa que GMT?", "No dia a dia, sim: os relógios marcam a mesma hora. Estritamente, GMT é um fuso horário baseado na rotação da Terra e UTC é uma escala de tempo atômica mantida a menos de 0,9 segundo dela por meio de segundos intercalares. A aviação usa UTC."],
+    ["A hora Zulu tem horário de verão?", "Não. O UTC nunca muda. O deslocamento de um fuso local em relação ao UTC muda quando o horário de verão começa ou termina, e é por isso que uma escala de voos é mais fácil de ler em UTC."],
+    ["O que acontece na mudança do horário de verão?", "Quando os relógios avançam, uma hora de horário local não existe, e a ferramenta usa o horário válido mais próximo. Quando os relógios voltam, uma hora acontece duas vezes e a ferramenta usa a primeira, avisando você."],
+    ["De onde a ferramenta tira as regras de fuso horário?", "Do banco de dados de fusos IANA embutido no seu navegador (a API Intl), então nada é baixado. Um navegador antigo pode ter regras desatualizadas para alguns países."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="zt-date">Data</label>
+    <input type="date" id="zt-date">
+  </div>
+  <div class="field">
+    <label for="zt-time">Hora</label>
+    <input type="time" id="zt-time">
+  </div>
+  <div class="field">
+    <label for="zt-from">Fuso horário desta hora</label>
+    <select id="zt-from"></select>
+  </div>
+  <div class="field">
+    <label for="zt-to">Mostrar em</label>
+    <select id="zt-to"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="zt-now" type="button">Usar a hora atual</button>
+  <button class="btn btn--quiet" id="zt-swap" type="button">Trocar os fusos</button>
+</div>
+<p class="note" id="zt-note" role="status" aria-live="polite" hidden></p>
+<dl class="stats" id="zt-stats"></dl>
+<h2 class="util-h" id="zt-grp-h">Ler um grupo de hora de METAR ou TAF</h2>
+<div class="opts">
+  <div class="field">
+    <label for="zt-grp">Grupo de hora (DDHHMMZ)</label>
+    <input type="text" id="zt-grp" class="mono" autocomplete="off" spellcheck="false" value="081405Z" placeholder="081405Z" aria-describedby="zt-grp-msg">
+  </div>
+  <div class="field">
+    <label for="zt-ref">Mais próximo desta data UTC</label>
+    <input type="date" id="zt-ref">
+  </div>
+</div>
+<p class="note" id="zt-grp-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="zt-grp-stats"></dl>
+<!--explain-->
+<h2>Como funciona a conversão</h2>
+<p>O UTC (Tempo Universal Coordenado) é o padrão internacional de hora civil mantido pelo BIPM e definido na Recomendação ITU-R TF.460. Na aviação ele é escrito com o sufixo Z, da letra Zulu do fuso horário militar, e no formato de grupo de hora da ICAO DDHHMMZ usado nas mensagens METAR, TAF e SIGMET (Anexo 3 da ICAO, OMM nº 306). A hora local é o UTC mais o deslocamento do fuso, que depende da data por causa das regras de horário de verão.</p>
+<p>A página transforma a data e a hora do relógio que você informa em um instante, usando o deslocamento que o fuso tinha naquele momento, e depois mostra o instante no outro fuso. Isso usa o Banco de Dados de Fusos Horários IANA por meio da API Intl do navegador, os mesmos dados usados pelos sistemas operacionais. Uma hora local inválida, na hora pulada no início do horário de verão, é avançada pelo intervalo, e uma hora ambígua, na hora repetida, usa a primeira ocorrência.</p>
+<p>Um grupo de hora não tem mês nem ano, então a ferramenta tenta o mês anterior, o mesmo e o seguinte e fica com a data mais próxima da data de referência informada (hoje, em UTC, por padrão), que é como um relatório meteorológico costuma ser associado a um calendário. <strong>Não serve para planejamento de voo nem para navegação.</strong></p>

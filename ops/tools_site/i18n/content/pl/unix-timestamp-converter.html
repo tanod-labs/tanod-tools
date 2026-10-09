@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Konwerter znacznika czasu Unix: epoch na datę | Tanod Tools",
+  "description": "Zamień znaczniki czasu Unix w sekundach, milisekundach, mikrosekundach lub nanosekundach na daty w UTC lub dowolnej strefie czasowej, a także daty na czas epoch.",
+  "h1": "Konwerter znacznika czasu Unix",
+  "lede": "Zamień znacznik czasu epoch na czytelną datę w dowolnej strefie czasowej albo datę i godzinę na znacznik czasu.",
+  "blurb": "Czas epoch na datę i data na znacznik czasu, w dowolnej strefie.",
+  "keywords": "konwerter epoch czas unix czas posix sekundy od 1970 milisekundy znacznik czasu na datę data na znacznik czasu timestamp utc strefa czasowa epoch converter unix time timestamp to date date to timestamp",
+  "limits": "Znaczniki czasu do około 270 000 lat po obu stronach roku 1970, czyli w zakresie, jaki może przedstawić przeglądarka; wpisywane daty od roku 1 do 9999. Reguły stref czasowych pochodzą z danych o strefach czasowych wbudowanych w przeglądarkę.",
+  "howto_title": "Jak przekonwertować znacznik czasu Unix",
+  "howto": [
+    "Wklej znacznik czasu w sekcji <strong>Znacznik czasu na datę</strong>. Jednostka (sekundy, milisekundy, mikrosekundy lub nanosekundy) jest wykrywana na podstawie długości i możesz ją zmienić.",
+    "Wybierz strefę czasową, aby zobaczyć datę w niej, a także w UTC oraz w formacie ISO 8601 i RFC 2822.",
+    "Aby przeliczyć w drugą stronę, wpisz datę i godzinę w sekcji <strong>Data na znacznik czasu</strong>; są one odczytywane w wybranej strefie czasowej."
+  ],
+  "faq": [
+    ["Czym jest znacznik czasu Unix?", "To liczba sekund od 00:00:00 UTC 1 stycznia 1970, bez liczenia sekund przestępnych. W danej chwili jest taki sam na całym świecie, dlatego służy do zapisywania czasu; strefa czasowa ma znaczenie dopiero wtedy, gdy zamieniasz go na datę, którą ktoś czyta."],
+    ["Jak wykrywana jest jednostka?", "Na podstawie rozmiaru. Wartość poniżej 100 miliardów jest odczytywana jako sekundy (obejmuje to daty do roku 5138), do 100 bilionów jako milisekundy, do 100 biliardów jako mikrosekundy, a wszystko większe jako nanosekundy. Liczba 10-cyfrowa to sekundy, 13-cyfrowa to milisekundy, 16-cyfrowa to mikrosekundy, a 19-cyfrowa to nanosekundy. Jeśli odgadnięcie jest błędne, wybierz jednostkę samodzielnie."],
+    ["Co dzieje się z godziną, która nie istnieje z powodu czasu letniego?", "Gdy zegary przesuwają się do przodu, godzina czasu lokalnego jest pomijana. Data i godzina z tej luki są przesuwane do przodu o długość luki, tak jak robi to większość oprogramowania, a narzędzie o tym informuje. Gdy zegary cofają się, godzina zdarza się dwa razy; narzędzie używa pierwszego wystąpienia i pokazuje także znacznik czasu drugiego."],
+    ["Czy znaczniki czasu mogą być ujemne?", "Tak. Wartości ujemne to chwile przed rokiem 1970: -1 to 23:59:59 UTC 31 grudnia 1969. Daty z odległej przeszłości używają proleptycznego kalendarza gregoriańskiego, tak jak ISO 8601."],
+    ["Czym jest problem roku 2038?", "Systemy, które przechowują czas Unix jako 32-bitową liczbę ze znakiem, mogą liczyć tylko do 2 147 483 647, czyli do 03:14:07 UTC 19 stycznia 2038. Sekundę później wartość przepełnia się. Narzędzie wskazuje to, gdy znacznik czasu wykracza poza ten zakres. Większość obecnych systemów używa 64-bitowego czasu i nie jest tym dotknięta."],
+    ["Czy sekundy przestępne są uwzględniane?", "Nie. Czas Unix traktuje każdy dzień jako dokładnie 86 400 sekund, tak samo jak JavaScript, więc 27 sekund przestępnych dodanych od 1972 roku nie jest liczonych. To normalne i zgodne z tym, co podają serwery, bazy danych i języki programowania."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Bieżący czas Unix</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Sekundy</dt><dd id="now-s">0</dd></div>
+      <div><dt>Milisekundy</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Kopiuj sekundy</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Kopiuj milisekundy</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Wstrzymaj</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Strefa czasowa</label>
+    <select id="tz"></select>
+    <span class="help">Służy do pokazywania dat poniżej i do odczytywania wpisanej daty.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Znacznik czasu na datę</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Znacznik czasu Unix</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Jednostka</label>
+      <select id="ts-unit">
+        <option value="auto" selected>Wykryj na podstawie długości</option>
+        <option value="s">Sekundy</option>
+        <option value="ms">Milisekundy</option>
+        <option value="us">Mikrosekundy</option>
+        <option value="ns">Nanosekundy</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Wpisz lub wklej znacznik czasu.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Twoja strefa czasowa</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>ISO 8601 z przesunięciem</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Względnie</dt><dd id="o-rel"></dd></div>
+    <div><dt>Sekundy</dt><dd id="o-s"></dd></div>
+    <div><dt>Milisekundy</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Data na znacznik czasu</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Data</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Godzina</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Użyj bieżącego czasu</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Wybierz datę.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Sekundy</dt><dd id="d-s"></dd></div>
+    <div><dt>Milisekundy</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Jak działa czas epoch</h2>
+<p>Znacznik czasu Unix liczy sekundy od epoki Unix, czyli północy UTC 1 stycznia 1970. Ponieważ wskazuje moment, a nie odczyt zegara, ta sama liczba oznacza tę samą chwilę w Manili, Londynie i Nowym Jorku. Strefy czasowe wchodzą do gry dopiero przy zamianie na datę: narzędzie korzysta z bazy stref czasowych przeglądarki, czyli z tych samych reguł co system operacyjny, aby ustalić lokalne przesunięcie i czas letni w danej chwili.</p>
+<p>Wiele systemów używa drobniejszych jednostek. JavaScript i Java liczą milisekundy, a niektóre bazy danych i funkcja Pythona <code>time.time_ns()</code> używają mikrosekund lub nanosekund. Wklejenie takiej wartości jako sekund daje datę oddaloną o dziesiątki tysięcy lat, dlatego narzędzie odgaduje jednostkę z rozmiaru liczby i pokazuje, którą wybrało. Wartości w mikrosekundach i nanosekundach zachowują dodatkowe cyfry w wierszu ISO 8601.</p>
+<p>Przeliczenie daty na znacznik czasu wymaga strefy czasowej, ponieważ godzina 09:00 przypada w każdej strefie w innej chwili. Wpisana data jest odczytywana jako wskazanie zegara w wybranej strefie. Odczyty wpadające w lukę lub nakładanie czasu letniego są oznaczane, aby było wiadomo, którą chwilę otrzymano.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Harmonogramy zapisane jako wyrażenia cron można sprawdzić w narzędziu <a href="/tools/cron-expression-explainer/">Wyjaśnij wyrażenie cron</a>, które wymienia kolejne czasy uruchomień w dowolnej strefie.</li>
+  <li>Wartości UUID w wersji 7 zawierają znacznik czasu w milisekundach; <a href="/tools/uuid-generator/">Generator UUID</a> potrafi go odczytać.</li>
+  <li>Uporządkuj odpowiedź JSON pełną znaczników czasu za pomocą narzędzia <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>.</li>
+</ul>

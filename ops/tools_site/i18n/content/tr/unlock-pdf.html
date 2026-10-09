@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "PDF parolasını kaldır, ücretsiz | Tanod Tools",
+  "description": "Bildiğiniz parolayla bir PDF'in parolasını ve yazdırma ya da kopyalama kısıtlamalarını kaldırın. Ücretsiz, kayıt gerekmez; dosya ve parola hemen ardından silinir.",
+  "h1": "PDF parolasını kaldır",
+  "lede": "Korumalı bir PDF'in parolasız açılan ve yazdırma ya da kopyalama sınırı olmayan bir kopyasını kaydedin. Parolayı bilmeniz gerekir.",
+  "blurb": "Bildiğiniz PDF parolasını ve yazdırma sınırlarını kaldırın.",
+  "keywords": "pdf parolasını kaldır pdf şifresini kaldır pdf kilidini aç pdf şifre çözme pdf korumasını kaldır yazdırma kopyalama kısıtlaması remove pdf password unlock pdf decrypt pdf unsecure pdf",
+  "limits": "10 MB'a kadar tek bir PDF. Parolayı bilmeniz gerekir (dosya yalnızca yazdırmayı ya da kopyalamayı kısıtlıyorsa parola gerekmez); bu araç parola kırmaz. Sunucumuzda işlenir, ardından silinir. Kişi başına günde 10 ücretsiz sunucu işlemi, tüm sunucu araçları arasında paylaşılır.",
+  "howto_title": "PDF'ten parola nasıl kaldırılır",
+  "howto": [
+    "10 MB'a kadar korumalı PDF'i seçin ya da sayfaya sürükleyin.",
+    "Parolasını yazın. PDF parolasız açılıyor ama yazdırılamıyor veya kopyalanamıyorsa kutuyu boş bırakın.",
+    "<strong>PDF kilidini aç</strong> düğmesine basın, ardından kilidi açılmış kopyayı indirin."
+  ],
+  "faq": [
+    ["PDF'im ve parolam yükleniyor mu?", "Evet. Bu sitedeki çoğu aracın aksine bu araç sunucumuzda çalışır: PDF'iniz ve parola HTTPS üzerinden gönderilir, şifreleme kaldırılır ve kilidi açılmış kopya doğrudan tarayıcınıza geri gönderilir. Dosya ve parola sunucuda yalnızca işlem sürerken, bellekte ve işlem biter bitmez silinen özel bir geçici klasörde bulunur. Dosyayı ya da parolayı asla saklamaz veya kaydetmeyiz."],
+    ["Parolayı unuttum. Bu araç PDF'i açabilir mi?", "Hayır. Yalnızca dosyayı açan bir parolayla korumayı kaldırır. Parola tahmin etmez veya kırmaz; bir parolayı kurtarmanın da yolu yoktur."],
+    ["PDF'im sorunsuz açılıyor ama yazdırılamıyor ya da kopyalanamıyor. Ne yapmalıyım?", "Bu PDF'in kısıtlamaları belirleyen bir sahip parolası var ama açmak için parolası yok. Parola kutusunu boş bırakıp PDF kilidini aç düğmesine basın: kopyada kısıtlamalar kaldırılmış olur."],
+    ["Bir PDF'in kilidini açmam serbest mi?", "Yalnızca sahibi olduğunuz ya da kısıtlama olmadan kullanma hakkınız bulunan dosyaların kilidini açın; örneğin kendi banka ekstreleriniz ya da parolasıyla birlikte sizinle paylaşılan belgeler."],
+    ["Diğer araçlar PDF'imi neden açamıyor?", "Bu sitedeki araçların çoğu ve birçok başka uygulama şifreli PDF'leri reddeder. Önce burada bir kopyanın kilidini açın, ardından birleştirin, bölün, sıkıştırın veya düzenleyin."],
+    ["Bir sınır var mı?", "10 MB'a kadar dosyalar ve kişi başına günde 10 ücretsiz sunucu işlemi; bu hak tüm sunucu araçlarımız arasında paylaşılır. Yalnızca başarılı işlemler sayılır, yani yanlış parola bir hak harcamaz. Sayaç UTC gece yarısı sıfırlanır."],
+    ["İnsan doğrulaması nedir?", "Bir işlem çalışmadan önce Cloudflare Turnstile, aracı bir botun değil bir insanın kullandığını denetler. Genellikle görünmezdir; bazen bir kutuyu işaretlemenizi ister."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:unlock-pdf drop__mark}}
+  <p class="drop__title">Korumalı PDF'i buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF seçin</span></label>
+  <p class="drop__hint">Ya da bu sayfada herhangi bir yere sürükleyin. En fazla 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Parola</label>
+      <input id="pw" type="password" autocomplete="off" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+      <span class="help" id="pw-help">PDF parolasız açılıyor ama yazdırmayı ya da kopyalamayı engelliyorsa boş bırakın.</span>
+    </div>
+    <div class="field">
+      <span class="label">&nbsp;</span>
+      <label class="check"><input type="checkbox" id="show">Parolayı göster</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>PDF kilidini aç</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Kilidi açmak ne yapar</h2>
+<p>Korumalı bir PDF şifrelidir. Doğru parolayla sunucumuz onu açık kaynaklı qpdf kütüphanesiyle açar ve şifrelemesi ile sahibin yazdırma, kopyalama ve düzenleme kısıtlamaları olmayan bir kopya yazar. Sayfaların kendisi değişmez.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Güvenli biçimde yeniden göndermeniz gerekecekse korumalı aslını saklayın ya da kopyayı sonradan <a href="/tools/protect-pdf/">PDF'e parola koy</a> ile koruyun.</li>
+  <li>Kilidi açıldıktan sonra dosya, tarayıcınızda çalışan <a href="/tools/merge-pdf/">PDF birleştir</a> ve <a href="/tools/split-pdf/">PDF böl</a> gibi buradaki tüm PDF araçlarıyla çalışır.</li>
+</ul>

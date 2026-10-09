@@ -1,4 +1,4 @@
-import { $, $$, el, copyText, announce, tx, txn } from "./core.js?v=5";
+import { $, $$, el, copyText, announce, tx, txn } from "./core.js?v=11";
 
 const preview = $("#g-preview"), outEl = $("#g-out"), msg = $("#g-msg");
 const stopsEl = $("#g-stops"), copyBtn = $("#g-copy");

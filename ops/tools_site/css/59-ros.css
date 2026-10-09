@@ -1,0 +1,141 @@
+/* MikroTik tools: config generators, the firewall auditor, the v6 to v7 helper and the export diff. */
+
+/* generator layout: form left, script right (sticky on wide screens) */
+.ros-gen { display: grid; gap: 20px; }
+.ros-gen__form, .ros-gen__out { display: grid; gap: 16px; min-width: 0; align-content: start; }
+@media (min-width: 980px) {
+  .ros-gen { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .ros-gen__out { position: sticky; top: 12px; }
+  .ros-gen__out .ros-out { max-height: calc(100vh - 260px); }
+}
+.ros-out { min-height: 320px; font-size: 0.8125rem; line-height: 1.5; tab-size: 4; }
+.ros-out.is-empty { min-height: 120px; }
+.ros-checks { display: grid; gap: 4px; }
+.ros-checks .check { align-items: flex-start; line-height: 1.4; padding-block: 4px; }
+.ros-checks .check input { margin-top: 1px; flex: none; }
+
+/* caution plate: enamel and ink, never red */
+.ros-safe {
+  display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 10px 12px;
+  border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--enamel); color: var(--ink);
+  font-size: 0.875rem; line-height: 1.45;
+}
+.ros-safe .mark { flex: none; width: 20px; height: 20px; stroke-width: 5; margin-top: 1px; }
+.ros-safe a { color: var(--route-on-enamel); }
+.ros-safe kbd, .ros-note kbd { padding: 0 0.3em; border: 1px solid currentColor; border-radius: 3px; font-size: 0.85em; }
+
+/* field errors under the input (dashed ink border comes from the base styles) */
+.ros-err { margin: 0; font-size: 0.8125rem; font-weight: 700; color: var(--text); }
+.ros-err::before { content: "\2192\00a0"; }
+
+/* notes under the script */
+.ros-notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ros-note { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); font-size: 0.875rem; line-height: 1.45; background: var(--surface); }
+.ros-note .mark { flex: none; width: 16px; height: 16px; stroke-width: 5; margin-top: 2px; color: var(--text-soft); }
+.ros-note--warn { border: 2px solid var(--ink); background: var(--enamel-wash); }
+.ros-note--warn .mark { color: var(--text); }
+
+/* row editors */
+.ros-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ros-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; padding: 10px; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); background: var(--surface-2); }
+.ros-row__cells { display: grid; gap: 8px 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr)); min-width: 0; }
+.ros-cell { display: grid; gap: 4px; min-width: 0; align-content: start; }
+.ros-cell > label { font-size: 0.75rem; font-weight: 700; color: var(--text-soft); }
+.ros-cell--wide { grid-column: 1 / -1; }
+.ros-cell--check { align-content: end; }
+.ros-cell--check .check { font-size: 0.875rem; min-height: 40px; }
+.ros-cell input, .ros-cell select { min-width: 0; width: 100%; }
+.ros-row__rm { align-self: start; }
+.ros-add { justify-self: start; }
+
+/* read-outs (burst calculator, address list stats) */
+.ros-facts { margin: 0; display: grid; gap: 1px; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); background: var(--hair); overflow: hidden; }
+.ros-facts > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; padding: 8px 12px; background: var(--surface); }
+.ros-facts dt { font-size: 0.875rem; color: var(--text-soft); }
+.ros-facts dd { margin: 0; font-family: var(--font-mono); font-size: 0.9375rem; font-weight: 700; text-align: right; }
+.ros-facts > .is-key { background: var(--enamel-wash); box-shadow: inset 5px 0 0 var(--enamel-deep); }
+
+/* burst chart */
+.ros-chart { display: block; width: 100%; height: auto; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); background: var(--surface); }
+.ros-chart text { font-family: var(--font-mono); font-size: 11px; fill: var(--text-soft); }
+.ros-chart .ax { stroke: var(--hair); stroke-width: 1; fill: none; }
+.ros-chart .rate { stroke: var(--route); stroke-width: 2.5; fill: none; }
+.ros-chart .avg { stroke: var(--text-soft); stroke-width: 1.5; stroke-dasharray: 5 4; fill: none; }
+.ros-chart .thr { stroke: var(--enamel-deep); stroke-width: 2; fill: none; }
+.ros-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.8125rem; color: var(--text-soft); }
+.ros-legend li { display: flex; align-items: center; gap: 6px; }
+.ros-legend i { display: inline-block; width: 18px; height: 0; border-top: 2.5px solid var(--route); }
+.ros-legend .k-avg i { border-top: 1.5px dashed var(--text-soft); }
+.ros-legend .k-thr i { border-top: 2px solid var(--enamel-deep); }
+
+/* paste areas (auditor, migration helper, export diff) */
+.ros-paste { display: grid; gap: 12px; }
+.ros-paste textarea { min-height: 220px; font-size: 0.8125rem; white-space: pre; overflow: auto; }
+.ros-pair { display: grid; gap: 16px; }
+@media (min-width: 860px) { .ros-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+/* auditor findings */
+.ros-sum { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ros-sum li { padding: 4px 10px; border: 1.5px solid var(--hair); border-radius: 999px; font-size: 0.8125rem; font-weight: 700; }
+.ros-sum b { font-family: var(--font-mono); }
+.ros-findings { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ros-finding { display: grid; gap: 8px; padding: 12px 14px; border: 1.5px solid var(--hair); border-left-width: 6px; border-radius: var(--radius-sm); background: var(--surface); min-width: 0; }
+.ros-finding[data-sev="critical"] { border-color: var(--ink); border-left-color: var(--ink); background: var(--enamel-wash); }
+.ros-finding[data-sev="high"] { border-left-color: var(--enamel-deep); }
+.ros-finding[data-sev="medium"] { border-left-color: var(--route); }
+.ros-finding[data-sev="low"], .ros-finding[data-sev="info"] { border-left-color: var(--hair); }
+.ros-finding__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.ros-finding h3 { margin: 0; font-size: 1rem; line-height: 1.35; }
+.ros-sev { display: inline-block; padding: 1px 8px; border: 1.5px solid var(--frame); border-radius: 3px; font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.ros-finding[data-sev="critical"] .ros-sev { background: var(--ink); color: var(--enamel); border-color: var(--ink); }
+.ros-finding[data-sev="high"] .ros-sev { background: var(--enamel); color: var(--ink); border-color: var(--ink); }
+.ros-finding p { margin: 0; font-size: 0.9375rem; line-height: 1.5; }
+.ros-finding pre { margin: 0; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1.5px solid var(--hair); font-size: 0.8125rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ros-finding__line { font-size: 0.8125rem; color: var(--text-soft); }
+.ros-finding__fix { font-weight: 700; font-size: 0.8125rem; }
+
+/* migration summary */
+.ros-review { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.875rem; }
+.ros-review li { padding: 6px 10px; border-left: 4px solid var(--enamel-deep); background: var(--surface-2); overflow-wrap: anywhere; }
+.ros-review code { font-size: 0.8125rem; }
+
+/* export diff */
+.ros-diff { display: grid; gap: 12px; }
+.ros-sec { border: 1.5px solid var(--hair); border-radius: var(--radius-sm); background: var(--surface); min-width: 0; }
+.ros-sec > summary { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 8px 12px; cursor: pointer; font-family: var(--font-mono); font-size: 0.875rem; font-weight: 700; }
+.ros-sec > summary span { font-family: var(--font-text); font-weight: 600; font-size: 0.8125rem; color: var(--text-soft); }
+.ros-sec[data-changed="true"] > summary { background: var(--enamel-wash); }
+.ros-lines { margin: 0; padding: 0; list-style: none; border-top: 1.5px solid var(--hair); font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5; overflow-x: auto; }
+.ros-lines li { display: grid; grid-template-columns: 1.5em minmax(0, 1fr); padding: 1px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ros-lines li::before { content: attr(data-sign); color: var(--text-soft); }
+.ros-lines .is-add { background: color-mix(in srgb, var(--go) 14%, transparent); }
+.ros-lines .is-del { background: color-mix(in srgb, var(--enamel-deep) 22%, transparent); text-decoration: line-through; text-decoration-thickness: 1px; }
+.ros-lines .is-add::before, .ros-lines .is-del::before { color: var(--text); font-weight: 800; }
+.ros-fold { display: block; width: 100%; padding: 4px 10px; border: 0; border-top: 1px dashed var(--hair); border-bottom: 1px dashed var(--hair); background: var(--surface-2); color: var(--route); font: inherit; font-size: 0.8125rem; text-align: left; cursor: pointer; }
+
+/* index: the trademark note under the MikroTik category */
+.route__note { margin: 0; padding: 10px 16px 14px; font-size: 0.8125rem; color: var(--text-soft); line-height: 1.45; }
+
+/* burst chart figure */
+.ros-fig { margin: 0; display: grid; gap: 6px; min-width: 0; }
+.ros-fig figcaption { margin: 0; }
+.ros-out--short { min-height: 170px; }
+
+/* paste tools: auditor, migration helper, export diff */
+.ros-audit, .ros-xdiff { display: grid; gap: 16px; min-width: 0; }
+.ros-results { display: grid; gap: 12px; min-width: 0; }
+.ros-results .result__title { margin: 0; font-weight: 800; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.ros-results .result__head { display: grid; gap: 4px; }
+.ros-results .result__head .help { margin: 0; }
+.ros-open { justify-self: start; position: relative; }
+.ros-more > summary { cursor: pointer; font-weight: 700; font-size: 0.9375rem; padding: 4px 0; }
+.ros-more[open] > summary { margin-bottom: 8px; }
+.ros-sum li[data-sev="critical"] { background: var(--ink); color: var(--enamel); border-color: var(--ink); }
+.ros-sum li[data-sev="high"] { background: var(--enamel); color: var(--ink); border-color: var(--ink); }
+.ros-fold-li { display: block; padding: 0; }
+.ros-fold-li::before { content: none; }
+
+/* WireGuard peer configs */
+.ros-confs { display: grid; gap: 16px; }
+.wg-conf { display: grid; gap: 8px; min-width: 0; }
+.ros-results .result__size { color: var(--text-soft); display: inline; }

@@ -1,5 +1,5 @@
-import { initFormatter, FmtError, $, $$ } from "./fmtcore.js?v=5";
-import { tx, txn } from "./core.js?v=5";
+import { initFormatter, FmtError, $, $$ } from "./fmtcore.js?v=11";
+import { tx, txn } from "./core.js?v=11";
 
 /* ---------------------------------------------------------------- tokenizer
    Splits the source into tokens that keep their exact text, so nothing (entities, quotes, attribute order,

@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Convertir un PDF en texte en ligne, gratuit | Tanod Tools",
+  "description": "Extrayez le texte d'un PDF page par page dans votre navigateur. Copiez-le ou téléchargez un .txt. Gratuit, sans inscription ni envoi. Un scan nécessite l'OCR.",
+  "h1": "PDF en texte",
+  "lede": "Extrayez le texte d'un PDF page par page, puis copiez-le ou enregistrez-le dans un fichier .txt. Un PDF scanné n'a pas de texte à extraire : utilisez alors <a href=\"/tools/ocr-pdf/\">OCR PDF</a>.",
+  "blurb": "Extraire le texte d'un PDF, le copier ou l'enregistrer en .txt.",
+  "keywords": "pdf en texte pdf en txt extraire texte pdf extraire le texte copier texte pdf convertir pdf en texte extracteur texte pdf texte brut page par page pdf scanne ocr pdf to text pdf to txt",
+  "limits": "Un PDF à la fois, jusqu'à 200 Mo et 500 pages. L'outil lit le texte qui est enregistré dans le PDF. Un PDF scanné n'est constitué que d'images de pages et ne contient donc aucun texte : utilisez alors <a href=\"/tools/ocr-pdf/\">OCR PDF</a>. Les tableaux et les colonnes sont restitués ligne par ligne, et les PDF protégés par mot de passe ne peuvent pas être ouverts.",
+  "howto_title": "Comment extraire le texte d'un PDF",
+  "howto": [
+    "Choisissez un fichier PDF ou glissez-le sur la page.",
+    "Patientez un instant pendant la lecture de chaque page. Choisissez toutes les pages ou une plage comme 1-3, 5, et indiquez si vous voulez marquer le début de chaque page.",
+    "Cliquez sur <strong>Télécharger .txt</strong>, ou copiez tout le texte, ou copiez une seule page depuis la liste."
+  ],
+  "faq": [
+    ["Mon PDF est-il envoyé ?", "Non. Votre navigateur lit le texte avec la bibliothèque open source pdf.js, sur votre appareil. Rien n'est envoyé à un serveur, et le texte disparaît quand vous fermez l'onglet."],
+    ["Pourquoi n'ai-je obtenu aucun texte, ou le texte de certaines pages seulement ?", "L'outil lit le texte qui est enregistré dans le PDF. Un PDF scanné enregistre chaque page sous forme d'image, sans texte derrière : il n'y a donc rien à lire. C'est aussi le cas des pages scannées ajoutées à un document par ailleurs ordinaire. Utilisez <a href=\"/tools/ocr-pdf/\">OCR PDF</a> pour reconnaître les lettres dans les images. Les pages sans texte sont signalées dans la liste page par page."],
+    ["La mise en forme est-elle conservée ?", "Non. Vous obtenez du texte brut : des lettres, des chiffres et des sauts de ligne. Les polices, les couleurs, les images et la mise en page ne sont pas reprises. Les retours à la ligne sont ceux du PDF, et une ligne vide est ajoutée quand l'écart entre deux lignes est plus grand que d'habitude, comme entre deux paragraphes."],
+    ["Comment recoller les lignes coupées pour former des paragraphes ?", "Collez le texte dans <a href=\"/tools/remove-line-breaks/\">Supprimer les sauts de ligne</a>. Cet outil recolle les lignes à l'intérieur de chaque paragraphe, conserve les lignes vides entre les paragraphes et peut réparer les mots coupés par un tiret en fin de ligne."],
+    ["Pourquoi une partie du texte est-elle dans le désordre ou coupée en morceaux bizarres ?", "Le texte est extrait dans l'ordre où le PDF l'enregistre : c'est en général l'ordre de lecture, mais pas toujours. Les tableaux, les pages à plusieurs colonnes et les PDF exportés depuis des logiciels de création graphique peuvent produire un texte mélangé, et certains PDF enregistrent le texte en morceaux qui ne correspondent pas aux mots que vous voyez."],
+    ["Cela fonctionne-t-il avec d'autres langues que l'anglais ?", "Oui. Le texte est lu en Unicode : vous récupérez donc aussi les lettres accentuées, le cyrillique, le grec, l'hindi, le chinois et les autres écritures, à condition que le PDF ait une véritable couche de texte. Si un PDF utilise des polices configurées de façon inhabituelle, le copier-coller donne des caractères illisibles dans n'importe quel programme ; passer le fichier à l'OCR est en général la solution."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Déposez un PDF ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choisir un PDF</span></label>
+  <p class="drop__hint">Ou glissez-le n'importe où sur cette page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Pages</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Toutes les pages</label>
+        <label><input type="radio" name="scope" value="range">Certaines pages</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Plage de pages</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Options</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Marquer le début de chaque page</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Pages</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>Avec texte</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Mots</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Caractères</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Texte extrait</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}Télécharger .txt</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Copier tout le texte</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+  <h3 class="util-h">Page par page</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Texte trouvé sur chaque page">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Page</th><th scope="col">Mots</th><th scope="col">Caractères</th><th scope="col"><span class="visually-hidden">Copier</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>D'où vient le texte d'un PDF ?</h2>
+<p>Un PDF créé par un traitement de texte, un navigateur ou un logiciel de création graphique enregistre ses mots sous forme de texte : chaque suite de lettres est associée à une police et à une position sur la page. C'est ce texte enregistré que lit cet outil. Votre navigateur ouvre le fichier avec pdf.js, demande à chaque page son texte, puis remet ces suites de lettres en lignes dans l'ordre où le fichier les présente. Il ne tient jamais compte de l'aspect de la page à l'écran.</p>
+<p>Un PDF scanné, c'est autre chose. Un scanner ou l'appareil photo d'un téléphone produit une image de chaque page, et le PDF ne contient que ces images : il n'y a donc aucun texte à lire. Vous voyez des mots, mais le fichier ne les contient pas. Reconvertir ces images en texte est une tâche à part, appelée reconnaissance optique de caractères, que réalise <a href="/tools/ocr-pdf/">OCR PDF</a>. Les pages sans texte sont signalées dans la liste située sous la zone de texte, pour que vous puissiez distinguer les scans des pages normales dans un fichier mixte.</p>
+<p>Le résultat est du texte brut, sans mise en forme. Les retours à la ligne sont ceux du PDF, et une ligne vide est ajoutée quand l'écart entre deux lignes est nettement plus grand que l'espacement habituel de la page : c'est ainsi que les paragraphes et les titres sont séparés. Les ligatures que certaines polices utilisent pour des paires de lettres comme fi et fl sont reconverties en lettres séparées, et les traits d'union conditionnels invisibles sont supprimés.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Les pages scannées apparaissent comme des pages sans texte. Traitez-les avec <a href="/tools/ocr-pdf/">OCR PDF</a> et lisez le résultat.</li>
+  <li>Collez le texte dans <a href="/tools/remove-line-breaks/">Supprimer les sauts de ligne</a> pour transformer les lignes empilées en paragraphes continus.</li>
+  <li>Vous n'avez besoin que de certaines pages sous forme de PDF ? Utilisez <a href="/tools/extract-pdf-pages/">Extraire des pages d'un PDF</a> pour les découper, et <a href="/tools/word-counter/">Compteur de mots</a> pour compter ce que vous avez copié.</li>
+</ul>

@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Cron एक्सप्रेशन जनरेटर, अगले रन के समय के साथ | Tanod Tools",
+  "description": "प्रीसेट और क्लिक वाले कंट्रोल से पाँच-फ़ील्ड cron शेड्यूल बनाएं, उसे सरल भाषा में पढ़ें और इस्तेमाल से पहले किसी भी टाइम ज़ोन में उसके अगले रन के समय जाँचें।",
+  "h1": "Cron एक्सप्रेशन जनरेटर",
+  "lede": "सीधे विकल्पों से crontab शेड्यूल बनाएं, फिर देखें कि वह सरल भाषा में क्या कहता है और अगली बार कब चलेगा।",
+  "blurb": "कंट्रोल से cron शेड्यूल बनाएं और अगले रन देखें।",
+  "keywords": "cron एक्सप्रेशन जनरेटर cron बिल्डर crontab जनरेटर cron शेड्यूल हर 5 मिनट cron सिंटैक्स cron expression generator cron builder crontab generator cron schedule maker cron job every 5 minutes weekdays at 9am",
+  "limits": "Vixie cron और cronie जैसा मानक पाँच-फ़ील्ड cron: मिनट, घंटा, महीने का दिन, महीना और सप्ताह का दिन। Quartz और सेकंड वाले दूसरे फ़ॉर्मैट नहीं बनते, और पेस्ट किए ऐसे एक्सप्रेशन जो कंट्रोल में नहीं दिखाए जा सकते, जैसे लिखे गए वैसे ही रहते हैं।",
+  "howto_title": "Cron एक्सप्रेशन कैसे बनाएं",
+  "howto": [
+    "किसी प्रीसेट से शुरू करें, या हर फ़ील्ड को ऐसा सेट करें कि वह हर बार चले, शुरुआत से हर N इकाई पर, ख़ास मानों पर, या दो मानों के बीच।",
+    "एक्सप्रेशन, उसका सरल भाषा में वर्णन और अपने सर्वर की टाइम ज़ोन में अगले रन के समय जाँचें।",
+    "एक्सप्रेशन को अपनी crontab, CI शेड्यूल या शेड्यूलर में कॉपी करें। आप पहले से मौजूद एक्सप्रेशन पेस्ट करके उसे कंट्रोल में लोड भी कर सकते हैं।"
+  ],
+  "faq": [
+    ["जॉब हर 15 मिनट पर कैसे चलाऊँ?", "मिनट को <em>हर 15 मिनट, 0 से शुरू करके</em> पर सेट करें, जो <code>*/15 * * * *</code> लिखता है। जॉब हर घंटे के मिनट 0, 15, 30 और 45 पर चलता है।"],
+    ["0 के अलावा कोई और शुरुआत कैसे लिखी जाती है?", "मिनट 5 से शुरू होकर 10 के स्टेप जैसी शुरुआत <code>5-59/10</code> लिखी जाती है, जो 5, 15, 25, 35, 45 और 55 पर चलती है। छोटा <code>5/10</code> कुछ cron संस्करणों में चलता है पर दूसरे उसे ठुकरा देते हैं, इसलिए लंबा रूप हर जगह चलने वाला विकल्प है।"],
+    ["कुछ दिन रेंज से और कुछ सूची से क्यों चुने जाते हैं?", "लगातार तीन या ज़्यादा मान रेंज की तरह लिखे जाते हैं, इसलिए सोमवार से शुक्रवार <code>1-5</code> है, जबकि सोमवार, बुधवार और शुक्रवार <code>1,3,5</code>। दोनों का मतलब ठीक वही मान है जो आपने टिक किए।"],
+    ["महीने का दिन और सप्ताह का दिन दोनों तय करने पर क्या होता है?", "मानक cron जॉब तब चलाता है जब उनमें से कोई एक मेल खाए, दोनों नहीं। <code>0 9 1 * 1</code> महीने की 1 तारीख़ को और हर सोमवार को चलता है। जब आपके चुनाव इस स्थिति में आते हैं तो टूल एक नोट जोड़ देता है।"],
+    ["अगले रन किस टाइम ज़ोन में दिखते हैं?", "जो आप एक्सप्रेशन के नीचे चुनते हैं। cron ख़ुद उस मशीन या कंटेनर की टाइम ज़ोन इस्तेमाल करता है जिस पर वह चलता है, जब तक crontab में <code>CRON_TZ</code> न लगा हो। कई सर्वर UTC इस्तेमाल करते हैं, इसलिए किसी समय पर भरोसा करने से पहले जाँच लें।"],
+    ["क्या यह सेकंड, @daily या Quartz सिंटैक्स सँभालता है?", "यह सिर्फ़ पाँच-फ़ील्ड एक्सप्रेशन बनाता है। <code>@daily</code> या कोई और शॉर्टकट पेस्ट करना चलता है और वह अपने पाँच फ़ील्ड में बदल जाता है। छह-फ़ील्ड और Quartz जैसे एक्सप्रेशन ठुकरा दिए जाते हैं, क्योंकि उनका पहला फ़ील्ड सेकंड होता है। <a href=\"/tools/cron-expression-explainer/\">Cron एक्सप्रेशन समझें</a> इसे विस्तार से बताता है।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Cron एक्सप्रेशन</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">कॉपी करें</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="प्रीसेट">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">हर मिनट</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">हर 5 मिनट</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">हर 15 मिनट</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">हर घंटे</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">रोज़ आधी रात को</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">कार्यदिवसों में 09:30 बजे</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">हर रविवार</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">1 और 15 तारीख़</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">महीने की पहली तारीख़</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">हर साल</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">मौजूदा एक्सप्रेशन लोड करें</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">लोड करें</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">पाँच-फ़ील्ड एक्सप्रेशन या @daily जैसा शॉर्टकट पेस्ट करें।</span>
+    </div>
+  </div>
+  <h2 class="util-h">अगले रन</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">टाइम ज़ोन</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">यहाँ से शुरू करें</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">अभी से शुरू करने के लिए ख़ाली छोड़ें।</span>
+    </div>
+    <div class="field">
+      <label for="g-count">कितने</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="अगले रन के समय"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">आपके पास पहले से एक्सप्रेशन है और बस उसे समझना है? <a href="/tools/cron-expression-explainer/">Cron एक्सप्रेशन समझें</a> इस्तेमाल करें।</p>
+</div>
+<!--explain-->
+<h2>Cron शेड्यूल बनाना</h2>
+<p>Cron एक्सप्रेशन स्पेस से अलग किए गए पाँच फ़ील्ड होते हैं: मिनट, घंटा, महीने का दिन, महीना और सप्ताह का दिन। हर फ़ील्ड इस बारे में एक सवाल का जवाब देता है कि जॉब कब चलना चाहिए, और जॉब तब चलता है जब सब मेल खाएँ। किसी फ़ील्ड को <code>*</code> छोड़ने का मतलब है हर मान, इसीलिए <code>0 * * * *</code> हर घंटे की शुरुआत पर चलता है और <code>0 0 * * *</code> रोज़ आधी रात को एक बार।</p>
+<p>बिल्डर हर फ़ील्ड को चार तरीके देता है कि आप क्या चाहते हैं। <code>*/15</code> जैसा स्टेप हर 15वें मान के लिए है, <code>1,15</code> जैसी सूची ठीक-ठीक मान चुनती है, <code>9-17</code> जैसी रेंज दो मानों के बीच सब कुछ कवर करती है, और <code>*</code> हर मान है। जब आप मान टिक करते हैं तो लगातार तीन या ज़्यादा मान रेंज की तरह लिखे जाते हैं, इसलिए सोमवार से शुक्रवार <code>1,2,3,4,5</code> की जगह <code>1-5</code> देता है।</p>
+<p>दो जाल ज़्यादातर लोगों को पकड़ते हैं। Cron उस मशीन की घड़ी इस्तेमाल करता है जिस पर वह चलता है, इसलिए 09:00 के लिए तय जॉब सर्वर के समय के हिसाब से 09:00 पर चलता है, जो आपका समय नहीं भी हो सकता; अगले रन की सूची से आप कई ज़ोन में जाँच सकते हैं। और जब महीने का दिन और सप्ताह का दिन, दोनों फ़ील्ड सीमित हों, तो जॉब तब चलता है जब उनमें से कोई एक मेल खाए, जिसका मतलब उम्मीद से कहीं ज़्यादा रन हो सकते हैं।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>किसी और का लिखा एक्सप्रेशन पढ़ने के लिए उसे <a href="/tools/cron-expression-explainer/">Cron एक्सप्रेशन समझें</a> में पेस्ट करें।</li>
+  <li>लॉग के रन के समय को Unix टाइमस्टैम्प में, या वापस, <a href="/tools/unix-timestamp-converter/">Unix टाइमस्टैम्प कन्वर्टर</a> से बदलें।</li>
+  <li>शेड्यूल की गई स्क्रिप्टों पर एक्ज़ीक्यूट बिट लगा होना चाहिए; सही मोड <a href="/tools/chmod-calculator/">chmod कैलकुलेटर</a> में निकालें।</li>
+</ul>

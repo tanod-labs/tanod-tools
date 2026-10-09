@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "KSeF-Viewer: FA(3)- und FA(2)-XML öffnen | Tanod Tools",
+  "description": "Öffnen Sie eine polnische KSeF-Rechnung (FA(3)- oder FA(2)-XML) und lesen Sie sie wie eine normale Rechnung. Drucken, PDF oder JSON. Kostenlos, ohne Upload.",
+  "h1": "KSeF-Viewer",
+  "lede": "Öffnen Sie eine strukturierte Rechnung aus dem polnischen KSeF und lesen Sie sie wie eine gewöhnliche Rechnung: Verkäufer, Käufer, Positionen, Umsatzsteuer-Gruppen und Zahlung. Das XML wird in Ihrem Browser gelesen und nie hochgeladen.",
+  "blurb": "Polnische KSeF-Rechnung (FA(3), FA(2)) als normale Rechnung lesen.",
+  "keywords": "ksef viewer ksef rechnung anzeigen ksef xml öffnen ksef rechnung lesen polnische e-rechnung anzeigen polen e-rechnung xml fa(3) fa(2) faktura ustrukturyzowana ksef faktura pdf ksef rechnung als pdf",
+  "limits": "Eine Datei auf einmal, bis 25 MB; angezeigt werden die ersten 5.000 Rechnungspositionen. Gelesen werden die KSeF-Schemas FA(3) und FA(2), auch Korrekturrechnungen. Nicht gelesen werden der strukturierte Anhang von FA(3) (Załącznik), FA_RR-Rechnungen und das ältere FA(1). Nur Viewer: Die Rechnung wird nicht validiert, und es gibt keine Verbindung zum KSeF.",
+  "howto_title": "So öffnen Sie eine KSeF-Rechnung",
+  "howto": [
+    "Wählen Sie das Rechnungs-XML aus, das Sie aus dem KSeF oder aus Ihrem Buchhaltungsprogramm gespeichert haben, oder ziehen Sie es auf die Seite.",
+    "Lesen Sie die Rechnung: Verkäufer (Podmiot1) und Käufer (Podmiot2), Positionen, Umsatzsteuer nach Satz, Summen, Zahlung und Hinweise.",
+    "Mit <strong>Drucken oder als PDF speichern</strong>, <strong>JSON herunterladen</strong> oder <strong>Roh-XML anzeigen</strong> geht es weiter."
+  ],
+  "faq": [
+    [
+      "Wird die Rechnung an das KSeF gesendet oder hochgeladen?",
+      "Nein. Diese Seite stellt keine Verbindung zum KSeF oder zu irgendeinem Server her. Das XML wird in Ihrem Browser gelesen und auf dieser Seite angezeigt, und beim Schließen des Tabs ist alles gelöscht."
+    ],
+    [
+      "Wo bekomme ich das XML einer Rechnung?",
+      "Im KSeF können Sie eine Rechnung als XML-Datei herunterladen, und Buchhaltungsprogramme, die mit dem KSeF arbeiten, können sie exportieren. Diese Seite liest die Datei, die Sie gespeichert haben."
+    ],
+    [
+      "Was ist der Unterschied zwischen FA(3) und FA(2)?",
+      "Es sind aufeinanderfolgende Versionen desselben Rechnungsschemas (das Wurzelelement heißt Faktura). FA(3) ist die Version, die seit dem Start des verpflichtenden KSeF im Jahr 2026 gilt; FA(2) ist die frühere, und in ihr erstellte Rechnungen sind weiterhin im Umlauf. Beide werden hier gelesen."
+    ],
+    [
+      "Zeigt die Seite die KSeF-QR-Codes oder die offizielle Visualisierung an?",
+      "Nein. Diese Seite zeigt den Inhalt des XML als lesbare Rechnung. Sie erzeugt nicht die QR-Codes der offiziellen Visualisierung und ist vom polnischen Finanzministerium unabhängig."
+    ],
+    [
+      "Warum fehlt bei manchen Positionen der Umsatzsteuersatz?",
+      "Bei steuerbefreiten (zw), Reverse-Charge- (oo) und nicht steuerbaren (np) Positionen enthält die Datei statt eines Satzes einen Code. Der Code wird unverändert angezeigt, zusammen mit der passenden Umsatzsteuer-Kategorie."
+    ],
+    [
+      "Wie sieht es mit Korrekturrechnungen aus?",
+      "Eine Korrektur (KOR) führt die Positionen auf, wie sie vorher waren und wie sie jetzt sind, und die Summen sind die Differenz. Die alten Positionen sind mit „Vor der Korrektur“ gekennzeichnet. Nummer und KSeF-Nummer der korrigierten Rechnung werden angezeigt, wenn die Datei sie enthält."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Das KSeF und seine Rechnungen</h2>
+<p>Das KSeF, das Krajowy System e-Faktur, ist das nationale E-Rechnungssystem Polens und wird vom Finanzministerium betrieben. Rechnungen werden als strukturiertes XML in einem Schema namens FA ausgestellt, und 2026 wurde das System für Unternehmen schrittweise verpflichtend. Das gespeicherte und ausgetauschte XML ist die Rechnung; die lesbare Fassung ist eine Visualisierung davon. Diese Seite erstellt diese Visualisierung in Ihrem Browser aus dem XML, das Sie haben.</p>
+<h2>Was der Viewer anzeigt</h2>
+<p>Sie sehen den Verkäufer (Podmiot1) und den Käufer (Podmiot2) mit NIP bzw. EU-USt-IdNr. und Adressen, die Rechnungsnummer (P_2), die Datumsangaben (P_1, P_6), die Währung, jede Rechnungsposition mit Menge, Einheit, Preis und Umsatzsteuersatz, die Umsatzsteuer nach Satzgruppen (P_13 und P_14), den Gesamtbetrag (P_15), die Zahlungsangaben mit Bankkonto, zusätzliche Beschreibungen, die Fußzeile und die Registernummern sowie die wichtigen Kennzeichnungen: Split Payment, Reverse Charge, Ist-Versteuerung, Gutschriftverfahren (Selbstfakturierung) und Steuerbefreiung. Beträge werden genau so angezeigt, wie sie in der Datei stehen.</p>
+<p>Die Rechnung wird nicht validiert, nicht gegen das KSeF geprüft, und der strukturierte Anhang von FA(3) wird nicht gelesen. Wurde die Rechnung in einer Fremdwährung ausgestellt, wird die Umsatzsteuer in PLN unter den Summen angezeigt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>„JSON herunterladen“ liefert die Rechnung als reine Daten, wobei die polnischen Feldnamen in die Geschäftsbegriffe der EN 16931 übersetzt sind.</li>
+  <li>Auch andere Formate lassen sich hier öffnen: XRechnung, ZUGFeRD / Factur-X, FatturaPA und Peppol. Die Seite schlägt beim Öffnen den passenden Viewer vor.</li>
+  <li>„Roh-XML anzeigen“ hilft, wenn Sie ein Element brauchen, das die lesbare Rechnung nicht zeigt.</li>
+</ul>

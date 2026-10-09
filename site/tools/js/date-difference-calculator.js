@@ -1,6 +1,6 @@
 // Date difference calculator: whole-day calendar arithmetic (no clock time), so daylight saving can't shift a day.
-import { $, el, setStatus, tx, txn, fmtNum, EN } from "./core.js?v=5";
-import { parseDate, isoDate, today, dayNumber, diffYMD, addMonths, addDays, longDate, ymdParts, joinParts, weekdaysIn, fmt } from "./calccore.js?v=5";
+import { $, el, setStatus, tx, txn, fmtNum, EN } from "./core.js?v=11";
+import { parseDate, isoDate, today, dayNumber, diffYMD, addMonths, addDays, longDate, ymdParts, joinParts, weekdaysIn, fmt } from "./calccore.js?v=11";
 
 const A = $("#dd-a"), B = $("#dd-b"), AT = $("#dd-at"), BT = $("#dd-bt"), incl = $("#dd-incl");
 const status = $("#status"), res = $("#dd-res");

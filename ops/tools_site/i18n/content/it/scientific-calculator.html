@@ -1,0 +1,127 @@
+<!--meta
+{
+  "title": "Calcolatrice scientifica online: trigonometria, log | Tanod Tools",
+  "description": "Calcolatrice scientifica con parentesi, potenze, fattoriali, trigonometria in gradi o radianti, logaritmi e radici. Cronologia dei calcoli, senza registrazione.",
+  "h1": "Calcolatrice scientifica",
+  "lede": "Scrivi o tocca un'espressione con parentesi, potenze, radici, logaritmi e trigonometria, poi premi = per calcolarla.",
+  "blurb": "Parentesi, potenze, trigonometria in gradi o radianti, logaritmi, radici, fattoriali.",
+  "keywords": "calcolatrice scientifica online calcolatrice scientifica sin cos tan log ln radice quadrata fattoriale esponente potenza gradi radianti parentesi ordine delle operazioni pi greco scientific calculator",
+  "limits": "I risultati sono arrotondati a 12 cifre significative e arrivano fino a circa 1.8e308. I fattoriali si fermano a 170!. L'espressione è interpretata dalla pagina stessa, senza eval, quindi vengono capiti solo gli operatori e le funzioni elencati qui.",
+  "howto_title": "Come usare la calcolatrice scientifica",
+  "howto": [
+    "Scrivi un'espressione come <code>2(3+4)^2</code> con la tastiera, oppure tocca i tasti. Scegli prima <strong>Gradi</strong> o <strong>Radianti</strong> se usi sin, cos o tan.",
+    "Premi <strong>=</strong> o Invio. Se sono state aggiunte per te delle parentesi di chiusura compare una piccola nota, e ogni errore viene spiegato in parole semplici.",
+    "Usa <strong>Ans</strong> per portare l'ultimo risultato nel calcolo successivo, oppure tocca una riga precedente della cronologia per riutilizzare la sua espressione."
+  ],
+  "faq": [
+    ["Quanto fa qui 6 ÷ 2(1 + 2)?", "9. Questa calcolatrice dà alla moltiplicazione implicita, quella in cui il segno × è omesso come in 2(1+2), la stessa precedenza di × e ÷ e procede da sinistra a destra, quindi prima si fa 6 ÷ 2 e poi lo si moltiplica per 3. Alcune calcolatrici e alcuni libri di testo legano più strettamente la giustapposizione e ottengono 1. Nessuno dei due è un errore di aritmetica, è solo una convenzione diversa, quindi aggiungi le parentesi se l'espressione sarà letta da altri: 6/(2(1+2)) fa 1 e (6/2)(1+2) fa 9."],
+    ["Perché −2^2 fa −4 e non 4?", "La potenza viene calcolata prima di applicare il segno meno, quindi −2^2 significa −(2^2). Per elevare al quadrato un numero negativo, mettilo tra parentesi: (−2)^2 = 4. Una potenza con un segno meno alla sua destra va bene: 2^−1 è 0.5. Le potenze concatenate si raggruppano da destra, quindi 2^3^2 è 2^(3^2) = 512."],
+    ["Come funziona il tasto percentuale?", "% divide per 100 il numero che lo precede, ovunque compaia. 50% è 0.5 e 200*10% è 20. Non aggiunge né sottrae la percentuale come fa una calcolatrice tascabile con 200+10%; qui il risultato è 200.1. Per aumenti e diminuzioni usa il <a href=\"/tools/percentage-calculator/\">Calcolatore di percentuali</a>."],
+    ["Perché sin(30) dà esattamente 0.5 ma sin(π) dà 0?", "L'aritmetica in virgola mobile non può memorizzare π in modo esatto, quindi il seno del valore memorizzato viene 1.2e-16, non 0. La calcolatrice considera 0 i risultati così piccoli di una funzione trigonometrica e arrotonda ogni risposta a 12 cifre significative, quindi 0.1+0.2 mostra 0.3 invece di 0.30000000000000004. In modalità gradi, anche angoli come 30, 90 e 180 vengono ridotti in modo esatto, e tan(90) viene segnalata come non definita invece che come un numero enorme."],
+    ["Quali input producono un errore?", "Divisione per zero e 0÷0, radice quadrata di un numero negativo, ln o log di 0 o di un numero negativo, asin e acos fuori dall'intervallo da −1 a 1, tan a 90°, fattoriale di un numero negativo, non intero o superiore a 170, risultati oltre circa 1.8e308 e tutto ciò che l'analizzatore non riesce a leggere, come <code>2++</code>, <code>*3</code> o <code>)(</code>. Un errore non mostra mai Infinity o NaN; dice cosa cambiare."],
+    ["Posso scrivere 1,000 o 1e-3?", "Scrivi 1e-3 o 2.5e6 per la forma esponenziale; il numero viene letto come una potenza di dieci. I separatori delle migliaia non sono accettati, perché una virgola potrebbe essere confusa con altro, quindi scrivi 1000. Il numero di Eulero si scrive <code>e</code>, quindi 2e3 è 2000 e 2*e*3 è 2 × 2.718 × 3. Se vuoi moltiplicare per e dopo una cifra, usa le parentesi o il segno *."]
+  ]
+}
+-->
+<!--tool-->
+<div class="sc">
+  <div class="sc__top">
+    <fieldset class="sc__angle">
+      <legend>Unità degli angoli</legend>
+      <div class="seg">
+        <label><input type="radio" name="sc-angle" value="deg" checked>Gradi</label>
+        <label><input type="radio" name="sc-angle" value="rad">Radianti</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="sc__screen">
+    <label class="sc__label" for="sc-expr">Espressione</label>
+    <input type="text" id="sc-expr" class="sc__expr" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="2(3+4)^2" aria-describedby="sc-help sc-note">
+    <div class="sc__out" id="sc-out" aria-live="polite" aria-atomic="true">
+      <p class="sc__echo" id="sc-echo"></p>
+      <p class="sc__result num" id="sc-result" data-state="idle">0</p>
+      <p class="sc__error" id="sc-error" hidden></p>
+    </div>
+    <p class="sc__preview num" id="sc-preview" aria-hidden="true"></p>
+    <p class="sc__note" id="sc-note" hidden></p>
+  </div>
+  <div class="sc__pad" role="group" aria-label="Tasti della calcolatrice">
+    <button type="button" class="sc__k sc__k--fn" data-ins="sin(" aria-label="seno">sin</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="cos(" aria-label="coseno">cos</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="tan(" aria-label="tangente">tan</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="ln(" aria-label="logaritmo naturale">ln</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="log(" aria-label="logaritmo in base 10">log</button>
+
+    <button type="button" class="sc__k sc__k--fn" data-ins="π" aria-label="pi greco">π</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="e" aria-label="numero di Eulero e">e</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="Ans" aria-label="risultato precedente">Ans</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="sqrt(" aria-label="radice quadrata">√</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="^2" aria-label="quadrato">x²</button>
+
+    <button type="button" class="sc__k sc__k--fn" data-ins="(" aria-label="apri parentesi">(</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins=")" aria-label="chiudi parentesi">)</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="^" aria-label="potenza">xʸ</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="!" aria-label="fattoriale">n!</button>
+    <button type="button" class="sc__k sc__k--fn" data-ins="%" aria-label="percentuale, divide per 100">%</button>
+
+    <button type="button" class="sc__k" data-ins="7">7</button>
+    <button type="button" class="sc__k" data-ins="8">8</button>
+    <button type="button" class="sc__k" data-ins="9">9</button>
+    <button type="button" class="sc__k sc__k--op" data-ins="÷" aria-label="dividi">÷</button>
+    <button type="button" class="sc__k sc__k--act" data-act="back" aria-label="cancella l'ultimo carattere">⌫</button>
+
+    <button type="button" class="sc__k" data-ins="4">4</button>
+    <button type="button" class="sc__k" data-ins="5">5</button>
+    <button type="button" class="sc__k" data-ins="6">6</button>
+    <button type="button" class="sc__k sc__k--op" data-ins="×" aria-label="moltiplica">×</button>
+    <button type="button" class="sc__k sc__k--act" data-act="clear" aria-label="azzera tutto">AC</button>
+
+    <button type="button" class="sc__k" data-ins="1">1</button>
+    <button type="button" class="sc__k" data-ins="2">2</button>
+    <button type="button" class="sc__k" data-ins="3">3</button>
+    <button type="button" class="sc__k sc__k--op" data-ins="−" aria-label="sottrai">−</button>
+    <button type="button" class="btn btn--primary sc__k sc__k--eq" data-act="eval" aria-label="uguale, calcola">=</button>
+
+    <button type="button" class="sc__k sc__k--zero" data-ins="0">0</button>
+    <button type="button" class="sc__k" data-ins="." aria-label="punto decimale">.</button>
+    <button type="button" class="sc__k sc__k--op" data-ins="+" aria-label="somma">+</button>
+  </div>
+  <details class="sc__more">
+    <summary>Altre funzioni</summary>
+    <div class="sc__morepad" role="group" aria-label="Altre funzioni">
+      <button type="button" class="sc__k sc__k--fn" data-ins="asin(" aria-label="arcoseno">asin</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="acos(" aria-label="arcocoseno">acos</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="atan(" aria-label="arcotangente">atan</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="sinh(" aria-label="seno iperbolico">sinh</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="cosh(" aria-label="coseno iperbolico">cosh</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="tanh(" aria-label="tangente iperbolica">tanh</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="log2(" aria-label="logaritmo in base 2">log₂</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="exp(" aria-label="e elevato alla potenza">exp</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="cbrt(" aria-label="radice cubica">∛</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="abs(" aria-label="valore assoluto">abs</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="floor(" aria-label="arrotonda per difetto">floor</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="ceil(" aria-label="arrotonda per eccesso">ceil</button>
+      <button type="button" class="sc__k sc__k--fn" data-ins="round(" aria-label="arrotonda al più vicino">round</button>
+    </div>
+  </details>
+  <p class="help" id="sc-help">Tastiera: scrivi l'espressione, poi Invio o = per calcolare. Esc cancella. Dopo un risultato, iniziare con un operatore prosegue da Ans; iniziare con una cifra ricomincia da capo. 6/2(1+2) viene letto come 9, perché la moltiplicazione implicita ha la stessa precedenza di × e ÷; alcune calcolatrici danno 1.</p>
+  <div class="sc__hist">
+    <div class="sc__histhead">
+      <h2 class="util-h" id="sc-hist-h">Cronologia</h2>
+      <button type="button" class="btn btn--quiet btn--sm" id="sc-hist-clear" hidden>Cancella la cronologia</button>
+    </div>
+    <p class="help" id="sc-hist-empty">I calcoli che completi compaiono qui. Fai clic su uno per riutilizzare la sua espressione.</p>
+    <ol class="sc__histlist" id="sc-hist" aria-labelledby="sc-hist-h"></ol>
+  </div>
+</div>
+<!--explain-->
+<h2>Come viene letta un'espressione</h2>
+<p>Una calcolatrice non procede semplicemente da sinistra a destra. Prima scompone il testo in numeri, operatori e nomi, poi costruisce un albero in cui le operazioni a precedenza più alta stanno più in profondità e infine valuta l'albero dal basso verso l'alto. Questa pagina fa esattamente questo nel proprio codice, senza passare il tuo testo a un valutatore generico. Dalla precedenza più bassa alla più alta, l'ordine è: addizione e sottrazione; moltiplicazione, divisione e moltiplicazione implicita; un segno meno davanti a un valore; potenze; fattoriale e percentuale.</p>
+<p>Le potenze si raggruppano da destra, quindi 2^3^2 significa 2^(3^2) = 512, non (2^3)^2 = 64. Un segno meno davanti a una potenza si applica dopo di essa, quindi −2^2 è −4. Le funzioni vogliono le parentesi, come in sin(30), e una parentesi di chiusura mancante proprio alla fine viene aggiunta per te con una nota, quindi scrivendo <code>(2+3</code> si ottiene 5. Tutto ciò che non può essere un numero reale viene fermato con una spiegazione invece di essere mostrato come Infinity o NaN.</p>
+<p>La trigonometria dipende dall'unità degli angoli. In gradi, sin(30) è 0.5; in radianti lo stesso input significa 30 radianti e dà −0.988. Cambia l'unità prima di iniziare, e ricorda che le funzioni inverse restituiscono angoli nell'unità scelta. I computer memorizzano la maggior parte dei decimali in binario, ed è per questo che 0.1+0.2 darebbe 0.30000000000000004 in virgola mobile grezza; qui ogni risposta viene prima arrotondata a 12 cifre significative.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Per aggiungere il 15% a un prezzo o trovare la variazione tra due valori, il <a href="/tools/percentage-calculator/">Calcolatore di percentuali</a> mostra la formula che usa.</li>
+  <li>Ti servono risposte esatte per somme come 1/3 + 2/7 invece di decimali arrotondati? Usa la <a href="/tools/fraction-calculator/">Calcolatrice di frazioni</a>.</li>
+  <li>Lavori con binario, ottale o esadecimale? Il <a href="/tools/number-base-converter/">Convertitore di basi numeriche</a> gestisce quelle basi.</li>
+</ul>

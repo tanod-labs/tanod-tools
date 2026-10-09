@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Generador de simple queues MikroTik por IP | Tanod Tools",
+  "description": "Genera simple queues de RouterOS por IP o para cada host de una subred: max-limit, limit-at, burst y una queue padre para el plan total. Comentado, en tu navegador.",
+  "h1": "Generador de simple queues MikroTik",
+  "lede": "Define un plan de ancho de banda una vez y obtén una simple queue por cada dirección de cliente, con burst opcional y una queue padre que limita a todo el grupo.",
+  "blurb": "Límites de ancho de banda por IP con burst y queue padre.",
+  "keywords": "generador simple queue mikrotik limitar ancho de banda por ip routeros queue simple max-limit limit-at burst limit parent queue wisp control de ancho de banda hotspot limitar velocidad cliente script",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Genera sintaxis de RouterOS v7 (también válida en v6) para targets IPv4, hasta 2048 queues. Todas las queues reciben el mismo plan; cuando muchos clientes comparten un enlace, PCQ consume menos CPU. MikroTik y RouterOS son marcas registradas de SIA Mikrotīkls. Esta herramienta es independiente y no está afiliada ni respaldada por MikroTik.",
+  "howto_title": "Cómo limitar el ancho de banda por IP en MikroTik",
+  "howto": [
+    "Lista las direcciones de los clientes (una por línea, opcionalmente seguida de un nombre), o indica una subred para crear una queue por cada host.",
+    "Ingresa el plan como max-limit de subida y de bajada, más limit-at y burst si los usas. Las velocidades aceptan k, M o G.",
+    "Opcionalmente agrega una queue padre con la capacidad total del enlace, y luego copia el script o descarga el archivo .rsc."
+  ],
+  "faq": [
+    ["¿Qué lado es la subida en max-limit?", "Las velocidades de una simple queue se escriben subida/bajada desde el punto de vista del target: max-limit=5M/20M deja que el cliente envíe 5 Mbit/s y reciba 20 Mbit/s. El generador rotula los campos de esa forma para que no tengas que recordar el orden."],
+    ["¿Por qué mi queue no limita nada?", "El motivo más común es FastTrack: las conexiones con fasttrack se saltan las simple queues. Desactiva la regla fasttrack en /ip firewall filter, o excluye de ella las direcciones con queue. Revisa también el orden: las simple queues se evalúan desde arriba, y una queue anterior con un target solapado se queda primero con el tráfico."],
+    ["¿Qué hacen limit-at y la queue padre?", "La queue padre limita a todo el grupo a la capacidad real del enlace. limit-at es la velocidad que se garantiza a cada hija cuando la padre está llena; por encima de ella, las hijas se reparten el ancho de banda restante hasta su max-limit. Si los valores de limit-at suman más que la padre, no se pueden cumplir todos."],
+    ["¿Cuántas simple queues aguanta un router?", "Depende del CPU y del tráfico, pero cada paquete recorre la lista desde arriba, así que miles de queues se vuelven costosas. Para planes planos grandes, un tipo de queue PCQ reparte el ancho de banda de forma justa entre todos los clientes con una sola queue; el generador de PCQ la escribe."],
+    ["¿Un target /32 necesita el prefijo?", "RouterOS guarda los targets de una sola dirección como /32 de cualquier forma. El generador los escribe con /32 para que los targets se lean igual en un export."],
+    ["¿Mi plan se envía a algún lado?", "No. Las queues se generan en tu navegador y nada de lo que escribes sale de tu dispositivo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="sq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Clientes</legend>
+      <div class="seg" role="radiogroup" aria-label="Clientes">
+        <label><input type="radio" name="sq-mode" value="list" checked>Lista de direcciones</label>
+        <label><input type="radio" name="sq-mode" value="subnet">Todos los hosts de una subred</label>
+      </div>
+      <div class="field" id="sq-list-f">
+        <label for="sq-list">Direcciones o redes, con nombre opcional después de cada una</label>
+        <textarea id="sq-list" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">192.168.88.10 alice
+192.168.88.11 bob
+192.168.88.64/28 office</textarea>
+      </div>
+      <div class="opts" id="sq-net-f" hidden>
+        <div class="field">
+          <label for="sq-net">Subred</label>
+          <input type="text" id="sq-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="sq-skip">Omitir estas direcciones</label>
+          <input type="text" id="sq-skip" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sq-prefix">Prefijo del nombre (para las líneas sin nombre)</label>
+        <input type="text" id="sq-prefix" class="mono" value="client-" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Plan por cliente</legend>
+      <div class="opts">
+        <div class="field"><label for="sq-up-max">max-limit de subida</label><input type="text" id="sq-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-max">max-limit de bajada</label><input type="text" id="sq-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-at">limit-at de subida</label><input type="text" id="sq-up-at" class="mono" value="" placeholder="opcional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-at">limit-at de bajada</label><input type="text" id="sq-down-at" class="mono" value="" placeholder="opcional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-burst">Permitir bursts</label></div>
+      <div class="opts" id="sq-burst-f" hidden>
+        <div class="field"><label for="sq-up-burst">burst-limit de subida</label><input type="text" id="sq-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-burst">burst-limit de bajada</label><input type="text" id="sq-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-thr">burst-threshold de subida</label><input type="text" id="sq-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-thr">burst-threshold de bajada</label><input type="text" id="sq-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-time">burst-time</label><input type="text" id="sq-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Queue padre</legend>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-parent">Limitar el grupo con una queue padre</label></div>
+      <div class="opts" id="sq-parent-f" hidden>
+        <div class="field"><label for="sq-pname">Nombre del padre</label><input type="text" id="sq-pname" class="mono" value="total" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-ptarget">Target del padre</label><input type="text" id="sq-ptarget" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pup">Subida total</label><input type="text" id="sq-pup" class="mono" value="50M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pdown">Bajada total</label><input type="text" id="sq-pdown" class="mono" value="200M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="sq-out" class="label">Script de RouterOS</label>
+    <textarea id="sq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="sq-copy" type="button">Copiar script</button>
+      <button class="btn" id="sq-dl" type="button">{{mark:i-download}}Descargar .rsc</button>
+    </div>
+    <ul class="ros-notes" id="sq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Simple queues, en breve</h2>
+<p>Una simple queue en <code>/queue simple</code> limita el tráfico desde y hacia su <em>target</em>: una dirección, una red o una interfaz. RouterOS compara cada paquete con la lista desde arriba y lo coloca en la primera queue cuyo target coincida, en cualquier dirección, así que una sola queue regula tanto la subida como la bajada de un cliente. Eso hace de las simple queues la forma más rápida de darle a cada cliente o dispositivo su propio plan, y la opción habitual en routers pequeños de WISP y hotspot.</p>
+<p>Cada queue tiene un <code>max-limit</code> (el techo), un <code>limit-at</code> opcional (la velocidad que se le garantiza cuando su padre está congestionado) y ajustes de burst opcionales. Una queue <code>parent</code> agrupa a las hijas bajo un total: el max-limit del padre debe ser la capacidad real del enlace, un poco por debajo de lo que entrega el ISP, para que las colas de paquetes se formen en el router y no en el módem, y se apliquen las prioridades del plan.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Calcula burst-threshold y burst-time con la <a href="/tools/mikrotik-burst-calculator/">calculadora de burst MikroTik</a>.</li>
+  <li>¿Cientos de clientes en un mismo plan? Una sola <a href="/tools/mikrotik-pcq-generator/">queue PCQ</a> le da a cada uno una parte igual con mucho menos CPU.</li>
+  <li>Los clientes PPPoE reciben sus queues del rate-limit del perfil; consulta el <a href="/tools/mikrotik-pppoe-server-generator/">generador de servidor PPPoE</a>.</li>
+</ul>

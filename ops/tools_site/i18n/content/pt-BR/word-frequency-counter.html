@@ -1,0 +1,115 @@
+<!--meta
+{
+  "title": "Contador de frequência de palavras | Tanod Tools",
+  "description": "Descubra as palavras e frases de duas ou três palavras mais comuns de um texto, com contagens e porcentagens. Ignore stop words e baixe CSV.",
+  "h1": "Contador de frequência de palavras",
+  "lede": "Cole um texto para ver quais palavras e frases aparecem com mais frequência, com contagens e porcentagens, e deixe de fora as stop words mais comuns do seu idioma.",
+  "blurb": "Palavras e frases mais comuns com contagens e porcentagens.",
+  "keywords": "contador de frequência de palavras palavras mais repetidas palavras mais comuns frequência de frases contador de n-gramas densidade de palavras-chave stop words remover stop words csv análise de texto",
+  "local_text": "Funciona no seu navegador; nada do que você digita sai do seu dispositivo",
+  "limits": "Texto de até alguns milhões de caracteres. Palavras são sequências de letras e dígitos, com apóstrofos e hifens mantidos dentro da palavra; as frases nunca atravessam o fim de uma sentença nem uma quebra de linha. As listas de stop words são listas curtas das palavras funcionais mais comuns, não dicionários completos, e existem para inglês, espanhol, francês, alemão, português (Brasil), italiano, indonésio, turco, vietnamita, russo, polonês e híndi.",
+  "howto_title": "Como contar a frequência de palavras",
+  "howto": [
+    "Cole seu texto.",
+    "Escolha palavras isoladas, frases de duas palavras ou frases de três palavras, e um idioma de stop words se quiser ignorar palavras como the, and ou of.",
+    "Leia a lista ordenada com contagens e porcentagens e depois copie ou baixe como CSV."
+  ],
+  "faq": [
+    [
+      "O que conta como uma palavra?",
+      "Uma sequência de letras ou dígitos que pode conter um apóstrofo ou hífen entre letras, então don't e well-known são uma palavra cada. Maiúsculas e minúsculas são tratadas como a mesma palavra. Pontuação e espaços separam as palavras."
+    ],
+    [
+      "Como as frases são contadas?",
+      "Uma frase de duas palavras é cada par de palavras lado a lado, e uma frase de três palavras é cada trio assim. As frases não atravessam ponto final, ponto de interrogação, ponto e vírgula nem quebra de linha, então a última palavra de uma sentença não se junta à primeira da seguinte."
+    ],
+    [
+      "O que fazem as opções de stop words?",
+      "Stop words são palavras funcionais muito comuns, como the, and, of, el, la, le, der ou и. Nas palavras isoladas, elas ficam fora da lista. Nas frases, qualquer frase que comece ou termine com uma stop word é descartada, assim você vê frases como search engine em vez de of the search. As porcentagens são calculadas sobre o que sobra."
+    ],
+    [
+      "Como a porcentagem é calculada?",
+      "É a contagem do item dividida pelo total de palavras (ou frases) contadas, depois de deixar de fora as stop words e os números, se você escolheu isso."
+    ],
+    [
+      "O que há no arquivo CSV?",
+      "A lista ordenada inteira, não só a parte exibida na tela, com as colunas posição, palavra, contagem e porcentagem. O arquivo é UTF-8 com marca de ordem de bytes para que as planilhas exibam corretamente as letras acentuadas."
+    ],
+    [
+      "Meu texto é enviado?",
+      "Não. O texto é contado no seu navegador e nada sai do seu dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="wf">
+  <div class="field">
+    <label for="wf-in">Texto a analisar</label>
+    <textarea id="wf-in" rows="9" spellcheck="false" autocomplete="off" placeholder="Cole o texto aqui"></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="wf-n-l">Contar</span>
+      <div class="seg" role="radiogroup" aria-labelledby="wf-n-l">
+        <label><input type="radio" name="wf-n" value="1" checked>Palavras</label>
+        <label><input type="radio" name="wf-n" value="2">Frases de 2 palavras</label>
+        <label><input type="radio" name="wf-n" value="3">Frases de 3 palavras</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="wf-stop">Ignorar stop words</label>
+      <select id="wf-stop">
+        <option value="" selected>Nenhuma</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wf-top">Mostrar</label>
+      <select id="wf-top">
+        <option value="10">Top 10</option>
+        <option value="25" selected>Top 25</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+        <option value="0">Todas</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="wf-num" checked>Incluir números</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="wf-example" type="button">Carregar um exemplo</button>
+    <button class="btn btn--quiet" id="wf-clear" type="button" disabled>Limpar</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="wf-report" aria-live="polite">Cole um texto para começar.</p>
+  <div class="util-stack" id="wf-res" hidden>
+    <dl class="stats">
+      <div><dt>Palavras no texto</dt><dd id="wf-words">0</dd></div>
+      <div><dt>Contadas</dt><dd id="wf-total">0</dd></div>
+      <div><dt>Diferentes</dt><dd id="wf-unique">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--primary" id="wf-copy" type="button">{{mark:i-copy}}Copiar lista</button>
+      <button class="btn" id="wf-csv" type="button">{{mark:i-download}}Baixar CSV</button>
+    </div>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tabela de frequência">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Nº</th><th scope="col" id="wf-th">Palavra</th><th scope="col">Contagem</th><th scope="col">Porcentagem</th></tr></thead>
+        <tbody id="wf-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Como a frequência de palavras é contada</h2>
+<p>O texto é dividido em palavras, cada palavra é convertida em minúsculas e a ferramenta conta quantas vezes cada uma aparece. A lista ordenada coloca as mais frequentes primeiro e desempata em ordem alfabética. Contar quanto as palavras se repetem é um jeito rápido de ver sobre o que um texto realmente fala, de checar se uma palavra-chave está sendo usada demais, de encontrar os termos de uma entrevista ou de um conjunto de respostas de pesquisa, ou de perceber um vício, como se apoiar sempre na mesma palavra em uma redação.</p>
+<p>Sem nenhum filtro, o topo da lista quase sempre é formado por palavras funcionais como the, of e and. Ao escolher um idioma de stop words, elas saem e as palavras de conteúdo sobem para o topo. As listas cobrem os artigos, pronomes, preposições, conjunções e verbos auxiliares mais comuns do idioma e servem para uma olhada rápida, não para trabalho linguístico.</p>
+<p>As frases são contadas como sequências de duas ou três palavras lado a lado, dentro de uma mesma sentença. Frases repetidas costumam dizer mais que palavras isoladas: elas revelam nomes de produtos, slogans e expressões fixas de um texto. Com as stop words ativadas, as frases que começam ou terminam com uma stop word são descartadas, e o que sobra é mais significativo.</p>
+<p>A porcentagem de um item é a sua contagem dividida pelo total contado. Esse total muda com as opções, porque as stop words e os números deixados de fora não entram na conta. Baixe o CSV para guardar a lista completa ou para montar um gráfico em uma planilha.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Para totais de palavras, caracteres, frases e tempo de leitura, use o <a href="/tools/word-counter/">contador de palavras</a>.</li>
+  <li>Para diferenciar maiúsculas de minúsculas do seu jeito, mude antes a caixa do texto com o <a href="/tools/case-converter/">conversor de maiúsculas e minúsculas</a>.</li>
+  <li>Limpe uma lista de itens repetidos com <a href="/tools/remove-duplicate-lines/">Remover linhas duplicadas</a>.</li>
+</ul>

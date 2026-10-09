@@ -1,0 +1,72 @@
+<!--meta
+{
+  "title": "Chuyển đổi ảnh sang PNG, JPG hoặc WebP | Tanod Tools",
+  "description": "Chuyển ảnh PNG, JPEG, WebP, GIF, BMP và AVIF sang PNG, JPG hoặc WebP ngay trong trình duyệt. Chọn màu nền cho vùng trong suốt. Không tải lên gì.",
+  "h1": "Chuyển đổi định dạng ảnh",
+  "lede": "Chuyển ảnh giữa PNG, JPEG và WebP, từng ảnh một hoặc cả loạt.",
+  "blurb": "Chuyển đổi giữa PNG, JPG và WebP.",
+  "keywords": "chuyển đổi định dạng ảnh đổi đuôi ảnh đổi định dạng ảnh png sang jpg jpg sang png webp sang png webp sang jpg heic bmp gif avif convert image format",
+  "limits": "Tối đa 50 ảnh mỗi lượt, mỗi ảnh 50 MB, khoảng 100 megapixel mỗi ảnh. Đầu vào: PNG, JPEG, WebP, GIF (khung hình đầu tiên), BMP, AVIF nếu trình duyệt của bạn mở được.",
+  "howto_title": "Cách chuyển đổi một ảnh",
+  "howto": [
+    "Chọn ảnh của bạn, hoặc kéo thả vào trang.",
+    "Chọn định dạng cần chuyển sang. Với JPEG, hãy chọn màu nền cho vùng trong suốt và chất lượng.",
+    "Bấm <strong>Chuyển đổi</strong>, rồi tải xuống từng tệp hoặc tệp .zip."
+  ],
+  "faq": [
+    ["Ảnh của tôi có bị tải lên không?", "Không. Việc chuyển đổi diễn ra trong trình duyệt trên thiết bị của bạn, và không có gì được gửi đến máy chủ."],
+    ["Độ trong suốt thế nào khi tôi chuyển sang JPEG?", "JPEG không lưu được độ trong suốt, nên vùng trong suốt được lấp bằng màu nền bạn chọn (mặc định là trắng). PNG và WebP giữ nguyên độ trong suốt."],
+    ["Tôi nên chọn định dạng nào?", "PNG không làm mất dữ liệu và phù hợp với đồ họa, ảnh chụp màn hình và mọi thứ có cạnh sắc nét hoặc độ trong suốt. JPEG là định dạng được hỗ trợ rộng rãi nhất cho ảnh chụp. WebP thường nhỏ hơn cả hai ở chất lượng tương đương và được các trình duyệt hiện nay hỗ trợ."],
+    ["Vì sao có thông báo trình duyệt của tôi không lưu được WebP?", "Một số trình duyệt, đặc biệt là Safari, mở được WebP nhưng không tạo ra được. Công cụ kiểm tra những gì trình duyệt thực sự tạo ra và cho bạn biết, thay vì đưa bạn một tệp bị gán nhãn sai. Hãy chọn PNG hoặc JPEG, hoặc dùng trình duyệt khác."],
+    ["Công cụ có chuyển đổi GIF động không?", "Chỉ khung hình đầu tiên được chuyển đổi. Hiệu ứng động không được giữ lại."],
+    ["Dữ liệu EXIF có được giữ lại không?", "Không. Tệp đã chuyển đổi không có metadata máy ảnh hay GPS, và được lưu theo hướng mà ảnh hiển thị."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Thả ảnh vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP hoặc AVIF. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<ol class="files" id="files" aria-label="Ảnh cần chuyển đổi" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Chuyển sang</legend>
+      <div class="seg">
+        <label><input type="radio" name="to" value="png" checked>PNG</label>
+        <label><input type="radio" name="to" value="jpeg">JPEG</label>
+        <label><input type="radio" name="to" value="webp">WebP</label>
+      </div>
+    </fieldset>
+    <div class="field" id="bg-field" hidden>
+      <label for="bg">Nền cho vùng trong suốt</label>
+      <input type="color" id="bg" value="#ffffff">
+      <p class="help">JPEG không thể trong suốt, nên các vùng này được lấp bằng màu này.</p>
+    </div>
+    <div class="field" id="q-field" hidden>
+      <label for="quality">Chất lượng: <span class="num" id="quality-out">90</span></label>
+      <input type="range" id="quality" min="10" max="100" value="90">
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Chuyển đổi</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Xóa tất cả</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Chuyển đổi định dạng ảnh ngay trong trình duyệt</h2>
+<p>Một tệp ảnh là một vùng chứa cộng với một phương pháp nén. Chuyển đổi nghĩa là giải mã các điểm ảnh từ định dạng cũ rồi mã hóa lại sang định dạng mới. Trình duyệt của bạn đã có sẵn bộ giải mã và bộ mã hóa cho các định dạng phổ biến, nên việc chuyển đổi có thể chạy hoàn toàn trên thiết bị của bạn.</p>
+<p>PNG lưu từng điểm ảnh chính xác và hỗ trợ độ trong suốt, nên nặng hơn với ảnh chụp. JPEG và WebP làm mất một phần dữ liệu: chúng đánh đổi một chút độ chính xác để có tệp nhỏ hơn nhiều, điều khiển bằng thiết lập chất lượng. Chuyển JPEG sang PNG không khôi phục chi tiết mà JPEG đã mất; nó chỉ lưu các điểm ảnh hiện tại mà không mất thêm nữa.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Sau khi chuyển đổi, hãy thu nhỏ tệp bằng <a href="/tools/compress-image/">Nén ảnh</a>.</li>
+  <li>Muốn đổi kích thước điểm ảnh? Hãy dùng <a href="/tools/resize-image/">Đổi kích thước ảnh</a>.</li>
+  <li>Bắt đầu từ một hình vẽ vector? <a href="/tools/svg-to-png/">SVG sang PNG</a> kết xuất nó ở mọi kích thước.</li>
+</ul>

@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Zmień rozmiar obrazu online w pikselach lub procentach | Tanod Tools",
+  "description": "Zmień szerokość i wysokość obrazów JPG, PNG i WebP w przeglądarce. Zachowaj proporcje, zmień rozmiar wielu naraz i pobierz. Nic nie jest przesyłane.",
+  "h1": "Zmień rozmiar obrazu",
+  "lede": "Ustaw nową szerokość i wysokość w pikselach albo przeskaluj o procent, dla jednego obrazu lub całej partii.",
+  "blurb": "Zmień wymiary obrazu w pikselach lub procentach.",
+  "keywords": "zmiana rozmiaru obrazu, zmniejsz zdjęcie, powiększ zdjęcie, skalowanie obrazu, zmiana wymiarów zdjęcia, piksele, miniatura, scale, dimensions, width, height, shrink, enlarge, thumbnail",
+  "limits": "Do 50 obrazów w partii, po 50 MB każdy, około 100 megapikseli na wejściu lub wyjściu. Powiększanie jest ograniczone do 4-krotności oryginalnego rozmiaru.",
+  "howto_title": "Jak zmienić rozmiar obrazu",
+  "howto": [
+    "Wybierz obrazy lub przeciągnij je na stronę.",
+    "Wpisz szerokość lub wysokość w pikselach (druga wartość dostosuje się, gdy proporcje są zablokowane) albo przełącz na procenty.",
+    "Naciśnij <strong>Zmień rozmiar</strong>, a następnie pobierz wynik lub plik .zip z całą partią."
+  ],
+  "faq": [
+    ["Czy moje obrazy są przesyłane?", "Nie. Zmiana rozmiaru odbywa się w przeglądarce, na Twoim urządzeniu. Nic nie jest wysyłane na serwer."],
+    ["Jak blokada proporcji działa z kilkoma obrazami?", "Pola startują od rozmiaru pierwszego obrazu. Przy włączonej blokadzie ta wartość, szerokość lub wysokość, którą zmieniono jako ostatnią, jest stosowana do każdego obrazu, a druga strona dostosowuje się do jego własnych proporcji. Przy wyłączonej blokadzie każdy obraz jest rozciągany dokładnie do wpisanej szerokości i wysokości."],
+    ["Czy mogę powiększyć obraz?", "Tak, do 4-krotności oryginalnej szerokości i wysokości. Powiększenie nie dodaje szczegółów, więc wynik wygląda miękko. Powyżej 4 razy narzędzie odmawia, zamiast tworzyć rozmyty plik."],
+    ["W jakiej jakości są zapisywane pliki JPEG i WebP?", "Jakość 92 na 100, która zachowuje pliki wizualnie bliskie źródłu. Jeśli chcesz dodatkowo zmniejszyć rozmiar pliku, przepuść wynik przez narzędzie <a href=\"/tools/compress-image/\">Kompresuj obraz</a>."],
+    ["Jak obraz jest pomniejszany?", "Duże pomniejszenia są wykonywane w kilku krokach, po połowie każdy, a potem następuje końcowe narysowanie w dokładnym rozmiarze z wysokiej jakości wygładzaniem przeglądarki. Pozwala to uniknąć poszarpanego, schodkowego wyglądu, jaki może dać jedno ogromne pomniejszenie."],
+    ["Czy dane EXIF są zachowywane?", "Nie. Obraz jest kodowany od nowa, więc metadane, takie jak GPS i dane aparatu, nie są przenoszone, a obraz jest zapisywany w orientacji, w której się wyświetla."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść tutaj obrazy</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Wybierz obrazy</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP lub AVIF. Lub przeciągnij je w dowolne miejsce na tej stronie.</p>
+</div>
+<ol class="files" id="files" aria-label="Obrazy do zmiany rozmiaru" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Zmień rozmiar według</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="pixels" checked>Pikseli</label>
+        <label><input type="radio" name="mode" value="percent">Procentów</label>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Format wyjściowy</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Bez zmian</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">JPEG i WebP są zapisywane w jakości 92. GIF, BMP i AVIF stają się PNG przy ustawieniu Bez zmian.</p>
+    </fieldset>
+  </div>
+  <div id="pane-px">
+    <div class="opts">
+      <div class="field"><label for="width">Szerokość (px)</label><input type="number" id="width" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><label for="height">Wysokość (px)</label><input type="number" id="height" min="1" max="30000" inputmode="numeric"></div>
+      <div class="field"><span class="label">Proporcje</span><label class="check"><input type="checkbox" id="lock" checked>Zablokuj proporcje</label></div>
+    </div>
+  </div>
+  <div id="pane-pct" hidden>
+    <div class="opts">
+      <div class="field"><label for="percent">Skala (%)</label><input type="number" id="percent" min="1" max="400" value="50" inputmode="numeric"><p class="help">100 zachowuje rozmiar. 50 zmniejsza szerokość i wysokość o połowę.</p></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Zmień rozmiar</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Wyczyść wszystko</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Zmiana rozmiaru obrazów w przeglądarce</h2>
+<p>Zmiana rozmiaru oznacza wyliczenie nowej siatki pikseli na podstawie starej. Zmniejszanie uśrednia grupy pikseli, dlatego dobre pomniejszenie wygląda gładko, a niedbałe jest poszarpane. To narzędzie wielokrotnie zmniejsza obraz o połowę, dopóki jest więcej niż dwa razy większy od celu, a następnie rysuje go końcowo w dokładnym rozmiarze z wysokiej jakości wygładzaniem.</p>
+<p>Proporcje to szerokość podzielona przez wysokość. Ich zablokowanie oznacza, że zdjęcie 1200 × 800 ustawione na szerokość 600 pikseli staje się 600 × 400, bez rozciągania. Wyłączaj blokadę tylko wtedy, gdy potrzebujesz dokładnego prostokąta i godzisz się na zniekształcenie.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Dla stron internetowych zmień rozmiar na największy, w jakim obraz faktycznie jest wyświetlany, a potem zmniejsz plik dalej w narzędziu <a href="/tools/compress-image/">Kompresuj obraz</a>.</li>
+  <li>Aby zamiast tego wyciąć fragment obrazu, użyj narzędzia <a href="/tools/crop-image/">Przytnij obraz</a>.</li>
+  <li>Potrzebujesz kwadratowych ikon dla strony? <a href="/tools/favicon-generator/">Generator favicon</a> tworzy wszystkie rozmiary naraz.</li>
+</ul>

@@ -1,4 +1,4 @@
-import { $, el, copyText, prefs, setStatus, announce, tx, EN, fmtNum } from "./core.js?v=5";
+import { $, el, copyText, prefs, setStatus, announce, tx, EN, fmtNum } from "./core.js?v=11";
 
 const SETS = {
   upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",

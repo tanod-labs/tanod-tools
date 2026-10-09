@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Convertisseur d'unités aéro : nœuds, hPa, NM | Tanod Tools",
+  "description": "Convertissez les unités aéronautiques : nœuds, km/h, mph et m/s ; hPa, inHg et mmHg ; pieds, mètres, milles marins et terrestres ; °C, °F et kelvin.",
+  "h1": "Convertisseur d'unités aéronautiques",
+  "lede": "Convertissez les unités des pilotes et des contrôleurs : vitesse, pression, longueur et distance, et température, avec toutes les unités affichées à la fois.",
+  "blurb": "Nœuds, hPa et inHg, pieds, milles marins et température.",
+  "keywords": "convertisseur unites aviation noeuds km/h mph m/s hpa inhg mmhg pieds metres milles marins milles terrestres celsius fahrenheit kelvin qnh calage altimetre vitesse verticale mach",
+  "limits": "Facteurs exacts par définition ; les résultats sont arrondis au nombre de chiffres significatifs choisi (8 par défaut). Le Mach utilise 340,294 m/s, la vitesse du son au niveau de la mer ISA. Ne convient pas à la préparation de vol ni à la navigation.",
+  "howto_title": "Comment convertir des unités aéronautiques",
+  "howto": [
+    "Choisissez ce que vous convertissez : vitesse, pression, longueur et distance, ou température.",
+    "Saisissez une valeur et choisissez les unités de départ et d'arrivée. Vous pouvez écrire dans l'une ou l'autre case.",
+    "Lisez le résultat et la formule, ou parcourez le tableau pour voir la même valeur dans toutes les unités."
+  ],
+  "faq": [
+    [
+      "Comment convertir des nœuds en km/h ?",
+      "Multipliez par 1,852, car un nœud est un mille marin par heure et un mille marin vaut exactement 1 852 mètres. Ainsi 100 nœuds font 185,2 km/h, soit environ 115 mph."
+    ],
+    [
+      "Comment convertir des hPa en inHg ?",
+      "Divisez les hectopascals par 33,8639 pour obtenir des pouces de mercure. La pression standard au niveau de la mer de 1013,25 hPa vaut 29,9213 inHg : un QNH de 1013 fait donc environ 29,91 inHg. Le millibar (mb) et l'hectopascal sont la même unité."
+    ],
+    [
+      "Quelle différence entre un mille marin et un mille terrestre ?",
+      "Un mille marin vaut exactement 1 852 m (environ 1,1508 mille terrestre) et correspond à une minute de latitude. Un mille terrestre vaut 1 609,344 m. Les distances aéronautiques hors des États-Unis, et toutes les vitesses en nœuds, utilisent les milles marins."
+    ],
+    [
+      "Pourquoi le Mach n'est-il pas une vitesse fixe ?",
+      "Le Mach est un rapport à la vitesse du son locale, qui diminue avec la température. Cet outil utilise la valeur ISA au niveau de la mer, 340,294 m/s (environ 661,5 nœuds), qui n'est donc qu'une référence. Aux altitudes de croisière des avions de ligne, Mach 1 est plus proche de 573 nœuds."
+    ],
+    [
+      "Que signifie pieds par minute ?",
+      "C'est l'unité de vitesse verticale : 500 ft/min font environ 2,54 m/s. Elle figure dans la liste des vitesses pour permettre de convertir les taux de montée et de descente."
+    ],
+    [
+      "Les conversions sont-elles exactes ?",
+      "Les facteurs sont des définitions exactes (par exemple 1 ft = 0,3048 m, 1 NM = 1 852 m, 1 inHg = 3 386,38864 Pa et 1 mmHg = 133,322387415 Pa) : tout arrondi ne porte donc que sur le dernier chiffre affiché."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Grandeur</legend>
+  <div class="seg av-cats">
+    <label><input type="radio" name="ac-cat" value="speed" checked>Vitesse</label>
+    <label><input type="radio" name="ac-cat" value="pressure">Pression</label>
+    <label><input type="radio" name="ac-cat" value="length">Longueur et distance</label>
+    <label><input type="radio" name="ac-cat" value="temperature">Température</label>
+  </div>
+</fieldset>
+<div class="uc">
+  <div class="field uc__side">
+    <label for="ac-from">De</label>
+    <input type="text" inputmode="decimal" id="ac-from" class="uc__val" value="1" autocomplete="off" spellcheck="false">
+    <select id="ac-from-u" aria-label="Unité de départ"></select>
+  </div>
+  <button class="btn btn--icon uc__swap" id="ac-swap" type="button" aria-label="Inverser les deux unités">{{mark:convert-image}}</button>
+  <div class="field uc__side">
+    <label for="ac-to">Vers</label>
+    <input type="text" inputmode="decimal" id="ac-to" class="uc__val" autocomplete="off" spellcheck="false">
+    <select id="ac-to-u" aria-label="Unité d'arrivée"></select>
+  </div>
+</div>
+<p class="uc__formula" id="ac-formula" aria-live="polite"></p>
+<p class="note" id="ac-warn" role="alert" hidden></p>
+<div class="uc__more">
+  <h2 class="util-h" id="ac-all-h">Dans toutes les unités</h2>
+  <div class="field uc__sig">
+    <label for="ac-sig">Chiffres significatifs</label>
+    <select id="ac-sig"><option value="4">4</option><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option></select>
+  </div>
+</div>
+<div class="calc-table">
+  <table class="dens">
+    <caption class="visually-hidden">La valeur dans chaque unité de ce type</caption>
+    <thead><tr><th scope="col">Unité</th><th scope="col">Valeur</th></tr></thead>
+    <tbody id="ac-all"></tbody>
+  </table>
+</div>
+<!--explain-->
+<h2>Comment fonctionnent les conversions</h2>
+<p>Chaque catégorie a une unité de base : le mètre par seconde pour la vitesse, le pascal pour la pression et le mètre pour la longueur. Une valeur est multipliée par la taille de son unité dans l'unité de base, puis divisée par la taille de l'unité cible. Tous les facteurs sont des définitions exactes : 1 nœud = 1 852/3 600 m/s, 1 mph = 1 609,344/3 600 m/s, 1 pied = 0,3048 m, 1 mille marin = 1 852 m, 1 mille terrestre = 1 609,344 m, 1 hPa = 100 Pa, 1 mmHg = 133,322387415 Pa et 1 inHg = 25,4 mmHg = 3 386,38864 Pa (les valeurs conventionnelles utilisées dans l'Annexe 5 de l'OACI et la publication spéciale 811 du NIST).</p>
+<p>Les températures ont des zéros différents ; elles sont donc converties via le kelvin : K = °C + 273,15 et °F = °C × 9/5 + 32. La liste d'unités suit l'Annexe 5 de l'OACI (Unités de mesure à utiliser dans les opérations aériennes et au sol), où la pression est en hectopascals, l'altitude en pieds ou en mètres et la vitesse en nœuds ou en km/h. <strong>Ne convient pas à la préparation de vol ni à la navigation.</strong></p>

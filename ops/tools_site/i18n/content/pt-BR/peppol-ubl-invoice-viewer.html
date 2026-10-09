@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Visualizador de faturas Peppol e UBL: BIS Billing 3.0 | Tanod Tools",
+  "description": "Abra uma fatura ou nota de crédito Peppol BIS Billing 3.0 (XML UBL) e leia como uma fatura comum. Imprima, salve em PDF ou exporte em JSON.",
+  "h1": "Visualizador de faturas Peppol / UBL",
+  "lede": "Abra uma fatura ou nota de crédito Peppol ou de outro UBL 2.1 e leia como uma fatura comum, com partes, itens, IVA e dados de pagamento. Ela é lida no seu navegador e nunca é enviada.",
+  "blurb": "Leia uma fatura Peppol BIS Billing 3.0 ou UBL como uma fatura comum.",
+  "keywords": "visualizador peppol visualizador ubl abrir fatura peppol xml ler fatura ubl peppol bis billing 3.0 ubl 2.1 xml fatura nota de crédito ubl visualizador en 16931 fatura eletrônica europeia peppol invoice viewer ubl invoice viewer",
+  "limits": "Um arquivo por vez, de até 25 MB; os primeiros 5.000 itens são exibidos. Lê UBL 2.1 Invoice e CreditNote como usados pelo Peppol BIS Billing 3.0 e por outros perfis da EN 16931, inclusive dentro de um envelope Peppol (SBDH). Não são lidos: outros documentos UBL, como pedidos ou avisos de expedição. Apenas visualização: sem validação, e nada é enviado à rede Peppol.",
+  "howto_title": "Como abrir uma fatura Peppol",
+  "howto": [
+    "Escolha o arquivo XML UBL ou arraste-o para a página.",
+    "Leia a fatura: vendedor e comprador com os respectivos endereços Peppol, datas, itens, detalhamento do IVA, totais e dados de pagamento.",
+    "Clique em <strong>Imprimir ou salvar como PDF</strong>, em <strong>Baixar JSON</strong> ou em <strong>Mostrar XML bruto</strong>."
+  ],
+  "faq": [
+    [
+      "Minha fatura é enviada?",
+      "Não. O XML é lido no seu navegador, com o analisador embutido, e exibido nesta página. Nenhum servidor o recebe, e fechar a aba apaga tudo."
+    ],
+    [
+      "O que é o Peppol BIS Billing 3.0?",
+      "É o formato de fatura e nota de crédito usado na rede Peppol. É um documento UBL 2.1 que segue a norma europeia EN 16931, com algumas regras extras do Peppol. Muitos países o usam, e a XRechnung é um parente próximo, com acréscimos alemães."
+    ],
+    [
+      "Ela abre outros documentos Peppol, como pedidos?",
+      "Não. Apenas faturas e notas de crédito. Se você abrir um pedido, uma resposta a pedido ou um aviso de expedição, a página informa qual é o documento e que não consegue exibi-lo."
+    ],
+    [
+      "Ela abre uma fatura embrulhada em um envelope?",
+      "Sim. Se a fatura chega dentro de um Standard Business Document Header (SBDH), a fatura que está dentro é encontrada e exibida."
+    ],
+    [
+      "Os endereços Peppol são exibidos?",
+      "Sim. O endereço eletrônico do vendedor e o do comprador aparecem com o respectivo esquema, por exemplo 0088 para um GLN ou 0007 para um número de organização sueco."
+    ],
+    [
+      "E se o IVA estiver indicado em uma segunda moeda?",
+      "Alguns países exigem o IVA na moeda nacional. Quando a fatura o informa, o valor do IVA nessa moeda aparece abaixo dos totais."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Solte uma fatura eletrônica aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Escolher arquivo</span></label>
+  <p class="drop__hint">XML, um PDF com a fatura dentro (ZUGFeRD, Factur-X) ou um .p7m assinado. Ou arraste para qualquer lugar desta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Imprimir ou salvar como PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Baixar JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Baixar XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostrar XML bruto</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML bruto" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Aqui aparece só o início de um arquivo longo. Baixe o XML para ter tudo.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Peppol, UBL e EN 16931</h2>
+<p>O Peppol é uma rede para a troca de documentos comerciais entre empresas e órgãos públicos, usada em boa parte da Europa e além. Suas faturas são arquivos XML UBL 2.1: um padrão da OASIS no qual se baseia a norma europeia EN 16931. Uma fatura Peppol BIS Billing 3.0 tem, portanto, um conjunto fixo de termos de negócio, como o número de IVA do vendedor, os itens da fatura e o detalhamento do IVA, que esta página lê e organiza como uma fatura comum. Nada disso é a NF-e brasileira; são padrões europeus.</p>
+<p>Muitos países usam a mesma estrutura com acréscimos próprios, como a XRechnung na Alemanha. Se o arquivo informa o perfil no identificador de customização, ele aparece no cabeçalho. Desde 1º de janeiro de 2025, toda empresa na Alemanha precisa estar apta a receber faturas eletrônicas estruturadas, e a França exige o mesmo a partir de 1º de setembro de 2026, então arquivos como este chegam a cada vez mais pessoas que nunca viram o XML.</p>
+<h2>O que é exibido e o que não é</h2>
+<p>Você vê as partes com números de IVA, endereços legais e eletrônicos, entrega e beneficiário quando informados, as datas e referências, cada item com quantidade, unidade, preço e IVA, descontos e encargos, o detalhamento do IVA com os motivos de isenção, os totais (inclusive o IVA em uma segunda moeda), o meio de pagamento com IBAN, BIC e referência, as observações e os documentos anexos. A página não valida a fatura e não usa a rede Peppol.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Arquivos XRechnung alemães também abrem no <a href="/tools/xrechnung-viewer/">Visualizador de XRechnung</a>.</li>
+  <li>Um PDF com uma fatura dentro também abre aqui, mas o <a href="/tools/zugferd-factur-x-viewer/">Visualizador de ZUGFeRD / Factur-X</a> foi feito para isso.</li>
+  <li>Baixar JSON fornece a fatura como dados simples, com os nomes dos termos de negócio da EN 16931.</li>
+</ul>

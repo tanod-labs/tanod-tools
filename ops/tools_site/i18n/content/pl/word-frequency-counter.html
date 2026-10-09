@@ -1,0 +1,115 @@
+<!--meta
+{
+  "title": "Licznik częstości słów w tekście | Tanod Tools",
+  "description": "Znajdź najczęstsze słowa i frazy z dwóch lub trzech słów w tekście, z liczbą wystąpień i procentami. Pomiń stop words i pobierz CSV. Za darmo.",
+  "h1": "Licznik częstości słów",
+  "lede": "Wklej tekst, aby zobaczyć, które słowa i frazy występują najczęściej, z liczbą wystąpień i procentami, i pomiń typowe stop words (słowa funkcyjne) swojego języka.",
+  "blurb": "Najczęstsze słowa i frazy z liczbą wystąpień i procentami.",
+  "keywords": "licznik częstości słów częstość słów najczęstsze słowa najczęściej używane słowa częstość fraz licznik n-gramów gęstość słów kluczowych stop words usuń stop words csv analiza tekstu",
+  "local_text": "Działa w Twojej przeglądarce; nic, co wpiszesz, nie opuszcza urządzenia",
+  "limits": "Tekst do kilku milionów znaków. Słowa to ciągi liter i cyfr, przy czym apostrofy i łączniki wewnątrz słowa są zachowywane; frazy nigdy nie przechodzą przez koniec zdania ani nową linię. Listy stop words to krótkie listy najczęstszych słów funkcyjnych, a nie pełne słowniki, i są dostępne dla angielskiego, hiszpańskiego, francuskiego, niemieckiego, portugalskiego (Brazylia), włoskiego, indonezyjskiego, tureckiego, wietnamskiego, rosyjskiego, polskiego i hindi.",
+  "howto_title": "Jak policzyć częstość słów",
+  "howto": [
+    "Wklej swój tekst.",
+    "Wybierz pojedyncze słowa, frazy dwuwyrazowe lub trzywyrazowe oraz język stop words, jeśli chcesz pominąć słowa takie jak the, and czy of.",
+    "Przeczytaj listę uporządkowaną według częstości z liczbą wystąpień i procentami, a potem skopiuj ją lub pobierz jako CSV."
+  ],
+  "faq": [
+    [
+      "Co liczy się jako słowo?",
+      "Ciąg liter lub cyfr, który może zawierać apostrof lub łącznik między literami, więc don't i well-known to po jednym słowie. Wielkie i małe litery są traktowane jako to samo słowo. Znaki interpunkcyjne i spacje oddzielają słowa."
+    ],
+    [
+      "Jak liczone są frazy?",
+      "Fraza dwuwyrazowa to każda para słów stojących obok siebie, a fraza trzywyrazowa to każda taka trójka. Frazy nie przechodzą przez kropkę, znak zapytania, średnik ani koniec wiersza, więc ostatnie słowo jednego zdania nie łączy się z pierwszym słowem następnego."
+    ],
+    [
+      "Co robią opcje stop words?",
+      "Stop words to bardzo częste słowa funkcyjne, takie jak the, and, of, el, la, le, der czy и. W przypadku pojedynczych słów są pomijane na liście. W przypadku fraz odrzucana jest każda fraza, która zaczyna się lub kończy stop wordem, dzięki czemu widzisz frazy takie jak search engine zamiast of the search. Procenty liczone są od tego, co zostało."
+    ],
+    [
+      "Jak obliczany jest procent?",
+      "To liczba wystąpień elementu podzielona przez łączną liczbę policzonych słów (lub fraz), po pominięciu stop words i liczb, jeśli to wybrano."
+    ],
+    [
+      "Co zawiera plik CSV?",
+      "Całą uporządkowaną listę, a nie tylko część widoczną na ekranie, z kolumnami pozycja, słowo, liczba i procent. Plik jest w UTF-8 ze znacznikiem kolejności bajtów, aby arkusze kalkulacyjne poprawnie wyświetlały litery z akcentami."
+    ],
+    [
+      "Czy mój tekst jest przesyłany?",
+      "Nie. Tekst jest liczony w Twojej przeglądarce i nic nie opuszcza urządzenia."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="wf">
+  <div class="field">
+    <label for="wf-in">Tekst do analizy</label>
+    <textarea id="wf-in" rows="9" spellcheck="false" autocomplete="off" placeholder="Wklej tekst tutaj"></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="wf-n-l">Licz</span>
+      <div class="seg" role="radiogroup" aria-labelledby="wf-n-l">
+        <label><input type="radio" name="wf-n" value="1" checked>Słowa</label>
+        <label><input type="radio" name="wf-n" value="2">Frazy 2-wyrazowe</label>
+        <label><input type="radio" name="wf-n" value="3">Frazy 3-wyrazowe</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="wf-stop">Pomiń stop words</label>
+      <select id="wf-stop">
+        <option value="" selected>Brak</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wf-top">Pokaż</label>
+      <select id="wf-top">
+        <option value="10">Top 10</option>
+        <option value="25" selected>Top 25</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+        <option value="0">Wszystkie</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="wf-num" checked>Uwzględnij liczby</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="wf-example" type="button">Wczytaj przykład</button>
+    <button class="btn btn--quiet" id="wf-clear" type="button" disabled>Wyczyść</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="wf-report" aria-live="polite">Wklej tekst, aby zacząć.</p>
+  <div class="util-stack" id="wf-res" hidden>
+    <dl class="stats">
+      <div><dt>Słowa w tekście</dt><dd id="wf-words">0</dd></div>
+      <div><dt>Policzone</dt><dd id="wf-total">0</dd></div>
+      <div><dt>Różne</dt><dd id="wf-unique">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--primary" id="wf-copy" type="button">{{mark:i-copy}}Kopiuj listę</button>
+      <button class="btn" id="wf-csv" type="button">{{mark:i-download}}Pobierz CSV</button>
+    </div>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tabela częstości">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Lp.</th><th scope="col" id="wf-th">Słowo</th><th scope="col">Liczba</th><th scope="col">Procent</th></tr></thead>
+        <tbody id="wf-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak liczona jest częstość słów</h2>
+<p>Tekst jest dzielony na słowa, każde słowo jest zamieniane na małe litery, a narzędzie liczy, ile razy pojawia się każde z nich. Na liście najczęstsze są pierwsze, a remisy rozstrzyga kolejność alfabetyczna. Liczenie powtórzeń to szybki sposób, aby zobaczyć, o czym naprawdę jest tekst, sprawdzić, czy słowo kluczowe nie jest nadużywane, znaleźć terminy w wywiadzie lub zestawie odpowiedzi z ankiety albo wychwycić nawyk, na przykład ciągłe opieranie się na tym samym słowie w wypracowaniu.</p>
+<p>Bez żadnego filtrowania na szczycie listy niemal zawsze są słowa funkcyjne, takie jak the, of i and. Wybór języka stop words usuwa je, a słowa niosące treść wędrują na górę. Listy obejmują najczęstsze rodzajniki, zaimki, przyimki, spójniki i czasowniki posiłkowe danego języka i służą do szybkiego rzutu oka, a nie do pracy językoznawczej.</p>
+<p>Frazy są liczone jako ciągi dwóch lub trzech słów stojących obok siebie, w obrębie jednego zdania. Powtarzające się frazy często mówią więcej niż pojedyncze słowa: zdradzają nazwy produktów, hasła i utarte wyrażenia w tekście. Po włączeniu stop words frazy zaczynające się lub kończące stop wordem są odrzucane, więc te, które zostają, są bardziej znaczące.</p>
+<p>Procent danego elementu to jego liczba podzielona przez łączną liczbę policzonych elementów. Ta suma zmienia się wraz z opcjami, ponieważ pominięte stop words i liczby nie są liczone. Pobierz CSV, aby zachować pełną listę lub zrobić z niej wykres w arkuszu kalkulacyjnym.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Aby uzyskać sumy słów, znaków, zdań i czas czytania, użyj <a href="/tools/word-counter/">licznika słów</a>.</li>
+  <li>Aby rozróżniać wielkość liter po swojemu, najpierw zmień ją za pomocą <a href="/tools/case-converter/">konwertera wielkości liter</a>.</li>
+  <li>Oczyść listę powtarzających się elementów za pomocą narzędzia <a href="/tools/remove-duplicate-lines/">Usuń zduplikowane wiersze</a>.</li>
+</ul>

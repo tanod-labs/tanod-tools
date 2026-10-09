@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Visualizador de e-Fatura e e-Arşiv: abra XML UBL-TR | Tanod Tools",
+  "description": "Abra uma fatura turca e-Fatura ou e-Arşiv (XML UBL-TR) e leia como uma fatura comum. Imprima, salve em PDF ou exporte em JSON. Grátis, sem envio.",
+  "h1": "Visualizador de e-Fatura / UBL-TR",
+  "lede": "Abra uma fatura turca e-Fatura ou e-Arşiv em formato UBL-TR e leia como uma fatura comum: vendedor e comprador com VKN ou TCKN, itens, KDV, IVA retido (tevkifat) e pagamento. O XML é lido no seu navegador e nunca é enviado.",
+  "blurb": "Leia uma fatura turca e-Fatura ou e-Arşiv (UBL-TR) como uma fatura comum.",
+  "keywords": "visualizador e-fatura visualizador ubl-tr abrir fatura turca xml e-arşiv ler fatura eletrônica turca e-fatura xml e-fatura görüntüleyici e-arşiv fatura görüntüleyici ubl-tr xml okuma e-fatura xml açma gib e-fatura tevkifat temelfatura ticarifatura earsivfatura",
+  "limits": "Um arquivo por vez, de até 25 MB; os primeiros 5.000 itens são exibidos. Lê faturas UBL-TR 1.2 (TEMELFATURA, TICARIFATURA, EARSIVFATURA e os demais perfis, inclusive devoluções e retenções). O selo fiscal (mali mühür) não é verificado, e o XSLT que vem dentro do arquivo nunca é executado. Apenas visualização: não valida a fatura e não se conecta ao GİB.",
+  "howto_title": "Como abrir uma fatura e-Fatura ou e-Arşiv",
+  "howto": [
+    "Escolha o XML da fatura que você salvou do seu provedor de e-Fatura, do portal do GİB ou do seu programa de contabilidade, ou arraste-o para a página.",
+    "Leia a fatura: vendedor e comprador com VKN ou TCKN e repartição fiscal, UUID (ETTN), perfil e tipo de fatura, itens, KDV por alíquota, retenção, totais e pagamento.",
+    "Clique em <strong>Imprimir ou salvar como PDF</strong>, em <strong>Baixar JSON</strong> ou em <strong>Mostrar XML bruto</strong>. O XSLT do remetente, se o arquivo tiver um, é oferecido em Anexos apenas para download."
+  ],
+  "faq": [
+    [
+      "A fatura é enviada ao GİB ou a algum servidor?",
+      "Não. Esta página não se conecta ao GİB, ao seu provedor nem a nenhum servidor. O XML é lido no seu navegador e exibido nesta página, e fechar a aba apaga tudo."
+    ],
+    [
+      "O selo fiscal (mali mühür) é verificado?",
+      "Não. Esta página não verifica o mali mühür nem qualquer outra assinatura eletrônica. Um arquivo que traz um é sinalizado com uma observação, mas a página não consegue dizer quem selou a fatura nem se ela foi alterada depois. Use as ferramentas do seu provedor ou do GİB se precisar disso."
+    ],
+    [
+      "O que é o XSLT que vem dentro do arquivo? Ele é executado?",
+      "A maioria das e-Faturas traz uma folha de estilo XSLT em um AdditionalDocumentReference; o software do remetente a usa para desenhar a fatura. Esta página nunca a executa. Ela é oferecida apenas para download, porque uma folha de estilo é código fornecido pelo remetente. A fatura que você vê aqui é desenhada por esta página a partir dos dados do XML."
+    ],
+    [
+      "O que significam SATIS, IADE, TEVKIFAT e ISTISNA?",
+      "São valores do código de tipo da fatura: SATIS é uma venda, IADE uma devolução, TEVKIFAT uma fatura com retenção de IVA e ISTISNA uma isenta. O perfil (ProfileID) é o cenário: TEMELFATURA é o básico, TICARIFATURA o comercial e EARSIVFATURA uma fatura e-Arşiv. Os dois são exibidos como o arquivo os informa."
+    ],
+    [
+      "Como o IVA retido (tevkifat) é exibido?",
+      "A parte retida do KDV aparece em uma linha própria abaixo dos totais e em Informações adicionais, com o código, o nome e a alíquota informados pelo arquivo. O valor a pagar é o do arquivo; esta página não o recalcula."
+    ],
+    [
+      "Onde consigo o XML de uma fatura?",
+      "O seu provedor de e-Fatura ou o portal do GİB permite baixar uma fatura como arquivo XML (muitas vezes dentro de um ZIP), e os programas de contabilidade podem exportá-la. Esta página lê o arquivo XML que você salvou."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Solte uma fatura eletrônica aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Escolher arquivo</span></label>
+  <p class="drop__hint">XML, um PDF com a fatura dentro (ZUGFeRD, Factur-X) ou um .p7m assinado. Ou arraste para qualquer lugar desta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Imprimir ou salvar como PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Baixar JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Baixar XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostrar XML bruto</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML bruto" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Aqui aparece só o início de um arquivo longo. Baixe o XML para ter tudo.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>e-Fatura, e-Arşiv e UBL-TR</h2>
+<p>e-Fatura e e-Arşiv são os sistemas de faturamento eletrônico da Turquia, operados pela Administração de Receitas (GİB). A e-Fatura é usada entre empresas cadastradas no sistema; a e-Arşiv cobre as faturas emitidas para compradores que não estão cadastrados, como os consumidores. Ambas usam UBL 2.1 com uma customização turca chamada UBL-TR (o CustomizationID é TR1.2). O XML é a fatura; a versão legível é uma visualização dele. Esta página gera essa visualização no seu navegador a partir do XML que você tem.</p>
+<h2>O que o visualizador mostra</h2>
+<p>Você vê o vendedor e o comprador com VKN ou TCKN, repartição fiscal e endereços; o número da fatura, a data, o UUID (ETTN), o perfil e o código de tipo; cada item com quantidade, unidade, preço, desconto e alíquota de KDV; o KDV por grupo de alíquota com os códigos de isenção; o IVA retido (tevkifat) quando a fatura o tem; outros impostos, como o ÖTV, conforme o arquivo os lista; os totais e o valor a pagar; os dados de pagamento com o IBAN; as observações; a taxa de câmbio de uma fatura em moeda estrangeira; e as referências a pedidos, guias de remessa e à fatura a que uma devolução se refere. Os valores aparecem exatamente como no arquivo.</p>
+<p>A página não verifica o selo fiscal (mali mühür), não valida a fatura com os esquemas e regras do GİB e não se conecta ao GİB. A folha de estilo XSLT que a maioria das e-Faturas traz nunca é executada: ela é oferecida para download em Anexos.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Baixar JSON fornece a fatura como dados simples, com os elementos UBL associados aos termos de negócio da EN 16931.</li>
+  <li>Outros formatos também abrem aqui: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol e a e-Fatura turca. A página sugere o visualizador adequado quando você abre um deles.</li>
+  <li>Mostrar XML bruto ajuda quando você precisa de um elemento que a fatura legível não exibe.</li>
+</ul>

@@ -1,6 +1,6 @@
 // Tanod Tools image core: decoding, canvas helpers, safe encoding, limits and the shared batch UI.
 // Everything runs in the browser; files are never sent anywhere.
-import { el, icon, fmtBytes, dropzone, setStatus, runJob, showResults, clearNode, UserError, friendlyError, announce, tick, baseName, tx, txn, fmtNum, EN } from "./core.js?v=5";
+import { el, icon, fmtBytes, dropzone, setStatus, runJob, showResults, clearNode, UserError, friendlyError, announce, tick, baseName, tx, txn, fmtNum, EN } from "./core.js?v=11";
 
 export { UserError };
 
@@ -103,7 +103,7 @@ export async function probe(file) {
   return { type, width: size ? size.width : null, height: size ? size.height : null };
 }
 
-const megapixels = (w, h) => {
+export const megapixels = (w, h) => {
   const d = w * h >= 1e7 ? 0 : 1;
   return EN ? (w * h / 1e6).toFixed(d) : fmtNum(w * h / 1e6, { minimumFractionDigits: d, maximumFractionDigits: d });
 };
@@ -253,13 +253,15 @@ export function singleImage(drop, { onFile, onError }) {
 /* ------------------------------------------------------------------ batch tool
    cfg: drop, list, goRow, go, summary, status, result, clear (buttons / nodes from the page)
         verb: "Compressing"; pickMore; pickFirst; zipName; minFiles
+        accept (file types the drop slot takes, default ACCEPT), typeLabel, validate(file) -> Promise<info> (default validateFile)
+          for tools whose input is not one of the formats above (HEIC to JPG)
         meta(item) -> string; detail(item) -> Node|null; summaryText(items) -> string; blocked(items) -> string|null
         analyse(item) -> Promise (optional, runs once per added file)
         process(item, i, n) -> Promise<{blob, name, note?}>
         doneText(outputs, failures) -> string; resultNote(outputs) -> string|null
         onChange(items) after each render. */
 export function batchTool(cfg) {
-  const c = Object.assign({ verb: tx("Working on"), pickMore: tx("Add more images"), pickFirst: tx("Choose images"), zipName: "images.zip", minFiles: 1 }, cfg);
+  const c = Object.assign({ verb: tx("Working on"), pickMore: tx("Add more images"), pickFirst: tx("Choose images"), zipName: "images.zip", minFiles: 1, accept: ACCEPT, typeLabel: "supported image", validate: validateFile }, cfg);
   const pick = c.drop.querySelector("[data-pick-label]");
   let items = [];
   let nextId = 1;
@@ -302,7 +304,7 @@ export function batchTool(cfg) {
     if (!pendingError && !errors.length) setStatus(c.status, "idle");
     for (const file of files.slice(0, room)) {
       try {
-        const info = await validateFile(file);
+        const info = await c.validate(file);
         const item = { id: nextId++, file, info };
         if (c.analyse) { try { await c.analyse(item); } catch (e) { console.warn(e); item.analyseError = true; } }
         items.push(item);
@@ -317,7 +319,7 @@ export function batchTool(cfg) {
   }
 
   dropzone(c.drop, {
-    accept: ACCEPT, multiple: true, maxFileBytes: MAX_BYTES, typeLabel: "supported image",
+    accept: c.accept, multiple: true, maxFileBytes: MAX_BYTES, typeLabel: c.typeLabel,
     onError: (msg) => { pendingError = msg; setStatus(c.status, "error", msg); setTimeout(() => { pendingError = null; }, 0); },
     onFiles: (files) => { queue = queue.then(() => addFiles(files)); },
   });

@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "User-Agent çözümleyici: tarayıcı, işletim sistemi, cihaz | Tanod Tools",
+  "description": "Tarayıcınızın user agent dizesini görün ya da herhangi bir dizeyi yapıştırın; tarayıcıyı, motoru, işletim sistemini, cihazı ve işlemciyi, ayrıca Client Hints'i alın.",
+  "h1": "User-Agent çözümleyici",
+  "lede": "Bir user agent dizesini tarayıcıya, motora, işletim sistemine, cihaza ve işlemciye ayırın; başlangıçta kendi tarayıcınızınkiyle.",
+  "blurb": "Herhangi bir user agent dizesini çözümleyin; kendinizinkini Client Hints ile görün.",
+  "keywords": "user agent çözümleyici user agent nedir ua dizesi tarayıcı algılama client hints useragent çözücü kullanıcı aracısı navigator.userAgent googlebot curl user agent parser what is my user agent browser detection",
+  "limits": "Çözümleme ua-parser-js 1.0.41 (MIT) kullanır ve kalıplara dayanır; bu yüzden alışılmadık veya taklit edilmiş dizeler yanlış okunabilir. Client Hints yalnızca şu anda kullandığınız tarayıcı için ve yalnızca o tarayıcı destekliyorsa gösterilir (Chromium tarayıcılar destekler; Firefox ve Safari desteklemez).",
+  "howto_title": "User-Agent dizesi nasıl okunur",
+  "howto": [
+    "Kendi tarayıcınızın user agent'ı sayfa yüklenir yüklenmez çözümlenir. Başka birini denetlemek için kutuya yapıştırın, örneğin bir sunucu günlüğünden.",
+    "Tarayıcı, motor, işletim sistemi, cihaz ve işlemci satırlarını okuyun. Bunları kanıtlanmış gerçekler değil, dizenin iddiası olarak değerlendirin.",
+    "Kendi tarayıcınız için sonucu, kısaltılmış dizenin dışarıda bıraktığı ayrıntıları gösterebilen Client Hints bölümüyle karşılaştırın."
+  ],
+  "faq": [
+    ["User-Agent dizesi nedir?", "Bir tarayıcının ya da programın her web isteğiyle birlikte ne olduğunu söylemek için gönderdiği metin satırıdır. Onlarca yıllık uyumluluk hileleri nedeniyle hemen her tarayıcı <code>Mozilla/5.0</code> ile başlar ve birkaç başka tarayıcıdan söz eder; bu yüzden onu okumak basit bir bölme değil, kalıp eşleştirme gerektirir."],
+    ["Windows 11 neden Windows 10 görünüyor?", "Chrome ve diğer Chromium tarayıcılar, gerçek Windows sürümü ne olursa olsun dizenin platform kısmını \"Windows NT 10.0\" olarak dondurur. Bunları yalnızca Client Hints ayırt edebilir: 13 veya daha yüksek bir platform sürümü Windows 11 demektir. Bu sayfa, mevcut olduğunda kendi tarayıcınız için bu değeri gösterir."],
+    ["iPad'im neden Mac olduğunu söylüyor?", "iPadOS 13'ten beri Safari varsayılan olarak masaüstü web sitelerini ister ve Macintosh user agent'ı gönderir. Dizenin tek başına bir Mac'i iPad'den ayırması mümkün değildir, ancak bir sayfa dokunmatik ekran olup olmadığını denetleyebilir. Aynısı macOS için de geçerlidir: sürüm dizede 10_15_7 olarak donmuştur."],
+    ["User-Agent küçültme nedir?", "Chrome, pasif izlemeyi azaltmak için dizeden ayrıntıları kaldırıyor: alt sürüm 0.0.0 olarak görünür, Android cihaz modeli tek bir K harfi olarak görünür ve işletim sistemi sürümü sabittir. Ayrıntılara ihtiyaç duyan siteler bunları Client Hints ile istemek zorundadır."],
+    ["Client Hints nedir?", "Bir sayfanın mimari veya tam tarayıcı sürümü gibi belirli ayrıntıları dizeden okumak yerine istemesini sağlayan yapılandırılmış üst bilgiler ve bir JavaScript API'sidir (<code>navigator.userAgentData</code>). Bugün yalnızca Chromium tabanlı tarayıcılar destekler."],
+    ["Güvenlik kararları için user agent'a güvenebilir miyim?", "Hayır. Herkes herhangi bir dize gönderebilir ve botlar genellikle Chrome gibi davranır. İstatistikler ve bir düzen seçmek için uygundur, ancak erişim denetimi için değildir. Googlebot'u doğrulamak için bir site bunun yerine ziyaretçinin IP adresini ters DNS sorgusuyla denetler."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">User-Agent dizesi</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Tarayıcımınkini kullan</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Sonucu kopyala</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="Çözümlenmiş user agent"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Tarayıcınızdan Client Hints</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>User-Agent size ne söyler, neyi gizler</h2>
+<p>User-Agent, bir sunucunun hangi tarayıcının istekte bulunduğunu görüp orada çalışan bir sayfa gönderebilmesi için doğdu. Ardından tarayıcılar iyi sayfaları almak için birbirlerinin adlarını kopyaladı; bu yüzden bugün bir Chrome dizesi Mozilla, AppleWebKit, KHTML, Gecko ve Safari de der. Bir çözümleyici, kalıpları dikkatli bir sırayla sınayarak ve en özel eşleşmeyi seçerek bu durumu aşar.</p>
+<p>Dize bilerek de kısaltılıyor. Chrome'un User-Agent küçültmesi Windows sürümünü NT 10.0'a, macOS sürümünü 10_15_7'ye, Android modelini K'ye ve yapı numarasını 0.0.0'a sabitler; böylece dize artık iyi bir parmak izi olmaz. Ayrıntılar yok olmadı: bunları Client Hints ile isteyen bir sayfa platform sürümünü, mimariyi, modeli ve tam tarayıcı sürümünü alır; yanıt verip vermeyeceğine ziyaretçinin tarayıcısı karar verir.</p>
+<p>Dizeyi kaba kararlar ve günlükler için kullanın, güven için değil. Web tarayıcı botları (crawler) ve curl gibi komut satırı araçları kendi kısa dizelerini gönderir ve her şey taklit edilebilir. Bir düzen hatasının peşindeyseniz, sayfadaki özellik algılama tarayıcı adını okumaktan daha güvenilirdir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Bir sunucu günlüğü tek bir istemciye verilen 403 veya 429 yanıtlarıyla mı dolu? Kodları <a href="/tools/http-status-codes/">HTTP durum kodları</a> başvurusunda arayın.</li>
+  <li>URL'lerdeki veya sorgu dizelerindeki user agent'lar genellikle yüzde kodlanmıştır; bunları <a href="/tools/url-encode-decode/">URL kodla ve çöz</a> ile çözün.</li>
+  <li>Bir istekten kopyalanan üst bilgiler bazen Base64 değerler taşır; bunları <a href="/tools/base64-encode-decode/">Base64 kodla ve çöz</a> ile okuyun.</li>
+</ul>

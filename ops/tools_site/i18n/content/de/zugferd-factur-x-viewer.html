@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "ZUGFeRD-Viewer (Factur-X): XML im PDF lesen | Tanod Tools",
+  "description": "Lesen Sie die XML-Rechnung aus einem ZUGFeRD- oder Factur-X-PDF wie eine normale Rechnung. Drucken oder JSON exportieren. Kostenlos, ohne Upload.",
+  "h1": "ZUGFeRD-Viewer (Factur-X)",
+  "lede": "Öffnen Sie ein ZUGFeRD- oder Factur-X-PDF und sehen Sie die Rechnungsdaten, die darin versteckt sind. Das angehängte XML wird in Ihrem Browser aus dem PDF herausgelöst und als Rechnung angezeigt. Die Datei verlässt Ihr Gerät nie.",
+  "blurb": "XML-Rechnung aus einem ZUGFeRD- oder Factur-X-PDF herauslösen und lesen.",
+  "keywords": "zugferd viewer zugferd anzeigen zugferd lesen zugferd pdf öffnen zugferd xml auslesen zugferd rechnung ansehen factur-x viewer factur-x anzeigen factur-x xml auslesen pdf/a-3 xml eingebettet xml aus pdf extrahieren e-rechnung pdf",
+  "limits": "Eine Datei auf einmal, bis 25 MB. Erforderlich ist ein PDF/A-3 mit angehängter Rechnungsdatei (factur-x.xml, zugferd-invoice.xml oder xrechnung.xml); ein normales PDF enthält keine Rechnungsdaten, und die Seite weist darauf hin. Die Seiten des PDFs werden nicht angezeigt, nur die Daten darin. Nur Viewer: keine Validierung, und es wird nichts irgendwohin gesendet.",
+  "howto_title": "So lesen Sie ein ZUGFeRD- oder Factur-X-PDF",
+  "howto": [
+    "Wählen Sie das ZUGFeRD- oder Factur-X-PDF aus oder ziehen Sie es auf die Seite. Auch eine XML-Datei funktioniert.",
+    "Die Seite findet das angehängte XML im PDF und zeigt es als Rechnung an: Beteiligte, Positionen, Umsatzsteuer, Summen und Zahlungsangaben.",
+    "Mit <strong>Drucken oder als PDF speichern</strong> erhalten Sie eine saubere Kopie, mit <strong>JSON herunterladen</strong> die Daten und mit <strong>XML herunterladen</strong> die Datei, die im PDF steckte."
+  ],
+  "faq": [
+    [
+      "Wird mein PDF hochgeladen?",
+      "Nein. Das PDF wird in Ihrem Browser mit der Open-Source-Bibliothek pdf.js geöffnet, das angehängte XML wird dort gelesen, und nichts wird an einen Server gesendet. Beim Schließen des Tabs ist alles gelöscht."
+    ],
+    [
+      "Was ist der Unterschied zwischen ZUGFeRD und Factur-X?",
+      "Es ist derselbe Standard. ZUGFeRD ist der deutsche Name, Factur-X der französische; ZUGFeRD 2 und Factur-X 1 sind technisch identisch. Beide bestehen aus einem PDF/A-3-Dokument mit angehängter XML-Rechnung (UN/CEFACT CII). Das Profil (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED oder XRECHNUNG) legt fest, wie viele Daten das XML enthält."
+    ],
+    [
+      "Warum steht da, mein PDF enthalte keine Rechnungsdaten?",
+      "Ein normales PDF ist nur ein Bild einer Rechnung. Strukturierte Daten gibt es nur, wenn das Programm, das das PDF erzeugt hat, das XML angehängt hat. Suchen Sie in Ihrem PDF-Reader nach einer angehängten Datei. Ist keine vorhanden, ist das PDF keine E-Rechnung; um stattdessen den Text auszulesen, versuchen Sie <a href=\"/tools/pdf-to-text/\">PDF in Text</a>."
+    ],
+    [
+      "Welche Profile funktionieren?",
+      "Alle Profile, die das CII-XML verwenden. MINIMUM und BASIC WL enthalten Summen, aber keine Rechnungspositionen, und die Seite weist darauf hin; BASIC, EN 16931, EXTENDED und XRECHNUNG enthalten Positionen. Das alte ZUGFeRD-1.0-Format wird nicht unterstützt."
+    ],
+    [
+      "Werden die PDF-Seiten mit dem XML verglichen?",
+      "Nein. Die Seiten des PDFs werden nicht angezeigt, und es wird nichts verglichen. Bei Hybridformaten gilt in der Regel das XML als der eigentliche Rechnungsdatensatz, deshalb sehen Sie hier dieses."
+    ],
+    [
+      "Werden angehängte Dokumente geöffnet?",
+      "Nein. Dokumente, die im XML angehängt sind (etwa ein Leistungsnachweis), werden nur mit einer Schaltfläche zum Herunterladen aufgelistet. Der Dateiname wird bereinigt und der Download nutzt einen allgemeinen Dateityp; öffnen Sie sie nur, wenn Sie dem Absender vertrauen."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Ein PDF, das zugleich eine Rechnung ist</h2>
+<p>Eine ZUGFeRD- oder Factur-X-Datei sieht aus wie jede PDF-Rechnung, enthält aber eine zweite Fassung der Rechnung als XML, die dem PDF so angehängt ist wie ein Anhang einer E-Mail. Menschen lesen die Seiten, Programme lesen das XML. Seit dem 1. Januar 2025 muss jedes Unternehmen in Deutschland strukturierte E-Rechnungen empfangen können, und Frankreich verlangt dasselbe ab dem 1. September 2026; solche Hybrid-PDFs sind deshalb inzwischen weit verbreitet.</p>
+<p>Diese Seite öffnet das PDF in Ihrem Browser, liest die Liste der angehängten Dateien und probiert die XML-Dateien in dieser Reihenfolge aus: <code>factur-x.xml</code>, <code>zugferd-invoice.xml</code>, <code>xrechnung.xml</code>, danach jede andere XML-Datei. Angezeigt wird die erste, die eine unterstützte Rechnung ist. Die PDF-Seiten selbst werden nicht dargestellt.</p>
+<h2>Profile</h2>
+<p>Das Profil legt fest, wie viele Daten das XML enthält. MINIMUM und BASIC WL haben nur Kopfdaten und Summen. BASIC ergänzt Rechnungspositionen. EN 16931 (in älteren ZUGFeRD-Versionen COMFORT genannt) ist der vollständige europäische Standard. EXTENDED geht darüber hinaus, und XRECHNUNG ist das deutsche Profil für die öffentliche Verwaltung. Die Seite zeigt, was jede Datei enthält, und prüft sie nicht gegen die Profilregeln.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Hat eine PDF-Rechnung keinen Anhang, bitten Sie den Absender um das XML oder um eine ZUGFeRD-/Factur-X-Fassung.</li>
+  <li>Eine reine XML-Datei desselben Standards lässt sich hier ebenfalls öffnen; XRechnung-XML liest auch der <a href="/tools/xrechnung-viewer/">XRechnung-Viewer</a>.</li>
+  <li>Mit „XML herunterladen“ behalten Sie die strukturierten Daten, die im PDF steckten.</li>
+</ul>

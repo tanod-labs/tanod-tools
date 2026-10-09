@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Saat dilimi çevirici ve toplantı planlayıcı | Tanod Tools",
+  "description": "Bir tarih ve saati aynı anda birçok saat dilimine çevirin: UTC farkları, gün değişimleri, yaz saati boşlukları ve çakışmaları ile saatlik toplantı planlayıcı.",
+  "h1": "Saat dilimi çevirici",
+  "lede": "Bir tarih, bir saat ve o saatin hangi dilimde olduğunu seçin; listenizdeki her şehirde aynı anı görün. Ortak çalışma saatlerini bulmak için bir planlayıcı da var.",
+  "blurb": "Bir saati birçok dilime çevirin ve aralarında toplantı planlayın.",
+  "keywords": "saat dilimi çevirici dünya saati toplantı planlayıcı şehirler arası saat çevirme utc farkı yaz saati uygulaması gmt est pst ist jst saat dilimleri çakışma time zone converter world clock meeting planner utc offset daylight saving",
+  "limits": "Tarayıcınızda yerleşik saat dilimi verilerini kullanır; bu yüzden farklar ve yaz saati kuralları, geçmiş ve gelecek tarihler dahil, tarayıcınızın bildiği her şeyi izler. Kısaltmalar yalnızca tarayıcının bir kısaltması olduğunda gösterilir. Hiçbir şey cihazınızdan çıkmaz.",
+  "howto_title": "Bir saat dilimler arasında nasıl çevrilir",
+  "howto": [
+    "Tarihi, saati ve o saatin hangi dilimde olduğunu seçin. Geçerli andan başlamak için <strong>Şimdi</strong> düğmesine basın.",
+    "<em>Yer ekle</em> ile ihtiyacınız olan şehirleri ekleyin. Her satır yerel saati, günü (aynı, sonraki veya önceki) ve UTC farkını gösterir. Listeniz bu cihazda hatırlanır.",
+    "Listenin altındaki toplantı planlayıcıyla herkesin yerel saatle 09:00 ile 17:00 arasında olduğu saatleri bulun. Taramalı hücreler çalışma saatleridir."
+  ],
+  "faq": [
+    ["Var olmayan bir saat seçersem ne olur?", "Saatler ileri alındığında bir yerel saat atlanır: New York'ta 8 Mart 2026'da saat 01:59'dan doğrudan 03:00'e geçer, yani 02:30 hiç yaşanmaz. Çevirici bunu söyler ve olağan kuralı uygular: saati boşluğun uzunluğu kadar ileri alır (02:30, 03:30 olur) ve o anı çevirir."],
+    ["Ya iki kez yaşanan bir saat?", "Saatler geri alındığında bir saat tekrarlanır. New York'ta 1 Kasım 2026'da 01:30 önce 01:30 EDT (UTC-04:00) olarak, bir saat sonra yine 01:30 EST (UTC-05:00) olarak gerçekleşir. Çevirici iki olasılığı da gösterir ve seçmenize izin verir; öncekiyle başlar."],
+    ["Bazı farklar neden tam saat değil?", "Birkaç yerde yarım saatlik ya da 45 dakikalık farklar kullanılır: Hindistan UTC+05:30, Nepal UTC+05:45, Avustralya'daki Lord Howe Adası ise kışın UTC+10:30, yazın UTC+11:00'dir; bu, yalnızca 30 dakikalık bir yaz saati kaymasıdır. Araç, seçtiğiniz tarihte geçerli olan tam farkı kullanır."],
+    ["Gün değişimi gösteriliyor mu?", "Evet. Her satır, kaynak dilimde seçtiğiniz tarihe göre Aynı gün, Sonraki gün veya Önceki gün der. Kiribati'deki Kiritimati, dünyanın en erken dilimi olan UTC+14'tedir; bu yüzden Londra'da gün ortasındaki bir saat orada çoktan ertesi gündür."],
+    ["Toplantı planlayıcı nasıl çalışır?", "Her yer için, kaynak dilimde seçtiğiniz tarihin gece yarısından başlayarak aynı anlara göre hizalanmış 24 saatlik hücre dizer. Yerel saatle 09:00 ile 17:00 arasındaki hücreler taramalıdır ve çalışma saati olarak okunur; alt satır herkes için uygun saatleri işaretler. Kalın çerçeveli sütun, girdiğiniz saattir."],
+    ["Hangi dilim adlarını kullanabilirim?", "Tarayıcınızın listelediği her IANA dilimi (Europe/London veya Asia/Tokyo gibi), ayrıca UTC ve kendi diliminiz. Şehir adları okunur biçimde, altında tam dilim kimliğiyle gösterilir. Duvar saati yerine bir Unix zaman damgasını çevirmek için <a href=\"/tools/unix-timestamp-converter/\">Unix zaman damgası çevirici</a> aracını kullanın."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Tarih</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Saat</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Şimdi</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Bu saatin saat dilimi</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Bu saat iki kez yaşanıyor. Hangisi?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Yer ekle</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Ekle</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Saat</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24 saat</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12 saat</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Çevrilmiş saatler"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Toplantı planlayıcı</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Planlayıcı göstergesi">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Çalışma saatleri, yerel saatle 09:00 ile 17:00 arası (taramalı)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>Girdiğiniz saat (kalın çerçeve)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Herkes çalışma saatlerinde</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Dilimler arası saat çevirme neden yanlış gider</h2>
+<p>Saat dilimi yalnızca UTC'den bir fark değildir. Her tarihte farkın ne olduğunu ve ne olacağını söyleyen, IANA saat dilimi veritabanında tutulan bir kurallar kümesidir. Bu yüzden aynı şehir kışın UTC-5, yazın UTC-4'tür; bugün aynı farkı paylaşan iki şehir önümüzdeki ay ayrılabilir; Londra'da saat 9:00'a konan bir toplantı, iki ülke saatlerini farklı tarihlerde değiştirdiği için her ilkbahar ve sonbaharda birkaç hafta New York'a göre kayar.</p>
+<p>Yaz saati geçişleri iki zor durum yaratır. İlkbaharda yerel saatin bir bölümü atlanır, yani bunun içindeki bir saat yoktur. Sonbaharda bir bölüm tekrarlanır, yani içindeki bir saat belirsizdir ve hangisinin kastedildiğini farkın belirlemesi gerekir. Birçok program sessizce bir yanıt seçer; bu çevirici boşluğu ya da çakışmayı size bildirir ve çakışmada seçimi size bırakır.</p>
+<p>Planlamada saat okumalarını karşılaştırmak işin yalnızca yarısıdır. Adillik, toplantının kimin çalışma saatlerine düştüğüne bağlıdır. Saatlik planlayıcı her yeri aynı anlara göre hizalar; böylece 09:00-17:00 aralıklarının nerede çakıştığını ve birinin gecenin ortasında nereden katılacağını bir bakışta görürsünüz. Çakışma çok iyi olsa bile davette dilimi açıkça, tercihen UTC farkıyla belirtin ki kimse tahmin etmek zorunda kalmasın.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Bir günlükten veya API'den zaman damgası mı okuyorsunuz? <a href="/tools/unix-timestamp-converter/">Unix zaman damgası çevirici</a> bunu her dilimde gösterir.</li>
+  <li>Gün veya iş günü ekledikten sonra bir son tarihin hangi güne düştüğünü bulmak için <a href="/tools/date-calculator/">Tarih hesaplama</a> aracını kullanın.</li>
+  <li>Bir projenin ya da gezinin ne kadar süreceğini mi hesaplıyorsunuz? <a href="/tools/date-difference-calculator/">İki tarih arasındaki gün sayısı</a> aracı bunu sayar.</li>
+</ul>

@@ -1,0 +1,66 @@
+<!--meta
+{
+  "category": "aviation",
+  "name": "Aurora visibility estimator",
+  "title": "Aurora visibility estimator: will the aurora reach you?",
+  "description": "Enter a Kp index and your location to estimate whether the northern or southern lights could be visible overhead or on the horizon, using geomagnetic latitude.",
+  "h1": "Aurora visibility estimator",
+  "lede": "Enter the Kp index and your location to estimate whether the aurora could be seen overhead, low on the horizon, or not at all from where you are.",
+  "blurb": "Estimate aurora visibility from Kp and geomagnetic latitude.",
+  "keywords": "aurora visibility estimator kp index northern lights southern lights geomagnetic latitude auroral oval aurora borealis australis forecast space weather will i see",
+  "limits": "A rough rule of thumb, not a forecast. It uses a centred-dipole geomagnetic latitude and a linear oval edge, and cannot know the real position of the oval, cloud cover or local darkness. For live Kp values use a space weather service. Not for navigation.",
+  "howto_title": "How to estimate aurora visibility",
+  "howto": [
+    "Enter your latitude and longitude, or press the location button.",
+    "Enter the Kp index you are interested in, from 0 to 9 (the current or forecast value from a space weather service).",
+    "Read your geomagnetic latitude, the estimated edge of the auroral oval and whether the aurora could be overhead or on the horizon. The table shows every Kp for your location."
+  ],
+  "faq": [
+    ["What is the Kp index?", "Kp is a planetary measure of geomagnetic disturbance from 0 (quiet) to 9 (extreme storm), calculated every three hours from magnetometers around the world. NOAA's Space Weather Prediction Center publishes the estimated and forecast values. A higher Kp means the aurora moves closer to the equator."],
+    ["What is geomagnetic latitude?", "It is your latitude measured from the Earth's magnetic pole instead of the geographic pole. The aurora follows the geomagnetic field, so it is the geomagnetic latitude, not the geographic one, that decides how far south (or north) the lights reach. North America is closer to the magnetic pole than Europe at the same latitude."],
+    ["How does this tool estimate it?", "It computes your latitude relative to a centred dipole whose pole is at 80.65° N, 72.68° W, and compares it with the edge of the auroral oval near magnetic midnight, taken as 66.5° minus 2° per Kp unit. Overhead means you are at or poleward of that edge. The horizon band reaches 8° of latitude equatorward of it."],
+    ["How good is that approximation?", "It is rough. A true dipole ignores the real field's irregularities, which shift geomagnetic latitude by a few degrees, and the oval is a band that changes within a night and with the solar wind. Treat the result as a first guess. For live data, see our Kp and aurora guide."],
+    ["What else do I need to see the aurora?", "Darkness (not twilight, and ideally no bright Moon), a clear sky, and a view to the pole-ward horizon without city lights. The best time is usually within a couple of hours of local magnetic midnight, which is close to local midnight around the equinoxes."],
+    ["Does it work in the southern hemisphere?", "Yes. The southern lights (aurora australis) follow the same rules around the south geomagnetic pole, so the tool uses the absolute value of the geomagnetic latitude and points you to the southern horizon."]
+  ],
+  "related": ["sunrise-sunset-calculator", "moon-phase-calendar", "flight-distance-calculator", "light-time-calculator", "orbital-period-calculator", "julian-date-converter"]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="ao-lat">Latitude</label>
+    <input type="text" id="ao-lat" inputmode="decimal" autocomplete="off" value="64.8378" aria-describedby="ao-msg">
+  </div>
+  <div class="field">
+    <label for="ao-lon">Longitude</label>
+    <input type="text" id="ao-lon" inputmode="decimal" autocomplete="off" value="-147.7164" aria-describedby="ao-msg">
+  </div>
+  <div class="field">
+    <label for="ao-kp">Kp index (0 to 9)</label>
+    <input type="text" id="ao-kp" inputmode="decimal" autocomplete="off" value="4" aria-describedby="ao-msg">
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="ao-locate" type="button">Use my location</button>
+</div>
+<p class="note" id="ao-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="ao-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Estimate</span> <span class="calc-main__val" id="ao-main"></span></p>
+  <dl class="stats" id="ao-stats"></dl>
+  <p class="help" id="ao-hint"></p>
+  <h2 class="util-h" id="ao-tab-h">Every Kp for this location</h2>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Oval edge and visibility for each Kp value at your location</caption>
+      <thead><tr><th scope="col">Kp</th><th scope="col">Oval edge (geomagnetic latitude)</th><th scope="col">From your location</th></tr></thead>
+      <tbody id="ao-table"></tbody>
+    </table>
+  </div>
+</div>
+<p class="help">Live Kp and aurora data: see the <a href="/learn/space-weather-kp-index-aurora-api.html">space weather, Kp index and aurora API guide</a>.</p>
+<!--explain-->
+<h2>How the estimate works</h2>
+<p>The geomagnetic latitude is computed with a centred-dipole approximation: sin Φ = sin φ · sin φ0 + cos φ · cos φ0 · cos(λ − λ0), where (φ, λ) is your position and (φ0, λ0) is the geomagnetic north pole. The pole used is 80.65° N, 72.68° W, the IGRF-13 dipole for epoch 2020 (International Association of Geomagnetism and Aeronomy). The southern geomagnetic pole is the antipode, so the same formula gives negative latitudes in the south and the tool uses their absolute value.</p>
+<p>The equatorward edge of the auroral oval near magnetic midnight is taken as 66.5° − 2° × Kp of geomagnetic latitude (about 66.5° at Kp 0 and 48.5° at Kp 9). This is a linear approximation of the statistical ovals of Feldstein and Starkov (1967) and the Kp-based boundaries in NOAA's aurora forecasts, and it is not an official model. The aurora forms at 100 to 300 km altitude, so it can be seen low on the horizon from up to about 8° of latitude beyond the edge when the sky is dark and clear.</p>
+<p>The centred dipole can be several degrees off the corrected geomagnetic coordinates that scientists use, the oval changes within hours, and cloud, daylight and moonlight decide what you can actually see. Use this for a first idea and check live data before travelling. For the current Kp and the forecast, see the <a href="/learn/space-weather-kp-index-aurora-api.html">live data guide</a>. <strong>Not for navigation.</strong></p>

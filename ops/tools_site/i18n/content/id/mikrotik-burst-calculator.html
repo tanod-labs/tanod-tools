@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "Kalkulator burst MikroTik: burst-limit, threshold, time | Tanod Tools",
+  "description": "Lihat berapa lama queue RouterOS melakukan burst dari max-limit, burst-limit, threshold, dan time, dengan grafik dan baris queue atau PPP rate-limit.",
+  "h1": "Kalkulator burst MikroTik",
+  "lede": "Masukkan max-limit, burst-limit, burst-threshold, dan burst-time, lalu lihat persis berapa lama klien melakukan burst dari kondisi idle, berapa banyak datanya, dan baris queue yang tinggal ditempel.",
+  "blurb": "Durasi burst, volume data, dan grafik kecepatan untuk pengaturan burst queue.",
+  "keywords": "kalkulator burst mikrotik burst limit burst threshold burst time max-limit simple queue burst rate-limit ppp profile burst cara kerja burst queue routeros",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Memodelkan burst RouterOS untuk satu klien dengan permintaan tak terbatas, diukur dalam langkah burst-time/16 seperti yang dilakukan RouterOS. Lalu lintas nyata lebih berfluktuasi, dan parent queue dapat membatasi klien di bawah angka-angka ini. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara menghitung pengaturan burst MikroTik",
+  "howto": [
+    "Masukkan max-limit, burst-limit, burst-threshold, dan burst-time untuk upload dan download. Kecepatan memakai k, M, atau G, misalnya 20M.",
+    "Baca berapa lama burst berlangsung dari kondisi idle dan lihat grafiknya, yang menampilkan kecepatan yang diizinkan dan rata-rata yang dibandingkan RouterOS dengan threshold.",
+    "Opsional, masukkan lama burst yang diinginkan untuk mendapat threshold yang menghasilkannya, lalu salin baris simple queue atau PPP rate-limit."
+  ],
+  "faq": [
+    ["Bagaimana burst bekerja di MikroTik?", "Setiap burst-time/16, RouterOS menghitung kecepatan rata-rata klien selama burst-time terakhir. Selama rata-rata itu di bawah burst-threshold, queue membiarkan klien mengirim hingga burst-limit; begitu rata-rata mencapai threshold, klien turun ke max-limit. Klien yang sudah idle punya rata-rata nol, jadi download baru dimulai pada burst-limit dan kembali ke max-limit setelah beberapa detik."],
+    ["Berapa lama burst berlangsung?", "Dimulai dari idle dengan klien yang mengambil semua yang ditawarkan, burst berlangsung sekitar burst-threshold × burst-time ÷ burst-limit. Dengan burst-limit 40M, threshold 16M, dan burst-time 8s, hasilnya 16 × 8 ÷ 40 = 3,2 detik. Rata-rata hanya diperiksa ulang setiap burst-time/16 (setengah detik di sini), sehingga burst benar-benar berakhir pada pemeriksaan pertama setelah titik itu, yaitu 3,5 detik; kalkulator menelusuri pemeriksaan itu dan menampilkan kedua angkanya."],
+    ["Mengapa burst-threshold harus di bawah max-limit?", "Jika threshold di atas max-limit, klien yang mengunduh pada max-limit punya rata-rata di bawah threshold, sehingga burst menyala lagi, rata-rata naik, burst mati, dan klien terus berosilasi. Dengan threshold di bawah max-limit, klien yang terus mengunduh bertahan di max-limit dan baru melakukan burst lagi setelah jeda."],
+    ["Untuk apa baris rate-limit?", "PPP profile, PPP secret, dan RADIUS (atribut Mikrotik-Rate-Limit) menerima batas yang sama sebagai satu string: max-limit, burst-limit, burst-threshold, dan burst-time, masing-masing sebagai rx/tx dari sisi router, yaitu upload/download bagi klien. RouterOS membuat simple queue dinamis darinya saat klien terhubung."],
+    ["Apakah limit-at bagian dari burst?", "Bukan. limit-at adalah kecepatan yang dijamin queue saat parent padat; burst hanya mengubah seberapa tinggi di atas max-limit klien boleh melaju untuk sementara. Pertahankan limit-at pada atau di bawah max-limit."],
+    ["Apakah ada yang dikirim ke server?", "Tidak. Simulasi dan grafik dihitung di browser Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="bc">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Upload (klien ke internet)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-up-max">max-limit</label><input type="text" id="bc-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-burst">burst-limit</label><input type="text" id="bc-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-thr">burst-threshold</label><input type="text" id="bc-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-time">burst-time</label><input type="text" id="bc-up-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Download (internet ke klien)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-down-max">max-limit</label><input type="text" id="bc-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-burst">burst-limit</label><input type="text" id="bc-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-thr">burst-threshold</label><input type="text" id="bc-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-time">burst-time</label><input type="text" id="bc-down-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="bc-want">Lama burst yang diinginkan (detik)</label>
+      <input type="text" id="bc-want" class="mono" value="" placeholder="5" inputmode="numeric" autocomplete="off" aria-describedby="bc-want-h">
+      <span class="help" id="bc-want-h">Opsional: menampilkan threshold yang menghasilkan burst sepanjang ini.</span>
+    </div>
+    <dl class="ros-facts" id="bc-facts" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <div class="seg" role="radiogroup" aria-label="Arah grafik">
+      <label><input type="radio" name="bc-dir" value="down" checked>Download klien</label>
+      <label><input type="radio" name="bc-dir" value="up">Upload klien</label>
+    </div>
+    <figure class="ros-fig">
+      <div id="bc-chart"></div>
+      <figcaption id="bc-chart-t" class="help"></figcaption>
+    </figure>
+    <ul class="ros-legend" aria-hidden="true">
+      <li><i></i>Kecepatan yang diizinkan</li>
+      <li class="k-avg"><i></i>Rata-rata selama burst-time</li>
+      <li class="k-thr"><i></i>burst-threshold</li>
+    </ul>
+    <label for="bc-out" class="label">Pengaturan queue</label>
+    <textarea id="bc-out" class="mono gen-out ros-out ros-out--short" rows="8" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="bc-copy" type="button">Salin</button>
+      <button class="btn" id="bc-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="bc-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Burst di queue RouterOS, selangkah demi selangkah</h2>
+<p>Burst membuat klien bisa melaju lebih cepat dari max-limit dalam waktu singkat, sehingga halaman web dan unduhan kecil terasa cepat sementara transfer panjang tetap menetap pada kecepatan paket. Empat pengaturan mengendalikannya, masing-masing ditulis upload/download di simple queue: <code>max-limit</code>, batas atas normal; <code>burst-limit</code>, batas atas yang lebih tinggi saat burst; <code>burst-threshold</code>, kecepatan rata-rata saat burst berhenti; dan <code>burst-time</code>, jendela waktu pengukuran rata-rata itu.</p>
+<p>RouterOS membagi burst-time menjadi 16 slot. Setelah tiap slot, ia merata-ratakan kecepatan klien selama 16 slot terakhir dan membandingkannya dengan threshold: di bawahnya, klien boleh memakai burst-limit; pada atau di atasnya, hanya max-limit. Klien yang datang dari idle mulai dengan rata-rata nol, mengirim pada burst-limit, dan rata-rata naik sampai melewati threshold. Dengan burst-time 8 s, burst-limit 40M, dan threshold 16M, rata-rata mencapai threshold setelah 3,2 s, dan pemeriksaan berikutnya, pada 3,5 s, mengakhiri burst; saat itu klien sudah memindahkan sekitar 17,5 MB. Setelah itu rata-rata tetap di atas threshold selama klien terus mentransfer pada max-limit, jadi burst berikutnya memerlukan jeda.</p>
+<h3>Memilih nilai</h3>
+<ul>
+  <li>Atur burst-limit ke kecepatan yang Anda inginkan untuk transfer singkat, sering 1,5 sampai 2 kali max-limit.</li>
+  <li>Jaga burst-threshold di bawah max-limit, biasanya 60 sampai 80 persennya, dan sesuaikan burst-time untuk mendapat lama burst yang diinginkan.</li>
+  <li>Matikan FastTrack, atau kecualikan klien ber-queue darinya: paket yang di-fasttrack melewati simple queue sepenuhnya. Buat queue dengan <a href="/tools/mikrotik-simple-queue-generator/">generator simple queue</a> atau sebagai PPP profile dengan <a href="/tools/mikrotik-pppoe-server-generator/">generator server PPPoE</a>.</li>
+</ul>

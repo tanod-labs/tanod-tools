@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "Генератор и проверка security.txt (RFC 9116) | Tanod Tools",
+  "description": "Составьте security.txt для /.well-known/ с нужными полями или вставьте свой файл и проверьте по RFC 9116: Contact, Expires, ссылки https, Canonical и подпись.",
+  "h1": "Генератор и проверка security.txt",
+  "lede": "Составьте корректный security.txt по RFC 9116, чтобы исследователи знали, как с вами связаться, или вставьте готовый файл и посмотрите, что в нём не так. Часть подготовки к <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">Регламенту ЕС о киберустойчивости</a>.",
+  "blurb": "Создайте security.txt и проверьте его по RFC 9116.",
+  "keywords": "генератор security.txt проверка security.txt валидатор security.txt rfc 9116 контакт для сообщений об уязвимостях раскрытие уязвимостей киберустойчивость security.txt generator security.txt checker rfc 9116 well-known security.txt validator vulnerability disclosure contact expires canonical pgp cyber resilience act",
+  "limits": "Проверяет текст только по RFC 9116. Страница не загружает ваш сайт (всё, что вы вводите, остаётся на этой странице, поэтому вставляйте файл целиком), не проверяет подпись OpenPGP и не проверяет, что указанные адреса работают. Это шаблон, а не юридическая консультация.",
+  "howto_title": "Как создать и проверить security.txt",
+  "howto": [
+    "Укажите хотя бы один Contact (адрес электронной почты, номер телефона или страницу https://) и проверьте дату Expires. Заполните нужные необязательные поля, например Policy и Preferred-Languages.",
+    "Скопируйте файл или скачайте его и опубликуйте по адресу <code>/.well-known/security.txt</code> на своём домене по HTTPS как обычный текст.",
+    "Чтобы проверить существующий файл, вставьте его текст в проверку. Сначала исправьте ошибки, затем посмотрите предупреждения. Чтобы проверить поле Canonical, укажите адрес, с которого файл отдаётся.",
+    "Поставьте в календаре напоминание обновить Expires до того, как срок истечёт."
+  ],
+  "faq": [
+    ["Требует ли Регламент о киберустойчивости файл security.txt?", "Нет. Регламент ожидает, что у производителя есть политика скоординированного раскрытия уязвимостей и опубликованный способ сообщить об уязвимости. Файл security.txt — распространённый способ опубликовать такой контакт, и специалисты его рекомендуют, но формат в регламенте не назван. Подробнее в <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">руководстве для небольших поставщиков</a>."],
+    ["Куда именно нужно положить файл?", "По адресу <code>https://ваш-домен/.well-known/security.txt</code> по HTTPS с типом содержимого <code>text/plain; charset=utf-8</code>. Для старых систем RFC 9116 допускает также копию в <code>/security.txt</code>. Публикуйте файл на каждом домене и поддомене, который нужно охватить."],
+    ["На какой срок вперёд ставить Expires?", "По RFC 9116 срок должен быть меньше года, чтобы исследователи могли доверять тому, что контакты поддерживаются в актуальном состоянии. Генератор по умолчанию ставит чуть меньше года. Когда дата проходит, читателям предписано игнорировать файл, поэтому обновляйте его заранее."],
+    ["Нужно ли подписывать файл PGP?", "Нет, подпись необязательна, но рекомендуется. Подписанный файл — это сообщение OpenPGP с открытой подписью, его создаёт команда <code>gpg --clearsign security.txt</code>. Проверка распознаёт подписанный формат и смотрит на его структуру, но саму подпись проверить не может; для этого используйте <code>gpg --verify</code>."],
+    ["Почему проверка не загружает мой сайт?", "Чтобы страница оставалась приватной: она целиком работает в вашем браузере и не обращается к другим сайтам. Откройте файл в соседней вкладке, скопируйте текст и вставьте его сюда. Так вы заодно проверите то, что реально получают посетители."],
+    ["Для чего нужно поле Canonical?", "В нём перечислены адреса, по которым файл должен отдаваться, чтобы читатель мог убедиться, что файл, найденный по одному адресу, действительно принадлежит этому месту. Если указать адрес, с которого вы отдаёте файл, проверка убедится, что одна из строк Canonical ему соответствует."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">Создать security.txt</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Обязательные поля</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (по одному в строке)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Адрес электронной почты, номер телефона с кодом страны или страница https://. Исследователи сначала пробуют первую строку.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (конец этого дня, UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>Необязательные поля</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Ваша политика раскрытия уязвимостей. <a href="/tools/vulnerability-disclosure-policy-generator/">Составьте её здесь.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (по одному в строке)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Ссылка https:// на ваш открытый ключ, запись dns: или отпечаток openpgp4fpr:.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="en, de">
+            <span class="help">Коды языков через запятую.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (по одному в строке)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">Адрес, по которому будет отдаваться этот файл. Рекомендуется, особенно для подписанных файлов.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Страница с благодарностями исследователям, которые сообщили о проблемах.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Страница с вашими вакансиями в области безопасности.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">Ваш security.txt</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Копировать</button>
+          <button class="btn" id="stx-dl" type="button">Скачать security.txt</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Замечания к файлу"></ul>
+        <h3 class="util-h">Куда его положить</h3>
+        <p class="help">Сохраните файл как <code>security.txt</code> и отдавайте его по адресу <code>https://ваш-домен/.well-known/security.txt</code> по HTTPS как обычный текст (<code>text/plain; charset=utf-8</code>). Сделайте то же на каждом домене, который нужно охватить. Чтобы подписать файл, выполните <code>gpg --clearsign security.txt</code> и опубликуйте результат.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">Проверить security.txt</h2>
+    <div class="field">
+      <label for="stx-in">Вставьте текст security.txt</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Адрес, с которого он отдаётся (необязательно)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Домен или полный адрес. Нужен, чтобы проверить соответствие Canonical. Ничего не загружается.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Загрузить пример</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Очистить</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Результаты проверки"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>Для чего нужен security.txt</h2>
+<p>Когда исследователь, клиент или CERT находит уязвимость в вашем программном обеспечении, первая проблема — кому о ней сообщить. security.txt — это небольшой текстовый файл по фиксированному адресу <code>/.well-known/security.txt</code>, который отвечает на этот вопрос: в нём указаны контакт, срок действия и, при желании, ссылка на вашу политику раскрытия уязвимостей и открытый ключ. Формат описан в RFC 9116, и многие сканеры, платформы bug bounty и национальные CERT ищут этот файл в первую очередь.</p>
+<p>Для поставщика программного обеспечения в ЕС он также помогает выполнять обязанности по Регламенту ЕС о киберустойчивости (Cyber Resilience Act, CRA): приложение I предполагает, что у посторонних есть опубликованный способ сообщить об уязвимостях, а у вас есть процесс их обработки. Регламент не называет этот формат, но обычно контакт публикуют именно так. Остальную настройку, включая 24-часовой отсчёт, описывает <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">руководство по отчётности для небольших поставщиков</a>.</p>
+<h2>Поля файла</h2>
+<p>Contact и Expires обязательны. Contact может повторяться и должен быть URI: <code>mailto:</code>, <code>tel:</code> или <code>https:</code>. Expires указывается один раз как дата и время вида <code>2027-12-31T23:59:59Z</code>, и RFC 9116 просит ставить срок меньше чем через год. Encryption, Acknowledgments, Policy, Hiring и Canonical — необязательные ссылки, и каждый веб-адрес должен быть https. Preferred-Languages указывается один раз и перечисляет коды языков. Поля, которых нет в RFC, читатели игнорируют, поэтому проверка помечает их предупреждениями: чаще всего это опечатки.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Используйте почтовый ящик, который читают несколько человек, а не адрес одного сотрудника, и проверьте его, написав туда письмо.</li>
+  <li>Составьте <a href="/tools/vulnerability-disclosure-policy-generator/">политику раскрытия уязвимостей</a> и укажите её в поле Policy.</li>
+  <li>Узнайте свои сроки до того, как придёт сообщение: <a href="/tools/cra-incident-clock/">24-часовые часы CRA для инцидентов</a> превращают момент, когда вы узнали о проблеме, в конкретные даты и время.</li>
+</ul>

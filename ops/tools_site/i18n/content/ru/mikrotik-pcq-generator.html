@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Генератор PCQ для MikroTik: скорость на клиента | Tanod Tools",
+  "description": "Создайте типы очередей PCQ для RouterOS и simple queue или queue tree с метками mangle, чтобы каждый клиент получал свою честную долю канала. В браузере.",
+  "h1": "Генератор PCQ для MikroTik",
+  "lede": "Поделите канал между всеми клиентами одной очередью Per Connection Queue: задайте скорость на клиента и общую скорость, а в ответ получите типы очередей и simple queue или queue tree.",
+  "blurb": "Типы очередей PCQ с simple queue или queue tree.",
+  "keywords": "генератор pcq mikrotik микротик pcq настройка per connection queue routeros pcq-rate pcq-classifier dst-address src-address queue tree mangle packet mark равная скорость на пользователя ограничение скорости wisp",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт синтаксис RouterOS v7 (подходит и для v6) для IPv4. Метод queue tree помечает соединения, которые клиенты локальной сети открывают в сторону WAN; остальной трафик идёт без ограничений. Параметры pcq-limit и pcq-total-limit остаются по умолчанию. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен компанией.",
+  "howto_title": "Как настроить PCQ на MikroTik",
+  "howto": [
+    "Выберите метод: одна simple queue на подсеть локальной сети (проще всего) или queue tree с метками mangle (больше возможностей).",
+    "Укажите скорость на клиента (или 0, чтобы делить общую скорость поровну), а также общую скорость отдачи и загрузки чуть ниже реальной скорости канала.",
+    "Скопируйте скрипт или скачайте файл .rsc и убедитесь, что FastTrack отключён для ограничиваемого трафика."
+  ],
+  "faq": [
+    ["Что делает PCQ?", "Тип очереди PCQ раскладывает пакеты по подочередям с помощью классификатора, как правило адреса клиента, и обслуживает подочереди по кругу. Если задан pcq-rate, скорость каждой подочереди ограничена этим значением; при pcq-rate 0 лимит родительской очереди делится поровну между клиентами, активными в данный момент. Так одна очередь даёт честную долю сотням клиентов, хотя иначе понадобились бы сотни simple queue."],
+    ["Почему загрузка классифицируется по dst-address, а отдача по src-address?", "Пакеты загрузки идут к клиенту, поэтому адрес клиента в них является адресом назначения; пакеты отдачи идут от клиента, и он в них источник. Если поменять их местами, все клиенты попадут в одну подочередь по адресам удалённых серверов."],
+    ["Почему в queue tree используются parent=global и цепочка forward?", "Пакеты отдачи нужно классифицировать до того, как source NAT заменит адрес клиента адресом WAN, а глобальная очередь отрабатывает до source NAT. Маркировка в цепочке forward видит пакеты загрузки уже после того, как destination NAT вернул адрес клиента. Если маркировать на интерфейсе WAN, вся отдача окажется в одной подочереди."],
+    ["Для чего нужна маска адреса?", "При /32 каждый адрес образует отдельную подочередь. WISP, который выдаёт каждому абоненту небольшую подсеть, например /29, может задать маску 29, и тогда вся подсеть будет делить одну подочередь и одну скорость."],
+    ["PCQ ничего не меняет. Что проверить?", "Сначала FastTrack: пакеты с FastTrack обходят mangle и все очереди. Затем общие значения: если max-limit выше, чем реально даёт линия, очередь никогда не заполняется, и очередь формирует оборудование провайдера, а не ваш маршрутизатор."],
+    ["Отправляется ли моя конфигурация куда-либо?", "Нет. Всё создаётся в вашем браузере."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pcq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Метод</legend>
+      <div class="seg" role="radiogroup" aria-label="Метод">
+        <label><input type="radio" name="pcq-method" value="simple" checked>Simple queue</label>
+        <label><input type="radio" name="pcq-method" value="tree">Queue tree + mangle</label>
+      </div>
+      <div class="field" id="pcq-simple-f">
+        <label for="pcq-target">Подсети локальной сети (target)</label>
+        <input type="text" id="pcq-target" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="pcq-tree-f" hidden>
+        <div class="field"><label for="pcq-lan">Список интерфейсов LAN</label><input type="text" id="pcq-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-wan">Список интерфейсов WAN</label><input type="text" id="pcq-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Скорости</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-down-rate">Загрузка на клиента (pcq-rate)</label><input type="text" id="pcq-down-rate" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-rate">Отдача на клиента (pcq-rate)</label><input type="text" id="pcq-up-rate" class="mono" value="2M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-down-max">Общая загрузка</label><input type="text" id="pcq-down-max" class="mono" value="95M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-max">Общая отдача</label><input type="text" id="pcq-up-max" class="mono" value="45M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <span class="help">Значение 0 или пустое поле для клиента означает равную долю от общей скорости.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Параметры</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-mask">Маска адреса (одна подочередь на)</label><input type="text" id="pcq-mask" class="mono" value="32" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="pcq-name">Префикс имени</label><input type="text" id="pcq-name" class="mono" value="pcq" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pcq-out" class="label">Скрипт RouterOS</label>
+    <textarea id="pcq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pcq-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="pcq-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pcq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Per Connection Queue на практике</h2>
+<p>PCQ — это тип очереди: он задаётся в разделе <code>/queue type</code> с <code>kind=pcq</code>, а затем его используют simple queue или queue tree. Параметр <code>pcq-classifier</code> определяет, что считать одним потоком: <code>dst-address</code> для загрузки, чтобы загрузка каждого клиента была отдельным потоком, и <code>src-address</code> для отдачи. RouterOS создаёт подпотоки на лету и удаляет их, когда они затихают, так что при появлении и уходе клиентов ничего поддерживать не нужно.</p>
+<p>Результат определяют две настройки. <code>pcq-rate</code> ограничивает каждый поток; если оставить 0, потоки просто делят поровну то, что позволяет <code>max-limit</code> очереди. Значение max-limit очереди с PCQ должно быть немного ниже реальной пропускной способности канала: PCQ может честно делить полосу только тогда, когда пакеты ждут в очереди на маршрутизаторе, а не в модеме выше по цепочке.</p>
+<h3>Simple queue или queue tree?</h3>
+<p>Метод simple queue не требует маркировки: одна очередь с подсетью локальной сети в качестве target и <code>queue=upload-type/download-type</code>. Метод queue tree использует mangle, чтобы пометить соединения из LAN в WAN, и две очереди с <code>parent=global</code>; он не ограничивает трафик между локальными сетями и служит отправной точкой для классов приоритета. В любом случае настройки burst для каждого клиента относятся к simple queue; сравните их с помощью инструментов <a href="/tools/mikrotik-simple-queue-generator/">Генератор Simple Queue для MikroTik</a> и <a href="/tools/mikrotik-burst-calculator/">Калькулятор Burst для MikroTik</a>.</p>

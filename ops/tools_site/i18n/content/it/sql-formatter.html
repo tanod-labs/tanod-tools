@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Formatta SQL online: formatter e beautifier | Tanod Tools",
+  "description": "Formatta e abbellisci SQL per PostgreSQL, MySQL, SQL Server, Oracle, SQLite, BigQuery e altri. Scegli maiuscole e rientro. Funziona nel browser, gratis.",
+  "h1": "Formatta SQL",
+  "lede": "Incolla una query, scegli il tuo database e riottienila indentata con una clausola per riga.",
+  "blurb": "Formatta SQL per 20 dialetti.",
+  "keywords": "formatta sql formattare query sql sql beautifier abbellire sql indentare sql pretty print query postgres postgresql mysql mariadb sqlite tsql sql server oracle plsql bigquery snowflake parole chiave maiuscole sql formatter",
+  "limits": "Input fino a circa 10 MB. Cambia solo l'impaginazione: non esegue il tuo SQL, non lo verifica rispetto a uno schema e non lo ottimizza.",
+  "howto_title": "Come formattare una query SQL",
+  "howto": [
+    "Incolla la query nella casella, oppure premi <strong>Inserisci un esempio</strong> per vedere come funziona.",
+    "Scegli il tuo database in <strong>Dialetto</strong>, poi imposta le maiuscole delle parole chiave e la dimensione del rientro.",
+    "La query formattata compare sotto mentre scrivi. Copiala, oppure scaricala come file <code>.sql</code>."
+  ],
+  "faq": [
+    [
+      "Il mio SQL viene caricato?",
+      "No. Il codice di formattazione è uno script servito da questo sito e caricato la prima volta che incolli una query; la query resta nel tuo browser e non viene inviata a nessun server."
+    ],
+    [
+      "Perché il dialetto è importante?",
+      "I database aggiungono una propria sintassi. PostgreSQL ha i cast <code>::</code> e i parametri <code>$1</code>, SQL Server ha nomi <code>[tra parentesi quadre]</code> e <code>TOP</code>, MySQL e MariaDB racchiudono i nomi tra apici inversi, e BigQuery ha forme proprie per array e struct. Scegliere quello giusto permette all'analizzatore di accettare la tua query. SQL standard è la scelta sicura quando non sei certo, ma è più rigido con le estensioni dei singoli produttori."
+    ],
+    [
+      "Perché vedo un errore per una query che nel mio database funziona?",
+      "Il formattatore legge l'intera istruzione e non si limita a re-indentare le righe, quindi una parentesi o un apice non chiusi lo bloccano, così come la sintassi di un altro dialetto. Il messaggio indica la riga e la colonna in cui si è fermato, e la soluzione più comune è scegliere il dialetto corrispondente."
+    ],
+    [
+      "La formattazione cambia ciò che fa la query?",
+      "Solo gli spazi e, se lo scegli, le maiuscole delle parole chiave. Letterali stringa, nomi tra virgolette e numeri mantengono il loro testo, quindi <code>'select'</code> tra apici resta minuscolo anche se scegli MAIUSCOLO."
+    ],
+    [
+      "Posso formattare più istruzioni insieme?",
+      "Sì. Le istruzioni separate da punto e virgola vengono formattate una per una, con una riga vuota tra l'una e l'altra."
+    ],
+    [
+      "Quali maiuscole devo usare per le parole chiave?",
+      "Vanno bene entrambe; è una scelta di stile e i database la ignorano. Le parole chiave maiuscole sono la convenzione più vecchia e fanno risaltare le clausole nel testo semplice. Il minuscolo è comune nei codici che usano già un linter o un output ORM in quello stile. Mantieni come scritto lascia invariate le tue maiuscole."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">SQL</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Inserisci un esempio</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Cancella</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="select id, name from users where active = 1 order by name"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <label for="o-dialect">Dialetto</label>
+    <select id="o-dialect"><option value="sql">SQL standard</option><option value="postgresql">PostgreSQL</option><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option><option value="sqlite">SQLite</option><option value="transactsql">SQL Server (T-SQL)</option><option value="plsql">Oracle (PL/SQL)</option><option value="bigquery">BigQuery</option><option value="snowflake">Snowflake</option><option value="redshift">Amazon Redshift</option><option value="spark">Spark SQL</option><option value="hive">Hive</option><option value="db2">IBM Db2</option><option value="db2i">IBM Db2 for i</option><option value="trino">Trino e Presto</option><option value="duckdb">DuckDB</option><option value="clickhouse">ClickHouse</option><option value="tidb">TiDB</option><option value="singlestoredb">SingleStore</option><option value="n1ql">Couchbase N1QL</option></select>
+  </div>
+  <div class="field">
+    <label for="o-case">Maiuscole delle parole chiave</label>
+    <select id="o-case"><option value="upper" selected>MAIUSCOLO</option><option value="lower">minuscolo</option><option value="preserve">Mantieni come scritto</option></select>
+  </div>
+  <div class="field">
+    <span class="label" id="o-ind-l">Rientro</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spazi</label>
+      <label><input type="radio" name="indent" value="4">4 spazi</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Variazione</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Risultato</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copia</button>
+    <button class="btn" id="f-dl" type="button">Scarica .sql</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Rendere leggibile l'SQL</h2>
+<p>Un database legge una query allo stesso modo che stia su una riga o su quaranta, ed è per questo che le query incollate da log, ORM e strumenti di monitoraggio arrivano così spesso come un'unica stringa continua. La formattazione mette ogni clausola principale (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>GROUP BY</code>, <code>ORDER BY</code>) su una riga propria e indenta sotto di essa colonne, condizioni e sottoquery, così vedi la struttura della query a colpo d'occhio e noti una condizione di join mancante.</p>
+<p>L'impaginazione segue il dialetto che scegli, perché parole e simboli cambiano da un database all'altro. Un cast PostgreSQL come <code>price::numeric</code>, un parametro numerato come <code>$1</code>, un nome MySQL tra apici inversi, una clausola Oracle <code>CONNECT BY</code> e un <code>TOP 10</code> di SQL Server sono validi in un dialetto e un errore di sintassi in un altro. I segnaposto dei parametri associati (<code>?</code>, <code>$1</code>, <code>:name</code>, <code>@name</code>) vengono riconosciuti e lasciati intatti.</p>
+<p>Le maiuscole delle parole chiave non hanno effetto su come viene eseguita una query, quindi sono puro stile della casa. Un formattatore che conosce la grammatica può cambiarle senza rischi, perché sa quali parole sono parole chiave e quali sono nomi di colonna o testo tra virgolette.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Stai confrontando una query prima e dopo una modifica? Formattale entrambe con le stesse impostazioni e confrontale in <a href="/tools/text-diff/">Confronta due testi</a>.</li>
+  <li>La query restituisce colonne JSON? Incolla un valore in <a href="/tools/json-formatter/">Formatta e valida JSON</a> per leggerlo.</li>
+  <li>Devi rinominare una tabella in uno script lungo? <a href="/tools/find-and-replace/">Trova e sostituisci</a> lo fa prima di formattare.</li>
+</ul>

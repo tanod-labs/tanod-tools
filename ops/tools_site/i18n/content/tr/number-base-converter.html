@@ -1,0 +1,91 @@
+<!--meta
+{
+  "title": "Sayı tabanı dönüştürücü: ikilik, onluk, hex | Tanod Tools",
+  "description": "Tam sayıları ikilik, sekizlik, onluk, onaltılık ve 2-36 arası her tabana, istediğiniz büyüklükte çevirin; 8, 16, 32 ve 64 bit için ikiye tümleyeni görün.",
+  "h1": "Sayı tabanı dönüştürücü",
+  "lede": "Bir tam sayıyı ikilik, sekizlik, onluk, onaltılık ve 36'ya kadar herhangi bir taban arasında çevirin ve ikiye tümleyen bit desenlerini görün.",
+  "blurb": "İkilik, sekizlik, onluk, hex ve taban 2'den 36'ya.",
+  "keywords": "ikilikten onluğa onluktan ikiliğe hex onluğa onluktan hex'e sekizlik taban dönüştürme taban 36 ikiye tümleyen işaretli işaretsiz bit binary to decimal decimal to binary hex to decimal radix two's complement",
+  "limits": "4.096 basamağa kadar tam sayılar, pozitif veya negatif. Kesirler çevrilmez.",
+  "howto_title": "Sayı tabanları arasında nasıl dönüştürülür",
+  "howto": [
+    "Sayınızın yazıldığı tabanı seçin ya da Başka'yı seçip 2 ile 36 arasında bir taban girin.",
+    "Sayıyı yazın. Eksi işareti kullanılabilir, uyan bir <code>0x</code>, <code>0b</code> veya <code>0o</code> öneki kabul edilir; boşluklar ve alt çizgiler yok sayılır.",
+    "Aşağıda her tabandaki karşılığını okuyun, ihtiyacınız olanı kopyalayın ve sabit genişlikli tam sayılar için ikiye tümleyen tablosuna bakın."
+  ],
+  "faq": [
+    [
+      "Ne kadar büyük bir sayıyı çevirebilir?",
+      "Girdi tabanında 4.096 basamağa kadar. Çevirme, kesin tam sayı aritmetiği (BigInt) kullanır; bu yüzden 2⁶⁴ + 1 = 18446744073709551617 gibi çok büyük değerler, yaklaşık 9 katrilyonun üzerinde kayan noktaya geçen hesap makinelerinin aksine yuvarlanmadan çevrilir."
+    ],
+    [
+      "0,1 gibi kesirleri çevirebilir mi?",
+      "Hayır. Yalnızca tam sayılar çevrilir ve ondalık nokta sessizce atılmak yerine hata olarak bildirilir. Birçok kesrin başka bir tabanda tam karşılığı yoktur: onluk tabandaki 0,1 ikilik tabanda tekrar eden bir desendir; çoğu programlama dilinde 0,1 + 0,2'nin tam olarak 0,3 etmemesinin nedeni budur."
+    ],
+    [
+      "İkiye tümleyen neyi gösterir?",
+      "Bilgisayarların işaretli tam sayıları sabit sayıda bitte nasıl sakladığını gösterir. Negatif bir −n sayısı, 2'nin bit sayısı kadar kuvvetinden n çıkarılarak saklanır; yani 8 bitte −1, 11111111'dir (FF). Tablo 8, 16, 32 ve 64 bit için bit desenini ve bu desenin işaretli ve işaretsiz tam sayı olarak okunduğunda ne anlama geldiğini gösterir. Sayı bir genişliğe sığmıyorsa satır, değeri sarmak yerine bunu belirtir."
+    ],
+    [
+      "Taban 10'un üzerinde hangi rakamlar kullanılır?",
+      "Çoğu programlama dilinde olduğu gibi harfler: A 10'dur, B 11'dir ve 35 için Z'ye kadar böyle sürer; en yüksek taban 36'nın nedeni budur. Girdi büyük veya küçük harfle kabul edilir; çıktıyı büyük harf seçeneği belirler."
+    ],
+    [
+      "Bir rakam neden geçersiz olarak bildiriliyor?",
+      "Her taban yalnızca kendi değerinin altındaki rakamlara izin verir: ikilik 0 ve 1'e, sekizlik 0'dan 7'ye, hex 0'dan 9'a ve A'dan F'ye. Hata iletisi karakteri ve konumunu belirtir; böylece bir yazım hatasını bulabilir ya da sayının gerçekte yazıldığı tabana geçebilirsiniz."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Sayının tabanı</label>
+      <select id="nb-from">
+        <option value="10" selected>Onluk (taban 10)</option>
+        <option value="2">İkilik (taban 2)</option>
+        <option value="8">Sekizlik (taban 8)</option>
+        <option value="16">Onaltılık (taban 16)</option>
+        <option value="other">Başka taban…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Taban (2 ile 36 arası)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Sayı</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Basamakları grupla</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Büyük harfler</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">İkiye tümleyen</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bit</th><th scope="col">Bit deseni (hex, ikilik)</th><th scope="col">Okunuşu</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Sayı tabanları nasıl çalışır</h2>
+<p>Taban (radix), bir sayı sisteminin kaç farklı rakam kullandığını gösterir. Onluk tabanda her basamak sağındakinin on katı değerindedir; ikilik tabanda iki katı değerindedir, yani 1101, 8 + 4 + 0 + 1 = 13 demektir. Onaltılık taban on altı rakam kullanır: 0'dan 9'a, ardından A'dan F'ye. Her hex rakamı tam olarak dört ikilik rakamı temsil eder; programcıların bayt yazmak için onu kompakt bir yol olarak kullanmasının nedeni budur: 255, FF ya da 11111111'dir.</p>
+<p>Sekizlik taban ikilik rakamları üçerli gruplar ve Unix dosya izinlerinde hâlâ görünür (755, rwxr-xr-x demektir). Taban 36 tüm rakamları ve harfleri kullanır; kısa kimliklerde ve URL kısaltıcılarda karşınıza çıkar.</p>
+<p>Bilgisayarlar işaretli tam sayıları, en üst bitin negatif ağırlık taşıdığı ikiye tümleyen ile sabit sayıda bitte saklar. Aynı bitler bu yüzden iki farklı sayı anlamına gelebilir: 11001000, işaretsiz okunduğunda 200, işaretli okunduğunda −56'dır. Sonuçların altındaki tablo, yaygın tam sayı boyutları için her iki okunuşu da gösterir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Metni bir sayıya değil ikilik baytlara mı çeviriyorsunuz? <a href="/tools/text-to-binary/">Metni ikili koda çevir</a> aracını kullanın.</li>
+  <li><code>#1636A3</code> gibi renk kodları üç hex bayttır: bunları <a href="/tools/color-converter/">Renk dönüştürücü ve kontrast denetleyici</a> ile okuyun.</li>
+  <li>Unix zaman damgaları düz onluk saniyelerdir; birini <a href="/tools/unix-timestamp-converter/">Unix zaman damgası çevirici</a> ile çevirin.</li>
+</ul>

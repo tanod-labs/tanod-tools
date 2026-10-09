@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Visualizzatore XRechnung: apri XML XRechnung online | Tanod Tools",
+  "description": "Apri una XRechnung (XML UBL o CII) e leggila come una normale fattura. Stampa, salva in PDF o esporta in JSON. Gratis, nessun caricamento.",
+  "h1": "Visualizzatore XRechnung",
+  "lede": "Apri un file XML XRechnung e leggilo come una normale fattura: cedente, cessionario, righe, IVA e dati di pagamento. Il file viene letto in questa scheda e non viene mai caricato.",
+  "blurb": "Leggi un file XML XRechnung come una normale fattura, stampalo o esporta il JSON.",
+  "keywords": "visualizzatore xrechnung xrechnung viewer leggere xrechnung aprire xrechnung xml visualizzare xrechnung fattura elettronica tedesca xrechnung ubl xrechnung cii leitweg-id xrechnung in pdf xrechnung anzeigen",
+  "limits": "Un file alla volta, fino a 25 MB; vengono mostrate le prime 5.000 righe di fattura. Legge XRechnung 3.x come UBL 2.1 Invoice o CreditNote e come UN/CEFACT CII. È un visualizzatore, non un validatore: non controlla il file rispetto alle regole di XRechnung o della norma EN 16931 e non invia né riceve nulla.",
+  "howto_title": "Come aprire una XRechnung",
+  "howto": [
+    "Scegli dal computer il file XML XRechnung, oppure trascinalo sulla pagina. Va bene anche un PDF ZUGFeRD o un file .p7m firmato.",
+    "Leggi la fattura che compare: parti, date, righe, riepilogo IVA e dati di pagamento. Nulla lascia il tuo dispositivo.",
+    "Premi <strong>Stampa o salva come PDF</strong> per una copia su carta o in PDF, <strong>Scarica JSON</strong> per i dati, oppure <strong>Mostra XML originale</strong> per vedere il file sorgente."
+  ],
+  "faq": [
+    [
+      "La mia fattura viene caricata?",
+      "No. Il file viene letto nel tuo browser con il suo parser XML integrato e mostrato in questa pagina. Nessun server lo riceve e, chiudendo la scheda, tutto viene cancellato. Puoi verificarlo negli strumenti per sviluppatori del browser: la scheda Rete resta vuota mentre apri un file."
+    ],
+    [
+      "Quali file XRechnung apre?",
+      "XRechnung 3.x in entrambe le sintassi: UBL 2.1 (Invoice e CreditNote) e UN/CEFACT CII. Anche i vecchi file XRechnung 2.x hanno la stessa struttura e di norma si aprono. La pagina mostra ciò che c'è nel file e non lo controlla rispetto alle regole di XRechnung."
+    ],
+    [
+      "È un validatore?",
+      "No, è un visualizzatore. Per sapere se una XRechnung è valida serve un validatore, come quello del KoSIT. Questa pagina mostra anche file che un validatore rifiuterebbe e non invia alcuna fattura a una piattaforma o alla rete Peppol."
+    ],
+    [
+      "Perché rifiuta alcuni file XML?",
+      "Un file che contiene una dichiarazione DOCTYPE o ENTITY viene rifiutato prima di essere letto, perché queste dichiarazioni possono servire a leggere file locali o a esaurire la memoria. Le vere XRechnung non le contengono mai. Vengono rifiutati anche i file oltre 25 MB, e sono mostrate solo le prime 5.000 righe di fattura."
+    ],
+    [
+      "Che fine fanno i documenti allegati?",
+      "Una XRechnung può contenere documenti incorporati, come un foglio ore o una copia in PDF. Sono elencati con un pulsante Scarica e non vengono mai aperti né mostrati nella pagina. Il nome del file viene ripulito e il download usa un tipo di file generico: apri gli allegati solo se ti fidi del mittente."
+    ],
+    [
+      "Come ottengo un PDF della fattura?",
+      "Premi <strong>Stampa o salva come PDF</strong> e nella finestra di stampa del browser scegli Salva come PDF al posto della stampante. Viene stampata solo la fattura, non il resto della pagina."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Rilascia qui una fattura elettronica</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Scegli un file</span></label>
+  <p class="drop__hint">XML, un PDF con una fattura all'interno (ZUGFeRD, Factur-X) o un file .p7m firmato. Oppure trascinalo in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Stampa o salva come PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Scarica JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Scarica XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostra XML originale</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML originale" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Qui è mostrato solo l'inizio di un file lungo. Scarica l'XML per ottenerlo per intero.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Perché una XRechnung è difficile da leggere</h2>
+<p>Una XRechnung è una fattura scritta per i computer. Il file è un XML: centinaia di valori con tag dai nomi come <code>cbc:PayableAmount</code> e nessuna impaginazione. Dal 1° gennaio 2025 ogni impresa in Germania deve essere in grado di ricevere fatture elettroniche strutturate, quindi molte persone ricevono questi file per email o tramite un portale senza riuscire a leggerli. Questa pagina riporta l'XML alla fattura che ti aspetti: chi vende, chi compra, che cosa è stato consegnato, quanta IVA e come pagare.</p>
+<p>XRechnung è il profilo tedesco della norma europea EN 16931. Esiste in due sintassi XML, UBL 2.1 e UN/CEFACT Cross Industry Invoice (CII). Qui si leggono entrambe e danno la stessa fattura. Vengono mostrati anche il riferimento dell'acquirente nell'intestazione (per gli enti pubblici il Leitweg-ID) e gli indirizzi elettronici di venditore e acquirente.</p>
+<h2>Che cosa viene mostrato e che cosa no</h2>
+<p>Vedi le parti con partita IVA e indirizzi, le date e i riferimenti, ogni riga con quantità, unità di misura, prezzo e IVA, sconti e addebiti, il riepilogo IVA, i totali, i dati di pagamento con IBAN e BIC, le note e l'elenco dei documenti allegati. Il visualizzatore non controlla la fattura rispetto alle regole XRechnung, alle liste di codici o ai calcoli (per questo serve un validatore), e non la invia da nessuna parte né la recupera da una piattaforma.</p>
+<p>Il download JSON contiene gli stessi dati in forma strutturata, con i nomi dei termini commerciali della norma EN 16931: numero fattura, date, valuta, parti, righe, riepilogo IVA, totali e pagamento. Gli importi sono stringhe con gli stessi decimali della fattura, quindi nulla viene arrotondato.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Una fattura arrivata come PDF con un XML all'interno (ZUGFeRD o Factur-X) si apre nel <a href="/tools/zugferd-factur-x-viewer/">Visualizzatore ZUGFeRD / Factur-X</a>; la apre anche questa pagina.</li>
+  <li>Le fatture dalla rete Peppol sono di solito in UBL: le apre il <a href="/tools/peppol-ubl-invoice-viewer/">Visualizzatore fatture Peppol / UBL</a>.</li>
+  <li>Per conservare una fattura come PDF, premi Stampa o salva come PDF e scegli Salva come PDF.</li>
+</ul>

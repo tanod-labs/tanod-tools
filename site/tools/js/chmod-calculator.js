@@ -1,5 +1,5 @@
-import { $, $$, copyText, tx, EN, listText } from "./core.js?v=5";
-import { parseOctal, parseSymbolic, toOctal, toSymbolic, chmodCommands, ModeError } from "./dev3core.js?v=5";
+import { $, $$, copyText, tx, EN, listText } from "./core.js?v=11";
+import { parseOctal, parseSymbolic, toOctal, toSymbolic, chmodCommands, ModeError } from "./dev3core.js?v=11";
 
 const octalIn = $("#m-octal"), symIn = $("#m-sym"), fileIn = $("#m-file"), info = $("#m-info"), warn = $("#m-warn");
 const boxes = {};

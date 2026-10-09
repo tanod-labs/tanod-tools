@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Usuń zduplikowane wiersze i sortuj wiersze | Tanod Tools",
+  "description": "Usuń zduplikowane wiersze z listy i posortuj je od A do Z, od Z do A, naturalnie, według długości, odwrotnie lub losowo. Bezpłatnie, w przeglądarce, bez przesyłania.",
+  "h1": "Usuń zduplikowane wiersze",
+  "lede": "Wklej listę, usuń powtarzające się wiersze i posortuj to, co zostanie.",
+  "blurb": "Usuń zduplikowane wiersze i sortuj wiersze.",
+  "keywords": "usuń duplikaty, usuwanie powtórzeń z listy, unikalne wiersze, sortowanie wierszy, sortowanie alfabetyczne, sortowanie naturalne, mieszanie listy, puste wiersze, dedupe, unique lines, sort lines, shuffle",
+  "limits": "Tekst do około 5 MB. Wynik odświeża się podczas zmiany opcji.",
+  "howto_title": "Jak usunąć zduplikowane wiersze",
+  "howto": [
+    "Wklej listę w pole wejściowe, jedna pozycja w wierszu, albo otwórz plik .txt.",
+    "Wybierz, jak porównywać wiersze, którą kopię zachować i, jeśli chcesz, kolejność sortowania.",
+    "Skopiuj wynik lub pobierz go jako plik .txt."
+  ],
+  "faq": [
+    ["Co uznaje się za duplikat?", "Dwa wiersze są duplikatami, gdy są dokładnie takie same, znak po znaku. Włącz „Ignoruj wielkość liter”, aby traktować Apple i apple jako ten sam wiersz, oraz „Przytnij spacje przed porównaniem”, aby ignorować spacje i tabulatory na początku i na końcu każdego wiersza."],
+    ["Czy przycinanie zmienia wiersze w wyniku?", "Tak. Gdy przycinanie jest włączone, spacje na początku i na końcu każdego wiersza są usuwane zarówno z porównania, jak i z wierszy, które dostajesz z powrotem."],
+    ["Co dzieje się z pustymi wierszami?", "Przy włączonej opcji „Usuń puste wiersze” wiersze puste lub zawierające tylko spacje są odrzucane. Przy wyłączonej puste wiersze zostają dokładnie takie, jakie są, i nigdy nie są uznawane za duplikaty siebie nawzajem."],
+    ["Czym jest sortowanie naturalne?", "Sortowanie naturalne rozumie liczby w tekście, więc item2 jest przed item10. A do Z sortuje znak po znaku według reguł językowych przeglądarki, co stawia item10 przed item2. Sortowanie według długości stawia najkrótsze wiersze jako pierwsze i zachowuje pierwotną kolejność wierszy o tej samej długości."],
+    ["Czy mieszanie jest losowe?", "Używa bezpiecznego generatora liczb losowych przeglądarki z tasowaniem Fishera-Yatesa, więc każda kolejność jest równie prawdopodobna. Naciśnij Wymieszaj, aby uzyskać nową kolejność."],
+    ["Czy moja lista jest przesyłana?", "Nie. Wszystko dzieje się w przeglądarce i nic nie jest zapisywane."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Wiersze wejściowe</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Jedna pozycja w wierszu."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Wynik</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci">Ignoruj wielkość liter</label>
+    <label class="check"><input type="checkbox" id="trim">Przytnij spacje przed porównaniem</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Usuń puste wiersze</label>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="keep">Zachowaj</label>
+      <select id="keep"><option value="first">Pierwsze wystąpienie</option><option value="last">Ostatnie wystąpienie</option></select>
+    </div>
+    <div class="field">
+      <label for="sort">Sortuj wiersze</label>
+      <select id="sort">
+        <option value="none">Zachowaj pierwotną kolejność</option>
+        <option value="az">Od A do Z</option>
+        <option value="za">Od Z do A</option>
+        <option value="natural">Naturalnie (liczby po kolei)</option>
+        <option value="length">Według długości, od najkrótszych</option>
+        <option value="reverse">Odwrotna kolejność</option>
+        <option value="shuffle">Wymieszaj</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wklej wiersze, aby zacząć.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj wynik</button>
+    <button class="btn" id="dl" type="button" disabled>Pobierz .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Wymieszaj ponownie</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Użyj wyniku jako danych wejściowych</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Wyczyść</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Otwórz plik .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Usuwanie duplikatów i sortowanie wierszy</h2>
+<p>Listy zbierają powtórzenia: adresy e-mail wklejone z kilku źródeł, słowa kluczowe, wiersze logów, nazwy plików. To narzędzie czyta tekst wiersz po wierszu, zapamiętuje każdy widziany wiersz i odrzuca późniejsze kopie (albo wcześniejsze, jeśli wybierzesz zachowanie ostatniego wystąpienia). Wiersze, które przetrwają, zostają w pierwotnej kolejności, chyba że wybierzesz sortowanie.</p>
+<p>Raport nad przyciskami pokazuje, ile wierszy weszło, ile wyszło i ile usunięto jako duplikaty, abyś mógł porównać wynik z oczekiwaniami. Puste wiersze usunięte przez opcję są podawane osobno.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Aby najpierw wyczyścić wiersze, użyj narzędzia <a href="/tools/find-and-replace/">Znajdź i zamień</a>, a potem wróć tutaj.</li>
+  <li>Sprawdź, co zmieniło się między dwiema wersjami listy, w narzędziu <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+  <li>Potrzebujesz tylko listy w kolejności, z większym wyborem sortowania? Użyj narzędzia <a href="/tools/sort-lines-alphabetically/">Sortuj wiersze alfabetycznie</a>.</li>
+  <li>Policz to, co zostało, w narzędziu <a href="/tools/word-counter/">Licznik słów</a>.</li>
+</ul>

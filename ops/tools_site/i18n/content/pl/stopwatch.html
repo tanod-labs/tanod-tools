@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Stoper online z okrążeniami i eksportem CSV | Tanod Tools",
+  "description": "Bezpłatny stoper online z czasami okrążeń i międzyczasami, oznaczonym najszybszym i najwolniejszym okrążeniem, skrótami klawiszowymi oraz kopiowaniem i pobieraniem CSV.",
+  "h1": "Stoper",
+  "lede": "Uruchamiaj, zatrzymuj i zapisuj okrążenia, także z klawiatury. Czasy są pokazywane z dokładnością do setnych części sekundy.",
+  "blurb": "Stoper z okrążeniami, międzyczasami i eksportem CSV.",
+  "keywords": "stoper online okrążenia czas okrążenia międzyczas pomiar czasu bieg trening chronometr stopwatch lap timer split time race running training chronometer",
+  "limits": "Wyświetlacz pokazuje godziny, minuty, sekundy i setne części sekundy i działa do 99 godzin. Okrążenia są przechowywane tylko, gdy strona jest otwarta, więc pobierz je lub skopiuj przed zamknięciem karty.",
+  "howto_title": "Jak korzystać ze stopera",
+  "howto": [
+    "Kliknij <strong>Start</strong> albo naciśnij <kbd>Spację</kbd>. Naciśnij ją ponownie, aby zatrzymać; <strong>Wznów</strong> kontynuuje od miejsca, w którym przerwano.",
+    "Gdy stoper działa, kliknij <strong>Okrążenie</strong> lub naciśnij <kbd>L</kbd>, aby zapisać okrążenie. Każdy wiersz pokazuje czas okrążenia i bieżący międzyczas.",
+    "Skopiuj okrążenia albo pobierz je jako plik CSV do arkusza kalkulacyjnego. <strong>Resetuj</strong> lub <kbd>R</kbd> czyści wszystko."
+  ],
+  "faq": [
+    ["Czym różni się czas okrążenia od międzyczasu?", "Czas okrążenia to czas, jaki zajęło samo to okrążenie. Międzyczas to łączny czas na zegarze w chwili naciśnięcia Okrążenia. Okrążenie 3 z międzyczasem 3:10,00 oraz okrążenia 1:00, 1:05 i 1:05 to ta sama historia opowiedziana na dwa sposoby."],
+    ["Jak dokładny jest stoper?", "Odczytuje zegar przeglądarki o wysokiej rozdzielczości w chwili naciśnięcia przycisku i ponownie przy odświeżaniu, a różnicę pokazuje z dokładnością do setnych części sekundy. Większym błędem jest twój własny czas reakcji, wynoszący około jednej dziesiątej sekundy lub więcej. Do pomiarów sportowych na potrzeby rekordów trzeba używać prawdziwego sprzętu do pomiaru czasu."],
+    ["Czy stoper liczy dalej po przełączeniu karty lub zablokowaniu telefonu?", "Tak, bo opiera się na zegarze, a nie na liczeniu odświeżeń, więc właściwy czas pojawia się, gdy tylko wrócisz. Jeśli telefon całkowicie zawiesi przeglądarkę, zegar nadal idzie, ale w tym czasie nie możesz nacisnąć Okrążenia."],
+    ["Jakie są skróty klawiszowe?", "<kbd>Spacja</kbd> uruchamia i zatrzymuje, <kbd>L</kbd> zapisuje okrążenie, a <kbd>R</kbd> resetuje. Są ignorowane podczas pisania w polu lub gdy fokus ma przycisk, więc nigdy nie kolidują ze zwykłą obsługą klawiatury; kliknij puste miejsce na stronie, aby z nich korzystać."],
+    ["Jak wybierane jest najszybsze i najwolniejsze okrążenie?", "Gdy są co najmniej dwa okrążenia, najkrótszy czas okrążenia jest oznaczany jako Najszybsze, a najdłuższy jako Najwolniejsze, słowami, a nie tylko kolorem. Jeśli wszystkie okrążenia są równe, nic nie jest oznaczane. Okrążenie, które jeszcze trwa, nie jest liczone."],
+    ["Co zawiera plik CSV?", "Wiersz nagłówka, a potem po jednym wierszu na okrążenie z numerem okrążenia, czasem okrążenia i międzyczasem, w formacie gg:mm:ss.cc. Arkusze kalkulacyjne otwierają go bezpośrednio. Nic nie jest przesyłane: plik powstaje w przeglądarce."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack sw">
+  <div class="sw-display" id="sw-display" role="timer" aria-live="off" aria-label="Upłynęło" data-state="idle">00:00:00.00</div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="sw-start" type="button">Start</button>
+    <button class="btn btn--lg" id="sw-lap" type="button" aria-keyshortcuts="L" disabled>Okrążenie</button>
+    <button class="btn btn--lg" id="sw-reset" type="button" aria-keyshortcuts="R" disabled>Resetuj</button>
+  </div>
+  <p class="help sw-keys">Klawiatura: <kbd>Spacja</kbd> uruchamia lub zatrzymuje, <kbd>L</kbd> zapisuje okrążenie, <kbd>R</kbd> resetuje. Skróty działają, gdy fokus nie jest na żadnym polu ani przycisku.</p>
+  <div id="sw-lap-box" class="util-stack" hidden>
+    <div class="sw-head">
+      <h2 class="util-h">Okrążenia</h2>
+      <div class="actions">
+        <button class="btn btn--sm" id="sw-copy" type="button" disabled>Kopiuj okrążenia</button>
+        <button class="btn btn--sm" id="sw-csv" type="button" disabled>Pobierz CSV</button>
+      </div>
+    </div>
+    <div class="calc-table">
+      <table class="dens sw-table">
+        <thead><tr><th scope="col">Okrążenie</th><th scope="col">Czas okrążenia</th><th scope="col">Międzyczas</th><th scope="col">Uwaga</th></tr></thead>
+        <tbody id="sw-laps"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Czasy okrążeń, międzyczasy i sposób, w jaki mierzy je stoper w przeglądarce</h2>
+<p>Stoper zapisuje dwie liczby przy każdym naciśnięciu Okrążenia. <em>Międzyczas</em> to cały czas od startu. <em>Czas okrążenia</em> to międzyczas pomniejszony o poprzedni międzyczas. Biegacze i pływacy czytają czasy okrążeń, aby sprawdzić, czy opadają z sił; osoby mierzące proces, na przykład kroki przepisu lub rundy spotkania, zwykle potrzebują międzyczasów. Pokazanie obu pozwala sprawdzić jedno względem drugiego: czasy okrążeń sumują się do ostatniego międzyczasu.</p>
+<p>Strona zapisuje monotoniczny zegar przeglądarki po naciśnięciu Start i ponownie przy każdym odświeżeniu, a następnie pokazuje różnicę. Nigdy nie sumuje „tyknięć”, dlatego liczba pozostaje prawidłowa, gdy przeglądarka spowalnia kartę w tle, a wstrzymanie i wznowienie nie powodują utraty czasu: czas sprzed zatrzymania jest zapamiętany, a nowy odcinek się do niego dodaje. Zegar monotoniczny nie skacze, gdy komputer koryguje czas lub zmienia go na czas letni.</p>
+<p>Czasy okrążeń są przechowywane w setnych częściach sekundy jako liczby całkowite. Pozwala to uniknąć pułapki zaokrągleń, w której zaokrąglone okrążenia 1,234 i 2,345 sekundy dają inną sumę niż zaokrąglony wynik całkowity, więc to, co widzisz, zawsze się sumuje.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Do limitu czasu, który odlicza i dzwoni, użyj narzędzia <a href="/tools/countdown-timer/">Minutnik z odliczaniem</a>.</li>
+  <li>Zamień wyeksportowane czasy na zwykłe sekundy lub daty za pomocą narzędzia <a href="/tools/unix-timestamp-converter/">Konwerter znacznika czasu Unix</a>.</li>
+  <li>Potrzebujesz uczciwej kolejności gry przed startem zegara? Wylosuj ją w narzędziu <a href="/tools/random-name-picker/">Losowanie imion</a>.</li>
+</ul>

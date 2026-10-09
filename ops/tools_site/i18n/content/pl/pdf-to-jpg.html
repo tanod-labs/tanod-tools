@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "PDF na JPG online, bezpłatnie | Tanod Tools",
+  "description": "Zamień strony PDF na obrazy JPG lub PNG w przeglądarce. Wybierz rozdzielczość i strony. Bezpłatnie, bez rejestracji, pliki zostają na Twoim urządzeniu.",
+  "h1": "PDF na JPG",
+  "lede": "Zamień strony PDF na obrazy JPG albo PNG, jeśli potrzebujesz ostrych krawędzi lub kopii bez strat.",
+  "blurb": "Konwertuj strony PDF na obrazy JPG lub PNG.",
+  "keywords": "pdf na jpg, pdf na png, pdf na obraz, konwersja pdf do jpg, zapis strony pdf jako obraz, eksport stron pdf, pdf to jpg, pdf to image, convert pages, export picture",
+  "limits": "Jeden PDF naraz, do 200 MB i do 200 stron na jedno uruchomienie. Obraz każdej strony jest ograniczony do 10 000 pikseli na dłuższym boku i około 100 milionów pikseli łącznie; większe strony są renderowane w niższej rozdzielczości, o czym informuje wynik. Nie można otworzyć PDF-ów chronionych hasłem.",
+  "howto_title": "Jak przekonwertować PDF na JPG",
+  "howto": [
+    "Wybierz plik PDF lub przeciągnij go na stronę.",
+    "Wybierz JPG lub PNG, rozdzielczość (72, 150 lub 300 dpi) i strony, które chcesz przekonwertować.",
+    "Naciśnij <strong>Konwertuj</strong>. Jedna strona pobierze się jako pojedynczy obraz, kilka stron jako archiwum zip."
+  ],
+  "faq": [
+    ["Czy mój PDF jest przesyłany?", "Nie. Strony są rysowane w przeglądarce za pomocą biblioteki pdf.js o otwartym kodzie źródłowym i stamtąd zapisywane. Nic nie jest wysyłane na serwer."],
+    ["Czy może tworzyć PNG, a nie tylko JPG?", "Tak. Wybierz PNG, aby uzyskać obraz bez strat, który dobrze nadaje się do tekstu, grafiki liniowej i zrzutów ekranu. Pliki JPG są mniejsze i pasują do stron ze zdjęciami. Oba formaty używają białego tła, bo strona PDF nie ma przezroczystego papieru."],
+    ["Jaką rozdzielczość wybrać?", "72 dpi daje obrazy w rozmiarze ekranowym, 150 dpi to dobry rozmiar do czytania i udostępniania, a 300 dpi nadaje się do druku. Wyższa rozdzielczość oznacza większe obrazy i wolniejszą konwersję."],
+    ["Dlaczego moja strona została wyrenderowana w niższej rozdzielczości?", "Przeglądarki nie potrafią rysować dowolnie dużych obszarów canvas. Każdy obraz jest ograniczony do 10 000 pikseli na dłuższym boku i około 100 milionów pikseli łącznie, więc bardzo duża strona, na przykład plakat, jest zmniejszana, aby się zmieściła. Wynik informuje, kiedy tak się stało."],
+    ["Czy działa ze zeskanowanymi PDF-ami?", "Tak. Zeskanowana strona jest już obrazem; to narzędzie rysuje ją w wybranej rozdzielczości. Wybranie rozdzielczości wyższej niż skan nie doda szczegółów."],
+    ["Czy mogę przekonwertować tylko niektóre strony?", "Tak. Wybierz <em>Wybrane strony</em> i wpisz strony lub zakresy, takie jak 1-3, 5. Strony są numerowane od 1."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Upuść tutaj plik PDF</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="fmt-l">Format obrazu</span>
+      <div class="seg" role="radiogroup" aria-labelledby="fmt-l">
+        <label><input type="radio" name="fmt" value="jpg" checked>JPG</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="dpi-l">Rozdzielczość</span>
+      <div class="seg" role="radiogroup" aria-labelledby="dpi-l">
+        <label><input type="radio" name="dpi" value="72">72 dpi</label>
+        <label><input type="radio" name="dpi" value="150" checked>150 dpi</label>
+        <label><input type="radio" name="dpi" value="300">300 dpi</label>
+      </div>
+    </div>
+    <div class="field" id="q-field">
+      <label for="quality">Jakość JPG: <span class="num" id="quality-v">85</span></label>
+      <input id="quality" type="range" min="40" max="100" step="1" value="85">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Strony</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Wszystkie strony</label>
+        <label><input type="radio" name="scope" value="range">Wybrane strony</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Zakres stron</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Konwertuj</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<div id="previews" hidden></div>
+<!--explain-->
+<h2>Konwersja stron PDF na obrazy w przeglądarce</h2>
+<p>Strona PDF to lista instrukcji rysowania, a nie obraz. Aby uzyskać obraz, stronę trzeba narysować w wybranym rozmiarze. Przeglądarka robi to za pomocą pdf.js na elemencie canvas w wybranej rozdzielczości, po jednej stronie naraz, a następnie zapisuje canvas jako plik JPG lub PNG.</p>
+<p>Rozdzielczość mierzy się w punktach na cal (dpi). Strona PDF jest zdefiniowana w punktach, 72 na cal, więc 150 dpi rysuje każdą stronę nieco ponad dwa razy szerzej niż jej nominalny rozmiar. Wybierz JPG dla zdjęć i mniejszych plików albo PNG, gdy zależy Ci na wyraźnym tekście i krawędziach bez artefaktów kompresji.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Chcesz zrobić odwrotnie? <a href="/tools/jpg-to-pdf/">JPG na PDF</a> tworzy PDF z obrazów.</li>
+  <li>Potrzebujesz kilku stron jako PDF, a nie obrazów? Użyj narzędzia <a href="/tools/extract-pdf-pages/">Wyodrębnij strony z PDF</a>.</li>
+  <li>Zmień rozmiar lub skompresuj obrazy później w narzędziu <a href="/tools/compress-image/">Kompresuj obraz</a>.</li>
+</ul>

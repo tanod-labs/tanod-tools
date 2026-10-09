@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Obraz na Base64 i data URL: konwerter | Tanod Tools",
+  "description": "Zamień obraz PNG, JPG, WebP, GIF lub SVG na Base64: data URL, tło CSS, znacznik img HTML lub Markdown, gotowe do skopiowania. W przeglądarce, bez przesyłania.",
+  "h1": "Obraz na Base64",
+  "lede": "Zamień obraz na data URL w Base64, który wkleisz prosto do HTML, CSS, Markdown lub JSON.",
+  "blurb": "Obraz jako data URL dla HTML lub CSS.",
+  "keywords": "obraz na base64 data uri data url png na base64 jpg na base64 svg tło css osadzanie obrazu inline image to base64",
+  "limits": "Jeden obraz naraz, do 10 MB. PNG, JPEG, WebP, GIF, BMP, AVIF i SVG.",
+  "howto_title": "Jak zamienić obraz na Base64",
+  "howto": [
+    "Wybierz obraz albo przeciągnij go na stronę.",
+    "Wybierz potrzebną postać: data URL, czysty Base64, CSS, znacznik img HTML lub Markdown.",
+    "Kliknij <strong>Kopiuj</strong> albo pobierz tekst jako plik."
+  ],
+  "faq": [
+    ["Czym jest data URL?", "To sposób umieszczenia bajtów pliku wewnątrz linku. Zaczyna się od <code>data:</code>, typu pliku, na przykład <code>image/png</code>, i <code>;base64,</code>, a dalej następuje tekst Base64. Przeglądarki wyświetlają go dokładnie tak, jakby obraz został załadowany z osobnego pliku."],
+    ["Dlaczego Base64 jest większy niż obraz?", "Base64 zapisuje każde 3 bajty jako 4 znaki tekstu, więc tekst jest o około 33% większy od pliku. Serwery WWW kompresujące tekst odzyskują część tej różnicy, ale obraz osadzony w treści i tak jest większy niż ten sam obraz serwowany osobno."],
+    ["Kiedy osadzać obraz?", "W przypadku małych elementów: ikon, drobnych teł i obrazów zastępczych poniżej kilku kilobajtów albo gdy wymagany jest jeden samodzielny plik HTML lub e-mail. Duże obrazy lepiej trzymać jako osobne pliki, ponieważ data URL nie może być buforowany osobno i jest pobierany ponownie z każdą stroną lub arkuszem stylów, który go zawiera. Narzędzie ostrzega powyżej 100 KB."],
+    ["Jak określany jest typ pliku?", "Na podstawie bajtów w pliku, a nie jego nazwy, więc plik PNG zapisany z rozszerzeniem .jpg nadal dostaje <code>image/png</code>. Pliki SVG są rozpoznawane po tekście i oznaczane jako <code>image/svg+xml</code>."],
+    ["Czy mój obraz jest przesyłany?", "Nie. Obraz jest odczytywany i kodowany w Twojej przeglądarce, na Twoim urządzeniu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-base64 drop__mark}}
+  <p class="drop__title">Upuść obraz tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg">{{mark:i-plus}}<span data-pick-label>Wybierz obraz</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, AVIF lub SVG. Możesz też przeciągnąć obraz w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" class="b64i" hidden>
+  <div class="b64i__head">
+    <div class="preview b64i__preview"><canvas id="cv" role="img" aria-label="Podgląd obrazu"></canvas></div>
+    <dl class="stats b64i__stats">
+      <div><dt>Typ</dt><dd id="s-type">-</dd></div>
+      <div><dt>Piksele</dt><dd id="s-dims">-</dd></div>
+      <div><dt>Plik</dt><dd id="s-file">-</dd></div>
+      <div><dt>Base64</dt><dd id="s-b64">-</dd></div>
+    </dl>
+  </div>
+  <p class="note" id="big" hidden></p>
+  <fieldset class="field">
+    <legend>Wyjście</legend>
+    <div class="seg b64i__seg">
+      <label><input type="radio" name="fmt" value="data" checked>Data URL</label>
+      <label><input type="radio" name="fmt" value="raw">Base64</label>
+      <label><input type="radio" name="fmt" value="css">CSS</label>
+      <label><input type="radio" name="fmt" value="html">HTML</label>
+      <label><input type="radio" name="fmt" value="md">Markdown</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="out">Wynik</label>
+    <textarea id="out" class="mono b64i__out" rows="8" readonly spellcheck="false"></textarea>
+    <p class="help num" id="out-len"></p>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button">Kopiuj</button>
+    <button class="btn" id="dl" type="button">Pobierz .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Osadzanie obrazów jako tekstu</h2>
+<p>HTML, CSS, JSON, Markdown i treść e-maili to tekst, a obrazy są binarne. Base64 łączy te dwa światy, zapisując bajty obrazu za pomocą 64 bezpiecznych znaków, dzięki czemu cały obraz może znaleźć się w regule arkusza stylów, znaczniku <code>img</code> lub pliku konfiguracyjnym bez osobnego pobierania.</p>
+<p>To narzędzie odczytuje plik w Twojej przeglądarce, sprawdza jego prawdziwy typ po pierwszych bajtach i buduje wybrany fragment kodu wokół zakodowanego tekstu. Sam obraz nie jest zmieniany: zdekodowanie Base64 zwraca dokładnie oryginalny plik.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Najpierw zmniejsz obraz narzędziem <a href="/tools/compress-image/">Kompresuj obraz</a> lub <a href="/tools/resize-image/">Zmień rozmiar obrazu</a>; każdy zaoszczędzony bajt to o jedną trzecią więcej oszczędności w Base64.</li>
+  <li>W przypadku prostych ikon SVG jest często mniejszy niż jakikolwiek PNG, nawet w postaci Base64.</li>
+  <li>Aby zdekodować Base64 z powrotem do pliku albo zakodować dowolny inny plik, użyj narzędzia <a href="/tools/base64-encode-decode/">Koduj i dekoduj Base64</a>.</li>
+</ul>

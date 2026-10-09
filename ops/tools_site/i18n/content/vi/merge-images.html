@@ -1,0 +1,106 @@
+<!--meta
+{
+  "title": "Ghép ảnh cạnh nhau, xếp chồng hoặc dạng lưới | Tanod Tools",
+  "description": "Ghép 2 đến 20 ảnh thành một ảnh: cạnh nhau, xếp chồng hoặc dạng lưới, với khoảng cách, căn lề và màu nền. Không tải lên.",
+  "h1": "Ghép ảnh",
+  "lede": "Nối nhiều ảnh thành một: thành hàng, thành cột hoặc dạng lưới, với khoảng cách và màu nền do bạn chọn.",
+  "blurb": "Nối ảnh thành hàng, cột hoặc lưới.",
+  "keywords": "ghép ảnh nối ảnh gộp ảnh tạo collage ghép ảnh ngang ghép ảnh dọc lưới ảnh sprite sheet combine join stitch side by side stack vertical horizontal grid photo",
+  "limits": "2 đến 20 ảnh mỗi lần ghép, mỗi ảnh 50 MB. Ảnh sau khi ghép có thể lên đến 100 megapixel và 32.767 điểm ảnh mỗi cạnh. Đầu ra là PNG, JPEG hoặc WebP.",
+  "howto_title": "Cách ghép ảnh",
+  "howto": [
+    "Chọn hai ảnh trở lên, hoặc kéo thả vào trang. Dùng các nút lên và xuống trong danh sách để đặt thứ tự.",
+    "Chọn <strong>Cạnh nhau</strong>, <strong>Xếp chồng</strong> hoặc <strong>Lưới</strong>, rồi đặt khoảng cách, căn lề, màu nền và có co giãn các ảnh cho bằng nhau hay không.",
+    "Xem bản xem trước, chọn PNG, JPEG hoặc WebP, rồi nhấn <strong>Ghép ảnh</strong>."
+  ],
+  "faq": [
+    ["Ảnh của tôi có bị tải lên không?", "Không. Các ảnh được giải mã và vẽ lên một canvas trong trình duyệt của bạn. Không có gì được gửi đến máy chủ."],
+    ["Điều gì xảy ra khi các ảnh có kích thước khác nhau?", "Theo mặc định, mỗi ảnh giữ kích thước riêng và các ảnh nhỏ hơn được đặt ở đầu, giữa hoặc cuối hàng hay cột, tùy bạn chọn, với màu nền lấp đầy khoảng trống. Để chúng thẳng hàng, hãy đặt \"Cho bằng kích thước\" để co giãn theo ảnh nhỏ nhất hoặc lớn nhất trong bộ."],
+    ["Cho bằng kích thước hoạt động thế nào ở mỗi bố cục?", "Cạnh nhau làm mọi ảnh có cùng chiều cao, giữ nguyên tỷ lệ. Xếp chồng làm mọi ảnh có cùng chiều rộng. Ở dạng lưới, mọi ảnh được đặt vừa trong cùng một ô mà không bị cắt, nên hình dạng được giữ nguyên và phần dư lấy màu nền."],
+    ["Nền có thể trong suốt không?", "Có, với PNG và WebP. Các khoảng cách và mọi khoảng trống đều trong suốt. JPEG không thể lưu độ trong suốt, nên khi chọn JPEG, các vùng đó được lấp bằng màu nền."],
+    ["Vì sao việc ghép của tôi bị từ chối do quá lớn?", "Ghép là cộng kích thước các ảnh lại, và một hàng gồm vài ảnh lớn sẽ rất nhanh trở nên rất rộng. Kết quả bị giới hạn ở 100 megapixel và 32.767 điểm ảnh mỗi cạnh để trình duyệt của bạn có thể dựng được. Hãy co giãn theo ảnh nhỏ nhất, dùng dạng lưới, hoặc bỏ bớt ảnh."],
+    ["Thứ tự trong danh sách có quan trọng không?", "Có. Ảnh đầu tiên nằm ở góc trên bên trái trong mọi bố cục, và dạng lưới lấp đầy từng hàng trước khi sang hàng tiếp theo. Các nút lên và xuống đổi thứ tự và bản xem trước cập nhật ngay."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Thả hai ảnh trở lên vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP hoặc AVIF. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<ol class="files mrg-list" id="files" aria-label="Ảnh cần ghép, theo thứ tự" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts mrg-opts">
+    <fieldset class="field">
+      <legend>Bố cục</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="row" checked>Cạnh nhau</label>
+        <label><input type="radio" name="layout" value="column">Xếp chồng</label>
+        <label><input type="radio" name="layout" value="grid">Lưới</label>
+      </div>
+    </fieldset>
+    <div class="field" id="cols-field" hidden>
+      <label for="cols">Số cột</label>
+      <input type="number" id="cols" min="1" max="20" step="1" value="2" inputmode="numeric">
+    </div>
+    <fieldset class="field">
+      <legend>Căn lề</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="start">Đầu</label>
+        <label><input type="radio" name="align" value="center" checked>Giữa</label>
+        <label><input type="radio" name="align" value="end">Cuối</label>
+      </div>
+      <p class="help" id="align-help"></p>
+    </fieldset>
+    <div class="field">
+      <label for="scale">Cho bằng kích thước</label>
+      <select id="scale">
+        <option value="none" selected>Giữ kích thước gốc</option>
+        <option value="min">Co theo ảnh nhỏ nhất</option>
+        <option value="max">Co theo ảnh lớn nhất</option>
+      </select>
+      <p class="help" id="scale-help"></p>
+    </div>
+    <div class="field">
+      <label for="gap">Khoảng cách (px)</label>
+      <input type="number" id="gap" min="0" max="10000" step="1" value="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="bg">Màu nền</label>
+      <input type="color" id="bg" value="#ffffff">
+      <label class="check"><input type="checkbox" id="transparent">Trong suốt (PNG và WebP)</label>
+    </div>
+    <fieldset class="field">
+      <legend>Định dạng đầu ra</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="png" checked>PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help" id="fmt-help">PNG giữ mọi điểm ảnh và mọi độ trong suốt.</p>
+    </fieldset>
+  </div>
+  <p class="help">Bản xem trước, đã thu nhỏ cho vừa khung. Tệp được lưu sẽ được dựng ở kích thước đầy đủ.</p>
+  <div class="preview mrg-preview"><canvas id="preview" role="img" aria-label="Xem trước ảnh đã ghép"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Ghép ảnh</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Xóa tất cả</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cách nối các ảnh có kích thước khác nhau</h2>
+<p>Một hàng ảnh cao bằng ảnh cao nhất trong hàng, và một cột rộng bằng ảnh rộng nhất. Ảnh nhỏ hơn để lại khoảng trống, nên cài đặt căn lề quyết định ảnh nằm ở đâu trong đó: ở đầu, ở giữa hay ở cuối. Khoảng trống được lấp bằng màu nền của bạn, hoặc để trong suốt với PNG và WebP.</p>
+<p>Co giãn là cách khác để xử lý kích thước không đều. Co theo ảnh nhỏ nhất không bao giờ phóng to thứ gì, nên không có gì bị mờ, nhưng các ảnh lớn mất chi tiết. Co theo ảnh lớn nhất giữ các ảnh lớn sắc nét và kéo giãn các ảnh nhỏ. Ở dạng lưới cũng áp dụng ý tưởng đó cho một hình dạng ô duy nhất mà mọi ảnh được đặt vừa vào.</p>
+<p>Chiều rộng và chiều cao cộng lại rất nhanh. Năm ảnh rộng 4000 điểm ảnh xếp thành hàng tạo ra ảnh rộng 20.000 điểm ảnh, có thể vượt quá khả năng của trình duyệt, nên trang sẽ chặn bạn và cho biết kích thước trước khi bạn nhấn nút.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Để có ảnh ghép có thể in hoặc chia sẻ, hãy thêm khung sau đó bằng <a href="/tools/add-border-to-image/">Thêm viền cho ảnh</a>.</li>
+  <li>Nếu tệp sau khi ghép quá nặng để gửi, <a href="/tools/compress-image/">Nén ảnh</a> hoặc <a href="/tools/resize-image/">Đổi kích thước ảnh</a> sẽ thu nhỏ nó.</li>
+  <li>Muốn đưa các ảnh vào một tài liệu? <a href="/tools/jpg-to-pdf/">JPG sang PDF</a> đặt mỗi ảnh trên một trang riêng.</li>
+</ul>

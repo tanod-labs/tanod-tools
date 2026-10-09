@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "MikroTik port yönlendirme ve hairpin NAT oluşturucu | Tanod Tools",
+  "description": "TCP ve UDP için RouterOS dst-nat port yönlendirme kuralları yazın; isteğe bağlı hairpin NAT ve kaynak kısıtlamalarıyla. Tarayıcınızda çalışır.",
+  "h1": "MikroTik port yönlendirme oluşturucu",
+  "lede": "Yayınlamak istediğiniz portları ve arkalarındaki sunucuları listeleyin; LAN istemcileri de genel adresi kullanabilsin diye hairpin NAT'lı RouterOS v7 dst-nat kurallarını alın.",
+  "blurb": "TCP ve UDP için dst-nat kuralları, hairpin NAT'lı.",
+  "keywords": "mikrotik port yönlendirme port açma dst-nat destination nat routeros port forward hairpin nat nat loopback dstnat to-addresses to-ports mikrotik port açma rdp kamera nvr port forwarding",
+  "limits": "IPv4 için RouterOS v7 sözdizimi üretir (v6'da da geçerlidir). Portlar ve adresler kontrol edilir ancak yönlendiricinizde denenmez. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik yönlendiricide port nasıl yönlendirilir",
+  "howto": [
+    "Kuralın genel adresinize gelen trafiği nasıl tanıyacağını seçin: WAN arayüz listesi, sabit bir genel IP ya da yönlendiricinin herhangi bir adresi.",
+    "Her hizmet için bir satır ekleyin: protokol, genel port, iç sunucunun IP'si ve farklıysa iç portu.",
+    "LAN istemcileri hizmete genel adresinden ulaşacaksa hairpin NAT'ı işaretleyin, ardından betiği kopyalayın veya .rsc dosyasını indirin."
+  ],
+  "faq": [
+    [
+      "Port yönlendirmeme LAN'ın içinden neden ulaşamıyorum?",
+      "LAN'daki bir istemci genel IP'nize gönderir, yönlendirici hedefi sunucuya çevirir ve ikisi aynı alt ağda olduğu için sunucu yanıtı doğrudan istemciye verir. İstemci yanıtın genel IP'den gelmesini beklediği için paketi atar. Hairpin NAT bu LAN'dan LAN'a trafiği masquerade eder, böylece yanıt yönlendiriciden geri döner. Paket LAN arayüzünden geldiği için bu yalnızca dst-nat kuralı WAN arayüzü yerine genel adresle eşleştiğinde çalışır."
+    ],
+    [
+      "Kural in-interface ile mi, dst-address ile mi eşleşmeli?",
+      "WAN arayüz listesiyle eşleştirmek en basitidir ve değişen genel IP'ye dayanır, ancak hairpin NAT yapamaz. dst-address ile eşleştirmek hairpin ile çalışır ama IP değişirse güncellenmesi gerekir. dst-address-type=local yönlendiricideki her adresle eşleşir; bu da hem dinamik IP'leri hem de hairpin'i tek seferde çözer. Takıldığınız nokta, bu portları yönlendiricinin kendi LAN adresinde de yakalamasıdır."
+    ],
+    [
+      "Ayrıca bir güvenlik duvarı filtre kuralına da ihtiyacım var mı?",
+      "MikroTik'in varsayılan yapılandırmasında hayır: forward chain'i WAN'dan gelen yeni bağlantıları yalnızca “not DSTNATed” olduklarında düşürür, dolayısıyla port yönlendirilen bağlantılar geçer. Daha katı bir forward chain yazdıysanız son drop kuralınızdan önce connection-nat-state=dstnat için accept ekleyin."
+    ],
+    [
+      "Bir port aralığını nasıl yönlendiririm?",
+      "50000-50100 gibi bir aralık ya da 80,443 gibi bir liste girin ve iç portu boş bırakın. Portlar değiştirilmeden yönlendirilir. Port çevirisi (genel 8443'ten iç 443'e) tek portlarda çalışır."
+    ],
+    [
+      "RDP, SSH veya Winbox'ı yönlendirmek güvenli mi?",
+      "Uzaktan erişim hizmetlerini tüm internete açmak kaba kuvvet denemelerini davet eder. Bir yönlendirmeyi bilinen adreslerle sınırlamak için izin verilen kaynak ağlarını doldurun ya da hizmeti bunun yerine WireGuard gibi bir VPN'in arkasına koyun."
+    ],
+    [
+      "Yapılandırmam bir yere gönderiliyor mu?",
+      "Hayır. Kurallar bu sayfadaki JavaScript ile üretilir; yazdığınız hiçbir şey yüklenmez, saklanmaz veya kaydedilmez."
+    ]
+  ],
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Trafiği şuna göre eşleştir</legend>
+      <div class="seg" role="radiogroup" aria-label="Trafiği şuna göre eşleştir">
+        <label><input type="radio" name="pf-mode" value="list" checked>WAN listesi</label>
+        <label><input type="radio" name="pf-mode" value="iface">WAN arayüzü</label>
+        <label><input type="radio" name="pf-mode" value="ip">Genel IP</label>
+        <label><input type="radio" name="pf-mode" value="local">Yönlendiricinin herhangi bir adresi</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">WAN arayüz listesi</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">Genel IP adresi</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Yönlendirmeler</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}Yönlendirme ekle</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Seçenekler</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">Hairpin NAT (hizmete LAN'dan genel adresiyle ulaşın)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">LAN alt ağları</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">İzin verilen kaynak ağlar</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">İsteğe bağlı. Her yerden gelen bağlantıları kabul etmek için boş bırakın.</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">RouterOS v7 betiği</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}İndir .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS'ta port yönlendirme nasıl çalışır</h2>
+<p>Port yönlendirme, <code>/ip firewall nat</code> altındaki <code>dstnat</code> chain'inde bulunan bir <code>dst-nat</code> kuralıdır. Kuralla eşleşen (protokol, hedef port ve WAN arayüzü ya da genel adresiniz) yeni bir bağlantı geldiğinde RouterOS hedefini iç sunucunun adresine ve isteğe bağlı olarak portuna yeniden yazar. Bağlantı izleme çeviriyi hatırlar, dolayısıyla yanıtlar otomatik olarak geri yazılır; dönüş trafiği için ayrıca bir kural gerekmez.</p>
+<p>Çeviri, filtrenin forward chain'i paketi görmeden önce yapılır. MikroTik'in varsayılan forward kuralı bu yüzden yeni WAN bağlantılarını yalnızca <code>connection-nat-state=!dstnat</code> olduğunda düşürür: bir dst-nat kuralının çevirdiği bağlantı dstnat olarak işaretlenir ve geçmesine izin verilir; internetten gelen diğer her şey düşürülür.</p>
+<h3>Hairpin NAT</h3>
+<p>LAN'daki bir bilgisayar, yine LAN'da bulunan bir sunucunun genel adresine bağlandığında dst-nat kuralı paketi sunucuya gönderir, ancak sunucu istemcinin özel adresini görür ve ona doğrudan yanıt verir. İstemci hiç konuşmadığı bir adresten yanıt alır ve onu atar. Hairpin kuralı, LAN alt ağından sunucuya giden trafiği masquerade eder; böylece sunucu yönlendiriciye yanıt verir, yönlendirici de yanıtı geri çevirir. Bedeli, sunucunun günlüklerinde LAN istemcileri için yönlendiricinin adresinin görünmesidir. Adı iç adrese yönlendiren bir split-horizon DNS kaydı NAT'ı tamamen ortadan kaldırır ve çoğu zaman daha temiz bir çözümdür.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Güvenlik duvarınızın düşürmesi gerekenleri düşürdüğünü <a href="/tools/mikrotik-firewall-auditor/">MikroTik güvenlik duvarı denetleyici</a> ile kontrol edin.</li>
+  <li>Uzaktan erişim bir VPN üzerinden daha güvenlidir; <a href="/tools/mikrotik-wireguard-generator/">MikroTik WireGuard oluşturucu</a> bunu birkaç satırda kurar.</li>
+  <li>Bir yönlendirmeyi çok sayıda kaynak ağla mı kısıtlıyorsunuz? Listeyi <a href="/tools/mikrotik-address-list-generator/">MikroTik address list oluşturucu</a> ile hazırlayın.</li>
+</ul>

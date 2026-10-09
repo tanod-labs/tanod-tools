@@ -1,7 +1,7 @@
 // Page picking shared by Extract pages and Remove pages: thumbnails and a ranges box kept in sync.
-import { $, setStatus, debounce, clearNode } from "./core.js?v=5";
-import { parseRanges } from "./pdfcore.js?v=5";
-import { singlePdf, lazyThumbs, compactRanges, pageGrid } from "./pdfpages.js?v=5";
+import { $, setStatus, debounce, clearNode } from "./core.js?v=11";
+import { parseRanges } from "./pdfcore.js?v=11";
+import { singlePdf, lazyThumbs, compactRanges, pageGrid } from "./pdfpages.js?v=11";
 
 /* verb: "extract" | "remove". update(state) is called with
    { file, doc, pageCount, pages: [1-based page numbers in output order], selectedCount }. */

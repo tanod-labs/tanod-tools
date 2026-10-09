@@ -1,7 +1,7 @@
 // Shared wiring for the code formatters (SQL, XML, HTML, CSS, YAML <-> JSON).
 // A page supplies a format() function; this module handles the textarea, options, status line, error excerpt,
 // size stats, copy, download, sample and clear, and drops results that arrive after newer input.
-import { $, $$, debounce, copyText, textBlob, setStatus, fmtBytes, fmtNum, tx, EN } from "./core.js?v=5";
+import { $, $$, debounce, copyText, textBlob, setStatus, fmtBytes, fmtNum, tx, EN } from "./core.js?v=11";
 
 const SHOW_LIMIT = 2_000_000;
 

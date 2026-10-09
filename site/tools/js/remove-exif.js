@@ -1,7 +1,7 @@
-import { $, el, fmtBytes, baseName, extOf, tx, txn, fmtNum } from "./core.js?v=5";
+import { $, el, fmtBytes, baseName, extOf, tx, txn, fmtNum } from "./core.js?v=11";
 import {
   batchTool, decode, newCanvas, ctx2d, release, encodeCanvas, crc32, concatBytes, ascii, UserError, LABEL, dims,
-} from "./imgcore.js?v=5";
+} from "./imgcore.js?v=11";
 
 
 const keepOrient = $("#keep-orient");

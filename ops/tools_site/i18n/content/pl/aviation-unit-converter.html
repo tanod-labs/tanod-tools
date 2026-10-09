@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Jednostki lotnicze: węzły, hPa, stopy, NM | Tanod Tools",
+  "description": "Przeliczaj jednostki lotnicze: węzły, km/h, mph i m/s; hPa, inHg i mmHg; stopy, metry, mile morskie i lądowe oraz °C, °F i kelwiny.",
+  "h1": "Konwerter jednostek lotniczych",
+  "lede": "Przeliczaj jednostki używane przez pilotów i kontrolerów: prędkość, ciśnienie, długość i odległość oraz temperaturę, z widokiem wszystkich jednostek naraz.",
+  "blurb": "Węzły, hPa i inHg, stopy, mile morskie i temperatura.",
+  "keywords": "konwerter jednostek lotniczych węzły km/h mph m/s hpa inhg mmhg stopy metry mile morskie mile lądowe celsjusz fahrenheit kelwin qnh wysokościomierz prędkość pionowa mach przelicznik lotnictwo",
+  "limits": "Dokładne przeliczniki z definicji; wyniki są zaokrąglane do wybranej liczby cyfr znaczących (domyślnie 8). Mach używa 340,294 m/s, czyli prędkości dźwięku na poziomie morza w ISA. Nie do planowania lotu ani nawigacji.",
+  "howto_title": "Jak przeliczać jednostki lotnicze",
+  "howto": [
+    "Wybierz, co przeliczasz: prędkość, ciśnienie, długość i odległość lub temperaturę.",
+    "Wpisz wartość i wybierz jednostki, z których i na które przeliczasz. Możesz pisać w dowolnym polu.",
+    "Odczytaj wynik i wzór albo spójrz w dół tabeli, aby zobaczyć tę samą wartość we wszystkich jednostkach."
+  ],
+  "faq": [
+    ["Jak przeliczyć węzły na km/h?", "Pomnóż przez 1,852, ponieważ jeden węzeł to jedna mila morska na godzinę, a mila morska to dokładnie 1852 metry. Zatem 100 węzłów to 185,2 km/h, czyli ok. 115 mph."],
+    ["Jak przeliczyć hPa na inHg?", "Podziel hektopaskale przez 33,8639, aby otrzymać cale słupa rtęci. Standardowe ciśnienie na poziomie morza 1013,25 hPa to 29,9213 inHg, więc QNH 1013 to ok. 29,91 inHg. Milibary (mb) i hektopaskale to ta sama jednostka."],
+    ["Czym różni się mila morska od mili lądowej?", "Mila morska to dokładnie 1852 m (ok. 1,1508 mili lądowej) i odpowiada jednej minucie szerokości geograficznej. Mila lądowa to 1609,344 m. Odległości lotnicze poza USA i wszystkie prędkości w węzłach używają mil morskich."],
+    ["Dlaczego Mach nie jest stałą prędkością?", "Mach to stosunek do lokalnej prędkości dźwięku, która maleje wraz z temperaturą. To narzędzie używa wartości z poziomu morza w ISA, 340,294 m/s (ok. 661,5 węzła), więc jest tylko punktem odniesienia. Na wysokości przelotowej samolotów pasażerskich Mach 1 to bliżej 573 węzłów."],
+    ["Co oznacza stopy na minutę?", "To jednostka prędkości pionowej: 500 ft/min to ok. 2,54 m/s. Jest na liście prędkości, aby można było przeliczać prędkości wznoszenia i zniżania."],
+    ["Czy przeliczenia są dokładne?", "Przeliczniki są dokładnymi definicjami (na przykład 1 ft = 0,3048 m, 1 NM = 1852 m, 1 inHg = 3386,38864 Pa i 1 mmHg = 133,322387415 Pa), więc ewentualne zaokrąglenie dotyczy tylko ostatniej pokazanej cyfry."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Wielkość</legend>
+  <div class="seg av-cats">
+    <label><input type="radio" name="ac-cat" value="speed" checked>Prędkość</label>
+    <label><input type="radio" name="ac-cat" value="pressure">Ciśnienie</label>
+    <label><input type="radio" name="ac-cat" value="length">Długość i odległość</label>
+    <label><input type="radio" name="ac-cat" value="temperature">Temperatura</label>
+  </div>
+</fieldset>
+<div class="uc">
+  <div class="field uc__side">
+    <label for="ac-from">Z</label>
+    <input type="text" inputmode="decimal" id="ac-from" class="uc__val" value="1" autocomplete="off" spellcheck="false">
+    <select id="ac-from-u" aria-label="Jednostka, z której przeliczasz"></select>
+  </div>
+  <button class="btn btn--icon uc__swap" id="ac-swap" type="button" aria-label="Zamień jednostki miejscami">{{mark:convert-image}}</button>
+  <div class="field uc__side">
+    <label for="ac-to">Na</label>
+    <input type="text" inputmode="decimal" id="ac-to" class="uc__val" autocomplete="off" spellcheck="false">
+    <select id="ac-to-u" aria-label="Jednostka, na którą przeliczasz"></select>
+  </div>
+</div>
+<p class="uc__formula" id="ac-formula" aria-live="polite"></p>
+<p class="note" id="ac-warn" role="alert" hidden></p>
+<div class="uc__more">
+  <h2 class="util-h" id="ac-all-h">We wszystkich jednostkach</h2>
+  <div class="field uc__sig">
+    <label for="ac-sig">Cyfry znaczące</label>
+    <select id="ac-sig"><option value="4">4</option><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option></select>
+  </div>
+</div>
+<div class="calc-table">
+  <table class="dens">
+    <caption class="visually-hidden">Wartość we wszystkich jednostkach tego rodzaju</caption>
+    <thead><tr><th scope="col">Jednostka</th><th scope="col">Wartość</th></tr></thead>
+    <tbody id="ac-all"></tbody>
+  </table>
+</div>
+<!--explain-->
+<h2>Jak działają przeliczenia</h2>
+<p>Każda kategoria ma jednostkę bazową: metry na sekundę dla prędkości, paskale dla ciśnienia i metry dla długości. Wartość mnoży się przez rozmiar jej jednostki w jednostce bazowej i dzieli przez rozmiar jednostki docelowej. Wszystkie przeliczniki są dokładnymi definicjami: 1 węzeł = 1852/3600 m/s, 1 mph = 1609,344/3600 m/s, 1 stopa = 0,3048 m, 1 mila morska = 1852 m, 1 mila lądowa = 1609,344 m, 1 hPa = 100 Pa, 1 mmHg = 133,322387415 Pa i 1 inHg = 25,4 mmHg = 3386,38864 Pa (wartości konwencjonalne stosowane w Załączniku 5 ICAO i w NIST Special Publication 811).</p>
+<p>Temperatura ma różne punkty zerowe, więc jest przeliczana przez kelwiny: K = °C + 273,15 i °F = °C × 9/5 + 32. Lista jednostek wynika z Załącznika 5 ICAO (Units of Measurement to be Used in Air and Ground Operations), w którym ciśnienie podaje się w hektopaskalach, wysokość w stopach lub metrach, a prędkość w węzłach lub km/h. <strong>Nie do planowania lotu ani nawigacji.</strong></p>

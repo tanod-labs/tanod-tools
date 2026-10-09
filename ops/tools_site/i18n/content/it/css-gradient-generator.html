@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Generatore di gradienti CSS: lineari, radiali, conici | Tanod Tools",
+  "description": "Crea gradienti CSS lineari, radiali e conici con anteprima in tempo reale, punti colore modificabili e preset, poi copia la regola background. Gratis, nel browser.",
+  "h1": "Generatore di gradienti CSS",
+  "lede": "Disegna un gradiente lineare, radiale o conico, guardalo aggiornarsi in tempo reale e copia la regola CSS background.",
+  "blurb": "Gradienti lineari, radiali e conici con anteprima dal vivo e CSS da copiare.",
+  "keywords": "gradiente css linear-gradient radial-gradient conic-gradient gradiente ripetuto sfondo sfumatura punti colore angolo generatore creare gradiente css gradient generator",
+  "limits": "I colori dei punti possono essere qualsiasi colore che il tuo browser capisce (HEX, nomi, rgb(), hsl(), oklch()). Fino a 10 punti. Le posizioni sono percentuali; l'output è CSS semplice senza prefissi dei browser.",
+  "howto_title": "Come creare un gradiente CSS",
+  "howto": [
+    "Scegli <strong>Lineare</strong>, <strong>Radiale</strong> o <strong>Conico</strong>, oppure parti da un preset.",
+    "Imposta l'angolo o la posizione, poi modifica i punti colore: cambia colore e posizione di ciascuno, aggiungi punti e spostali su o giù.",
+    "Premi <strong>Copia CSS</strong> e incolla la regola nel tuo foglio di stile. Seleziona l'opzione di riserva se vuoi una riga con un colore pieno prima."
+  ],
+  "faq": [
+    ["Cosa significa l'angolo in un gradiente lineare?", "0deg punta verso l'alto, quindi il gradiente va dal bordo inferiore verso l'alto. 90deg va da sinistra a destra, 180deg dall'alto al basso e 270deg da destra a sinistra. 360deg è la stessa direzione di 0deg. Lo strumento scrive il numero che inserisci con l'unità deg."],
+    ["Come ottengo un bordo netto invece di una sfumatura morbida?", "Dai a due punti vicini la stessa posizione. Per esempio, rosso al 50% seguito da blu al 50% cambia colore a metà senza sfumatura. Il preset Strisce nette lo mostra."],
+    ["Cosa fa l'opzione ripetuto?", "Scrive repeating-linear-gradient, repeating-radial-gradient o repeating-conic-gradient. Il motivo tra il primo e l'ultimo punto viene ripetuto a mosaico, quindi si vede solo quando l'ultimo punto è prima del 100%. Prova punti a 0%, 10% e 20% per ottenere delle strisce."],
+    ["A cosa serve la riga con il colore pieno di riserva?", "Un browser che non riesce a leggere il gradiente ignora quella riga e mantiene la precedente. I browser che supportano i gradienti, cioè quasi tutti quelli in uso, la sovrascrivono. Il colore di riserva è quello del tuo primo punto."],
+    ["Quali formati di colore sono accettati?", "Tutto ciò che la proprietà CSS <code>color</code> accetta nel tuo browser: <code>#1636a3</code>, <code>tomato</code>, <code>rgb(22 54 163)</code>, <code>hsl(226 76% 36%)</code> o <code>oklch(0.5 0.2 260)</code>. Digitare qualcos'altro mostra un messaggio e lascia sullo schermo l'ultimo gradiente valido."],
+    ["Un gradiente conico ha bisogno di una posizione?", "Ha sempre un centro, e questo strumento lo scrive in percentuali, quindi 50% 50% è il centro del riquadro. L'angolo iniziale ruota il punto in cui parte lo sweep del colore, misurato in senso orario dall'alto."]
+  ]
+}
+-->
+<!--tool-->
+<div class="gen-grad">
+  <div class="gen-grad__show">
+    <div class="gen-gpreview" id="g-preview" role="img" aria-label="Anteprima del gradiente"></div>
+    <label for="g-out" class="label">CSS</label>
+    <textarea id="g-out" class="mono gen-out" rows="3" readonly spellcheck="false" aria-describedby="g-msg"></textarea>
+    <p class="tt__report" id="g-msg" role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="g-copy" type="button">Copia CSS</button>
+    </div>
+  </div>
+
+  <div class="gen-grad__ctl util-stack">
+    <fieldset class="field">
+      <legend>Tipo</legend>
+      <div class="seg" role="radiogroup" aria-label="Tipo di gradiente">
+        <label><input type="radio" name="g-type" value="linear" checked>Lineare</label>
+        <label><input type="radio" name="g-type" value="radial">Radiale</label>
+        <label><input type="radio" name="g-type" value="conic">Conico</label>
+      </div>
+    </fieldset>
+
+    <div class="opts">
+      <div class="field" id="g-angle-box">
+        <label for="g-angle" id="g-angle-l">Angolo (gradi)</label>
+        <div class="util-pair"><input type="range" id="g-angle-r" min="0" max="360" step="1" value="90" aria-label="Cursore dell'angolo"><input type="number" id="g-angle" min="0" max="360" step="1" value="90"></div>
+      </div>
+      <div class="field" id="g-shape-box" hidden>
+        <label for="g-shape">Forma</label>
+        <select id="g-shape"><option value="circle">Cerchio</option><option value="ellipse">Ellisse</option></select>
+      </div>
+      <div class="field" id="g-x-box" hidden><label for="g-x">Centro X (%)</label><input type="number" id="g-x" min="0" max="100" step="1" value="50"></div>
+      <div class="field" id="g-y-box" hidden><label for="g-y">Centro Y (%)</label><input type="number" id="g-y" min="0" max="100" step="1" value="50"></div>
+    </div>
+
+    <div class="field">
+      <span class="label">Opzioni</span>
+      <label class="check"><input type="checkbox" id="g-repeat">Ripetuto</label>
+      <label class="check"><input type="checkbox" id="g-fallback">Aggiungi prima una riga con un colore pieno di riserva</label>
+    </div>
+
+    <h2 class="util-h">Punti colore</h2>
+    <ol class="gen-stops" id="g-stops"></ol>
+    <div class="actions">
+      <button class="btn btn--sm" id="g-add" type="button">Aggiungi punto</button>
+      <button class="btn btn--sm" id="g-sort" type="button">Ordina per posizione</button>
+      <button class="btn btn--sm" id="g-rev" type="button">Inverti</button>
+    </div>
+
+    <h2 class="util-h">Preset</h2>
+    <div class="actions" id="g-presets"></div>
+  </div>
+</div>
+<!--explain-->
+<h2>Leggere un gradiente CSS</h2>
+<p>Un gradiente CSS è un'immagine che il browser disegna da sé, quindi si adatta a qualsiasi dimensione e non costa nessun download. Un gradiente lineare sfuma i colori lungo una linea stabilita da un angolo. Un gradiente radiale sfuma verso l'esterno a partire da un punto centrale, in un cerchio o in un'ellisse. Un gradiente conico fa girare i colori attorno a un centro come la lancetta di un orologio, ed è la scelta naturale per grafici a torta e ruote di colori.</p>
+<p>Ogni punto colore è un colore più una posizione lungo la linea del gradiente, scritta come percentuale. Tra due punti il browser sfuma in modo graduale. Se due punti hanno la stessa posizione, la sfumatura non ha larghezza e si ottiene un bordo netto. Se un punto è collocato prima di quello che lo precede, i browser lo trattano come se fosse alla posizione del punto precedente, ed è per questo che questo strumento permette di riordinare e ordinare i punti.</p>
+<p>La regola è scritta come <code>background:</code> quindi funziona su qualsiasi elemento. I gradienti sono disegnati sullo sfondo, quindi il testo sopra di essi richiede la stessa attenzione al contrasto del testo su un colore piatto: controlla separatamente le parti più chiare e più scure della sfumatura.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Scegli colori dei punti che stiano bene insieme con il <a href="/tools/color-palette-generator/">Generatore di palette di colori</a>.</li>
+  <li>Converti un punto tra HEX, RGB e HSL nel <a href="/tools/color-converter/">Convertitore di colori e contrasto</a>.</li>
+  <li>Stai pubblicando il foglio di stile? Riducilo con <a href="/tools/css-minifier/">Minifica e indenta CSS</a>.</li>
+</ul>

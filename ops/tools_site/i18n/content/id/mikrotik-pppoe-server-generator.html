@@ -1,0 +1,90 @@
+<!--meta
+{
+  "title": "Generator server PPPoE MikroTik untuk ISP dan WISP | Tanod Tools",
+  "description": "Buat server PPPoE RouterOS: address pool, profile paket kecepatan dengan rate-limit, server, secret placeholder, serta RADIUS dan NAT opsional. Di browser Anda.",
+  "h1": "Generator server PPPoE MikroTik",
+  "lede": "Tentukan interface pelanggan, address pool, dan paket kecepatan, lalu dapatkan server PPPoE RouterOS lengkap dengan profile, templat secret, dan RADIUS opsional.",
+  "blurb": "Pool, profile paket, server PPPoE, secret, dan RADIUS.",
+  "keywords": "setup server pppoe mikrotik routeros pppoe-server ppp profile rate-limit ppp secret radius wisp isp paket pelanggan ip pool local-address remote-address change-tcp-mss",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 (juga valid di v6). Secret sengaja diberi password placeholder; halaman ini tidak pernah meminta password asli. Hanya IPv4; delegasi prefix IPv6 untuk PPPoE tidak dicakup. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara menyiapkan server PPPoE di MikroTik",
+  "howto": [
+    "Masukkan interface yang menghadap pelanggan (port Ethernet, bridge, atau VLAN) dan nama service.",
+    "Berikan pool alamat pelanggan sebagai jaringan, server DNS, dan satu profile per paket kecepatan beserta kecepatan upload dan download-nya.",
+    "Pilih autentikasi, RADIUS, dan NAT, tentukan berapa akun placeholder yang dibuat, lalu salin atau unduh skripnya. Ganti setiap CHANGE_ME sebelum pelanggan terhubung."
+  ],
+  "faq": [
+    ["Bagaimana kecepatan di PPP profile bekerja?", "rate-limit pada profile ditulis rx/tx dari sudut pandang router: rx adalah yang diterima router dari pelanggan (upload mereka) dan tx adalah yang dikirimnya (download mereka). Saat sesi naik, RouterOS membuat simple queue dinamis dengan batas tersebut. RADIUS dapat menimpanya per pelanggan dengan atribut Mikrotik-Rate-Limit."],
+    ["Mengapa password-nya CHANGE_ME?", "Password pelanggan adalah rahasia, dan generator konfigurasi tidak perlu mengetahuinya. Skrip membuat akun dengan placeholder yang jelas agar strukturnya siap; atur password asli di router, impor dari sistem billing Anda, atau serahkan autentikasi ke server RADIUS."],
+    ["Apa fungsi only-one dan one-session-per-host?", "only-one pada profile mencegah username yang sama memiliki dua sesi sekaligus. one-session-per-host pada server mencegah satu alamat MAC membuka beberapa sesi. Keduanya bersama mencegah sebagian besar berbagi akun."],
+    ["Mengapa MTU-nya 1480?", "PPPoE menambahkan header 8 byte di dalam frame Ethernet, sehingga paling banyak yang bisa dibawa sesi pada link standar 1500 byte adalah 1492. RouterOS memakai default 1480, yang menyisakan ruang untuk tag VLAN dan perilaku CPE yang aneh; change-tcp-mss di profile lalu menjepit TCP agar paket besar tidak terfragmentasi."],
+    ["Metode autentikasi mana yang sebaiknya diizinkan?", "CHAP dan MS-CHAPv2 tidak mengirim password dalam teks polos. PAP mengirimnya, dan hanya layak diaktifkan untuk CPE lama yang tidak mendukung yang lain. RADIUS bekerja dengan semuanya, meski sebagian backend RADIUS memerlukan PAP untuk memeriksa password ter-hash."],
+    ["Apakah semua ini dikirim ke suatu tempat?", "Tidak. Skrip dibuat di browser Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pp">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Server</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-if">Interface pelanggan</label><input type="text" id="pp-if" class="mono" value="ether2" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-svc">Nama service</label><input type="text" id="pp-svc" class="mono" value="isp" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-net">Jaringan pool pelanggan</label><input type="text" id="pp-net" class="mono" value="10.10.0.0/22" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-dns">Server DNS</label><input type="text" id="pp-dns" class="mono" value="1.1.1.1, 8.8.8.8" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <fieldset class="field">
+        <legend>Autentikasi</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="pp-auth" value="pap">PAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="chap" checked>CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap1" checked>MS-CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap2" checked>MS-CHAPv2</label>
+        </div>
+      </fieldset>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Paket kecepatan (profile)</legend>
+      <ul class="ros-rows" id="pp-profiles"></ul>
+      <button class="btn btn--sm ros-add" id="pp-add" type="button">{{mark:i-plus}}Tambah paket</button>
+      <span class="help">Paket pertama adalah profile default server dan yang dipakai akun yang dibuat.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Akun dan opsi</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-count">Akun placeholder</label><input type="text" id="pp-count" class="mono" value="3" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pp-user">Pola username</label><input type="text" id="pp-user" class="mono" value="customer{n}" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pp-one" checked>Satu sesi per username (only-one)</label>
+        <label class="check"><input type="checkbox" id="pp-nat" checked>Masquerade pelanggan ke WAN</label>
+        <label class="check"><input type="checkbox" id="pp-radius">Gunakan server RADIUS</label>
+      </div>
+      <div class="opts" id="pp-radius-f" hidden>
+        <div class="field"><label for="pp-rad-ip">Alamat server RADIUS</label><input type="text" id="pp-rad-ip" class="mono" value="10.0.0.5" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <label class="check"><input type="checkbox" id="pp-coa" checked>Terima permintaan CoA dan disconnect</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pp-out" class="label">Skrip RouterOS</label>
+    <textarea id="pp-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pp-copy" type="button">Salin skrip</button>
+      <button class="btn" id="pp-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pp-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Anatomi server PPPoE RouterOS</h2>
+<p>Server PPPoE di RouterOS terdiri dari empat bagian. <strong>IP pool</strong> menyimpan alamat pelanggan. <strong>PPP profile</strong> menggambarkan tiap paket: alamat lokal router di setiap sesi, pool tempat mengambil alamat remote, server DNS yang dibagikan, dan <code>rate-limit</code> yang menjadi queue pelanggan. <strong>Server PPPoE</strong> sendiri mendengarkan permintaan discovery di interface yang menghadap pelanggan. <strong>Secret</strong>, atau server RADIUS, menentukan siapa yang boleh login dan dengan profile yang mana.</p>
+<p>Setiap sesi adalah link point-to-point, jadi pelanggan tidak memerlukan subnet sendiri: router memakai satu alamat lokal untuk semua sesi dan tiap pelanggan mendapat satu alamat dari pool. Itulah sebabnya interface pelanggan tidak memerlukan alamat IP maupun DHCP server; pada bridge atau VLAN yang dipakai bersama layanan lain, pisahkan lalu lintas PPPoE dan IP.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Ingin paket dengan burst? Hitung nilainya dengan <a href="/tools/mikrotik-burst-calculator/">kalkulator burst</a>; alat itu mencetak string rate-limit lengkap untuk profile atau RADIUS.</li>
+  <li>Pelanggan di VLAN terpisah per menara atau gedung? Buat VLAN dengan <a href="/tools/mikrotik-vlan-generator/">generator VLAN</a> dan jalankan satu server PPPoE per VLAN, atau satu bridge di atasnya.</li>
+  <li>Lindungi router itu sendiri dengan <a href="/tools/mikrotik-firewall-generator/">generator firewall</a>: interface yang menghadap pelanggan tidak boleh menjangkau WinBox atau SSH.</li>
+</ul>

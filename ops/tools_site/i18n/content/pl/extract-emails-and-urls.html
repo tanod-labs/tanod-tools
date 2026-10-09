@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Wyodrębnianie e-maili, URL-i, domen i IP | Tanod Tools",
+  "description": "Wyodrębnij z tekstu e-maile, URL-e, domeny, IP, numery telefonów i hashtagi. Usuń duplikaty, policz, skopiuj lub pobierz CSV. Za darmo, w przeglądarce.",
+  "h1": "Wyodrębnianie e-maili i URL-i",
+  "lede": "Wklej dowolny tekst i otrzymaj osobne listy zawartych w nim adresów e-mail, adresów internetowych, domen, adresów IP, liczb podobnych do numerów telefonów i hashtagów, bez duplikatów i z liczbą wystąpień.",
+  "blurb": "Wyciągnij z tekstu e-maile, URL-e, domeny, IP, telefony i hashtagi.",
+  "keywords": "wyodrębnianie e-maili z tekstu ekstraktor e-maili wyodrębnianie url z tekstu ekstraktor linków wyodrębnianie domen ekstraktor adresów ip ekstraktor numerów telefonów ekstraktor hashtagów usuń duplikaty csv",
+  "local_text": "Działa w przeglądarce; nic, co zostanie wpisane, nie opuszcza urządzenia",
+  "limits": "Tekst do kilku milionów znaków. Numery telefonów są rozpoznawane po kształcie (od 7 do 15 cyfr ze spacjami, myślnikami, kropkami lub nawiasami), więc mogą pasować także inne liczby, a niektóre formaty mogą zostać pominięte. Samodzielne domeny, takie jak example.com, są znajdowane tylko ze znaną końcówką, np. .com, .org lub kodem kraju.",
+  "howto_title": "Jak wyodrębnić e-maile i linki z tekstu",
+  "howto": [
+    "Wklej tekst, na przykład stronę internetową, wątek e-mailowy, dziennik lub dokument.",
+    "Wybierz, czy usuwać duplikaty i jak sortować każdą listę.",
+    "Skopiuj listę albo pobierz ją jako plik tekstowy lub CSV."
+  ],
+  "faq": [
+    [
+      "Co znajduje to narzędzie?",
+      "Sześć rodzajów elementów: adresy e-mail, URL-e (http, https, ftp oraz adresy zaczynające się od www), domeny, adresy IPv4, liczby podobne do numerów telefonów i hashtagi. Każdy rodzaj ma własną listę z liczbą wystąpień."
+    ],
+    [
+      "Jak narzędzie rozstrzyga, co jest duplikatem?",
+      "E-maile, domeny i hashtagi są porównywane bez uwzględniania wielkości liter, więc Bob@Example.com i bob@example.com liczą się jako jeden, a zachowywany jest pierwszy zapis. URL-e i adresy IP muszą być identyczne. Numery telefonów porównywane są po cyfrach, więc 555-123-4567 i 555 123 4567 to ten sam numer. Wyłącz <em>Usuń duplikaty</em>, aby zachować każde dopasowanie."
+    ],
+    [
+      "Skąd biorą się domeny?",
+      "Z nazwy hosta każdego URL-a i z części po znaku @ w każdym adresie e-mail, a także z samodzielnych nazw ze znaną końcówką, takich jak example.com. Początkowe www. jest pomijane. Adresy IP użyte jako host trafiają na listę adresów IP."
+    ],
+    [
+      "Dlaczego pominięto numer telefonu albo błędnie wypisano liczbę?",
+      "Liczba podobna do numeru telefonu to ciąg od 7 do 15 cyfr, który może zawierać spacje, myślniki, kropki, nawiasy i plus na początku. Daty i adresy IP są pomijane, ale numer zamówienia zapisany z myślnikami nadal może wyglądać jak telefon, a liczba zapisana jako jeden ciąg cyfr poza tym zakresem długości jest ignorowana. Traktuj listę jako wstępne sito i sprawdź ją."
+    ],
+    [
+      "Co zawierają pliki CSV?",
+      "Dwie kolumny, wartość i liczbę wystąpień, po jednym wierszu na element. Plik jest w UTF-8 ze znacznikiem kolejności bajtów, aby arkusze kalkulacyjne poprawnie otwierały znaki diakrytyczne."
+    ],
+    [
+      "Czy mój tekst jest przesyłany?",
+      "Nie. Tekst jest przeszukiwany w Twojej przeglądarce i nigdy nie opuszcza urządzenia."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ex">
+  <div class="field">
+    <label for="ex-in">Tekst do przeszukania</label>
+    <textarea id="ex-in" class="mono" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Wklej tekst tutaj"></textarea>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="ex-sort">Sortuj każdą listę</label>
+      <select id="ex-sort">
+        <option value="none">W kolejności znalezienia</option>
+        <option value="az">Od A do Z</option>
+        <option value="count">Najczęstsze najpierw</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ex-unique" checked>Usuń duplikaty</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ex-example" type="button">Wczytaj przykład</button>
+    <button class="btn btn--quiet" id="ex-clear" type="button" disabled>Wyczyść</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ex-report" aria-live="polite">Wklej tekst, aby zacząć.</p>
+  <div class="ex-lists" id="ex-lists"></div>
+</div>
+<!--explain-->
+<h2>Jak powstają listy</h2>
+<p>Narzędzie przeszukuje tekst wzorcami dla każdego rodzaju elementu i pokazuje dopasowania w kolejności, w jakiej występują. Adres e-mail to nazwa, znak @ i domena z poprawną końcówką. URL zaczyna się od http, https, ftp lub www i sięga do następnej spacji, cudzysłowu lub nawiasu ostrego; interpunkcja otaczającego zdania (kropka, przecinek, nawias zamykający bez pary) nie jest liczona jako część adresu. Domena to nazwa hosta URL-a albo część adresu e-mail po znaku @, bez początkowego www.</p>
+<p>Adresy IPv4 to cztery liczby od 0 do 255 oddzielone kropkami, więc 192.168.1.1 trafi na listę, a 999.1.1.1 nie. Liczby podobne do telefonów są wykrywane po kształcie, bo numer telefonu można zapisać na wiele sposobów: od 7 do 15 cyfr, ze spacjami, myślnikami, kropkami lub nawiasami oraz opcjonalnym plusem. Daty zapisane jako 2026-10-08 nie są mylone z telefonami. Hashtagi zaczynają się od # i wymagają co najmniej jednej litery, więc #2026 jest pomijany.</p>
+<p>Po usunięciu duplikatów każda lista pokazuje każdy unikalny element raz, z liczbą jego wystąpień, co pomaga znaleźć najczęstszego nadawcę lub najczęściej linkowaną witrynę. Listę można posortować od A do Z albo według liczby, a następnie skopiować po jednym elemencie w wierszu lub pobrać jako zwykły plik tekstowy albo CSV z kolumną wartości i liczby.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Aby uporządkować skopiowaną listę, usuń powtarzające się wiersze w narzędziu <a href="/tools/remove-duplicate-lines/">Usuwanie zduplikowanych wierszy</a> lub posortuj ją w <a href="/tools/sort-lines-alphabetically/">Sortowaniu wierszy alfabetycznie</a>.</li>
+  <li>Potrzebujesz wzorca, którego narzędzie nie obejmuje? Stwórz go w <a href="/tools/regex-tester/">testerze wyrażeń regularnych</a>.</li>
+  <li>Linki ze znakami procentu można odczytać za pomocą <a href="/tools/url-encode-decode/">Kodowania i dekodowania URL</a>.</li>
+</ul>

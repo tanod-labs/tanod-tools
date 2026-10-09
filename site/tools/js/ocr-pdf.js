@@ -1,6 +1,6 @@
-import { $, el, fmtBytes, dropzone, setStatus, showResults, clearNode, baseName, announce, UserError, copyText, textBlob, blobLink, tx, txn } from "./core.js?v=5";
-import { loadPdfLib, parseRanges } from "./pdfcore.js?v=5";
-import { serverInit, runServerJob, serverJob, fileToBase64, blobFromBase64, checkSize, available } from "./servercore.js?v=5";
+import { $, el, fmtBytes, dropzone, setStatus, showResults, clearNode, baseName, announce, UserError, copyText, textBlob, blobLink, tx, txn } from "./core.js?v=11";
+import { loadPdfLib, parseRanges } from "./pdfcore.js?v=11";
+import { serverInit, runServerJob, serverJob, fileToBase64, blobFromBase64, checkSize, available } from "./servercore.js?v=11";
 
 const MAX_PAGES = 10;
 const drop = $("#drop"), work = $("#work"), status = $("#status"), result = $("#result"), go = $("#go");

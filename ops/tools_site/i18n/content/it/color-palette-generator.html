@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Generatore di palette di colori: armonie da un colore | Tanod Tools",
+  "description": "Scegli un colore di base e ottieni palette analoghe, complementari, triadiche, tetradiche e monocromatiche con rapporti di contrasto ed esportazione. Gratis, nel browser.",
+  "h1": "Generatore di palette di colori",
+  "lede": "Parti da un colore e ottieni palette abbinate, ogni campione con i suoi valori HEX e RGB e il suo contrasto con il bianco e con il nero.",
+  "blurb": "Armonie di colori da un colore di base, con rapporti di contrasto.",
+  "keywords": "generatore palette colori palette di colori schema colori armonia colori analoghi complementari triade tetrade complementari divisi monocromatica tinte sfumature oklch palette casuale campioni variabili css color palette generator",
+  "limits": "Le palette sono costruite nello spazio colore OKLCH e mostrate come HEX sRGB, quindi i colori troppo vividi per uno schermo vengono attenuati nella cromaticità. I valori di contrasto usano la formula WCAG 2, che misura solo il contrasto di luminosità.",
+  "howto_title": "Come creare una palette di colori",
+  "howto": [
+    "Scegli un colore di base con il selettore, oppure digita un valore come <code>#1636a3</code> o <code>f60</code> nel campo HEX.",
+    "Leggi le palette di armonie sotto. Ogni campione mostra il suo HEX, il suo RGB e se il testo nero o bianco supera WCAG AA o AAA su di esso.",
+    "Scegli una palette sotto <strong>Esporta</strong> e copiala o scaricala come proprietà personalizzate CSS, array JSON o elenco semplice. Usa <strong>Palette casuale</strong> e i pulsanti di blocco per esplorare."
+  ],
+  "faq": [
+    ["Perché OKLCH invece di HSL?", "In HSL, un giallo e un blu con lo stesso valore di luminosità appaiono molto diversi in luminosità. OKLCH è costruito in modo che passi di luminosità uguali sembrino uguali, il che mantiene i campioni di una palette di peso uniforme. La tonalità è l'angolo usato per le armonie, quindi un colore complementare si trova a 180 gradi dal tuo colore di base in OKLCH, non in HSL."],
+    ["Cosa succede quando un colore non può essere mostrato su uno schermo?", "Ruotare una tonalità mantenendo luminosità e cromaticità a volte finisce fuori dall'intervallo sRGB che uno schermo normale può mostrare. Lo strumento allora riduce la cromaticità, mantenendo luminosità e tonalità, finché il colore rientra. Per questo un campione ruotato può apparire un po' meno vivido del colore di base."],
+    ["Cosa significano le etichette AA e AAA?", "Indicano il rapporto di contrasto WCAG 2 del testo bianco o nero su quel campione. Un rapporto di 4,5 o più è AA per il testo normale, 7 o più è AAA, e da 3 a 4,5 supera AA solo per il testo grande. Un campione che non supera né il nero né il bianco è un cattivo sfondo per il testo."],
+    ["Come funziona la palette casuale?", "Cinque colori vengono estratti con il generatore di numeri casuali sicuro del browser: tonalità distribuite sulla ruota, con luminosità e cromaticità casuali in un intervallo che evita quasi-nero e quasi-bianco. Blocca un campione per tenerlo, poi premi Palette casuale o la barra spaziatrice per sostituire gli altri."],
+    ["Quale formato di esportazione devo usare?", "Le proprietà personalizzate CSS si incollano direttamente nel blocco <code>:root</code> di un foglio di stile. L'array JSON si adatta ai design token o agli script, e l'elenco semplice è un HEX per riga per gli strumenti che accettano colori incollati. Tutti e tre usano i valori HEX visualizzati."],
+    ["Gestisce l'HEX abbreviato e le lettere maiuscole?", "Sì. <code>#abc</code>, <code>abc</code>, <code>#AABBCC</code> e <code>aabbcc</code> vengono tutti letti. I valori con una coppia alfa, come quelli a otto cifre, non sono accettati qui; usa prima il <a href=\"/tools/color-converter/\">Convertitore di colori e contrasto</a> per eliminare l'alfa."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack gen-pal">
+  <div class="gen-base">
+    <div class="field">
+      <label for="cp-pick">Colore di base</label>
+      <input type="color" id="cp-pick" value="#1636a3">
+    </div>
+    <div class="field gen-base__hex">
+      <label for="cp-hex">Valore HEX</label>
+      <input type="text" id="cp-hex" class="mono" value="#1636a3" maxlength="9" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="cp-msg">
+    </div>
+    <p class="tt__report gen-base__info" id="cp-msg" aria-live="polite"></p>
+  </div>
+
+  <div id="cp-harmonies" class="util-stack"></div>
+
+  <h2 class="util-h">Palette casuale</h2>
+  <p class="help" id="cp-rand-help">Cinque colori dal generatore di numeri casuali del browser. Blocca quelli che vuoi tenere, poi estrai di nuovo. Premi la barra spaziatrice per estrarre quando nessun campo di testo ha il focus.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="cp-random" type="button">Palette casuale</button>
+  </div>
+  <div id="cp-random-out" data-scheme="random"></div>
+
+  <h2 class="util-h">Esporta</h2>
+  <div class="opts">
+    <div class="field"><label for="cp-which">Palette</label><select id="cp-which"></select></div>
+    <fieldset class="field">
+      <legend>Formato</legend>
+      <div class="seg" role="radiogroup" aria-label="Formato di esportazione">
+        <label><input type="radio" name="cp-fmt" value="css" checked>Variabili CSS</label>
+        <label><input type="radio" name="cp-fmt" value="json">JSON</label>
+        <label><input type="radio" name="cp-fmt" value="list">Elenco semplice</label>
+      </div>
+    </fieldset>
+  </div>
+  <label class="visually-hidden" for="cp-out">Palette esportata</label>
+  <textarea id="cp-out" class="mono gen-out" rows="7" readonly spellcheck="false"></textarea>
+  <div class="actions">
+    <button class="btn" id="cp-copy" type="button">Copia</button>
+    <button class="btn" id="cp-dl" type="button">Scarica</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Come sono costruite le armonie</h2>
+<p>Un'armonia di colori è un insieme di colori le cui tonalità si trovano ad angoli fissi sulla ruota dei colori. I colori analoghi sono vicini, a 30 gradi di distanza. Un colore complementare è a 180 gradi, una coppia complementare divisa si trova a 150 e 210 gradi, una triade è distanziata di 120 gradi e una tetrade usa quattro tonalità distanziate di 90 gradi. La palette monocromatica mantiene la tonalità e fa variare la luminosità da tinte chiare a sfumature scure.</p>
+<p>La ruota usata qui è OKLCH, la forma cilindrica dello spazio OKLab di Björn Ottosson. La conversione va da sRGB alla luce lineare, poi attraverso le matrici OKLab, e torna indietro con un controllo della gamma. Se un colore ruotato cade fuori da ciò che sRGB può mostrare, la sua cromaticità viene ridotta a piccoli passi finché rientra, così luminosità e tonalità scelte vengono mantenute.</p>
+<p>Il contrasto è indicato per ogni campione sia contro il bianco sia contro il nero, perché la prima domanda su un colore di una palette di solito è quale testo ci possa stare sopra. Il rapporto e la dicitura AA o AAA sono sempre scritti per esteso, così l'informazione non dipende dal vedere i colori.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Ti serve lo stesso colore in HSL, CMYK o come nome CSS? Usa il <a href="/tools/color-converter/">Convertitore di colori e contrasto</a>.</li>
+  <li>Trasforma due colori della palette in uno sfondo con il <a href="/tools/css-gradient-generator/">Generatore di gradienti CSS</a>.</li>
+  <li>Vuoi un colore preso da una foto anziché da una ruota? Prova il <a href="/tools/image-color-picker/">Selettore colore da immagine</a>.</li>
+</ul>

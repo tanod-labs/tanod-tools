@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "MikroTik-WireGuard-Konfigurator (RouterOS v7) | Tanod Tools",
+  "description": "RouterOS-v7-WireGuard-Server und fertige Peer-Konfigurationen erzeugen. Schlüssel entstehen per Web Crypto in Ihrem Browser und verlassen Ihr Gerät nie.",
+  "h1": "MikroTik-WireGuard-Generator",
+  "lede": "Legen Sie das Tunnelnetz und Ihre Peers fest und erhalten Sie die RouterOS-v7-WireGuard-Konfiguration plus eine Konfigurationsdatei für jeden Laptop, jedes Handy oder jeden entfernten Standort.",
+  "blurb": "RouterOS-v7-WireGuard-Server plus Peer-Konfigurationsdateien.",
+  "keywords": "mikrotik wireguard einrichten routeros v7 wireguard interface peers allowed-address public key private key generator wg-quick client konfiguration road warrior site to site vpn",
+  "local_text": "Schlüssel werden in Ihrem Browser erzeugt und verlassen Ihr Gerät nie",
+  "limits": "Benötigt RouterOS v7 (WireGuard gibt es unter v6 nicht). Schlüssel werden mit dem Web-Crypto-X25519 Ihres Browsers erzeugt; fehlt es ihm, erzeugt der Router einen eigenen Schlüssel, und die Konfigurationen erhalten Platzhalter. Nur IPv4-Tunneladressen. MikroTik und RouterOS sind Marken der SIA Mikrotīkls. Dieses Tool ist unabhängig und weder mit MikroTik verbunden noch von MikroTik unterstützt.",
+  "howto_title": "So richten Sie WireGuard auf MikroTik ein",
+  "howto": [
+    "Geben Sie Interface-Namen, Listen-Port, die Tunneladresse des Routers (etwa <code>10.66.0.1/24</code>) und die öffentliche Adresse ein, mit der sich Clients verbinden.",
+    "Fügen Sie pro Peer eine Zeile mit seiner Tunneladresse hinzu; bei Site-to-Site-Verbindungen die Netze dahinter. Wählen Sie Full- oder Split-Tunnel.",
+    "Fügen Sie das RouterOS-Skript ein, verschieben Sie die Firewall-Regel über Ihre Drop-Regeln und importieren Sie die .conf-Datei jedes Peers in dessen WireGuard-App."
+  ],
+  "faq": [
+    ["Sind die Schlüssel sicher, wenn sie in einer Webseite erzeugt werden?", "Sie werden von der in Ihrem Browser eingebauten Web-Crypto-X25519-Implementierung erzeugt, derselben Kurve, die WireGuard verwendet, und sie existieren nur im Speicher dieser Seite und im Text, den sie Ihnen zeigt. Nichts wird irgendwohin gesendet: Die Seite hat keine Serverkomponente, und ihre Sicherheitsrichtlinie blockiert Verbindungen zu anderen Websites. Schließen Sie den Tab, sind sie weg, speichern Sie die benötigten Konfigurationen also vorher."],
+    ["Was, wenn mein Browser keine X25519-Schlüssel erzeugen kann?", "Die Seite sagt es Ihnen und wechselt zu anderswo erzeugten Schlüsseln: Das RouterOS-Skript lässt den privaten Schlüssel weg, sodass der Router beim Anlegen des Interfaces einen eigenen erzeugt. Lesen Sie mit /interface wireguard print dessen öffentlichen Schlüssel aus, tragen Sie ihn in die Peer-Konfigurationen ein und fügen Sie den öffentlichen Schlüssel jedes Peers (aus dessen WireGuard-App) in die Tabelle hier ein."],
+    ["Was ist allowed-address bei einem MikroTik-Peer?", "Es wirkt zugleich als Zugriffsliste und als Routing-Tabelle: Der Router akzeptiert Pakete des Peers nur mit diesen Quelladressen und sendet Verkehr für diese Ziele an diesen Peer. Bei einem einzelnen Gerät ist es dessen /32. Bei einem entfernten Standort fügen Sie das LAN des Standorts hinzu, und das Skript ergänzt auch eine Route dorthin."],
+    ["Full-Tunnel oder Split-Tunnel?", "Full-Tunnel (AllowedIPs 0.0.0.0/0 am Peer) schickt den gesamten Verkehr des Geräts durch den Router, nützlich in unsicheren WLANs; der Router muss die Tunneladressen ins Internet maskieren. Split-Tunnel sendet nur das Tunnelnetz und die von Ihnen aufgeführten Netze, normales Surfen bleibt also lokal."],
+    ["Warum braucht der Peer PersistentKeepalive?", "Ein Handy oder Laptop hinter NAT kann Pakete nur empfangen, solange sein NAT-Mapping lebt. Ein Keepalive alle 25 Sekunden hält es offen, sodass der Router den Peer erreichen kann und der Tunnel nach einer Pause schnell wieder steht."],
+    ["Was bringt der Preshared Key?", "Ein zusätzliches symmetrisches Geheimnis, das in den Handshake einfließt und eine Schutzschicht gegen künftige Quantenangriffe auf den Public-Key-Austausch hinzufügt. Er ist optional und muss auf beiden Seiten übereinstimmen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Router</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">Interface-Name</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Listen-Port (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">Tunneladresse des Routers</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">Öffentliche Adresse (Endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">DNS für Peers</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Schlüssel</legend>
+      <div class="seg" role="radiogroup" aria-label="Schlüssel">
+        <label><input type="radio" name="wg-keys" value="browser" checked>In diesem Browser erzeugen</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">Anderswo erzeugt</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>Dieser Browser kann keine X25519-Schlüssel erzeugen, der Router erzeugt daher seinen eigenen, und Sie fügen unten die öffentlichen Schlüssel der Peers ein.</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>Pro Peer einen Preshared Key hinzufügen</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}Neue Schlüssel</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peers</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Peer hinzufügen</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer-Verkehr</legend>
+      <div class="seg" role="radiogroup" aria-label="Peer-Verkehr">
+        <label><input type="radio" name="wg-route" value="full" checked>Full-Tunnel (gesamter Verkehr)</label>
+        <label><input type="radio" name="wg-route" value="split">Split-Tunnel</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">Netze, die Peers über den Tunnel erreichen</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>Den Tunnel zur Interface-Liste LAN hinzufügen</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">RouterOS-v7-Skript</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">Skript kopieren</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}.rsc herunterladen</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>WireGuard unter RouterOS v7</h2>
+<p>WireGuard kam mit RouterOS 7 und wird an zwei Stellen konfiguriert: <code>/interface wireguard</code> enthält das Schlüsselpaar und den Listen-Port des Routers, <code>/interface wireguard peers</code> je einen Eintrag pro entferntem Gerät oder Standort, identifiziert über seinen öffentlichen Schlüssel. Das Tunnel-Interface erhält dann wie jedes andere eine IP-Adresse, und Firewall-Regeln, Routen und Interface-Listen gelten dafür wie gewohnt. Es gibt keinen Benutzernamen und kein Passwort: Ein Peer ist, wer den privaten Schlüssel zu einem konfigurierten öffentlichen Schlüssel besitzt.</p>
+<p>Die <code>allowed-address</code> jedes Peers ist das Herzstück des Setups. Sie listet die Quelladressen auf, die der Router von diesem Peer akzeptiert, und zugleich die Ziele, die er an diesen Peer sendet. Auf der Geräteseite erfüllt <code>AllowedIPs</code> dieselbe Aufgabe umgekehrt: 0.0.0.0/0 schickt alles durch den Tunnel, eine Liste von Netzen hält den Tunnel nur auf diese Netze beschränkt.</p>
+<h3>Bevor Sie sich verbinden</h3>
+<ul>
+  <li>Der Router muss UDP auf dem Listen-Port in seiner Input-Chain oberhalb jeder Drop-Regel akzeptieren. Der <a href="/tools/mikrotik-firewall-generator/">Firewall-Generator</a> kann ihn mit <code>udp/13231</code> für Sie öffnen.</li>
+  <li>Steht der Router hinter einem weiteren NAT-Gerät, leiten Sie den UDP-Port dorthin weiter, wie es der <a href="/tools/mikrotik-port-forwarding/">Portweiterleitungs-Generator</a> zeigt.</li>
+  <li>Peer-Konfigurationen enthalten private Schlüssel. Bringen Sie sie über einen vertrauenswürdigen Kanal auf die Geräte und löschen Sie verbliebene Kopien.</li>
+</ul>

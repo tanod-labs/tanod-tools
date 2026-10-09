@@ -101,7 +101,7 @@ export const DECIMAL = numberFormat().formatToParts(1.5).find((p) => p.type === 
 
 /* Parse a number typed on this page. Returns null for an empty field and NaN for something that isn't a number.
    English pages: "." is the decimal point; commas, spaces and underscores group digits.
-   Pages whose language writes a decimal comma (es, pt-BR, fr, de, id): "," is the decimal point and ".", spaces and
+   Pages whose language writes a decimal comma (es, pt-BR, fr, de, id, it, tr, vi, ru, pl): "," is the decimal point and ".", spaces and
    apostrophes group digits; a lone "." is still read as a decimal point unless it is followed by exactly three
    digits after a non-zero whole part (so "12.5" is 12.5, "0.125" is 0.125 and "1.000" is a thousand). */
 export function parseNum(s) {

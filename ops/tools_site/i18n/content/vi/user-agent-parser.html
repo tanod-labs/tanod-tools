@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Phân tích user agent: trình duyệt, hệ điều hành | Tanod Tools",
+  "description": "Xem user agent của trình duyệt bạn hoặc dán chuỗi bất kỳ để biết trình duyệt, engine, hệ điều hành, thiết bị, CPU, cùng Client Hints và lý do Chrome ẩn bớt chi tiết.",
+  "h1": "Phân tích user agent",
+  "lede": "Tách chuỗi user agent thành trình duyệt, engine, hệ điều hành, thiết bị và CPU, bắt đầu từ chuỗi của chính trình duyệt bạn.",
+  "blurb": "Phân tích mọi chuỗi user agent, và xem chuỗi của bạn cùng Client Hints.",
+  "keywords": "phân tích user agent user agent của tôi là gì chuỗi ua nhận diện trình duyệt client hints giải mã useragent navigator.userAgent googlebot curl user agent parser what is my user agent browser detection",
+  "limits": "Việc phân tích dùng ua-parser-js 1.0.41 (MIT) và dựa trên các mẫu nhận dạng, nên chuỗi bất thường hoặc bị giả mạo có thể bị đọc sai. Client Hints chỉ hiển thị cho trình duyệt bạn đang dùng, và chỉ khi trình duyệt đó hỗ trợ (các trình duyệt Chromium có; Firefox và Safari thì không).",
+  "howto_title": "Cách đọc chuỗi user agent",
+  "howto": [
+    "User agent của chính trình duyệt bạn được phân tích ngay khi trang tải xong. Để kiểm tra một chuỗi khác, hãy dán vào ô, chẳng hạn từ log máy chủ.",
+    "Đọc các hàng trình duyệt, engine, hệ điều hành, thiết bị và CPU. Hãy coi chúng là những gì chuỗi tuyên bố, chứ không phải sự thật đã được chứng minh.",
+    "Với trình duyệt của chính bạn, hãy so sánh kết quả với phần Client Hints, nơi có thể hiển thị những chi tiết mà chuỗi rút gọn đã lược bỏ."
+  ],
+  "faq": [
+    ["Chuỗi user agent là gì?", "Đó là một dòng văn bản mà trình duyệt hoặc chương trình gửi kèm mỗi yêu cầu web để cho biết nó là gì. Do hàng chục năm mẹo tương thích, hầu như mọi trình duyệt đều bắt đầu bằng <code>Mozilla/5.0</code> và nhắc đến nhiều trình duyệt khác, nên việc đọc nó cần so khớp mẫu chứ không phải một phép tách đơn giản."],
+    ["Tại sao Windows 11 hiện là Windows 10?", "Chrome và các trình duyệt Chromium khác đóng băng phần nền tảng của chuỗi ở \"Windows NT 10.0\", bất kể phiên bản Windows thực. Chỉ Client Hints mới phân biệt được: phiên bản nền tảng từ 13 trở lên nghĩa là Windows 11. Trang này hiển thị giá trị đó cho trình duyệt của chính bạn khi có."],
+    ["Tại sao iPad của tôi lại tự nhận là Mac?", "Kể từ iPadOS 13, Safari mặc định yêu cầu phiên bản máy tính của trang web và gửi user agent Macintosh. Riêng chuỗi này không thể phân biệt Mac với iPad, dù trang có thể kiểm tra màn hình cảm ứng. Điều tương tự áp dụng cho macOS: phiên bản bị đóng băng ở 10_15_7 trong chuỗi."],
+    ["User-Agent reduction là gì?", "Chrome đang lược bớt chi tiết khỏi chuỗi để giảm việc theo dõi thụ động: phiên bản phụ hiện là 0.0.0, mẫu thiết bị Android hiện là một chữ K duy nhất, và phiên bản hệ điều hành bị cố định. Các trang cần chi tiết phải yêu cầu chúng bằng Client Hints."],
+    ["Client Hints là gì?", "Đó là các header có cấu trúc và một API JavaScript (<code>navigator.userAgentData</code>) cho phép trang yêu cầu các chi tiết cụ thể, như kiến trúc hoặc phiên bản trình duyệt đầy đủ, thay vì đọc chúng từ chuỗi. Hiện nay chỉ các trình duyệt dựa trên Chromium hỗ trợ."],
+    ["Tôi có thể tin user agent cho các quyết định bảo mật không?", "Không. Ai cũng có thể gửi bất kỳ chuỗi nào, và bot thường giả làm Chrome. Nó ổn cho thống kê và để chọn bố cục, nhưng không dùng để kiểm soát truy cập. Để xác minh Googlebot, một trang web kiểm tra địa chỉ IP của khách bằng tra cứu DNS ngược."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">Chuỗi user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Dùng của trình duyệt tôi</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Sao chép kết quả</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="User agent đã phân tích"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints từ trình duyệt của bạn</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>User agent cho bạn biết gì, và che giấu gì</h2>
+<p>User agent ban đầu là cách để máy chủ biết trình duyệt nào đang yêu cầu, nhằm gửi một trang chạy được ở đó. Sau đó các trình duyệt sao chép tên của nhau để nhận được những trang tốt, đó là lý do chuỗi Chrome ngày nay còn nhắc đến Mozilla, AppleWebKit, KHTML, Gecko và Safari. Bộ phân tích xử lý điều này bằng cách thử các mẫu theo thứ tự cẩn thận và chọn kết quả khớp cụ thể nhất.</p>
+<p>Chuỗi này cũng đang được cố ý rút ngắn. User-Agent reduction của Chrome cố định phiên bản Windows ở NT 10.0, phiên bản macOS ở 10_15_7, mẫu Android ở K và số bản dựng ở 0.0.0, để chuỗi không còn là dấu vân tay tốt. Các chi tiết không biến mất: một trang yêu cầu chúng qua Client Hints sẽ nhận được phiên bản nền tảng, kiến trúc, mẫu máy và phiên bản trình duyệt đầy đủ, còn trình duyệt của khách quyết định có trả lời hay không.</p>
+<p>Hãy dùng chuỗi này cho các quyết định thô và cho log, đừng dùng để tin cậy. Trình thu thập dữ liệu và công cụ dòng lệnh như curl gửi chuỗi ngắn của riêng chúng, và mọi thứ đều có thể bị giả mạo. Nếu bạn đang đuổi theo một lỗi bố cục, phát hiện tính năng ngay trong trang đáng tin cậy hơn việc đọc tên trình duyệt.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Log máy chủ đầy phản hồi 403 hoặc 429 cho một client? Hãy tra các mã đó trong <a href="/tools/http-status-codes/">Mã trạng thái HTTP</a>.</li>
+  <li>User agent trong URL hoặc chuỗi truy vấn thường được mã hóa phần trăm; hãy giải mã bằng <a href="/tools/url-encode-decode/">Mã hóa và giải mã URL</a>.</li>
+  <li>Header sao chép từ một yêu cầu đôi khi mang giá trị Base64; hãy đọc chúng bằng <a href="/tools/base64-encode-decode/">Mã hóa và giải mã Base64</a>.</li>
+</ul>

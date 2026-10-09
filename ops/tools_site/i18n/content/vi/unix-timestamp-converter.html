@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Chuyển đổi Unix timestamp: epoch sang ngày và ngược lại | Tanod Tools",
+  "description": "Chuyển Unix timestamp (giây, mili giây, micro giây, nano giây) thành ngày giờ theo UTC hay múi giờ bất kỳ, và ngược lại. Miễn phí, chạy trong trình duyệt.",
+  "h1": "Chuyển đổi Unix timestamp",
+  "lede": "Biến epoch timestamp thành ngày giờ dễ đọc ở bất kỳ múi giờ nào, hoặc biến ngày giờ thành timestamp.",
+  "blurb": "Thời gian epoch sang ngày và ngày sang timestamp, mọi múi giờ.",
+  "keywords": "chuyển đổi epoch unix time posix time giây từ 1970 mili giây timestamp sang ngày ngày sang timestamp utc múi giờ epoch converter milliseconds timestamp to date date to timestamp",
+  "limits": "Timestamp trong khoảng 270.000 năm ở mỗi phía của năm 1970, phạm vi mà trình duyệt có thể biểu diễn; ngày gõ vào từ năm 1 đến 9999. Quy tắc múi giờ lấy từ dữ liệu múi giờ tích hợp sẵn trong trình duyệt của bạn.",
+  "howto_title": "Cách chuyển đổi Unix timestamp",
+  "howto": [
+    "Dán một timestamp vào mục <strong>Timestamp sang ngày</strong>. Đơn vị (giây, mili giây, micro giây hoặc nano giây) được phát hiện từ độ dài của nó, và bạn có thể đổi.",
+    "Chọn một múi giờ để xem ngày giờ ở đó cũng như ở dạng UTC, ISO 8601 và RFC 2822.",
+    "Để đi theo chiều ngược lại, nhập ngày và giờ ở mục <strong>Ngày sang timestamp</strong>; giá trị được đọc theo múi giờ bạn đã chọn."
+  ],
+  "faq": [
+    ["Unix timestamp là gì?", "Đó là số giây kể từ 00:00:00 UTC ngày 1 tháng 1 năm 1970, không tính giây nhuận. Nó giống nhau ở mọi nơi trên thế giới tại một thời điểm nhất định, đó là lý do nó được dùng để lưu thời gian; múi giờ chỉ quan trọng khi bạn biến nó thành một ngày giờ để người ta đọc."],
+    ["Đơn vị được phát hiện như thế nào?", "Theo độ lớn. Giá trị dưới 100 tỷ (10^11) được đọc là giây (bao phủ các ngày đến năm 5138), đến 100 nghìn tỷ (10^14) là mili giây, đến 100 triệu tỷ (10^17) là micro giây, và lớn hơn nữa là nano giây. Số có 10 chữ số là giây, 13 chữ số là mili giây, 16 là micro giây và 19 là nano giây. Nếu đoán sai, hãy tự chọn đơn vị."],
+    ["Điều gì xảy ra với một giờ không tồn tại vì giờ mùa hè?", "Khi đồng hồ chỉnh tiến lên, một giờ địa phương bị bỏ qua. Ngày giờ nằm trong khoảng trống đó được đẩy tiến lên đúng bằng độ dài khoảng trống, đây là điều hầu hết phần mềm làm, và công cụ sẽ nói rõ. Khi đồng hồ chỉnh lùi, một giờ xảy ra hai lần; công cụ dùng lần xuất hiện đầu tiên và cũng hiển thị timestamp của lần thứ hai."],
+    ["Timestamp có thể âm không?", "Có. Giá trị âm là những thời điểm trước năm 1970: -1 là 23:59:59 UTC ngày 31 tháng 12 năm 1969. Các ngày rất xa trong quá khứ dùng lịch Gregorian ngoại suy, như ISO 8601."],
+    ["Vấn đề năm 2038 là gì?", "Các hệ thống lưu Unix time dưới dạng số nguyên có dấu 32 bit chỉ đếm được đến 2.147.483.647, tức 03:14:07 UTC ngày 19 tháng 1 năm 2038. Một giây sau đó giá trị bị tràn. Công cụ chỉ ra điều này khi timestamp vượt quá phạm vi đó. Hầu hết hệ thống hiện nay dùng thời gian 64 bit và không bị ảnh hưởng."],
+    ["Giây nhuận có được tính không?", "Không. Unix time coi mỗi ngày đúng 86.400 giây, và JavaScript cũng vậy, nên 27 giây nhuận được thêm từ năm 1972 không được tính. Điều này là bình thường và khớp với những gì máy chủ, cơ sở dữ liệu và ngôn ngữ lập trình báo cáo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Unix time hiện tại</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Giây</dt><dd id="now-s">0</dd></div>
+      <div><dt>Mili giây</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Sao chép giây</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Sao chép mili giây</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Tạm dừng</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Múi giờ</label>
+    <select id="tz"></select>
+    <span class="help">Dùng để hiển thị ngày giờ bên dưới và để đọc ngày giờ bạn nhập.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Timestamp sang ngày</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Unix timestamp</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Đơn vị</label>
+      <select id="ts-unit">
+        <option value="auto" selected>Tự phát hiện theo độ dài</option>
+        <option value="s">Giây</option>
+        <option value="ms">Mili giây</option>
+        <option value="us">Micro giây</option>
+        <option value="ns">Nano giây</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Gõ hoặc dán một timestamp.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Múi giờ của bạn</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>ISO 8601 kèm độ lệch</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Tương đối</dt><dd id="o-rel"></dd></div>
+    <div><dt>Giây</dt><dd id="o-s"></dd></div>
+    <div><dt>Mili giây</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Ngày sang timestamp</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Ngày</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Giờ</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Dùng giờ hiện tại</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Chọn một ngày.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Giây</dt><dd id="d-s"></dd></div>
+    <div><dt>Mili giây</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Thời gian epoch hoạt động thế nào</h2>
+<p>Unix timestamp đếm số giây kể từ Unix epoch, nửa đêm UTC ngày 1 tháng 1 năm 1970. Vì nó chỉ một thời điểm chứ không phải số đọc trên đồng hồ, cùng một con số có nghĩa là cùng một khoảnh khắc ở Manila, London và New York. Việc chuyển nó thành ngày giờ là lúc múi giờ xuất hiện: công cụ dùng cơ sở dữ liệu múi giờ của trình duyệt, cùng quy tắc mà hệ điều hành của bạn dùng, để tính độ lệch địa phương và giờ mùa hè tại thời điểm đó.</p>
+<p>Nhiều hệ thống dùng đơn vị mịn hơn. JavaScript và Java đếm mili giây, một số cơ sở dữ liệu và <code>time.time_ns()</code> của Python dùng micro giây hoặc nano giây. Dán một giá trị như vậy dưới dạng giây sẽ cho ra ngày cách xa hàng chục nghìn năm, nên công cụ đoán đơn vị từ độ lớn của số và hiển thị nó đã chọn đơn vị nào. Giá trị micro giây và nano giây giữ các chữ số thừa trong dòng ISO 8601.</p>
+<p>Đi từ ngày sang timestamp cần một múi giờ, vì 09:00 xảy ra ở một thời điểm khác nhau trong mỗi múi giờ. Ngày giờ bạn gõ được đọc như số trên đồng hồ ở múi giờ bạn chọn. Những giờ rơi vào khoảng trống hoặc khoảng lặp của giờ mùa hè được đánh dấu, để bạn biết mình nhận được thời điểm nào.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Lịch trình viết dưới dạng biểu thức cron có thể kiểm tra bằng <a href="/tools/cron-expression-explainer/">Giải thích biểu thức cron</a>, công cụ liệt kê các lần chạy tiếp theo ở bất kỳ múi giờ nào.</li>
+  <li>Giá trị UUID phiên bản 7 mang một timestamp mili giây; <a href="/tools/uuid-generator/">Tạo UUID</a> có thể đọc nó.</li>
+  <li>Làm gọn một phản hồi JSON đầy timestamp bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+</ul>

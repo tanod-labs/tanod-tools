@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "Detector de caracteres invisíveis e ASCII smuggling | Tanod Tools",
+  "description": "Encontre caracteres de largura zero, bidi e de tag Unicode, decodifique texto ASCII oculto e veja palavras enganosas. Grátis, no seu navegador.",
+  "h1": "Detector de caracteres invisíveis e decodificador de ASCII smuggling",
+  "lede": "Cole um texto para encontrar os caracteres que você não vê e ler qualquer texto escondido em caracteres de tag Unicode invisíveis: espaços de largura zero, controles de direção do texto, caracteres de tag Unicode ocultos e palavras que misturam letras latinas com letras cirílicas ou gregas parecidas.",
+  "blurb": "Encontre Unicode invisível, decodifique texto ASCII oculto e veja palavras parecidas.",
+  "keywords": "detector de caracteres invisíveis decodificador ascii smuggling localizar espaço de largura zero caracteres unicode ocultos bidi trojan source caracteres de tag unicode ascii smuggling injeção de prompt homóglifos cirílico palavras parecidas remover caracteres de largura zero",
+  "local_text": "Funciona no seu navegador; nada do que você digita sai do seu dispositivo",
+  "limits": "Texto de até alguns milhões de caracteres. A verificação analisa pontos de código Unicode, então encontra caracteres ocultos, mas não consegue saber se um deles é inofensivo no seu texto. Sequências de emoji reais, como bandeiras e emojis de família, não são sinalizadas.",
+  "howto_title": "Como encontrar caracteres invisíveis",
+  "howto": [
+    "Cole o texto que você quer verificar ou escolha <em>Carregar um exemplo</em> para ver o que a ferramenta encontra.",
+    "Leia as contagens de cada tipo de caractere, o texto destacado e a tabela com a linha, a coluna e o ponto de código de cada achado.",
+    "Escolha <em>Copiar texto limpo</em> para obter o texto sem os caracteres invisíveis."
+  ],
+  "faq": [
+    [
+      "O que são caracteres de largura zero?",
+      "São caracteres que não ocupam espaço na tela, como o espaço de largura zero (U+200B), o não-unidor de largura zero (U+200C), o unidor de palavras (U+2060) e a marca de ordem de bytes (U+FEFF). Eles entram no texto copiado de páginas da web e de apps de chat e podem quebrar buscas, senhas, código e nomes de arquivo sem nenhum sinal visível. O unidor e o não-unidor também são usados de propósito em algumas escritas, como o persa e o hindi, então confira antes de removê-los."
+    ],
+    [
+      "O que é um ataque Trojan Source?",
+      "O Unicode tem controles que mudam a direção em que o texto é exibido, como a substituição da direita para a esquerda (U+202E). No código-fonte, eles podem fazer uma linha parecer diferente do que o compilador lê, de modo que um comentário aparentemente inofensivo esconda código de verdade. A ferramenta lista todos os controles bidirecionais para que você possa vê-los."
+    ],
+    [
+      "O que são caracteres de tag Unicode e por que importam?",
+      "Os caracteres de tag (U+E0000 a U+E007F) espelham o ASCII, mas não aparecem na tela. Um texto escrito com eles é invisível para quem lê, mas pode ser lido por software, inclusive por assistentes de IA, o que permite esconder instruções em um prompt ou documento. A ferramenta decodifica cada sequência de caracteres de tag para o texto ASCII que ela forma e o mostra em destaque. Isso é conhecido como ASCII smuggling. A bandeira da Inglaterra, da Escócia ou do País de Gales é feita de propósito com alguns caracteres de tag, então uma sequência de bandeira completa não é sinalizada."
+    ],
+    [
+      "Por que uma palavra é marcada como de escritas misturadas?",
+      "O cirílico e o grego têm letras iguais às latinas, como o а cirílico e o a latino. Uma palavra que as mistura, como pаypal com um а cirílico, pode passar por um nome verdadeiro e levar a outro lugar. A ferramenta lista as palavras que combinam letras latinas com letras cirílicas, gregas ou armênias e mostra quais letras não pertencem."
+    ],
+    [
+      "Ela sinaliza emojis?",
+      "Não. Um unidor de largura zero entre dois emojis, como nos emojis de família ou de profissões, e o seletor de variação que vem depois de um emoji fazem parte de como os emojis são construídos, então são deixados em paz. Os mesmos caracteres em outros lugares, como entre duas letras, são reportados."
+    ],
+    [
+      "Meu texto é enviado para algum servidor?",
+      "Não. O texto é verificado no seu navegador e nunca sai do seu dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Texto a verificar</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Cole o texto aqui"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Carregar um exemplo</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Limpar</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Cole um texto para verificá-lo.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Texto oculto decodificado de caracteres de tag</h3>
+    <p class="help">Estes caracteres invisíveis formam o texto legível abaixo. Trate-o como não confiável, principalmente se o texto for para um assistente de IA.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Caracteres de largura zero</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Controles de direção do texto</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Caracteres de tag Unicode</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Caracteres de controle</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Outros caracteres invisíveis</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Espaços incomuns</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Palavras com escritas misturadas</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Texto destacado</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Texto com os caracteres ocultos marcados"></div>
+    <h3 class="util-h">Texto limpo</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Transformar também espaços incomuns em espaços normais</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Texto sem os caracteres invisíveis</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Copiar texto limpo</button>
+    </div>
+    <h3 class="util-h">Achados</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Tabela de achados">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Linha:coluna</th><th scope="col">N.º do caractere</th><th scope="col">Ponto de código</th><th scope="col">O que é</th><th scope="col">Tipo</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Como os caracteres ocultos são encontrados</h2>
+<p>O Unicode define muitos caracteres que não imprimem nada: espaços e unidores de largura zero, marcas que invertem a direção do texto, hifens suaves, espaços de larguras incomuns e os caracteres de tag que espelham o ASCII. Eles são úteis no lugar certo e um incômodo ou uma arma no lugar errado. Esta ferramenta lê seu texto ponto de código por ponto de código e classifica cada achado em um tipo, para você ver o que há ali antes de decidir o que fazer.</p>
+<p>São reportados sete tipos. Os <strong>caracteres de largura zero</strong> incluem o espaço de largura zero, os unidores e a marca de ordem de bytes. Os <strong>controles de direção do texto</strong> são as incorporações, substituições, isolamentos e marcas usados em ataques Trojan Source ao código-fonte. Os <strong>caracteres de tag Unicode</strong> são o bloco U+E0000, usado para esconder instruções invisíveis em textos para assistentes de IA; cada sequência é decodificada para que você leia o ASCII que ela forma. Os <strong>caracteres de controle</strong> são os códigos C0 e C1, exceto tabulação e quebras de linha. <strong>Outros caracteres invisíveis</strong> cobrem o hífen suave, os operadores matemáticos invisíveis, os preenchimentos e os seletores de variação, e os <strong>espaços incomuns</strong> são o espaço sem quebra, os espaços em e en e o espaço ideográfico. Por fim, as <strong>palavras com escritas misturadas</strong> são palavras que combinam letras latinas com letras cirílicas, gregas ou armênias, a forma usual de falsificar um nome de domínio ou de usuário.</p>
+<p>Espaços de largura zero também aparecem em textos gerados por IA. Assistentes de chat e fluxos de processamento de texto às vezes deixam espaços ou unidores de largura zero na saída, e os mesmos caracteres podem servir como marca-d'água invisível, então uma resposta colada pode levar mais do que você vê. Passar o texto por esta verificação mostra exatamente o que há escondido nele.</p>
+<p>Alguns desses caracteres pertencem ao texto real, então a ferramenta os deixa em paz onde cabem. A bandeira completa da Inglaterra, da Escócia ou do País de Gales (uma bandeira preta seguida de algumas letras de tag e uma tag de cancelamento), um unidor de largura zero entre dois emojis e um seletor de apresentação de emoji depois de um emoji são normais. Um unidor ou não-unidor dentro de palavras em persa, hindi ou árabe também é normal, mas é reportado, porque a ferramenta não sabe o idioma do seu texto.</p>
+<p>A cópia limpa remove os caracteres de largura zero, de direção, de tag, de controle e outros invisíveis. Ela nunca altera palavras com escritas misturadas, porque trocar uma letra mudaria o texto; corrija-as à mão depois de conferir a palavra destacada.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Conte o que sobrou com o <a href="/tools/character-counter/">contador de caracteres</a>, que conta caracteres, bytes e linhas.</li>
+  <li>Compare o original com o texto limpo em <a href="/tools/text-diff/">Comparar textos</a>.</li>
+  <li>Para remover um caractere específico em todo o texto, use <a href="/tools/find-and-replace/">Localizar e substituir</a>.</li>
+</ul>

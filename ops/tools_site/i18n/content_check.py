@@ -19,7 +19,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 EN_DIR = HERE.parent / "content"
-LANGS = ["es", "pt-BR", "fr", "de", "id"]
+LANGS = ["es", "pt-BR", "fr", "de", "id", "it", "tr", "vi", "ru", "pl", "hi"]
 TRANSLATABLE = ["title", "description", "h1", "lede", "blurb", "keywords", "limits", "howto_title", "howto", "faq",
                 "local_text"]
 HUMAN_ATTRS = {"placeholder", "aria-label", "aria-roledescription", "title", "alt"}

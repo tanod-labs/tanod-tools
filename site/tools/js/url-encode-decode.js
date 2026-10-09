@@ -1,5 +1,5 @@
 // URL encode / decode and a URL parser. Runs in the browser; nothing is fetched or sent.
-import { $, $$, el, debounce, copyText, setStatus, announce, UserError, friendlyError, tx, txn } from "./core.js?v=5";
+import { $, $$, el, debounce, copyText, setStatus, announce, UserError, friendlyError, tx, txn } from "./core.js?v=11";
 
 const RESERVED = new Set(";/?:@&=+$,#");
 const utf8 = new TextDecoder("utf-8", { fatal: true });

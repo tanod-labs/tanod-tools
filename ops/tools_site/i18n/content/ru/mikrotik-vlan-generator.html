@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "VLAN для MikroTik: bridge VLAN filtering (v7) | Tanod Tools",
+  "description": "Bridge VLAN filtering для RouterOS v7: порты access, trunk и hybrid, таблица VLAN, интерфейсы и адреса; фильтрация включается последней, чтобы не потерять доступ.",
+  "h1": "Генератор VLAN для MikroTik",
+  "lede": "Опишите свои VLAN и порты, которые их несут, и получите конфигурацию bridge VLAN filtering для RouterOS v7, в которой фильтрация включается в самом конце.",
+  "blurb": "Bridge VLAN filtering с портами access, trunk и hybrid.",
+  "keywords": "настройка vlan mikrotik микротик routeros v7 bridge vlan filtering trunk порт access порт hybrid pvid tagged untagged frame-types ingress-filtering vlan interface crs коммутатор",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт bridge VLAN filtering для RouterOS v7 (метод, который MikroTik рекомендует для современных устройств) с одним мостом. Старые меню чипа коммутатора (/interface ethernet switch) не используются. Адреса IPv4. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен компанией.",
+  "howto_title": "Как настроить VLAN на мосту MikroTik",
+  "howto": [
+    "Перечислите VLAN: идентификатор, имя и, для VLAN, которые маршрутизатор должен маршрутизировать, адрес маршрутизатора в этой сети.",
+    "Перечислите порты: порт access несёт одну VLAN без тега, порт trunk несёт VLAN с тегами, порт hybrid делает и то и другое.",
+    "Прочитайте предупреждение о потере доступа, включите Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> в терминале) и выполните скрипт; фильтрация VLAN включается в самой последней строке."
+  ],
+  "faq": [
+    ["Почему включение vlan-filtering может отрезать доступ?", "Пока vlan-filtering выключен, мост пропускает всё, и настройки VLAN не действуют. Как только фильтрация включена, кадры принимаются только там, где это разрешает таблица VLAN. Если порт, через который вы подключены, не входит в VLAN с адресом маршрутизатора, ваша сессия оборвётся. Поэтому скрипт включает фильтрацию в последнюю очередь и поэтому важен Safe Mode: если соединение пропадёт, RouterOS откатит изменение."],
+    ["Чем различаются порты access, trunk и hybrid?", "Порт access подключает одно устройство, которое ничего не знает о VLAN: входящие кадры без тега попадают в PVID порта и выходят без тега. Порт trunk соединяет другой коммутатор или точку доступа и несёт несколько VLAN с тегами 802.1Q. Порт hybrid делает и то и другое, как правило для IP-телефона или точки доступа с VLAN управления или данных без тега и остальными VLAN с тегами."],
+    ["Почему сам мост помечен тегом в некоторых VLAN?", "Интерфейс моста — это собственный порт маршрутизатора в коммутаторе. Чтобы у маршрутизатора был адрес в VLAN через интерфейс VLAN на мосту, мост должен быть членом этой VLAN с тегом. VLAN, которые только коммутируются между портами, этого не требуют."],
+    ["Нужен ли /interface vlan поверх bridge VLAN filtering?", "Только для VLAN, в которых участвует сам маршрутизатор: к интерфейсу VLAN привязываются его IP-адрес, DHCP-сервер и правила файрвола. Для чисто канальных VLAN достаточно таблицы VLAN моста."],
+    ["Выполняется ли это аппаратно?", "На коммутаторах CRS3xx и на некоторых других устройствах с актуальным RouterOS v7 bridge VLAN filtering выполняется в чипе коммутатора. На остальных он работает на процессоре, что снижает пропускную способность. После применения проверьте флаг H у портов в /interface bridge port print."],
+    ["Отправляется ли моя конфигурация куда-либо?", "Нет. Скрипт создаётся в вашем браузере."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="vl">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Мост</legend>
+      <div class="field"><label for="vl-bridge">Имя моста</label><input type="text" id="vl-bridge" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="vl-exists" checked>Мост уже существует</label>
+        <label class="check"><input type="checkbox" id="vl-inbridge" checked>Порты уже добавлены в мост</label>
+        <label class="check"><input type="checkbox" id="vl-tagonly">Маршрутизатор принимает от моста только кадры с тегом (управление только через VLAN)</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>VLAN</legend>
+      <ul class="ros-rows" id="vl-vlans"></ul>
+      <button class="btn btn--sm ros-add" id="vl-vadd" type="button">{{mark:i-plus}}Добавить VLAN</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Порты</legend>
+      <ul class="ros-rows" id="vl-ports"></ul>
+      <button class="btn btn--sm ros-add" id="vl-padd" type="button">{{mark:i-plus}}Добавить порт</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Риск потери доступа.</strong> Включение фильтрации VLAN отрезает любой порт, не входящий в VLAN с адресом маршрутизатора. Проверьте на тестовом стенде или сначала включите Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> в терминале).</span></p>
+    <label for="vl-out" class="label">Скрипт RouterOS v7</label>
+    <textarea id="vl-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="vl-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="vl-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="vl-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Bridge VLAN filtering по-новому, в v7</h2>
+<p>В современном RouterOS VLAN рекомендуется запускать на одном мосту с <code>vlan-filtering=yes</code>. У каждого <strong>порта моста</strong> есть <code>pvid</code> — VLAN, к которой относятся приходящие на него кадры без тега, и <code>frame-types</code>, определяющий, принимает ли порт кадры без тега, с тегом или и те и другие. <strong>Таблица VLAN моста</strong> в разделе <code>/interface bridge vlan</code> затем перечисляет для каждого идентификатора VLAN, какие порты отправляют её с тегом, а какие без. При <code>ingress-filtering=yes</code> порт также отбрасывает кадры с тегом тех VLAN, в которые он не входит.</p>
+<p>Маршрутизатор присоединяется к VLAN через <strong>интерфейс VLAN</strong>, созданный на мосту, при этом мост указан членом этой VLAN с тегом. Этот интерфейс получает IP-адрес и становится шлюзом, DHCP-сервером и границей файрвола для VLAN. В старых руководствах VLAN настраивают в меню чипа коммутатора или отдельным мостом на каждую VLAN; на устройствах, которые выполняют bridge VLAN filtering аппаратно, метод с одним мостом и проще, и быстр.</p>
+<h3>Как применить безопасно</h3>
+<ul>
+  <li>Настройте всё при выключенной фильтрации, а затем включите её одним шагом в конце, как это делает скрипт. При удалённой работе используйте Safe Mode или последовательную консоль.</li>
+  <li>Дайте каждой маршрутизируемой VLAN собственный DHCP-сервер с помощью инструмента <a href="/tools/mikrotik-dhcp-server-generator/">Генератор DHCP-сервера MikroTik</a>, а гостей отделите от других VLAN правилами цепочки forward из инструмента <a href="/tools/mikrotik-firewall-generator/">Генератор файрвола MikroTik</a>.</li>
+  <li>Сравните конфигурацию до и после с помощью инструмента <a href="/tools/routeros-export-diff/">Сравнение экспортов RouterOS</a>.</li>
+</ul>

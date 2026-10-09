@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Tạo port forwarding và hairpin NAT MikroTik | Tanod Tools",
+  "description": "Viết rule port forwarding dst-nat RouterOS cho TCP và UDP, có thể kèm hairpin NAT và giới hạn nguồn. Được kiểm tra, có chú thích, tạo ngay trong trình duyệt của bạn.",
+  "h1": "Tạo port forwarding MikroTik",
+  "lede": "Liệt kê các cổng bạn muốn công khai và máy chủ phía sau chúng, rồi nhận rule dst-nat RouterOS v7, kèm hairpin NAT để máy khách trong LAN cũng dùng được địa chỉ công khai.",
+  "blurb": "Rule dst-nat cho TCP và UDP, kèm hairpin NAT.",
+  "keywords": "port forwarding mikrotik, mở port mikrotik, chuyển tiếp cổng, dst-nat, hairpin nat, nat loopback, mở port camera, mở port rdp, mikrotik port forwarding dst-nat destination nat routeros port forward to-addresses to-ports open port nvr",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không rời khỏi thiết bị của bạn",
+  "limits": "Tạo cú pháp RouterOS v7 (cũng hợp lệ trên v6) cho IPv4. Cổng và địa chỉ được kiểm tra hợp lệ nhưng không được thử trên router của bạn. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với hay được MikroTik bảo trợ.",
+  "howto_title": "Cách chuyển tiếp một cổng trên router MikroTik",
+  "howto": [
+    "Chọn cách rule nhận diện lưu lượng đến địa chỉ công khai của bạn: WAN interface list, một IP công khai cố định, hoặc bất kỳ địa chỉ nào của router.",
+    "Thêm một dòng cho mỗi dịch vụ: giao thức, cổng công khai, IP của máy chủ nội bộ và, nếu khác, cổng nội bộ của nó.",
+    "Đánh dấu hairpin NAT nếu máy khách trong LAN cần truy cập dịch vụ qua địa chỉ công khai, rồi sao chép tập lệnh hoặc tải xuống tệp .rsc."
+  ],
+  "faq": [
+    ["Vì sao tôi không truy cập được cổng đã chuyển tiếp từ bên trong LAN?", "Máy khách LAN gửi đến IP công khai của bạn, router đổi địa chỉ đích sang máy chủ, và máy chủ trả lời thẳng cho máy khách vì cả hai cùng subnet. Máy khách lại chờ phản hồi từ IP công khai nên bỏ gói tin đó đi. Hairpin NAT thực hiện masquerade lưu lượng LAN-đến-LAN này để phản hồi quay về qua router. Cách này chỉ hoạt động khi rule dst-nat khớp theo địa chỉ công khai chứ không phải WAN interface, vì gói tin đi vào từ interface LAN."],
+    ["Rule nên khớp theo in-interface hay dst-address?", "Khớp theo WAN interface list là đơn giản nhất và vẫn dùng được khi IP công khai thay đổi, nhưng không làm được hairpin NAT. Khớp theo dst-address chạy được với hairpin nhưng phải cập nhật khi IP đổi. dst-address-type=local khớp mọi địa chỉ trên router, xử lý được cả IP động lẫn hairpin; điểm vướng là nó cũng bắt các cổng đó trên chính địa chỉ LAN của router."],
+    ["Tôi có cần thêm rule firewall filter không?", "Với cấu hình mặc định của MikroTik thì không: forward chain của nó chỉ chặn các kết nối mới từ WAN khi chúng \"not DSTNATed\", nên kết nối đã chuyển tiếp cổng vẫn đi qua. Nếu bạn viết forward chain chặt hơn, hãy accept connection-nat-state=dstnat trước rule drop cuối cùng."],
+    ["Làm sao chuyển tiếp một dải cổng?", "Nhập dải cổng, chẳng hạn 50000-50100, hoặc một danh sách như 80,443, và để trống cổng nội bộ. Các cổng được chuyển tiếp giữ nguyên. Việc đổi cổng (công khai 8443 sang nội bộ 443) chỉ áp dụng cho từng cổng đơn."],
+    ["Chuyển tiếp RDP, SSH hay Winbox có an toàn không?", "Công khai các dịch vụ truy cập từ xa ra toàn bộ internet sẽ dẫn đến các lần dò mật khẩu. Hãy điền các mạng nguồn được phép để giới hạn việc chuyển tiếp cho những địa chỉ đã biết, hoặc đặt dịch vụ sau một VPN như WireGuard."],
+    ["Cấu hình của tôi có bị gửi đi đâu không?", "Không. Các rule được tạo bằng JavaScript ngay trên trang này, và những gì bạn nhập không bị tải lên, lưu trữ hay ghi log."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Khớp lưu lượng đến</legend>
+      <div class="seg" role="radiogroup" aria-label="Khớp lưu lượng đến">
+        <label><input type="radio" name="pf-mode" value="list" checked>WAN list</label>
+        <label><input type="radio" name="pf-mode" value="iface">Giao diện WAN</label>
+        <label><input type="radio" name="pf-mode" value="ip">IP công khai</label>
+        <label><input type="radio" name="pf-mode" value="local">Mọi địa chỉ của router</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">Danh sách giao diện WAN</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">Địa chỉ IP công khai</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Chuyển tiếp</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}Thêm một chuyển tiếp</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Tùy chọn</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">Hairpin NAT (truy cập dịch vụ từ LAN qua địa chỉ công khai)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">Subnet LAN</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">Mạng nguồn được phép</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">Không bắt buộc. Để trống để chấp nhận kết nối từ mọi nơi.</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">Tập lệnh RouterOS v7</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">Sao chép tập lệnh</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Port forwarding hoạt động thế nào trên RouterOS</h2>
+<p>Port forwarding là một rule <code>dst-nat</code> trong chain <code>dstnat</code> của <code>/ip firewall nat</code>. Khi có kết nối mới khớp với rule (giao thức, cổng đích, và WAN interface hoặc địa chỉ công khai của bạn), RouterOS viết lại đích của nó thành địa chỉ, và có thể cả cổng, của máy chủ nội bộ. Connection tracking ghi nhớ phép chuyển đổi, nên phản hồi được viết lại ngược tự động; bạn không cần rule riêng cho lưu lượng trả về.</p>
+<p>Việc chuyển đổi diễn ra trước khi forward chain của filter nhìn thấy gói tin. Đó là lý do rule forward mặc định của MikroTik chỉ chặn kết nối mới từ WAN khi có <code>connection-nat-state=!dstnat</code>: kết nối đã được rule dst-nat chuyển đổi sẽ được đánh dấu là dstnat và cho đi qua, còn mọi thứ khác từ internet đều bị chặn.</p>
+<h3>Hairpin NAT</h3>
+<p>Khi một máy tính trong LAN kết nối đến địa chỉ công khai của một máy chủ cũng nằm trong LAN, rule dst-nat chuyển gói tin đến máy chủ, nhưng máy chủ thấy địa chỉ riêng của máy khách và trả lời thẳng cho nó. Máy khách khi đó nhận phản hồi từ một địa chỉ mà nó chưa từng trao đổi và loại bỏ. Rule hairpin thực hiện masquerade lưu lượng từ subnet LAN đến máy chủ, để máy chủ trả lời router, và router chuyển phản hồi ngược lại. Cái giá là log của máy chủ sẽ hiện địa chỉ của router thay cho máy khách trong LAN. Một bản ghi DNS split-horizon trỏ tên miền về địa chỉ nội bộ sẽ tránh hẳn NAT và thường là cách sửa gọn hơn.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Kiểm tra tường lửa của bạn có chặn đúng những gì cần chặn bằng <a href="/tools/mikrotik-firewall-auditor/">Kiểm tra tường lửa MikroTik</a>.</li>
+  <li>Truy cập từ xa an toàn hơn qua VPN; <a href="/tools/mikrotik-wireguard-generator/">Tạo WireGuard MikroTik</a> dựng một VPN chỉ trong vài dòng.</li>
+  <li>Cần giới hạn một chuyển tiếp cho nhiều mạng nguồn? Hãy lập danh sách bằng <a href="/tools/mikrotik-address-list-generator/">Tạo address list MikroTik</a>.</li>
+</ul>

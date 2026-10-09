@@ -1,5 +1,5 @@
 // PDF helpers: pdf-lib (MIT) for editing, pdf.js (Apache-2.0) for rendering. Both run locally.
-import { el, icon, UserError, tx } from "./core.js?v=5";
+import { el, icon, UserError, tx } from "./core.js?v=11";
 
 const V = "/tools/vendor/";
 let libP, jsP;
@@ -48,6 +48,12 @@ export async function openForView(bytes, name = tx("This file")) {
     if (err && err.name === "PasswordException") throw new UserError(tx("\"{name}\" needs a password to open, so it can't be used here.", { name }));
     throw new UserError(tx("\"{name}\" couldn't be read as a PDF. It may be damaged or not a PDF.", { name }));
   }
+}
+
+/* Free a document opened with openForView (in pdf.js 6 destroy() belongs to the document's loading task). */
+export function closeView(doc) {
+  if (!doc) return;
+  try { (doc.loadingTask || doc).destroy(); } catch (_) { /* already closed */ }
 }
 
 /* Render one page into a canvas whose longest side is about maxPx CSS pixels (or at a given scale). */

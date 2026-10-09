@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Sortuj wiersze alfabetycznie, od A do Z lub od Z do A | Tanod Tools",
+  "description": "Posortuj listę wierszy alfabetycznie, w naturalnej kolejności liczb, według długości lub losowo. Ignoruj wielkość liter, usuń duplikaty i puste wiersze. Za darmo.",
+  "h1": "Sortuj wiersze alfabetycznie",
+  "lede": "Wklej listę, jeden element w wierszu, i odbierz ją posortowaną od A do Z, od Z do A, w naturalnej kolejności liczb, według długości albo przetasowaną.",
+  "blurb": "Sortuj listę od A do Z, według liczb, długości lub losowo.",
+  "keywords": "sortuj wiersze alfabetycznie sortowanie listy kolejność alfabetyczna a-z z-a sortowanie naturalne według długości przetasuj losowo alphabetize list sort lines natural sort shuffle randomize",
+  "limits": "Tekst do około 5 MB. Wynik odświeża się w trakcie wpisywania; bardzo długie listy odświeżają się chwilę po zakończeniu pisania.",
+  "howto_title": "Jak posortować wiersze alfabetycznie",
+  "howto": [
+    "Wklej listę do pola, jeden element w wierszu, albo otwórz plik .txt.",
+    "Wybierz sposób i kierunek sortowania: od A do Z lub od Z do A. Zaznacz opcje porządkowania, których potrzebujesz.",
+    "Skopiuj posortowaną listę albo pobierz ją jako plik .txt."
+  ],
+  "faq": [
+    ["Jak sortowane są litery z akcentami i inne języki?", "Wiersze są porównywane według reguł sortowania uwzględniających język w twojej przeglądarce, więc é trafia obok e, a Ä obok A, a nie za Z. Kolejność zależy od języka ustawionego w przeglądarce, co ma znaczenie dla kilku liter: w szwedzkim na przykład Ä występuje po Z."],
+    ["Czym jest sortowanie naturalne?", "Sortowanie naturalne odczytuje ciągi cyfr jako liczby, więc „element 2” jest przed „element 10”. Zwykła kolejność alfabetyczna porównuje znak po znaku i stawia „element 10” na początku, bo 1 jest przed 2."],
+    ["Co robi opcja Ignoruj wielkość liter?", "Przy włączonej opcji Ignoruj wielkość liter „apple” i „Apple” są przy sortowaniu traktowane jako to samo słowo, a wiersze różniące się tylko wielkością liter zachowują pierwotną kolejność. Przy wyłączonej małe litery występują przed wielkimi, gdy litery są poza tym takie same. Kolejność według kodu znaków to jeszcze inna sprawa: stawia wszystkie wielkie litery przed wszystkimi małymi, tak jak robi to wiele programów."],
+    ["Czy mogę usuwać duplikaty podczas sortowania?", "Tak. Zaznacz Usuń zduplikowane wiersze, a zostanie zachowana tylko pierwsza kopia każdego wiersza. Gdy włączona jest opcja Ignoruj wielkość liter, wiersze różniące się tylko wielkimi literami są uznawane za duplikaty. Aby mieć większą kontrolę, na przykład zachować ostatnią kopię, użyj narzędzia <a href=\"/tools/remove-duplicate-lines/\">Usuń zduplikowane wiersze</a>."],
+    ["Jak losowe jest tasowanie?", "Tasowanie korzysta z kryptograficznego generatora liczb losowych w przeglądarce i metody Fishera-Yatesa, więc każda kolejność jest jednakowo prawdopodobna. Naciśnij Przetasuj ponownie, aby uzyskać nową kolejność."],
+    ["Czy moja lista jest przesyłana?", "Nie. Sortowanie działa w przeglądarce, a tekst nie jest przesyłany ani zapisywany."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Wiersze do posortowania</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Jeden element w wierszu."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Posortowane</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="by">Sortuj według</label>
+      <select id="by">
+        <option value="alpha">Alfabetycznie</option>
+        <option value="natural">Naturalnie (liczby po kolei)</option>
+        <option value="code">Kodu znaku (najpierw wielkie litery)</option>
+        <option value="length">Długości wiersza</option>
+        <option value="reverse">Odwróć obecną kolejność</option>
+        <option value="shuffle">Przetasuj (losowa kolejność)</option>
+      </select>
+    </div>
+    <fieldset id="dir-field">
+      <legend>Kolejność</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="asc" checked><span id="asc-l">Od A do Z</span></label>
+        <label><input type="radio" name="dir" value="desc"><span id="desc-l">Od Z do A</span></label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci" checked>Ignoruj wielkość liter</label>
+    <label class="check"><input type="checkbox" id="dedupe">Usuń zduplikowane wiersze</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Usuń puste wiersze</label>
+    <label class="check"><input type="checkbox" id="trim">Przytnij spacje na końcach wierszy</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wklej wiersze, aby zacząć.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj wynik</button>
+    <button class="btn" id="dl" type="button" disabled>Pobierz .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Przetasuj ponownie</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Użyj wyniku jako danych wejściowych</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Wyczyść</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Otwórz plik .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Ustawianie listy w kolejności alfabetycznej</h2>
+<p>Każdy wiersz danych wejściowych to jeden element. Narzędzie sortuje wiersze i na bieżąco pokazuje wynik obok danych wejściowych, więc możesz wypróbować inną kolejność lub opcję i od razu zobaczyć efekt. Wiersze są porównywane w całości, od pierwszego znaku, dlatego lista imion i nazwisk jest sortowana według imienia, chyba że w każdym wierszu na początku stoi nazwisko.</p>
+<p>Sortowanie alfabetyczne korzysta z reguł językowych przeglądarki, które rozsądnie traktują akcenty i różną wielkość liter. Kolejność naturalna najlepiej sprawdza się tam, gdzie występują liczby, na przykład w nazwach plików, tytułach rozdziałów lub numerach wersji. Kolejność według kodu znaków odpowiada temu, co robi zwykłe sortowanie w wielu narzędziach programistycznych i arkuszach kalkulacyjnych: każda wielka litera jest przed każdą małą.</p>
+<p>Gdy dwa wiersze są porównywane jako równe, na przykład „Apple” i „apple” przy włączonej opcji Ignoruj wielkość liter, pozostają w dotychczasowej kolejności, więc dwukrotne sortowanie daje ten sam wynik.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Przed sortowaniem usuń numerację lub punktory za pomocą narzędzia <a href="/tools/find-and-replace/">Znajdź i zamień</a>, aby nie wpływały na kolejność.</li>
+  <li>Sprawdź, co zmieniło się między dwiema wersjami listy, za pomocą narzędzia <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+  <li>Chcesz znów mieć listę w jednym wierszu? Użyj narzędzia <a href="/tools/remove-line-breaks/">Usuń podziały wierszy</a> z przecinkiem jako separatorem.</li>
+</ul>

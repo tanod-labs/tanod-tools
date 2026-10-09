@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Generator serwera DHCP i puli IP MikroTik | Tanod Tools",
+  "description": "Wygeneruj serwer DHCP RouterOS: pulę IP, serwer, ustawienia sieci (brama, DNS, domena, NTP) i statyczne dzierżawy, sprawdzone względem podsieci. W przeglądarce.",
+  "h1": "Generator serwera DHCP MikroTik",
+  "lede": "Podaj interfejs i podsieć, a otrzymasz pulę IP, serwer DHCP, ustawienia sieci i statyczne dzierżawy jako jeden sprawdzony skrypt RouterOS.",
+  "blurb": "Pula IP, serwer DHCP, sieć i statyczne dzierżawy.",
+  "keywords": "mikrotik serwer dhcp konfiguracja routeros pula ip dhcp-server network brama dns-server statyczna dzierżawa rezerwacja adresu mac lease-time skrypt dhcp vlan dhcp",
+  "local_text": "Działa w Twojej przeglądarce; nic, co wpiszesz, nie opuszcza urządzenia",
+  "limits": "Generuje składnię RouterOS v7 (poprawną też na v6) dla serwera DHCP IPv4 na jednym interfejsie. Niestandardowe opcje DHCP i przekaźniki nie są obsługiwane. MikroTik i RouterOS są znakami towarowymi SIA Mikrotīkls. To narzędzie jest niezależne i nie jest powiązane z MikroTik ani przez niego rekomendowane.",
+  "howto_title": "Jak skonfigurować serwer DHCP w MikroTik",
+  "howto": [
+    "Wpisz interfejs, w którym są klienci (bridge lub interfejs VLAN), i jego podsieć; brama i pula zostaną z niej zaproponowane.",
+    "Dostosuj pulę, serwery DNS, domenę i czas dzierżawy oraz dodaj statyczne dzierżawy dla urządzeń, które potrzebują stałego adresu.",
+    "Skopiuj skrypt lub pobierz plik .rsc i uruchom go; uwagi wskażą wszystko, co wymaga ponownego spojrzenia."
+  ],
+  "faq": [
+    ["Z jakich części składa się serwer DHCP w RouterOS?", "Współpracują trzy menu: <code>/ip pool</code> zawiera adresy do rozdania, <code>/ip dhcp-server</code> wiąże serwer z interfejsem i pulą, a <code>/ip dhcp-server network</code> zawiera to, co klienci dostają w odpowiedzi: bramę, serwery DNS, domenę i serwery NTP dla danej podsieci. Router potrzebuje też własnego adresu na interfejsie, który skrypt może dodać."],
+    ["Czy statyczne dzierżawy powinny leżeć w puli, czy poza nią?", "Obie opcje działają: RouterOS nigdy nie przydziela adresu, który zajmuje statyczna dzierżawa. Trzymanie stałych urządzeń poza zakresem dynamicznym, na przykład .2 do .9 przy puli od .10, ułatwia czytanie planu i pozwala uniknąć zamieszania po usunięciu dzierżawy."],
+    ["Jakiego czasu dzierżawy użyć?", "W domowej lub biurowej sieci LAN powszechnie stosuje się dobę. Sieci gościnne i hotspoty z wieloma krótkimi wizytami lepiej obsłużyć godziną lub krócej, aby adresy szybko wracały do puli. Bardzo krótkie dzierżawy oznaczają więcej odnowień, ale w małej sieci nie niosą realnego kosztu."],
+    ["Czy potrzebuję allow-remote-requests, aby klienci używali routera jako DNS?", "Tak, a to także sprawia, że router staje się otwartym resolverem, jeśli firewall nie odrzuca DNS z WAN. Narzędzie dodaje to tylko po zaznaczeniu opcji i przypomina o sprawdzeniu łańcucha input."],
+    ["Czy mój plan sieci jest gdzieś wysyłany?", "Nie. Sprawdzenia i skrypt są wykonywane w Twojej przeglądarce."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Sieć</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Interfejs</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Podsieć</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Brama (adres routera)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Zakres puli</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Dodaj adres bramy do interfejsu</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Ustawienia klientów</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">Serwery DNS</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Domena</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">Serwery NTP</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="opcjonalnie" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Czas dzierżawy</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Nazwa serwera i puli</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">Router odpowiada na zapytania DNS w sieci LAN (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Statyczne dzierżawy</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Dodaj statyczną dzierżawę</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">Skrypt RouterOS</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Kopiuj skrypt</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}Pobierz .rsc</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>DHCP w RouterOS, element po elemencie</h2>
+<p>RouterOS trzyma serwer DHCP w trzech miejscach, a brakujący element to zwykła przyczyna, dla której klienci nie dostają adresu. <strong>Pula</strong> to po prostu nazwany zestaw zakresów adresów. <strong>Serwer</strong> nasłuchuje na jednym interfejsie i dzierżawi adresy z swojej puli. Wpis <strong>network</strong> jest dopasowywany po podsieci i zawiera opcje wysyłane z każdą dzierżawą: bramę, serwery DNS, nazwę domeny i serwery NTP. Interfejs potrzebuje też własnego adresu routera w tej podsieci, inaczej serwer nie ma sieci do obsługi.</p>
+<p>Strona sprawdza elementy względem siebie, zanim cokolwiek zapisze: brama i pula muszą leżeć w podsieci, pula musi omijać adres sieci, rozgłoszeniowy i bramy, a statyczne dzierżawy muszą być unikalne i leżeć w podsieci. Statyczne dzierżawy są zapisywane w <code>/ip dhcp-server lease</code> z nazwą serwera, dzięki czemu każde urządzenie zawsze dostaje ten sam adres.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Planujesz adresację? <a href="/tools/subnet-calculator/">Kalkulator podsieci</a> pokazuje zakres hostów i rozmiar dowolnego prefiksu.</li>
+  <li>Jeden serwer DHCP na VLAN: najpierw utwórz interfejsy VLAN w narzędziu <a href="/tools/mikrotik-vlan-generator/">Generator VLAN MikroTik</a>, a potem uruchom to narzędzie raz dla każdego VLAN.</li>
+  <li>Jeśli router odpowiada na DNS, upewnij się, że <a href="/tools/mikrotik-firewall-generator/">firewall</a> odrzuca DNS z internetu.</li>
+</ul>

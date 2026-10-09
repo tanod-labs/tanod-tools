@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "PDF para texto: extrair texto de PDF online grátis | Tanod Tools",
+  "description": "Extraia o texto de um PDF no navegador, página por página. Copie ou baixe em .txt. Grátis, sem cadastro, nada é enviado. PDFs digitalizados precisam de OCR.",
+  "h1": "PDF para texto",
+  "lede": "Extraia o texto de um PDF, página por página, e depois copie ou salve em um arquivo .txt. Um PDF digitalizado não tem texto para extrair; nesse caso, use o <a href=\"/tools/ocr-pdf/\">OCR de PDF</a>.",
+  "blurb": "Extraia o texto de um PDF, copie ou salve em .txt.",
+  "keywords": "pdf para texto extrair texto de pdf pdf para txt converter pdf em texto copiar texto de pdf extrator de texto pdf texto simples pagina por pagina pdf digitalizado ocr pdf to text pdf to txt",
+  "limits": "Um PDF por vez, de até 200 MB e 500 páginas. A ferramenta lê o texto que está armazenado no PDF. Um PDF digitalizado é feito só de imagens das páginas e não tem texto, então precisa do <a href=\"/tools/ocr-pdf/\">OCR de PDF</a>. Tabelas e colunas saem linha por linha, e PDFs protegidos por senha não podem ser abertos.",
+  "howto_title": "Como extrair texto de um PDF",
+  "howto": [
+    "Escolha um arquivo PDF ou arraste-o para a página.",
+    "Aguarde um instante enquanto cada página é lida. Escolha todas as páginas ou um intervalo, como 1-3, 5, e se quer marcar onde cada página começa.",
+    "Clique em <strong>Baixar .txt</strong>, copie todo o texto ou copie uma única página da lista."
+  ],
+  "faq": [
+    ["Meu PDF é enviado?", "Não. O seu navegador lê o texto com a biblioteca de código aberto pdf.js, no seu dispositivo. Nada é enviado a um servidor, e o texto desaparece quando você fecha a aba."],
+    ["Por que não apareceu texto, ou apareceu só o de algumas páginas?", "A ferramenta lê o texto que está armazenado no PDF. Um PDF digitalizado guarda cada página como uma imagem, sem texto por trás, então não há nada para ler. O mesmo vale para páginas digitalizadas inseridas em um documento que, fora isso, é normal. Use o <a href=\"/tools/ocr-pdf/\">OCR de PDF</a> para reconhecer as letras nas imagens. As páginas sem texto são sinalizadas na lista página por página."],
+    ["A formatação é mantida?", "Não. Você recebe texto simples: letras, números e quebras de linha. Fontes, cores, imagens e o layout da página ficam de fora. As linhas quebram onde quebram no PDF, e uma linha em branco é inserida onde o espaço entre duas linhas é maior que o normal, como entre parágrafos."],
+    ["Como junto as linhas quebradas em parágrafos?", "Cole o texto em <a href=\"/tools/remove-line-breaks/\">Remover quebras de linha</a>. Essa ferramenta junta as linhas dentro de cada parágrafo, mantém as linhas em branco entre os parágrafos e pode corrigir palavras divididas por hífen no fim de uma linha."],
+    ["Por que parte do texto aparece fora de ordem ou dividido em pedaços estranhos?", "O texto sai na ordem em que o PDF o armazena, que em geral é a ordem de leitura, mas nem sempre. Tabelas, páginas com várias colunas e PDFs exportados de programas de design podem sair embaralhados, e alguns PDFs guardam o texto em pedaços que não correspondem às palavras que você vê."],
+    ["Funciona com outros idiomas além do inglês?", "Sim. O texto é lido como Unicode, então letras acentuadas, cirílico, grego, híndi, chinês e outros sistemas de escrita saem normalmente, desde que o PDF tenha uma camada de texto adequada. Se um PDF usa uma configuração de fontes incomum, copiar o texto gera caracteres ilegíveis em qualquer programa; a solução mais comum é aplicar OCR ao arquivo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Solte um PDF aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Escolher PDF</span></label>
+  <p class="drop__hint">Ou arraste para qualquer lugar desta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Páginas</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Todas as páginas</label>
+        <label><input type="radio" name="scope" value="range">Algumas páginas</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Intervalo de páginas</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Opções</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Marcar onde cada página começa</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Páginas</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>Com texto</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Palavras</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Caracteres</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Texto extraído</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}Baixar .txt</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Copiar todo o texto</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+  <h3 class="util-h">Página por página</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Texto encontrado em cada página">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Página</th><th scope="col">Palavras</th><th scope="col">Caracteres</th><th scope="col"><span class="visually-hidden">Copiar</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>De onde vem o texto de um PDF</h2>
+<p>Um PDF criado por um editor de texto, um navegador ou um programa de design guarda suas palavras como texto: cada sequência de letras vem com uma fonte e uma posição na página. É esse texto guardado que a ferramenta lê. O seu navegador abre o arquivo com a pdf.js, pede o texto de cada página e monta as sequências de volta em linhas, na ordem em que o arquivo as lista. Em nenhum momento ele olha como a página aparece na tela.</p>
+<p>Um PDF digitalizado é diferente. Um scanner ou a câmera do celular produz uma imagem de cada página, e o PDF guarda só essas imagens, então não há texto para ler: você vê palavras, mas o arquivo não as contém. Transformar as imagens de volta em texto é outro trabalho, chamado de reconhecimento óptico de caracteres (OCR), que o <a href="/tools/ocr-pdf/">OCR de PDF</a> faz. As páginas sem texto são marcadas na lista abaixo da caixa de texto, para você distinguir as digitalizadas das normais em um arquivo misto.</p>
+<p>O resultado é texto simples, sem formatação. As linhas terminam onde terminam no PDF, e uma linha em branco é inserida onde o espaço entre duas linhas é claramente maior que o espaçamento normal daquela página; é assim que parágrafos e títulos ficam separados. As ligaduras que algumas fontes usam para pares como fi e fl voltam a ser letras separadas, e os hifens opcionais invisíveis são descartados.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>As páginas digitalizadas aparecem como páginas sem texto. Passe-as pelo <a href="/tools/ocr-pdf/">OCR de PDF</a> e leia o resultado.</li>
+  <li>Cole o texto em <a href="/tools/remove-line-breaks/">Remover quebras de linha</a> para transformar as linhas empilhadas em parágrafos corridos.</li>
+  <li>Precisa de apenas algumas páginas como PDF? <a href="/tools/extract-pdf-pages/">Extrair páginas de PDF</a> separa essas páginas, e o <a href="/tools/word-counter/">Contador de palavras</a> conta o que você copiou.</li>
+</ul>

@@ -1,0 +1,57 @@
+<!--meta
+{
+  "title": "RouterOS export diff: bandingkan 2 konfigurasi MikroTik | Tanod Tools",
+  "description": "Bandingkan dua file /export RouterOS per bagian: baris yang ditambah dan dihapus per menu, baris panjang digabung, header diabaikan, dan secret disamarkan. Di browser.",
+  "h1": "Pembanding export RouterOS",
+  "lede": "Tempel dua export, misalnya sebelum dan sesudah perubahan atau dua router yang seharusnya sama, dan lihat persis apa yang berbeda, menu demi menu.",
+  "blurb": "Diff per bagian dari dua export RouterOS.",
+  "keywords": "routeros export diff bandingkan konfigurasi mikrotik bandingkan dua export perubahan konfigurasi rsc diff backup bandingkan config router audit tinjau perubahan",
+  "local_text": "Kedua export dibandingkan di browser Anda dan tidak pernah meninggalkan perangkat Anda",
+  "limits": "Membandingkan export baris demi baris dalam tiap menu, setelah menggabungkan baris yang terpotong dan membuang header. Perubahan urutan aturan tampil sebagai baris yang dihapus dan ditambah. Nilai secret disamarkan secara default. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara membandingkan dua konfigurasi RouterOS",
+  "howto": [
+    "Di tiap router, atau sebelum dan sesudah perubahan, jalankan <code>/export</code> (v6: <code>/export hide-sensitive</code>) lalu salin hasilnya, atau buka file .rsc yang tersimpan.",
+    "Tempel export lama di kiri dan yang baru di kanan. Perbandingan diperbarui saat Anda mengetik.",
+    "Buka bagian yang disorot untuk membaca apa yang ditambah (+) dan dihapus (−), dan salin perubahannya sebagai teks untuk catatan perubahan."
+  ],
+  "faq": [
+    ["Mengapa membandingkan per bagian, bukan seluruh file?", "Export adalah daftar menu, dan menu yang sama selalu muncul di tempat yang sama. Membandingkan menu demi menu mencegah perubahan di /ip firewall filter tercampur dengan baris di /ip address, dan memungkinkan Anda melihat sekilas bagian konfigurasi mana yang berubah."],
+    ["Mengapa baris panjang dari export saya tampak berbeda di sini?", "RouterOS memotong baris panjang dalam export dengan backslash di akhir dan melanjutkannya di baris berikutnya. Diff menggabungkannya kembali menjadi satu baris logis dan merapatkan spasi berulang, sehingga aturan yang hanya dipotong ulang tidak dihitung sebagai perubahan."],
+    ["Aturan hanya berpindah, tetapi tampil sebagai dihapus dan ditambah. Mengapa?", "Urutan penting di chain firewall, NAT, dan mangle: aturan yang berpindah bisa mengubah apa yang dilakukan router. Karena itu diff mempertahankan urutan dan menampilkan aturan yang berpindah sebagai dihapus dari posisi lamanya dan ditambah di posisi baru."],
+    ["Apakah password dan key disembunyikan?", "Dengan \"Samarkan secret\" aktif, nilai password, secret, private key dan preshared key, key MD5, dan community SNMP diganti dengan ***** dalam perbandingan. Bagaimanapun, apa pun yang Anda tempel tidak meninggalkan browser."],
+    ["Bisakah dipakai untuk satu export saja?", "Bisa. Dengan satu sisi terisi, halaman mendaftar bagian-bagian export itu beserta jumlah barisnya, yang merupakan cara cepat membaca konfigurasi panjang."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-xdiff" id="xd">
+  <div class="ros-pair">
+    <div class="field">
+      <label for="xd-a">Export lama (sebelum)</label>
+      <textarea id="xd-a" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}Buka file .rsc<input type="file" id="xd-file-a" accept=".rsc,.txt,text/plain"></label>
+    </div>
+    <div class="field">
+      <label for="xd-b">Export baru (sesudah)</label>
+      <textarea id="xd-b" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge vlan-filtering=yes&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}Buka file .rsc<input type="file" id="xd-file-b" accept=".rsc,.txt,text/plain"></label>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="xd-mask" checked>Samarkan secret</label>
+    <label class="check"><input type="checkbox" id="xd-nocomments" checked>Abaikan baris komentar #</label>
+    <label class="check"><input type="checkbox" id="xd-all">Tampilkan bagian yang tidak berubah</label>
+  </div>
+  <div class="ros-results" id="xd-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="xd-copy" type="button" hidden>Salin perubahan sebagai teks</button></div>
+</div>
+<!--explain-->
+<h2>Membaca diff konfigurasi RouterOS</h2>
+<p>Export adalah konfigurasi router yang ditulis sebagai perintah yang akan membuatnya kembali: baris menu seperti <code>/ip firewall filter</code> diikuti perintah <code>add</code> dan <code>set</code> untuk menu itu. Hanya pengaturan yang berbeda dari default yang muncul, yang membuat export singkat tetapi berarti pengaturan yang dikembalikan ke default akan sekadar menghilang dari export yang lebih baru. Diff memperlakukan tiap menu sebagai satu bagian, membandingkan perintahnya secara berurutan, dan menyorot bagian yang berubah.</p>
+<p>Sebagian perbedaan hanyalah noise, bukan perubahan: header berisi tanggal export, software ID, dan nomor seri dibuang, baris yang terpotong digabung, dan baris komentar bisa diabaikan. Yang tersisa adalah hal yang benar-benar akan dilakukan router secara berbeda. Urutan sengaja dipertahankan: aturan firewall, NAT, mangle, dan queue diproses dari atas ke bawah, jadi memindahkan aturan adalah perubahan nyata.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Simpan export bertanggal setelah setiap jendela perubahan dan bandingkan dengan yang sebelumnya untuk melihat persis apa yang dikerjakan.</li>
+  <li>Memeriksa upgrade v6 ke v7? Bandingkan skrip hasil konversi dari <a href="/tools/routeros-v7-migration-helper/">pembantu migrasi</a> dengan export yang diambil setelah upgrade.</li>
+  <li>Untuk teks biasa yang bukan export, <a href="/tools/text-diff/">text diff</a> umum membandingkan kata demi kata juga.</li>
+</ul>

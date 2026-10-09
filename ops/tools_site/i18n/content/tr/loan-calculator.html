@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Amortisman tablolu kredi hesaplama | Tanod Tools",
+  "description": "Kredi ve konut kredisi hesaplayıcı: aylık taksit, toplam faiz ve CSV olarak indirebileceğiniz tam ödeme planı. Ücretsiz, tarayıcınızda çalışır.",
+  "h1": "Kredi hesaplama",
+  "lede": "Tutarı, yıllık faiz oranını ve vadeyi girin; aylık taksiti, toplam faizi ve indirebileceğiniz taksit taksit ödeme planını görün.",
+  "blurb": "Aylık taksit, toplam faiz ve amortisman tablosu.",
+  "keywords": "kredi hesaplama konut kredisi hesaplama aylık taksit ödeme planı amortisman tablosu toplam faiz taşıt kredisi ihtiyaç kredisi ek ödeme csv indir sıfır faiz",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "Sabit faizli ve eşit aylık taksitli krediler; faiz her ay yıllık oranın on ikide biri üzerinden hesaplanır ve tutarlar her ay kuruşa yuvarlanır. Vade en fazla 100 yıl. Masraflar, sigorta, vergiler, balon ödemeler ve değişken faiz dahil değildir; bu yüzden bankanın rakamları biraz farklı olabilir. Tutarlar, kullandığınız para biriminde düz sayılardır.",
+  "howto_title": "Kredi taksiti nasıl hesaplanır",
+  "howto": [
+    "Kredi tutarını, yıllık faiz oranını ve vadeyi yıl veya ay olarak girin.",
+    "İsterseniz zorunlu taksitin üzerine her ay ödeyeceğiniz bir ek tutar ekleyin.",
+    "Aylık taksiti, toplam faizi ve toplam ödemeyi okuyun; ardından ödeme planında gezinin veya CSV dosyası olarak indirin."
+  ],
+  "faq": [
+    [
+      "Aylık taksit nasıl hesaplanır?",
+      "Standart annüite formülüyle: taksit = P × r ÷ (1 − (1 + r)^−n). Burada P çekilen kredi tutarı, r aylık faiz oranı (yıllık oranın 12'ye bölünmüş hali) ve n aylık taksit sayısıdır. Taksit kuruşa yuvarlanır ve son taksit, bakiye tam sıfırda bitecek şekilde ayarlanır."
+    ],
+    [
+      "Faiz oranı %0 ise ne olur?",
+      "Kredi basitçe eşit taksitlere bölünür: tutar, ay sayısına bölünür. Toplam faiz sıfır olur. Varsa yuvarlama farkları son taksite eklenir."
+    ],
+    [
+      "Amortisman tablosu neyi gösterir?",
+      "Her ödeme için bir satır: ödemenin ne kadarının faize gittiğini, ne kadarının anaparayı azalttığını ve sonrasında kalan bakiyeyi. Başlangıçta her taksitin çoğu faizdir; sona doğru çoğu anaparadır."
+    ],
+    [
+      "Ek ödemeler nasıl yardımcı olur?",
+      "Her ay yapılan ek tutar doğrudan anaparaya gider; bakiye daha hızlı düşer, daha az faiz birikir ve kredi daha erken biter. Sonuç, kaç taksit gerektiğini ve ek ödemenizle toplam faizi gösterir."
+    ],
+    [
+      "Bankamın rakamı neden farklı?",
+      "Bankalar masraf alabilir, faizi farklı işletebilir, ay yerine gün sayabilir veya başka şekilde yuvarlayabilir. Bunu yaklaşık bir tahmin olarak kullanın, teklif olarak değil."
+    ],
+    [
+      "Yazdıklarım yüklenir mi?",
+      "Hayır. Her şey tarayıcınızda hesaplanır ve hiçbir şey cihazınızdan çıkmaz."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Kredi tutarı</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Yıllık faiz oranı (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Kredi vadesi</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Vade birimi">
+          <option value="years" selected>yıl</option>
+          <option value="months">ay</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Her ay ek ödeme (isteğe bağlı)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Aylık taksit</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Toplam faiz</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Toplam ödeme</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Taksit sayısı</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Planı indir (CSV)</button>
+    </div>
+    <h3 class="util-h">Amortisman tablosu</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Amortisman tablosu">
+      <table class="dv-table">
+        <thead><tr><th scope="col">No</th><th scope="col">Taksit</th><th scope="col">Anapara</th><th scope="col">Faiz</th><th scope="col">Kalan bakiye</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Kredi taksiti nasıl hesaplanır</h2>
+<p>Çoğu kredi ve konut kredisi amortismanlıdır: her ay aynı tutarı ödersiniz ve her taksit önce bakiyede biriken faizi karşılar, sonra anaparanın bir kısmını öder. Bakiye başlangıçta en yüksek olduğu için ilk taksitlerin faiz payı büyük, anapara payı küçüktür. Bakiye düştükçe faiz payı azalır ve her taksitin daha büyük kısmı anaparaya gider.</p>
+<p>Hesaplayıcı yıllık oranı 12'ye bölerek aylık orana çevirir, sabit taksiti standart annüite formülüyle bulur ve ardından planı ay ay oluşturur. Ayın faizi, bakiye çarpı aylık orandır ve bir bankanın yaptığı gibi kuruşa yuvarlanır. Taksitin geri kalanı bakiyeyi azaltır. Son taksit bakiyeyi kapatan tutardır, bu yüzden diğerlerinden birkaç kuruş farklı olabilir. %0 oran için formül gerekmez: tutar aylara eşit bölünür.</p>
+<p>Her ay biraz fazla ödemek faizi azaltmanın en ucuz yollarından biridir. Ek tutarın tamamı anaparaya gider; bakiye daha hızlı düşer ve kredi daha erken biter. Kaç taksit kaldığını ve ek ödeme yapmamaya kıyasla ne kadar faiz tasarruf ettiğinizi görmek için bir ek tutar girin.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Birikimin veya yatırımın ne kadar büyüyebileceğini <a href="/tools/compound-interest-calculator/">bileşik faiz hesaplayıcı</a> ile görün.</li>
+  <li>İki oranı karşılaştırın veya taksitteki değişimi <a href="/tools/percentage-calculator/">yüzde hesaplayıcı</a> ile bulun.</li>
+  <li>Tutarı çeke mi yazıyorsunuz? <a href="/tools/number-to-words/">Sayıyı yazıya çevirme</a> aracı yazıyla yazar.</li>
+</ul>

@@ -1,5 +1,5 @@
-import { $, el, debounce, copyText, tx } from "./core.js?v=5";
-import { loadScript } from "./vendorload.js?v=5";
+import { $, el, debounce, copyText, tx } from "./core.js?v=11";
+import { loadScript } from "./vendorload.js?v=11";
 
 const input = $("#u-in"), info = $("#u-info"), rows = $("#u-rows"), notes = $("#u-notes");
 const hintRows = $("#u-hints"), hintInfo = $("#u-hints-info");

@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Web sayfasını PDF yap: URL'yi online PDF'e kaydet | Tanod Tools",
+  "description": "Bir web sayfasını adresinden PDF olarak kaydedin. A4 veya Letter, dikey ya da yatay seçin. Ücretsiz, kayıt ve eklenti gerekmez; PDF hemen ardından sunucumuzdan silinir.",
+  "h1": "Web sayfasını PDF olarak kaydet",
+  "lede": "Herkese açık bir web sayfasının adresini yapıştırın ve sunucumuzdaki bir tarayıcının yazdırdığı PDF olarak geri alın.",
+  "blurb": "URL'yi A4 veya Letter PDF'e dönüştürün.",
+  "keywords": "web sayfasını pdf yap url'den pdf html'den pdf site pdf kaydet sayfayı pdf olarak kaydet bağlantıyı pdf'e çevir web sayfası yazdır url to pdf html to pdf webpage to pdf save page as pdf website to pdf",
+  "limits": "Yalnızca herkese açık sayfalar (oturum açma veya özel ağ yok). Yalnızca sayfanın kendi adresindeki dosyalar yüklenir. Sunucumuzda işlenir, ardından silinir. Kişi başına günde 10 ücretsiz sunucu işlemi, tüm sunucu araçları arasında paylaşılır. Daha fazlası için: <a href=\"/learn/html-to-pdf-api.html\">HTML to PDF API</a> (çağrı başına ücretli).",
+  "howto_title": "Web sayfası PDF olarak nasıl kaydedilir",
+  "howto": [
+    "Sayfanın adresini yapıştırın, örneğin https://example.com/article.",
+    "Kâğıt boyutunu ve yönünü seçin; arka plan renklerinin korunup korunmayacağına karar verin.",
+    "<strong>PDF'e dönüştür</strong> düğmesine basın, ardından dosyayı indirin."
+  ],
+  "faq": [
+    ["Adrese ve PDF'e ne olur?", "Tarayıcınız adresi sunucumuza gönderir; orada korumalı alanda çalışan bir tarayıcı sayfayı açar ve PDF olarak yazdırır; PDF doğrudan size geri gönderilir. Sayfa ve PDF sunucuda yalnızca işlem sürerken bulunur ve işlem biter bitmez silinir. PDF'i saklamayız; dönüştürdüğünüz adresi de asla kaydetmeyiz."],
+    ["Bazı resimler veya stiller neden eksik?", "Güvenlik için sunucumuzun tarayıcısı yalnızca sayfanın kendi adresindeki dosyaları yükler. Ayrı bir resim CDN'i gibi başka alan adlarından sunulan resimler, yazı tipleri ve stiller dışarıda bırakılır. Makaleler ve basit sayfalar genellikle iyi yazdırılır; yoğun tasarımlı siteler tarayıcınızdakinden daha sade görünebilir."],
+    ["Oturum açtığım bir sayfayı kaydedebilir mi?", "Hayır. Sunucumuz sayfayı çerezsiz ve oturumsuz, yeni bir ziyaretçi olarak açar ve özel ağlara erişemez. Oturum arkasındaki bir sayfa için tarayıcınızın kendi Yazdır, ardından PDF olarak kaydet seçeneğini kullanın."],
+    ["Seçenekler ne yapar?", "Kâğıt boyutu ve yön sayfa biçimini belirler. <em>Arka planları yazdır</em>, ekrandaki gibi arka plan renklerini ve resimlerini korur; daha temiz, mürekkep tasarruflu bir çıktı için kapatın. Kenar boşlukları her yanda 10 mm'dir."],
+    ["Bir sınır var mı?", "Kişi başına günde 10 ücretsiz sunucu işlemi; bu hak tüm sunucu araçlarımız arasında paylaşılır. Yalnızca başarılı işlemler sayılır ve sayaç UTC gece yarısı sıfırlanır. Çok uzun sayfalar boyut sınırını aşıp başarısız olabilir. Daha fazlası için <a href=\"/learn/html-to-pdf-api.html\">HTML to PDF API</a> çağrı başına ücretlidir."],
+    ["İnsan doğrulaması nedir?", "Bir işlem çalışmadan önce Cloudflare Turnstile, aracı bir botun değil bir insanın kullandığını denetler. Genellikle görünmezdir; bazen bir kutuyu işaretlemenizi ister."]
+  ]
+}
+-->
+<!--tool-->
+<div class="urlform">
+  <div class="field">
+    <label for="url">Web sayfası adresi</label>
+    <input id="url" type="url" inputmode="url" placeholder="https://example.com/article" autocomplete="url" spellcheck="false" maxlength="2048" aria-describedby="url-help">
+    <span class="help" id="url-help">Oturum açmadan açılan herkese açık bir sayfa.</span>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="paper-l">Kâğıt</span>
+      <div class="seg" role="radiogroup" aria-labelledby="paper-l">
+        <label><input type="radio" name="paper" value="a4" checked>A4</label>
+        <label><input type="radio" name="paper" value="letter">Letter</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="orient-l">Yön</span>
+      <div class="seg" role="radiogroup" aria-labelledby="orient-l">
+        <label><input type="radio" name="orient" value="portrait" checked>Dikey</label>
+        <label><input type="radio" name="orient" value="landscape">Yatay</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Görünüm</span>
+      <label class="check"><input type="checkbox" id="bg" checked>Arka planları yazdır</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>PDF'e dönüştür</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Burada bir web sayfası nasıl PDF olur</h2>
+<p>Sunucumuz Chromium tarayıcısının yeni, korumalı alanda çalışan bir kopyasını başlatır, verdiğiniz adresi açar, sayfanın yüklenmesini bekler ve tarayıcınızın Yazdır penceresinin yapacağı gibi seçtiğiniz kâğıt boyutu ve yönle PDF olarak yazdırır. Tarayıcı yalnızca o tek siteye erişebilir, özel ağlara asla erişemez ve her işlemden sonra atılır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Yazdırma görünümü olan makaleler gibi okuyucu dostu sayfalar en temiz PDF'leri verir.</li>
+  <li>Birkaç sayfayı tek dosyada mı istiyorsunuz? Her birini dönüştürün, ardından <a href="/tools/merge-pdf/">PDF birleştir</a> ile (tarayıcınızda) birleştirin.</li>
+  <li>PDF yerine metne mi ihtiyacınız var? <a href="/tools/html-to-markdown/">HTML'den Markdown'a</a> yapıştırılmış HTML'yi cihazınızda dönüştürür.</li>
+</ul>

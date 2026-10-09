@@ -1,0 +1,79 @@
+<!--meta
+{
+  "title": "Tekst na mowę: czytanie tekstu na głos w przeglądarce | Tanod Tools",
+  "description": "Wklej tekst i odsłuchaj go na głos z użyciem głosów dostępnych na urządzeniu. Wybierz głos, szybkość, wysokość i głośność oraz śledź czytanie słowo po słowie.",
+  "h1": "Tekst na mowę",
+  "lede": "Wklej lub wpisz tekst i posłuchaj, jak jest czytany na głos przez głosy wbudowane w przeglądarkę i system operacyjny.",
+  "blurb": "Czytaj tekst na głos głosami wbudowanymi w urządzenie.",
+  "keywords": "tekst na mowę czytaj na głos syntezator mowy lektor głos czytnik tekstu odsłuchaj korekta tts speak read aloud speech synthesis voice reader narrator text reader listen proofread",
+  "limits": "Mowa pochodzi z głosów własnej przeglądarki, więc to, co jest dostępne, zależy od urządzenia. Tekst do 100 000 znaków jest czytany w częściach wielkości zdania. Nagrania z tego narzędzia nie można zapisać.",
+  "local_text": "Czyta głosami wbudowanymi w urządzenie",
+  "howto_title": "Jak sprawić, aby przeglądarka czytała tekst na głos",
+  "howto": [
+    "Wklej lub wpisz tekst. Strona pokaże, ile ma znaków i na ile części zostanie podzielony do czytania.",
+    "Wybierz <strong>głos</strong> i ustaw szybkość, wysokość i głośność. Głosy oznaczone <em>(online)</em> korzystają z usługi mowy prowadzonej przez producenta przeglądarki.",
+    "Kliknij <strong>Odtwórz</strong>. W razie potrzeby użyj przycisków <strong>Wstrzymaj</strong>, <strong>Wznów</strong> i <strong>Zatrzymaj</strong>; czytane słowo jest podświetlane, jeśli głos o nim informuje."
+  ],
+  "faq": [
+    ["Skąd pochodzi głos?", "Z twojej przeglądarki i systemu operacyjnego, przez Web Speech API. Ta strona nie zawiera syntezatora mowy i nie ma własnych głosów, dlatego lista różni się na laptopie z Windows, na Macu, na telefonie z Androidem i na komputerze z Linuksem."],
+    ["Czy mój tekst jest dokądś wysyłany?", "To zależy od wybranego głosu. Głosy bez oznaczenia <em>(online)</em> działają na urządzeniu, a tekst na nim zostaje. Niektóre głosy, takie jak głosy Google w Chrome czy głosy Online (Natural) w Edge, są głosami online: przeglądarka wysyła tekst do usługi mowy producenta przeglądarki, aby otrzymać dźwięk. Ta strona nie może tego zobaczyć ani kontrolować. Narzędzie domyślnie wybiera głos działający na urządzeniu; wybierz głos online tylko wtedy, gdy zgadzasz się, aby ten tekst trafił do tej firmy."],
+    ["Dlaczego lista głosów jest pusta lub ładuje się chwilę?", "Niektóre przeglądarki wypełniają listę chwilę po załadowaniu strony, a strona aktualizuje się, gdy to nastąpi. Jeśli lista pozostaje pusta, na urządzeniu nie ma zainstalowanych głosów mowy, co jest częste w minimalnych konfiguracjach Linuksa i na niektórych komputerach zarządzanych przez firmy. Pomaga zainstalowanie głosu syntezatora mowy w ustawieniach języka systemu."],
+    ["Czy mogę zapisać mowę jako MP3 lub WAV?", "Nie. Web Speech API odtwarza dźwięk prosto na głośnikach i nie daje stronom dostępu do nagrania, więc żadna witryna nie może go nagrać przez przeglądarkę. Aby uzyskać plik audio, potrzebujesz programu do syntezy mowy na komputerze albo usługi, która renderuje dźwięk na własnych serwerach."],
+    ["Dlaczego tekst jest czytany w częściach?", "Chrome i niektóre inne przeglądarki przerywają pojedynczą długą wypowiedź po około 15 sekundach. Strona dzieli tekst na końcach zdań na kawałki o długości około 200 znaków i czyta je kolejno, dzięki czemu długie artykuły są czytane do końca. Między częściami możesz usłyszeć drobną przerwę."],
+    ["Dlaczego podświetlenie słowa nie przesuwa się przy niektórych głosach?", "Nie każdy głos informuje przeglądarkę, na którym słowie jest. Gdy to robi, bieżące słowo jest podświetlane; gdy nie, podświetlane jest czytane zdanie. Zmiana szybkości, wysokości lub głośności w trakcie czytania obowiązuje od następnej części."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack tts">
+  <p class="note tts-note">Mowa korzysta z głosów wbudowanych w przeglądarkę i system operacyjny. Głosy oznaczone <strong>(online)</strong> wysyłają tekst do usługi mowy producenta przeglądarki; wszystkie pozostałe głosy działają na tym urządzeniu.</p>
+  <div class="field">
+    <label for="tts-text">Tekst do przeczytania</label>
+    <textarea id="tts-text" class="tts-text" rows="8" maxlength="100000" spellcheck="true" placeholder="Wklej lub wpisz coś, aby usłyszeć to na głos."></textarea>
+    <div class="tts-meta">
+      <span id="tts-count" aria-live="polite">0 znaków</span>
+      <span id="tts-parts" data-parts="0">Nie ma jeszcze nic do czytania.</span>
+      <button class="btn btn--quiet btn--sm" id="tts-clear" type="button">Wyczyść tekst</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tts-voice">Głos</label>
+    <select id="tts-voice" aria-describedby="tts-voice-status"></select>
+    <p class="help" id="tts-voice-status" role="status" data-state="loading">Szukanie głosów...</p>
+    <p class="help tts-online" id="tts-online" hidden>To jest głos online. Tekst czytany tym głosem jest wysyłany do usługi mowy producenta przeglądarki. Wybierz głos bez oznaczenia (online), aby tekst został na tym urządzeniu.</p>
+  </div>
+  <div class="tts-sliders">
+    <div class="field">
+      <label for="tts-rate">Szybkość <output id="tts-rate-v" for="tts-rate"></output></label>
+      <input type="range" id="tts-rate" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-pitch">Wysokość głosu <output id="tts-pitch-v" for="tts-pitch"></output></label>
+      <input type="range" id="tts-pitch" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="tts-vol">Głośność <output id="tts-vol-v" for="tts-vol"></output></label>
+      <input type="range" id="tts-vol" min="0" max="1" step="0.05" value="1">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="tts-play" type="button" disabled>Odtwórz</button>
+    <button class="btn" id="tts-pause" type="button" disabled>Wstrzymaj</button>
+    <button class="btn" id="tts-resume" type="button" disabled>Wznów</button>
+    <button class="btn" id="tts-stop" type="button" disabled>Zatrzymaj</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="out tts-follow" id="tts-follow" aria-hidden="true" hidden></div>
+  <p class="help">Za pomocą tego narzędzia nie można zapisać dźwięku: przeglądarka odtwarza mowę prosto na głośnikach i nie przekazuje jej stronom internetowym.</p>
+</div>
+<!--explain-->
+<h2>Co się dzieje, gdy strona internetowa mówi</h2>
+<p>Zamiana tekstu na mowę w przeglądarce to przekazanie zadania. Strona przekazuje przeglądarce tekst, nazwę głosu, szybkość i wysokość, a przeglądarka prosi system operacyjny, a w niektórych przypadkach serwery producenta przeglądarki, o zamianę go na dźwięk. Dlatego dwie osoby na tej samej stronie słyszą różne głosy i dlatego nie ma tu nic do pobrania: sama strona nigdy nie otrzymuje dźwięku.</p>
+<p>Głosy działające na urządzeniu to te, które dostarcza system, na przykład instalowane razem z systemem Windows, macOS, iOS lub Android; działają offline. Głosy sieciowe zwykle brzmią naturalniej, dlatego przeglądarki je oferują, ale tekst musi trafić na serwer, aby został przeczytany. Ta różnica ma znaczenie przy materiałach prywatnych, więc zanim wkleisz coś wrażliwego, sprawdź oznaczenie <em>(online)</em>.</p>
+<p>Słuchanie to dobry sposób na korektę. Zmęczone oczy prześlizgują się po powtórzonym słowie czy brakującej kropce, ale głos czyta dokładnie to, co jest napisane, i potyka się tam, gdzie potyka się zdanie. Zwolnij trochę tempo i śledź podświetlone słowo.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Najpierw sprawdź, ile zajmie przeczytanie fragmentu, za pomocą narzędzia <a href="/tools/word-counter/">Licznik słów</a>, które podaje szacowany czas mówienia.</li>
+  <li>Usuń zbędne podziały wierszy ze skopiowanego tekstu za pomocą narzędzia <a href="/tools/remove-line-breaks/">Usuń podziały wierszy</a>, aby zdania nie były czytane we fragmentach.</li>
+  <li>Przed odsłuchaniem upewnij się, że symbole i wielkie litery są na swoim miejscu, za pomocą narzędzia <a href="/tools/case-converter/">Zmiana wielkości liter</a>.</li>
+</ul>

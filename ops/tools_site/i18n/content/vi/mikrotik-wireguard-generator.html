@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Tạo cấu hình WireGuard MikroTik (RouterOS v7) | Tanod Tools",
+  "description": "Tạo WireGuard server RouterOS v7 và cấu hình peer sẵn dùng. Khóa được tạo trong trình duyệt bằng Web Crypto và không bao giờ rời khỏi thiết bị của bạn.",
+  "h1": "Tạo WireGuard MikroTik",
+  "lede": "Đặt mạng tunnel và các peer, rồi nhận cấu hình WireGuard RouterOS v7 cùng một tệp cấu hình cho từng laptop, điện thoại hoặc chi nhánh từ xa.",
+  "blurb": "WireGuard server RouterOS v7 cùng tệp cấu hình peer.",
+  "keywords": "cấu hình wireguard mikrotik, tạo wireguard mikrotik, vpn wireguard, tạo khóa wireguard, vpn site to site, mikrotik wireguard setup routeros v7 wireguard interface peers allowed-address public key private key generator wg-quick client config road warrior",
+  "local_text": "Khóa được tạo trong trình duyệt và không bao giờ rời khỏi thiết bị của bạn",
+  "limits": "Cần RouterOS v7 (WireGuard không có trên v6). Khóa được tạo bằng Web Crypto X25519 của trình duyệt; nếu trình duyệt không hỗ trợ, router sẽ tự tạo khóa của nó và các tệp cấu hình chứa giá trị giữ chỗ. Chỉ hỗ trợ địa chỉ tunnel IPv4. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với hay được MikroTik bảo trợ.",
+  "howto_title": "Cách thiết lập WireGuard trên MikroTik",
+  "howto": [
+    "Nhập tên interface, cổng lắng nghe, địa chỉ tunnel của router (chẳng hạn <code>10.66.0.1/24</code>) và địa chỉ công khai mà các máy khách sẽ kết nối đến.",
+    "Thêm một dòng cho mỗi peer cùng địa chỉ tunnel của nó; với liên kết site-to-site, thêm các mạng phía sau peer. Chọn full tunnel hoặc split tunnel.",
+    "Dán tập lệnh RouterOS, chuyển rule tường lửa lên trên các rule drop, rồi nhập tệp .conf của từng peer vào ứng dụng WireGuard của nó."
+  ],
+  "faq": [
+    ["Khóa tạo trong một trang web có an toàn không?", "Khóa được tạo bằng bản cài đặt X25519 có sẵn của Web Crypto trong trình duyệt, cùng đường cong mà WireGuard dùng, và chỉ tồn tại trong bộ nhớ của trang này cùng đoạn văn bản nó hiển thị cho bạn. Không có gì được gửi đi: trang không có thành phần máy chủ, và chính sách bảo mật của nó chặn kết nối đến các trang khác. Đóng thẻ là khóa biến mất, vì vậy hãy lưu trước những cấu hình bạn cần."],
+    ["Nếu trình duyệt của tôi không tạo được khóa X25519 thì sao?", "Trang sẽ báo cho bạn và chuyển sang dùng khóa tạo ở nơi khác: tập lệnh RouterOS bỏ phần khóa riêng, để router tự tạo khóa của nó khi tạo interface. Chạy /interface wireguard print để đọc khóa công khai của router, dán vào các cấu hình peer, rồi dán khóa công khai của từng peer (lấy từ ứng dụng WireGuard của nó) vào bảng ở đây."],
+    ["allowed-address trên một peer MikroTik là gì?", "Nó vừa là danh sách truy cập vừa là bảng định tuyến: router chỉ nhận gói tin từ peer có địa chỉ nguồn nằm trong danh sách này, và gửi lưu lượng đến các đích này về phía peer đó. Với một thiết bị, đó là địa chỉ /32 của thiết bị. Với một chi nhánh từ xa, hãy thêm LAN của chi nhánh, và tập lệnh cũng thêm một route đến đó."],
+    ["Full tunnel hay split tunnel?", "Full tunnel (AllowedIPs 0.0.0.0/0 trên peer) đưa toàn bộ lưu lượng của thiết bị qua router, hữu ích trên Wi-Fi không đáng tin; router phải masquerade các địa chỉ tunnel ra internet. Split tunnel chỉ gửi mạng tunnel và các mạng bạn liệt kê, nên việc duyệt web thông thường vẫn đi cục bộ."],
+    ["Vì sao peer cần PersistentKeepalive?", "Điện thoại hoặc laptop sau NAT chỉ nhận được gói tin khi ánh xạ NAT của nó còn sống. Keepalive mỗi 25 giây giữ ánh xạ mở, để router liên lạc được với peer và tunnel hoạt động lại nhanh sau một quãng nghỉ."],
+    ["Khóa preshared bổ sung điều gì?", "Một bí mật đối xứng thêm được trộn vào quá trình bắt tay, bổ sung một lớp bảo vệ trước các cuộc tấn công lượng tử trong tương lai nhằm vào việc trao đổi khóa công khai. Khóa này là tùy chọn, và phải khớp ở cả hai phía."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Router</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">Tên interface</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Cổng lắng nghe (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">Địa chỉ tunnel của router</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">Địa chỉ công khai (endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">DNS cho các peer</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Khóa</legend>
+      <div class="seg" role="radiogroup" aria-label="Khóa">
+        <label><input type="radio" name="wg-keys" value="browser" checked>Tạo trong trình duyệt này</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">Tạo ở nơi khác</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>Trình duyệt này không tạo được khóa X25519, nên router sẽ tự tạo khóa của nó và bạn dán khóa công khai của các peer vào bên dưới.</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>Thêm khóa preshared cho mỗi peer</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}Khóa mới</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Thêm một peer</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Lưu lượng của peer</legend>
+      <div class="seg" role="radiogroup" aria-label="Lưu lượng của peer">
+        <label><input type="radio" name="wg-route" value="full" checked>Full tunnel (toàn bộ lưu lượng)</label>
+        <label><input type="radio" name="wg-route" value="split">Split tunnel</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">Các mạng mà peer truy cập qua tunnel</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>Thêm tunnel vào interface list LAN</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">Tập lệnh RouterOS v7</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">Sao chép tập lệnh</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>WireGuard trên RouterOS v7</h2>
+<p>WireGuard có mặt từ RouterOS 7 và được cấu hình ở hai nơi: <code>/interface wireguard</code> chứa cặp khóa và cổng lắng nghe của router, còn <code>/interface wireguard peers</code> chứa mỗi thiết bị hoặc chi nhánh từ xa một mục, được nhận diện bằng khóa công khai của nó. Interface tunnel sau đó nhận địa chỉ IP như mọi interface khác, và rule tường lửa, route cùng interface list áp dụng cho nó như bình thường. Không có tên người dùng hay mật khẩu: peer là bất kỳ ai nắm giữ khóa riêng khớp với một khóa công khai đã cấu hình.</p>
+<p><code>allowed-address</code> của mỗi peer là cốt lõi của cách thiết lập này. Nó liệt kê các địa chỉ nguồn mà router chấp nhận từ peer đó, đồng thời là các đích mà router gửi đến peer đó. Ở phía thiết bị, <code>AllowedIPs</code> làm việc tương tự theo chiều ngược lại: 0.0.0.0/0 đưa mọi thứ qua tunnel, còn một danh sách mạng thì chỉ giữ tunnel cho các mạng đó.</p>
+<h3>Trước khi kết nối</h3>
+<ul>
+  <li>Router phải chấp nhận UDP trên cổng lắng nghe trong input chain, đặt trên mọi rule drop. <a href="/tools/mikrotik-firewall-generator/">Tạo tường lửa MikroTik</a> có thể mở cổng này giúp bạn với <code>udp/13231</code>.</li>
+  <li>Nếu router nằm sau một thiết bị NAT khác, hãy chuyển tiếp cổng UDP đến nó, như <a href="/tools/mikrotik-port-forwarding/">Tạo port forwarding MikroTik</a> minh họa.</li>
+  <li>Cấu hình của peer chứa khóa riêng. Hãy chuyển chúng đến thiết bị qua kênh đáng tin cậy và xóa các bản sao thừa.</li>
+</ul>

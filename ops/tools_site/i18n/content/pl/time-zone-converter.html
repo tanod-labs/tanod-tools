@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Konwerter stref czasowych i planer spotkań | Tanod Tools",
+  "description": "Przelicz datę i godzinę na wiele stref czasowych naraz, z przesunięciami UTC, zmianą dnia, lukami i nakładaniem się czasu letniego oraz godzinowym planerem spotkań.",
+  "h1": "Konwerter stref czasowych",
+  "lede": "Wybierz datę, godzinę i strefę, w której ta godzina obowiązuje, a zobaczysz ten sam moment w każdym mieście z listy, wraz z planerem do szukania wspólnych godzin pracy.",
+  "blurb": "Przelicz jedną godzinę na wiele stref i zaplanuj spotkania.",
+  "keywords": "konwerter stref czasowych zegar światowy planer spotkań przelicz czas między miastami przesunięcie utc czas letni strefy czasowe różnica czasu time zone converter world clock meeting planner utc offset daylight saving est pst gmt",
+  "limits": "Korzysta z danych o strefach czasowych wbudowanych w przeglądarkę, więc przesunięcia i zasady czasu letniego zależą od tego, co zna przeglądarka, także dla dat z przeszłości i przyszłości. Skróty są pokazywane tylko tam, gdzie przeglądarka je zna. Nic nie opuszcza urządzenia.",
+  "howto_title": "Jak przeliczyć godzinę między strefami",
+  "howto": [
+    "Wybierz datę, godzinę i strefę, w której ta godzina obowiązuje. Kliknij <strong>Teraz</strong>, aby zacząć od bieżącej chwili.",
+    "Dodaj potrzebne miasta przez <em>Dodaj miejsce</em>. Każdy wiersz pokazuje czas lokalny, dzień (ten sam, następny lub poprzedni) i przesunięcie UTC. Lista jest zapamiętywana na tym urządzeniu.",
+    "Skorzystaj z planera spotkań pod listą, aby znaleźć godziny, w których wszyscy mieszczą się między 09:00 a 17:00 czasu lokalnego. Komórki w kreskę to godziny pracy."
+  ],
+  "faq": [
+    ["Co się stanie, jeśli wybiorę godzinę, która nie istnieje?", "Gdy zegary przesuwają się do przodu, jedna godzina czasu lokalnego jest pomijana: w Nowym Jorku 8 marca 2026 zegar przeskakuje z 01:59 od razu na 03:00, więc 02:30 nigdy nie następuje. Konwerter informuje o tym i stosuje zwykłą konwencję, przesuwając godzinę do przodu o długość luki (02:30 staje się 03:30), a potem przelicza ten moment."],
+    ["A godzina, która zdarza się dwa razy?", "Gdy zegary cofają się, jedna godzina się powtarza. 1 listopada 2026 w Nowym Jorku 01:30 występuje najpierw jako 01:30 EDT (UTC-04:00), a godzinę później ponownie jako 01:30 EST (UTC-05:00). Konwerter pokazuje obie możliwości i pozwala wybrać; zaczyna od wcześniejszej."],
+    ["Dlaczego niektóre przesunięcia nie są pełnymi godzinami?", "W kilku miejscach stosuje się przesunięcia o pół godziny lub 45 minut: Indie to UTC+05:30, Nepal to UTC+05:45, a Lord Howe w Australii to UTC+10:30 zimą i UTC+11:00 latem, czyli zmiana czasu letniego o zaledwie 30 minut. Narzędzie używa dokładnego przesunięcia obowiązującego w wybranym dniu."],
+    ["Czy zmiana dnia jest pokazywana?", "Tak. Każdy wiersz podaje Ten sam dzień, Następny dzień lub Poprzedni dzień względem daty wybranej w strefie źródłowej. Kiritimati w Kiribati ma UTC+14, najwcześniejszą strefę na świecie, więc godzina w południe w Londynie to tam już następny dzień."],
+    ["Jak działa planer spotkań?", "Układa 24 godzinowe komórki dla każdego miejsca, wyrównane według tych samych chwil, zaczynając od północy wybranej daty w strefie źródłowej. Komórki między 09:00 a 17:00 czasu lokalnego są zakreskowane i oznaczają godziny pracy, a dolny wiersz zaznacza godziny, które pasują wszystkim. Kolumna z grubym obrysem to wpisana godzina."],
+    ["Jakich nazw stref mogę używać?", "Dowolnej strefy IANA wymienianej przez przeglądarkę, takiej jak Europe/London czy Asia/Tokyo, a także UTC i własnej strefy. Nazwy miast są pokazywane w czytelnej formie, z pełnym identyfikatorem strefy pod spodem. Do przeliczania znacznika czasu Unix zamiast godziny z zegara ściennego użyj narzędzia <a href=\"/tools/unix-timestamp-converter/\">Konwerter znacznika czasu Unix</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Data</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Godzina</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Teraz</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Strefa czasowa tej godziny</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Ta godzina występuje dwa razy. Która?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Dodaj miejsce</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Dodaj</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Zegar</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24-godzinny</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12-godzinny</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Przeliczone godziny"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Planer spotkań</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Legenda planera">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Godziny pracy, od 09:00 do 17:00 czasu lokalnego (kreskowanie)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>Wpisana godzina (gruby obrys)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Wszyscy są w godzinach pracy</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Dlaczego przeliczanie czasu między strefami się myli</h2>
+<p>Strefa czasowa to nie tylko przesunięcie względem UTC. To zestaw reguł, przechowywany w bazie stref czasowych IANA, który mówi, jakie przesunięcie obowiązywało i będzie obowiązywać w każdym dniu. Dlatego to samo miasto ma UTC-5 zimą i UTC-4 latem, dlatego dwa miasta, które dziś mają to samo przesunięcie, mogą rozejść się w przyszłym miesiącu, i dlatego spotkanie o 9:00 w Londynie przesuwa się względem Nowego Jorku na kilka tygodni każdej wiosny i jesieni, gdy oba kraje zmieniają zegary w różnych terminach.</p>
+<p>Zmiany czasu letniego tworzą dwa kłopotliwe przypadki. Wiosną fragment czasu lokalnego jest pomijany, więc godzina z tego przedziału nie istnieje. Jesienią fragment się powtarza, więc godzina z tego przedziału jest niejednoznaczna i potrzebuje przesunięcia, aby rozstrzygnąć, o które wystąpienie chodzi. Wiele programów po cichu wybiera jedną odpowiedź; ten konwerter informuje o luce lub nakładaniu się, a w przypadku nakładania pozwala wybrać.</p>
+<p>W planowaniu porównanie wskazań zegara to tylko połowa pracy. Uczciwość zależy od tego, na czyje godziny pracy wypada spotkanie. Godzinowy planer ustawia każde miejsce według tych samych chwil, więc od razu widać, gdzie nakładają się godziny 09:00–17:00 i gdzie ktoś dołączałby w środku nocy. Nawet przy bardzo dobrym nakładaniu się podaj w zaproszeniu strefę wprost, najlepiej z przesunięciem UTC, aby nikt nie musiał zgadywać.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Odczytujesz znacznik czasu z logu lub API? <a href="/tools/unix-timestamp-converter/">Konwerter znacznika czasu Unix</a> pokazuje go w dowolnej strefie.</li>
+  <li>Aby znaleźć datę, na którą wypada termin po dodaniu dni lub dni roboczych, użyj narzędzia <a href="/tools/date-calculator/">Kalkulator dat</a>.</li>
+  <li>Obliczasz, jak długo trwa projekt lub podróż? Policzy to narzędzie <a href="/tools/date-difference-calculator/">Ile dni między datami</a>.</li>
+</ul>

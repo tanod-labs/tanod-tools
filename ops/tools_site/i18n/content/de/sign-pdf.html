@@ -1,0 +1,139 @@
+<!--meta
+{
+  "title": "PDF online unterschreiben – zeichnen oder eintippen | Tanod Tools",
+  "description": "PDF im Browser unterschreiben: Unterschrift zeichnen oder eintippen, auf der Seite platzieren, Datum hinzufügen. Kostenlos, ohne Anmeldung, kein Upload.",
+  "h1": "PDF unterschreiben",
+  "lede": "Zeichnen Sie Ihre Unterschrift oder tippen Sie Ihren Namen ein, platzieren Sie die Unterschrift an der gewünschten Stelle einer Seite, fügen Sie auf Wunsch das Datum hinzu und speichern Sie das unterschriebene PDF. Alles geschieht auf Ihrem Gerät.",
+  "blurb": "Unterschrift zeichnen oder eintippen und im PDF platzieren.",
+  "keywords": "pdf unterschreiben pdf signieren unterschrift in pdf einfügen unterschrift einfuegen pdf online unterschreiben dokument unterschreiben unterschrift zeichnen name eintippen elektronische unterschrift digitale unterschrift signatur paraphe namenskürzel namenskuerzel datum einfügen sign pdf esign",
+  "limits": "Ein PDF auf einmal, bis 200 MB und bis 500 Seiten. Die Unterschrift wird als Bild in die Seite eingefügt. Sie ist keine digitale Signatur mit Zertifikat und belegt daher weder, wer unterschrieben hat, noch, dass die Datei unverändert geblieben ist. Passwortgeschützte PDFs können nicht bearbeitet werden.",
+  "howto_title": "So unterschreiben Sie ein PDF",
+  "howto": [
+    "Wählen Sie eine PDF-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Zeichnen Sie Ihre Unterschrift oder wechseln Sie zu <strong>Eintippen</strong> und geben Sie Ihren Namen ein. Setzen Sie ein Häkchen, um das Datum einzufügen.",
+    "Wählen Sie die Seite und ziehen Sie dann die Unterschrift an die richtige Stelle, tippen Sie auf die gewünschte Position oder nutzen Sie die Regler für Position und Größe. Klicken Sie auf <strong>Unterschrift einfügen</strong> und laden Sie das unterschriebene PDF herunter."
+  ],
+  "faq": [
+    ["Werden mein PDF oder meine Unterschrift hochgeladen?", "Nein. Die Seite wird gezeichnet und die Unterschrift hinzugefügt, und zwar von Code, der in Ihrem Browser läuft und die Open-Source-Bibliotheken pdf.js und pdf-lib nutzt. Weder das PDF noch die Unterschrift werden an einen Server gesendet oder gespeichert, und beides ist weg, sobald Sie den Tab schließen."],
+    ["Ist das eine rechtsverbindliche Unterschrift?", "Viele Menschen und Organisationen akzeptieren bei alltäglichen Dokumenten das Bild einer Unterschrift. Ob das genügt, hängt jedoch vom Dokument ab, davon, wer die Unterschrift verlangt, und von der Rechtslage, die bei Ihnen gilt. Dies ist keine zertifikatsbasierte digitale Signatur: Sie belegt weder, wer unterschrieben hat, noch, dass die Datei danach unverändert geblieben ist. Wenn Sie unsicher sind, fragen Sie bei der Stelle nach, die die Unterschrift verlangt, was sie akzeptiert."],
+    ["Kann ich mehrere Seiten unterschreiben?", "Ja. Wählen Sie <em>Alle Seiten</em>, um dieselbe Unterschrift an derselben Stelle auf allen Seiten einzufügen; das eignet sich für Namenskürzel (Paraphen). Position und Größe werden im Verhältnis zur jeweiligen Seite beibehalten, sodass auch Seiten unterschiedlicher Größe funktionieren. Um verschiedene Seiten an verschiedenen Stellen zu unterschreiben, unterschreiben Sie einmal, öffnen dann das Ergebnis und unterschreiben erneut."],
+    ["Lässt sich die Unterschrift nachträglich entfernen?", "Sie wird Teil der Seite, sodass jeder PDF-Viewer sie anzeigt. Sie bleibt aber ein gewöhnliches Bild, und wer einen PDF-Editor hat, könnte sie entfernen. Ihre Originaldatei wird nicht verändert: Sie laden eine neue Kopie herunter. Wenn Sie einschränken möchten, wer die unterschriebene Kopie ändern darf, vergeben Sie über <a href=\"/tools/protect-pdf/\">PDF mit Passwort schützen</a> ein Passwort."],
+    ["Warum sieht meine eingetippte Unterschrift auf einem anderen Gerät anders aus?", "Eingetippte Unterschriften verwenden Schriften, die auf Ihrem Gerät installiert sind, und Schreibschriften unterscheiden sich von System zu System. Die Vorschau zeigt, was gespeichert wird. Die gespeicherte Unterschrift ist ein Bild und sieht deshalb überall gleich aus, wo das PDF geöffnet wird."],
+    ["Funktioniert es bei gedrehten Seiten?", "Ja. Die Seite wird so angezeigt, wie sie in einem PDF-Viewer erscheint, und die Unterschrift wird mit der Seite gedreht, sodass sie aufrecht steht. Auch beschnittene Seiten werden berücksichtigt: Die Position wird innerhalb des sichtbaren Bereichs gemessen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">Ihre Unterschrift</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Eingabeart</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Zeichnen</label>
+          <label><input type="radio" name="sg-mode" value="type">Eintippen</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="Unterschriftsfeld. Zeichnen Sie hier mit Maus, Finger oder Stift Ihre Unterschrift."></canvas>
+        <span class="help">Zeichnen Sie mit Maus, Finger oder Stift. Wenn Sie nicht zeichnen können, wählen Sie „Eintippen“.</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Letzten Strich zurücknehmen</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Leeren</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Ihr Name</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Ihren Namen eingeben">
+        </div>
+        <div class="field">
+          <label for="sg-font">Stil</label>
+          <select id="sg-font">
+            <option value="script" selected>Schreibschrift</option>
+            <option value="hand">Handschrift</option>
+            <option value="serif">Klassisch kursiv</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Vorschau Ihrer eingetippten Unterschrift"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Tinte</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Schwarz</label>
+          <label><input type="radio" name="sg-ink" value="blue">Blau</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">Datum unter der Unterschrift einfügen</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Datumstext</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Auf der Seite platzieren</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Vorherige Seite">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Seite</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Nächste Seite">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">Ziehen Sie die Unterschrift auf der Seite, tippen Sie auf die gewünschte Stelle oder nutzen Sie die Regler.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">Von links nach rechts: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">Von oben nach unten: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Größe: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">Unterschreiben</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>Diese Seite</label>
+            <label><input type="radio" name="sg-scope" value="all">Alle Seiten</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Unterschrift einfügen</button>
+    <span class="help" id="sg-hint">Zeichnen Sie zuerst Ihre Unterschrift oder tippen Sie Ihren Namen ein.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Wie eine Unterschrift auf eine PDF-Seite kommt</h2>
+<p>Eine PDF-Seite ist ein festes Layout; eine Seite zu unterschreiben heißt daher, ihr etwas hinzuzufügen, nicht, in sie hineinzuschreiben. Dieses Tool verwandelt Ihre Unterschrift, auf Wunsch samt Datumszeile, in ein kleines Bild mit transparentem Hintergrund und zeichnet dieses Bild auf die gewählte Seite. Ihr Browser zeigt Ihnen die Seite mit pdf.js an und schreibt die neue Kopie mit pdf-lib, sodass die Seite, die Sie sehen, genau die ist, die unterschrieben wird.</p>
+<p>Position und Größe werden als Bruchteile der Seite gespeichert, nicht als feste Maße. Deshalb passen dieselben Reglerwerte zu Seiten unterschiedlicher Größe, wenn Sie alle Seiten unterschreiben, und deshalb erhält auch eine seitlich gedreht gespeicherte Seite eine aufrecht stehende Unterschrift. Ihre Originaldatei wird nie verändert; Sie laden eine separate, unterschriebene Kopie herunter.</p>
+<p>Sie erhalten das Bild einer Unterschrift; so unterschreiben die meisten Menschen Formulare, Briefe und Verträge ja auch: von Hand und anschließend eingescannt. Es ist keine kryptografische digitale Signatur. Eine solche nutzt ein auf Sie ausgestelltes Zertifikat, schützt die Datei nach dem Unterschreiben vor Änderungen und erfordert einen eigens dafür gebauten Dienst. Welche Art ein Dokument braucht, hängt vom Dokument ab und davon, wer die Unterschrift verlangt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Zeichnen Sie langsam und nutzen Sie das ganze Feld: Die Unterschrift wird auf die gezeichneten Striche zugeschnitten, daher wird sie bei gleicher Größe auf der Seite umso schärfer, je größer Sie sie zeichnen.</li>
+  <li>Sichern Sie die unterschriebene Kopie mit einem Passwort über <a href="/tools/protect-pdf/">PDF mit Passwort schützen</a> oder stempeln Sie jede Seite mit <a href="/tools/watermark-pdf/">PDF-Wasserzeichen</a>.</li>
+  <li>Müssen Sie zuerst eine unterschriebene Seite an ein anderes Dokument anhängen? <a href="/tools/merge-pdf/">PDF zusammenfügen</a> verbindet Dateien in der Reihenfolge, die Sie festlegen.</li>
+</ul>

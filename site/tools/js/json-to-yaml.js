@@ -1,5 +1,5 @@
-import { initFormatter, FmtError, lineCol, $, $$ } from "./fmtcore.js?v=5";
-import { tx } from "./core.js?v=5";
+import { initFormatter, FmtError, lineCol, $, $$ } from "./fmtcore.js?v=11";
+import { tx } from "./core.js?v=11";
 
 let Y = null, dumpSchema = null, loadSchema = null;
 const ready = () => (Y ? Promise.resolve() : import("/tools/vendor/js-yaml/js-yaml.esm.min.mjs").then((m) => {

@@ -1,7 +1,7 @@
-import { $, $$, el, copyText, tx, txn, txf, EN, LOCALE, dateFormat } from "./core.js?v=5";
-import { fillZoneSelect, zoneOf, wallFields, offsetMinutes, utcFromFields, fmtOffset, pad, resolveWall } from "./tzcore.js?v=5";
-import { parseCron, describe, nextRuns, MONTHS, DAYS, monthName, dayName, SEARCH_YEARS } from "./croncore.js?v=5";
-import { CRON_FIELDS, defaultField, fieldText, fieldFromParsed } from "./dev3core.js?v=5";
+import { $, $$, el, copyText, tx, txn, txf, EN, LOCALE, dateFormat } from "./core.js?v=11";
+import { fillZoneSelect, zoneOf, wallFields, offsetMinutes, utcFromFields, fmtOffset, pad, resolveWall } from "./tzcore.js?v=11";
+import { parseCron, describe, nextRuns, MONTHS, DAYS, monthName, dayName, SEARCH_YEARS } from "./croncore.js?v=11";
+import { CRON_FIELDS, defaultField, fieldText, fieldFromParsed } from "./dev3core.js?v=11";
 
 const UNITS = [
   { every: tx("Every minute"), stepLabel: tx("Every N minutes"), stepMode: tx("Every N minutes, from a start"), specific: tx("Specific minutes") },

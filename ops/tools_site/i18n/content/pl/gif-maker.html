@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Kreator GIF-ów: zrób animowany GIF z obrazów | Tanod Tools",
+  "description": "Zrób animowany GIF z kilku obrazów w przeglądarce: ustaw kolejność, opóźnienie i rozmiar, zobacz podgląd i pobierz. Bezpłatnie, bez rejestracji i przesyłania.",
+  "h1": "Kreator GIF-ów",
+  "lede": "Zamień garść obrazów w animowany GIF. Ułóż je w kolejności i wybierz, jak długo ma być widoczny każdy z nich oraz jak duży ma być GIF. Obejrzyj podgląd, a potem pobierz plik.",
+  "blurb": "Zrób animowany GIF z kilku obrazów.",
+  "keywords": "kreator gif generator gif animowany gif zrób gifa stwórz gifa obrazy na gif zdjęcia na gif pokaz slajdów animacja klatki opóźnienie pętla gif maker create animated gif images to gif photos to gif slideshow",
+  "limits": "Od 2 do 60 obrazów, po 50 MB każdy. GIF może mieć do 1200 pikseli szerokości, a każda klatka ma kształt pierwszego obrazu. Klatka GIF-a może zawierać najwyżej 256 kolorów, więc na zdjęciach mogą być widoczne pasma, a przezroczystości nie ma: przezroczyste obszary przyjmują kolor tła. Z dodanych obrazów animowanych używana jest pierwsza klatka.",
+  "howto_title": "Jak zrobić animowany GIF",
+  "howto": [
+    "Wybierz co najmniej dwa obrazy albo przeciągnij je na stronę. Przyciskami w górę i w dół ustaw kolejność.",
+    "Ustaw opóźnienie między klatkami i szerokość oraz wybierz, jak mają się dopasować obrazy o różnych kształtach. Obejrzyj podgląd.",
+    "Naciśnij <strong>Utwórz GIF</strong>, sprawdź wynik i pobierz plik."
+  ],
+  "faq": [
+    ["Czy moje obrazy są przesyłane?", "Nie. Obrazy są rysowane, a GIF zapisywany przez kod działający w Twojej przeglądarce, z użyciem kodera gifenc o otwartym kodzie źródłowym. Nic nie jest wysyłane na serwer."],
+    ["Jak przyspieszyć lub spowolnić animację?", "Zmień opóźnienie między klatkami, podane w milisekundach: 1000 to jedna sekunda, a 100 to dziesięć klatek na sekundę. Najkrótsze dostępne opóźnienie to 20 ms, ponieważ przeglądarki odtwarzają animacje z krótszymi opóźnieniami znacznie wolniej."],
+    ["Dlaczego mój GIF jest ziarnisty albo ma widoczne pasma?", "Klatka GIF-a może używać najwyżej 256 kolorów, więc zdjęcia i gładkie gradienty pokazują pasma. To narzędzie wybiera najlepsze 256 kolorów osobno dla każdej klatki, dzięki czemu każda klatka jest tak zbliżona do swojego obrazu, jak pozwala na to format. Najlepiej wyglądają płaskie grafiki i zrzuty ekranu."],
+    ["Dlaczego mój GIF jest taki duży?", "GIF słabo się kompresuje i zapisuje każdą klatkę w całości, więc rozmiar rośnie wraz z szerokością, wysokością i liczbą klatek. Aby go zmniejszyć, użyj mniejszej szerokości, mniejszej liczby obrazów albo mniejszej liczby kolorów na klatkę."],
+    ["Co się dzieje z obrazami o różnych rozmiarach lub kształtach?", "Każda klatka ma kształt pierwszego obrazu. <em>Wpasuj w klatkę</em> pokazuje każdy obraz w całości i wypełnia wolne miejsce kolorem tła, <em>Wypełnij i przytnij</em> pokrywa całą klatkę i obcina to, co wystaje, zachowując środek obrazu, a <em>Rozciągnij</em> wciska każdy obraz w wymiary klatki."],
+    ["Czy przezroczystość jest zachowywana?", "Nie. GIF może oznaczyć jako przezroczysty tylko jeden kolor, więc narzędzie wypełnia przezroczyste obszary wybranym kolorem tła. Dzięki temu każda klatka wygląda wszędzie tak samo."],
+    ["Co robi odtwarzanie do przodu, a potem do tyłu?", "Po ostatniej klatce dodaje klatki jeszcze raz w odwrotnej kolejności, bez powtarzania pierwszej i ostatniej, dzięki czemu animacja płynnie przesuwa się w tę i z powrotem, zamiast skakać z powrotem na początek."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść tutaj co najmniej dwa obrazy</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Wybierz obrazy</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP lub AVIF. Lub przeciągnij je w dowolne miejsce na tej stronie.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Klatki w kolejności" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Opóźnienie między klatkami (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1000 ms to jedna sekunda. Najkrótsze opóźnienie to 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Szerokość (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">Wysokość dopasowuje się do pierwszego obrazu: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Obrazy o innych kształtach</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Wpasuj w klatkę</label>
+        <label><input type="radio" name="gm-fit" value="cover">Wypełnij i przytnij</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Rozciągnij</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Kolor tła</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Powtarzanie</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>W nieskończoność</label>
+        <label><input type="radio" name="gm-loop" value="once">Raz</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Liczba kolorów na klatkę</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (najlepsza jakość)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (najmniejszy plik)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Kolejność</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Odtwarzaj do przodu, a potem do tyłu</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Podgląd</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Podgląd animacji"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Utwórz GIF</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Wyczyść wszystko</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Jak powstaje animowany GIF</h2>
+<p>GIF to stos zwykłych obrazów wyświetlanych jeden po drugim. Każda klatka ma własną niewielką paletę liczącą najwyżej 256 kolorów oraz opóźnienie, czyli czas w setnych częściach sekundy, po którym pojawia się następna klatka. Ustawienie pętli na początku pliku mówi programowi wyświetlającemu, czy ma powtarzać animację w nieskończoność, czy zatrzymać się po jednym przejściu. Nie ma tu kompresji wideo: każda klatka jest zapisana w całości i spakowana prostą metodą bezstratną, dlatego GIF-y tak szybko robią się duże.</p>
+<p>Zrobienie GIF-a ze zdjęć polega na wybraniu 256 kolorów, które najlepiej reprezentują każdy obraz, a potem zastąpieniu każdego piksela najbliższym z nich. To narzędzie robi to osobno dla każdej klatki za pomocą kodera gifenc o otwartym kodzie źródłowym, po narysowaniu wszystkich obrazów w tym samym rozmiarze, aby klatki się pokrywały. Rozmiar wynika z wybranej szerokości i proporcji pierwszego obrazu, a pozostałe obrazy są w niego wpasowywane, przycinane tak, by go wypełniały, albo rozciągane, zależnie od tego, co wybierzesz.</p>
+<p>Obrazy są odczytywane po jednym w trakcie zapisywania GIF-a, więc długa lista dużych zdjęć nie musi mieścić się w pamięci jednocześnie. Podgląd nad przyciskiem odtwarza te same klatki w mniejszym rozmiarze, aby przed ostateczną decyzją można było ocenić kolejność, tempo i dopasowanie; jednym przyciskiem można go wstrzymać, a gdy system prosi o ograniczenie ruchu, podgląd od początku jest wstrzymany.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Postaw na krótką animację: kilka sekund przy 10 klatkach na sekundę w zupełności wystarczy, a mniej klatek i mniejszy rozmiar dają znacznie mniejszy plik.</li>
+  <li>Najpierw nadaj obrazom ten sam kształt w narzędziu <a href="/tools/crop-image/">Przytnij obraz</a> albo zmniejsz duże zdjęcia w narzędziu <a href="/tools/resize-image/">Zmień rozmiar obrazu</a>.</li>
+  <li>Wolisz jeden obraz zamiast animacji? Narzędzie <a href="/tools/merge-images/">Połącz obrazy</a> łączy je obok siebie albo w siatce.</li>
+</ul>

@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "Générateur et vérificateur security.txt (RFC 9116) | Tanod Tools",
+  "description": "Créez un security.txt pour /.well-known/ ou collez le vôtre pour le vérifier selon la RFC 9116 : Contact, Expires, liens https, Canonical et signature.",
+  "h1": "Générateur et vérificateur de security.txt",
+  "lede": "Générez un security.txt valide selon la RFC 9116 pour que les chercheurs sachent comment vous joindre, ou collez un fichier existant pour voir ce qui cloche. Une étape de votre préparation au <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">règlement européen sur la cyberrésilience (CRA)</a>.",
+  "blurb": "Générez un security.txt et vérifiez-en un selon la RFC 9116.",
+  "keywords": "générateur security.txt vérificateur security.txt rfc 9116 validateur security.txt well-known divulgation de vulnérabilités contact expires canonical pgp règlement cyberrésilience cra security.txt generator security.txt checker rfc 9116 well-known security.txt validator vulnerability disclosure contact expires canonical pgp cyber resilience act",
+  "limits": "Vérifie uniquement le texte au regard de la RFC 9116. La page ne va pas chercher votre site web (rien de ce que vous saisissez ne quitte cette page : collez donc le fichier), ne vérifie pas une signature OpenPGP et ne teste pas qu'une adresse fonctionne. Un modèle, pas un conseil juridique.",
+  "howto_title": "Comment créer et vérifier un security.txt",
+  "howto": [
+    "Saisissez au moins un Contact (une adresse e-mail, un numéro de téléphone ou une page https://) et contrôlez la date Expires. Renseignez les champs facultatifs qui vous intéressent, comme Policy et Preferred-Languages.",
+    "Copiez le fichier ou téléchargez-le, puis publiez-le à l'adresse <code>/.well-known/security.txt</code> de votre domaine, en HTTPS et en texte brut.",
+    "Pour vérifier un fichier existant, collez son texte dans le vérificateur. Corrigez les erreurs, puis examinez les avertissements. Indiquez l'adresse à laquelle vous le servez pour tester le champ Canonical.",
+    "Mettez un rappel dans votre agenda pour renouveler Expires avant son échéance."
+  ],
+  "faq": [
+    ["Le règlement sur la cyberrésilience impose-t-il un security.txt ?", "Non. Le règlement attend des fabricants qu'ils aient une politique de divulgation coordonnée des vulnérabilités et un moyen publié de signaler des vulnérabilités. Un fichier security.txt est la manière courante de publier ce contact, et les professionnels le recommandent, mais le règlement ne nomme pas ce format. Voir le <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">guide pour les petits éditeurs</a>."],
+    ["Où placer exactement le fichier ?", "À l'adresse <code>https://votre-domaine/.well-known/security.txt</code>, servi en HTTPS avec le type de contenu <code>text/plain; charset=utf-8</code>. La RFC 9116 autorise aussi une copie à l'adresse <code>/security.txt</code> pour les installations plus anciennes. Publiez-le sur chaque domaine ou sous-domaine que vous voulez couvrir."],
+    ["À quelle échéance fixer Expires ?", "La RFC 9116 indique qu'elle doit se situer à moins d'un an dans le futur, afin que les chercheurs puissent se fier à des coordonnées tenues à jour. Le générateur propose par défaut un peu moins d'un an. Une fois la date dépassée, les lecteurs sont invités à ignorer le fichier : renouvelez-le à temps."],
+    ["Dois-je signer le fichier avec PGP ?", "Non, la signature est facultative mais recommandée. Un fichier signé est un message OpenPGP signé en clair, créé avec <code>gpg --clearsign security.txt</code>. Le vérificateur reconnaît le format signé et en contrôle la structure, mais il ne peut pas vérifier la signature elle-même ; utilisez <code>gpg --verify</code> pour cela."],
+    ["Pourquoi le vérificateur ne peut-il pas aller chercher mon site ?", "Pour préserver la confidentialité : la page fonctionne entièrement dans votre navigateur et n'envoie aucune requête à d'autres sites. Ouvrez votre fichier dans un onglet, copiez le texte et collez-le ici. Vous contrôlez ainsi aussi ce que les visiteurs reçoivent réellement."],
+    ["À quoi sert le champ Canonical ?", "Il liste les adresses où le fichier est censé être servi, afin qu'un lecteur puisse confirmer qu'un fichier trouvé à une adresse lui appartient bien. Si vous saisissez l'adresse à laquelle vous servez le fichier, le vérificateur teste que l'une de vos lignes Canonical y correspond."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">Générer un security.txt</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Obligatoire</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (un par ligne)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Une adresse e-mail, un numéro de téléphone avec indicatif de pays, ou une page https://. La première ligne est celle que les chercheurs essaient en premier.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (fin de ce jour, UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>Facultatif</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Votre politique de divulgation des vulnérabilités. <a href="/tools/vulnerability-disclosure-policy-generator/">Rédigez-la ici.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (un par ligne)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Un lien https:// vers votre clé publique, un enregistrement dns: ou une empreinte openpgp4fpr:.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="fr, en">
+            <span class="help">Codes de langue séparés par des virgules.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (un par ligne)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">L'adresse à laquelle ce fichier sera servi. Recommandé, surtout pour les fichiers signés.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Une page qui remercie les chercheurs ayant signalé des problèmes.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Une page présentant vos offres d'emploi en sécurité.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">Votre security.txt</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Copier</button>
+          <button class="btn" id="stx-dl" type="button">Télécharger security.txt</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Remarques sur le fichier"></ul>
+        <h3 class="util-h">Où le placer</h3>
+        <p class="help">Enregistrez le fichier sous le nom <code>security.txt</code> et servez-le à l'adresse <code>https://votre-domaine/.well-known/security.txt</code> en HTTPS, en texte brut (<code>text/plain; charset=utf-8</code>). Faites de même sur chaque domaine que vous voulez couvrir. Pour le signer, exécutez <code>gpg --clearsign security.txt</code> et publiez le résultat.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">Vérifier un security.txt</h2>
+    <div class="field">
+      <label for="stx-in">Collez le texte d'un security.txt</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Adresse à laquelle il est servi (facultatif)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Un domaine ou l'adresse complète. Sert à tester la concordance avec Canonical. Rien n'est récupéré.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Charger un exemple</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Effacer</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Résultats de la vérification"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>À quoi sert un security.txt</h2>
+<p>Lorsqu'un chercheur, un client ou un CERT découvre une faille dans votre logiciel, le premier problème est de savoir qui prévenir. Un security.txt est un petit fichier texte placé à une adresse fixe, <code>/.well-known/security.txt</code>, qui répond à cette question : un contact, une date d'expiration et, en option, un lien vers votre politique de divulgation et une clé publique. La RFC 9116 définit le format, et de nombreux scanners, plateformes de bug bounty et CERT nationaux cherchent ce fichier avant toute autre chose.</p>
+<p>Pour un éditeur de logiciels de l'UE, il contribue aussi aux obligations du règlement sur la cyberrésilience : l'annexe I attend un moyen publié pour que des tiers signalent des vulnérabilités, ainsi qu'un processus pour les traiter. Le règlement ne nomme pas ce format, mais c'est la manière habituelle de publier le contact. Le <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">guide de déclaration pour les petits éditeurs</a> détaille le reste de la mise en place, y compris le délai de 24 heures.</p>
+<h2>Les champs</h2>
+<p>Contact et Expires sont obligatoires. Contact peut apparaître plusieurs fois et doit être un URI : <code>mailto:</code>, <code>tel:</code> ou <code>https:</code>. Expires n'apparaît qu'une fois, sous forme de date et d'heure comme <code>2027-12-31T23:59:59Z</code>, et la RFC 9116 demande une échéance à moins d'un an. Encryption, Acknowledgments, Policy, Hiring et Canonical sont des liens facultatifs, et toute adresse web doit utiliser https. Preferred-Languages n'apparaît qu'une fois et liste des codes de langue. Les champs que la RFC ne définit pas sont ignorés par les lecteurs ; le vérificateur les signale donc par un avertissement, car il s'agit le plus souvent de fautes de frappe.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Utilisez une boîte aux lettres lue par plusieurs personnes plutôt que l'adresse d'une seule, et testez-la en lui écrivant.</li>
+  <li>Rédigez une <a href="/tools/vulnerability-disclosure-policy-generator/">politique de divulgation des vulnérabilités</a> et liez-la avec le champ Policy.</li>
+  <li>Connaissez vos délais avant qu'un signalement n'arrive : l'<a href="/tools/cra-incident-clock/">horloge de 24 heures du CRA</a> transforme une heure de prise de connaissance en échéances datées.</li>
+</ul>

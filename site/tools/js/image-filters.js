@@ -1,6 +1,6 @@
-import { $, $$, fmtBytes, setStatus, runJob, showResults, clearNode, announce, tick, UserError, tx, fmtNum } from "./core.js?v=5";
-import { singleImage, decode, newCanvas, ctx2d, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=5";
-import { thumbOf, applyFilters, FILTER_DEFAULTS, isNeutral } from "./imgcore3.js?v=5";
+import { $, $$, fmtBytes, setStatus, runJob, showResults, clearNode, announce, tick, UserError, tx, fmtNum } from "./core.js?v=11";
+import { singleImage, decode, newCanvas, ctx2d, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=11";
+import { thumbOf, applyFilters, FILTER_DEFAULTS, isNeutral } from "./imgcore3.js?v=11";
 
 const drop = $("#drop"), editor = $("#editor"), goRow = $("#go-row"), go = $("#go");
 const status = $("#status"), result = $("#result"), preview = $("#preview"), compare = $("#compare");

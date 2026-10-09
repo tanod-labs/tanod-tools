@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Lecteur Factur-X / ZUGFeRD : lire le XML d'un PDF | Tanod Tools",
+  "description": "Extrayez la facture XML d'un PDF Factur-X ou ZUGFeRD et lisez-la comme une facture normale. Imprimez ou exportez le JSON. Gratuit, sans envoi.",
+  "h1": "Lecteur Factur-X / ZUGFeRD",
+  "lede": "Ouvrez un PDF Factur-X ou ZUGFeRD et découvrez les données de facture qu'il renferme. Le XML joint est extrait du PDF dans votre navigateur et affiché comme une facture. Le fichier ne quitte jamais votre appareil.",
+  "blurb": "Extrayez la facture XML d'un PDF Factur-X ou ZUGFeRD et lisez-la.",
+  "keywords": "lecteur factur-x visionneuse factur-x lire factur-x pdf factur-x xml extraire xml d'un pdf facture électronique facture électronique pdf/a-3 lecteur zugferd zugferd viewer factur-x viewer facture électronique 2026 réforme facturation électronique",
+  "limits": "Un fichier à la fois, jusqu'à 25 Mo. Nécessite un PDF/A-3 avec un fichier de facture joint (factur-x.xml, zugferd-invoice.xml ou xrechnung.xml) ; un PDF ordinaire ne contient aucune donnée de facture, et la page l'indique. Les pages du PDF ne sont pas affichées, seulement les données qu'il contient. Simple visionneuse : aucune validation, et rien n'est envoyé.",
+  "howto_title": "Comment lire un PDF Factur-X ou ZUGFeRD",
+  "howto": [
+    "Choisissez le PDF Factur-X ou ZUGFeRD, ou glissez-le sur la page. Un fichier XML fonctionne aussi.",
+    "La page trouve le XML joint au PDF et l'affiche sous forme de facture : parties, lignes, TVA, totaux et coordonnées de paiement.",
+    "Cliquez sur <strong>Imprimer ou enregistrer en PDF</strong> pour obtenir un exemplaire propre, sur <strong>Télécharger le JSON</strong> pour récupérer les données, ou sur <strong>Télécharger le XML</strong> pour obtenir le fichier qui se trouvait dans le PDF."
+  ],
+  "faq": [
+    [
+      "Mon PDF est-il envoyé ?",
+      "Non. Le PDF est ouvert dans votre navigateur avec la bibliothèque open source pdf.js, le XML joint y est lu, et rien n'est envoyé à un serveur. La fermeture de l'onglet efface tout."
+    ],
+    [
+      "Quelle est la différence entre ZUGFeRD et Factur-X ?",
+      "C'est la même norme. ZUGFeRD est le nom allemand et Factur-X le nom français ; ZUGFeRD 2 et Factur-X 1 sont techniquement identiques. Dans les deux cas, il s'agit d'un document PDF/A-3 auquel est joint une facture XML (UN/CEFACT CII). Le profil (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED ou XRECHNUNG) indique la quantité de données que contient le XML."
+    ],
+    [
+      "Pourquoi la page indique-t-elle que mon PDF ne contient aucune donnée de facture ?",
+      "Un PDF ordinaire n'est qu'une image de facture. Les données structurées n'existent que si le logiciel qui a créé le PDF y a joint le XML. Cherchez un fichier joint dans votre lecteur PDF. S'il n'y en a pas, le PDF n'est pas une facture électronique ; pour lire son texte, essayez plutôt <a href=\"/tools/pdf-to-text/\">PDF en texte</a>."
+    ],
+    [
+      "Quels profils sont pris en charge ?",
+      "Tous les profils qui utilisent le XML CII. MINIMUM et BASIC WL contiennent des totaux mais pas de lignes de facture, et la page le signale ; BASIC, EN 16931, EXTENDED et XRECHNUNG contiennent des lignes. L'ancien format ZUGFeRD 1.0 n'est pas pris en charge."
+    ],
+    [
+      "Compare-t-elle les pages du PDF avec le XML ?",
+      "Non. Les pages du PDF ne sont pas affichées et rien n'est comparé. Dans les formats hybrides, c'est en général le XML qui fait foi pour les données de la facture : c'est donc ce que vous voyez ici."
+    ],
+    [
+      "Les documents joints sont-ils ouverts ?",
+      "Non. Les documents joints à l'intérieur du XML (un relevé d'heures, par exemple) sont simplement listés avec un bouton Télécharger. Le nom du fichier est nettoyé et le téléchargement utilise un type de fichier générique ; n'ouvrez ces documents que si vous faites confiance à l'expéditeur."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Déposez une facture électronique ici</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choisir un fichier</span></label>
+  <p class="drop__hint">XML, PDF contenant une facture (ZUGFeRD, Factur-X) ou fichier .p7m signé. Ou glissez-le n'importe où sur cette page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Imprimer ou enregistrer en PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Télécharger le JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Télécharger le XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Afficher le XML brut</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recommencer</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML brut" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Seul le début d'un long fichier est affiché ici. Téléchargez le XML pour l'obtenir en entier.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Un PDF qui est aussi une facture</h2>
+<p>Un fichier Factur-X ou ZUGFeRD ressemble à n'importe quelle facture PDF, mais il contient une seconde version de la facture au format XML, jointe au PDF comme une pièce jointe l'est à un e-mail. Les personnes lisent les pages ; les logiciels lisent le XML. Depuis le 1er janvier 2025, toute entreprise en Allemagne doit pouvoir recevoir des factures électroniques structurées, et la France l'impose à partir du 1er septembre 2026 : ces PDF hybrides sont donc désormais courants.</p>
+<p>Cette page ouvre le PDF dans votre navigateur, lit la liste des fichiers joints, puis essaie les fichiers XML dans cet ordre : <code>factur-x.xml</code>, <code>zugferd-invoice.xml</code>, <code>xrechnung.xml</code>, puis tout autre fichier XML. Le premier qui est une facture prise en charge est affiché. Les pages du PDF ne sont pas reproduites.</p>
+<h2>Profils</h2>
+<p>Le profil indique la quantité de données que contient le XML. MINIMUM et BASIC WL ne contiennent que les données d'en-tête et les totaux. BASIC ajoute les lignes de facture. EN 16931 (appelé COMFORT dans les anciennes versions de ZUGFeRD) correspond à la norme européenne complète. EXTENDED va au-delà, et XRECHNUNG est le profil allemand du secteur public. La page affiche le contenu de chaque fichier et ne le vérifie pas au regard des règles du profil.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Si une facture PDF n'a pas de pièce jointe, demandez à l'expéditeur le XML ou une version Factur-X / ZUGFeRD.</li>
+  <li>Un simple fichier XML de la même norme s'ouvre aussi ici ; les XML XRechnung sont également lus par la <a href="/tools/xrechnung-viewer/">Visionneuse XRechnung</a>.</li>
+  <li>Utilisez Télécharger le XML pour conserver les données structurées qui se trouvaient dans le PDF.</li>
+</ul>

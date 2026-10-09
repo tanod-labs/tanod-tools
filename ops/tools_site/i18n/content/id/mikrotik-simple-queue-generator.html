@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Generator simple queue MikroTik: bandwidth per IP | Tanod Tools",
+  "description": "Buat simple queue RouterOS per IP atau untuk setiap host dalam subnet: max-limit, limit-at, burst, dan parent queue untuk total paket. Berkomentar, di browser Anda.",
+  "h1": "Generator simple queue MikroTik",
+  "lede": "Tentukan paket bandwidth sekali, lalu dapatkan simple queue untuk setiap alamat klien, dengan burst opsional dan parent queue yang membatasi seluruh grup.",
+  "blurb": "Batas bandwidth per IP dengan burst dan parent queue.",
+  "keywords": "generator simple queue mikrotik limit bandwidth per ip routeros queue simple max-limit limit-at burst limit parent queue wisp manajemen bandwidth hotspot batas kecepatan klien skrip",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 (juga valid di v6) untuk target IPv4, hingga 2048 queue. Setiap queue mendapat paket yang sama; untuk banyak klien yang berbagi satu link, PCQ lebih ringan bagi CPU. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara membatasi bandwidth per IP di MikroTik",
+  "howto": [
+    "Tuliskan alamat klien (satu per baris, opsional diikuti nama), atau berikan subnet untuk membuat queue bagi setiap host di dalamnya.",
+    "Masukkan paket sebagai max-limit upload dan download, ditambah limit-at dan burst jika dipakai. Kecepatan memakai k, M, atau G.",
+    "Opsional, tambahkan parent queue untuk kapasitas total link, lalu salin skrip atau unduh file .rsc."
+  ],
+  "faq": [
+    ["Sisi mana yang upload di max-limit?", "Kecepatan simple queue ditulis upload/download dari sudut pandang target: max-limit=5M/20M membuat klien bisa mengirim 5 Mbit/s dan menerima 20 Mbit/s. Generator melabeli kolomnya seperti itu, jadi Anda tidak perlu mengingat urutannya."],
+    ["Mengapa queue saya tidak membatasi apa pun?", "Penyebab paling umum adalah FastTrack: koneksi yang di-fasttrack melewati simple queue. Nonaktifkan aturan fasttrack di /ip firewall filter, atau kecualikan alamat yang di-queue darinya. Periksa juga urutannya: simple queue dicocokkan dari atas, dan queue sebelumnya dengan target yang tumpang tindih mengambil lalu lintas lebih dulu."],
+    ["Apa fungsi limit-at dan parent queue?", "Parent queue membatasi seluruh grup pada kapasitas nyata link. limit-at adalah kecepatan yang dijamin untuk tiap child saat parent penuh; di atasnya, child berbagi sisa bandwidth hingga max-limit mereka. Jika jumlah limit-at melebihi parent, semuanya tidak mungkin dipenuhi."],
+    ["Berapa banyak simple queue yang sanggup ditangani router?", "Tergantung CPU dan lalu lintas, tetapi setiap paket menelusuri daftar dari atas, sehingga ribuan queue menjadi mahal. Untuk paket flat yang besar, queue type PCQ membatasi setiap klien secara adil dengan satu queue; generator PCQ menuliskannya."],
+    ["Apakah target /32 memerlukan prefix?", "RouterOS menyimpan target alamat tunggal sebagai /32 dengan atau tanpa prefix. Generator menuliskannya dengan /32 supaya targetnya terbaca sama di export."],
+    ["Apakah paket saya dikirim ke suatu tempat?", "Tidak. Queue dibuat di browser Anda dan apa pun yang Anda ketik tidak meninggalkan perangkat Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="sq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Klien</legend>
+      <div class="seg" role="radiogroup" aria-label="Klien">
+        <label><input type="radio" name="sq-mode" value="list" checked>Daftar alamat</label>
+        <label><input type="radio" name="sq-mode" value="subnet">Setiap host dalam subnet</label>
+      </div>
+      <div class="field" id="sq-list-f">
+        <label for="sq-list">Alamat atau jaringan, nama opsional setelah masing-masing</label>
+        <textarea id="sq-list" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">192.168.88.10 alice
+192.168.88.11 bob
+192.168.88.64/28 office</textarea>
+      </div>
+      <div class="opts" id="sq-net-f" hidden>
+        <div class="field">
+          <label for="sq-net">Subnet</label>
+          <input type="text" id="sq-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="sq-skip">Lewati alamat ini</label>
+          <input type="text" id="sq-skip" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sq-prefix">Awalan nama (untuk baris tanpa nama)</label>
+        <input type="text" id="sq-prefix" class="mono" value="client-" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Paket per klien</legend>
+      <div class="opts">
+        <div class="field"><label for="sq-up-max">Upload max-limit</label><input type="text" id="sq-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-max">Download max-limit</label><input type="text" id="sq-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-at">Upload limit-at</label><input type="text" id="sq-up-at" class="mono" value="" placeholder="opsional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-at">Download limit-at</label><input type="text" id="sq-down-at" class="mono" value="" placeholder="opsional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-burst">Izinkan burst</label></div>
+      <div class="opts" id="sq-burst-f" hidden>
+        <div class="field"><label for="sq-up-burst">Upload burst-limit</label><input type="text" id="sq-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-burst">Download burst-limit</label><input type="text" id="sq-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-thr">Upload burst-threshold</label><input type="text" id="sq-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-thr">Download burst-threshold</label><input type="text" id="sq-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-time">burst-time</label><input type="text" id="sq-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Parent queue</legend>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-parent">Batasi grup dengan parent queue</label></div>
+      <div class="opts" id="sq-parent-f" hidden>
+        <div class="field"><label for="sq-pname">Nama parent</label><input type="text" id="sq-pname" class="mono" value="total" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-ptarget">Target parent</label><input type="text" id="sq-ptarget" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pup">Total upload</label><input type="text" id="sq-pup" class="mono" value="50M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pdown">Total download</label><input type="text" id="sq-pdown" class="mono" value="200M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="sq-out" class="label">Skrip RouterOS</label>
+    <textarea id="sq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="sq-copy" type="button">Salin skrip</button>
+      <button class="btn" id="sq-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="sq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Simple queue secara singkat</h2>
+<p>Simple queue di bawah <code>/queue simple</code> membatasi lalu lintas dari dan ke <em>target</em>-nya: sebuah alamat, jaringan, atau interface. RouterOS mencocokkan setiap paket dengan daftar dari atas dan menempatkannya di queue pertama yang targetnya cocok, ke arah mana pun, sehingga satu queue membentuk upload dan download klien sekaligus. Itu menjadikan simple queue cara tercepat memberi setiap pelanggan atau perangkat paketnya sendiri, dan pilihan yang lazim di router WISP kecil dan hotspot.</p>
+<p>Setiap queue punya <code>max-limit</code> (batas atas), <code>limit-at</code> opsional (kecepatan yang dijamin saat parent-nya padat), dan pengaturan burst opsional. Queue <code>parent</code> mengelompokkan child di bawah suatu total: max-limit parent sebaiknya kapasitas nyata link, sedikit di bawah yang diberikan ISP, supaya router, bukan modem, yang menjadi tempat paket mengantre dan prioritas paket berlaku.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Hitung burst-threshold dan burst-time dengan <a href="/tools/mikrotik-burst-calculator/">kalkulator burst MikroTik</a>.</li>
+  <li>Ratusan klien dalam satu paket? Satu <a href="/tools/mikrotik-pcq-generator/">queue PCQ</a> memberi tiap klien bagian yang sama dengan CPU jauh lebih hemat.</li>
+  <li>Pelanggan PPPoE mendapat queue dari rate-limit pada profile; lihat <a href="/tools/mikrotik-pppoe-server-generator/">generator server PPPoE</a>.</li>
+</ul>

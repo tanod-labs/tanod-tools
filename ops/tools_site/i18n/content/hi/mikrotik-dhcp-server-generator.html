@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "MikroTik DHCP सर्वर और IP पूल जनरेटर | Tanod Tools",
+  "description": "RouterOS DHCP सर्वर बनाएं: IP पूल, सर्वर, नेटवर्क सेटिंग (गेटवे, DNS, डोमेन, NTP) और स्टैटिक लीज़, सबनेट से जाँचे हुए। आपके ब्राउज़र में चलता है।",
+  "h1": "MikroTik DHCP सर्वर जनरेटर",
+  "lede": "इंटरफ़ेस और सबनेट भरें, और IP पूल, DHCP सर्वर, नेटवर्क सेटिंग और स्टैटिक लीज़ एक जाँची हुई RouterOS स्क्रिप्ट के रूप में पाएं।",
+  "blurb": "IP पूल, DHCP सर्वर, नेटवर्क और स्टैटिक लीज़।",
+  "keywords": "मिक्रोटिक डीएचसीपी सर्वर सेटअप आईपी पूल गेटवे डीएनएस स्टैटिक लीज़ मैक एड्रेस रिज़र्वेशन लीज़ टाइम वीलैन mikrotik dhcp server setup routeros ip pool dhcp-server network gateway dns-server static lease mac address reservation lease-time dhcp script vlan dhcp",
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो टाइप करते हैं वह आपके डिवाइस से बाहर नहीं जाता",
+  "limits": "एक इंटरफ़ेस पर IPv4 DHCP सर्वर के लिए RouterOS v7 सिंटैक्स बनाता है (v6 पर भी मान्य)। कस्टम DHCP ऑप्शन और रिले शामिल नहीं हैं। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर DHCP सर्वर कैसे सेट करें",
+  "howto": [
+    "वह इंटरफ़ेस (ब्रिज या VLAN इंटरफ़ेस) और उसका सबनेट भरें जिस पर क्लाइंट हैं; गेटवे और पूल उसी से सुझाए जाते हैं।",
+    "पूल, DNS सर्वर, डोमेन और लीज़ टाइम ठीक करें, और जिन डिवाइस को तय एड्रेस चाहिए उनके लिए स्टैटिक लीज़ जोड़ें।",
+    "स्क्रिप्ट कॉपी करें या .rsc फ़ाइल डाउनलोड करके चलाएं; नोट बताते हैं कि किस चीज़ को दूसरी नज़र की ज़रूरत है।"
+  ],
+  "faq": [
+    ["RouterOS DHCP सर्वर के हिस्से क्या हैं?", "तीन मेन्यू मिलकर काम करते हैं: <code>/ip pool</code> में बाँटने वाले एड्रेस होते हैं, <code>/ip dhcp-server</code> एक सर्वर को इंटरफ़ेस और पूल से जोड़ता है, और <code>/ip dhcp-server network</code> में वह होता है जो क्लाइंट को बताया जाता है: उस सबनेट का गेटवे, DNS सर्वर, डोमेन और NTP सर्वर। राउटर को इंटरफ़ेस पर अपना एड्रेस भी चाहिए, जो स्क्रिप्ट जोड़ सकती है।"],
+    ["स्टैटिक लीज़ पूल के अंदर हों या बाहर?", "दोनों चलता है: RouterOS ऐसा एड्रेस कभी नहीं बाँटता जो किसी स्टैटिक लीज़ के पास हो। तय डिवाइस को डायनामिक रेंज से बाहर रखना, जैसे .2 से .9 जबकि पूल .10 से शुरू हो, योजना को पढ़ना आसान बनाता है और लीज़ हटाने पर भ्रम से बचाता है।"],
+    ["लीज़ टाइम कितना रखना चाहिए?", "घर या ऑफ़िस के LAN के लिए एक दिन आम है। गेस्ट नेटवर्क और बहुत सारी छोटी विज़िट वाले हॉटस्पॉट के लिए एक घंटा या कम बेहतर है, ताकि एड्रेस जल्दी पूल में लौट आएं। बहुत छोटी लीज़ का मतलब है ज़्यादा रिन्यूअल, पर छोटे नेटवर्क पर कोई असली कीमत नहीं।"],
+    ["क्या क्लाइंट के राउटर को DNS की तरह इस्तेमाल करने के लिए allow-remote-requests चाहिए?", "हाँ, और यही राउटर को ओपन रिज़ॉल्वर भी बना देता है, अगर फ़ायरवॉल WAN से आने वाला DNS ड्रॉप नहीं करता। टूल इसे तभी जोड़ता है जब आप विकल्प पर निशान लगाते हैं, और input चेन जाँचने की याद दिलाता है।"],
+    ["क्या मेरी नेटवर्क योजना कहीं भेजी जाती है?", "नहीं। जाँच और स्क्रिप्ट आपके ब्राउज़र में बनती हैं।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>नेटवर्क</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">इंटरफ़ेस</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">सबनेट</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">गेटवे (राउटर का एड्रेस)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">पूल रेंज</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>गेटवे एड्रेस इंटरफ़ेस पर जोड़ें</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>क्लाइंट सेटिंग</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">DNS सर्वर</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">डोमेन</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">NTP सर्वर</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="वैकल्पिक" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">लीज़ टाइम</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">सर्वर और पूल का नाम</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">राउटर LAN के लिए DNS का जवाब देता है (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>स्टैटिक लीज़</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}स्टैटिक लीज़ जोड़ें</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">RouterOS स्क्रिप्ट</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS पर DHCP, टुकड़ा-टुकड़ा</h2>
+<p>RouterOS DHCP सर्वर को तीन जगह रखता है, और कोई टुकड़ा छूटना ही आम तौर पर वजह होता है कि क्लाइंट को एड्रेस नहीं मिलता। <strong>पूल</strong> बस एड्रेस रेंज का नाम वाला समूह है। <strong>सर्वर</strong> एक इंटरफ़ेस पर सुनता है और अपने पूल से एड्रेस लीज़ पर देता है। <strong>नेटवर्क</strong> एंट्री सबनेट से मैच होती है और हर लीज़ के साथ भेजे जाने वाले विकल्प रखती है: गेटवे, DNS सर्वर, डोमेन नाम और NTP सर्वर। इंटरफ़ेस को उस सबनेट में राउटर का अपना एड्रेस भी चाहिए, वरना सर्वर के पास सेवा देने को कोई नेटवर्क नहीं है।</p>
+<p>पेज कुछ भी लिखने से पहले टुकड़ों को आपस में जाँचता है: गेटवे और पूल सबनेट के अंदर होने चाहिए, पूल को नेटवर्क, ब्रॉडकास्ट और गेटवे एड्रेस से बचना चाहिए, और स्टैटिक लीज़ अनोखी और सबनेट के अंदर होनी चाहिए। स्टैटिक लीज़ सर्वर के नाम के साथ <code>/ip dhcp-server lease</code> में लिखी जाती हैं, ताकि हर डिवाइस को हमेशा वही एड्रेस मिले।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>एड्रेसिंग की योजना बना रहे हैं? <a href="/tools/subnet-calculator/">सबनेट कैलकुलेटर</a> किसी भी प्रीफ़िक्स की होस्ट रेंज और आकार दिखाता है।</li>
+  <li>हर VLAN के लिए एक DHCP सर्वर: पहले <a href="/tools/mikrotik-vlan-generator/">MikroTik VLAN जनरेटर</a> से VLAN इंटरफ़ेस बनाएं, फिर इसे हर VLAN के लिए एक बार चलाएं।</li>
+  <li>अगर राउटर DNS का जवाब देता है, तो पक्का करें कि <a href="/tools/mikrotik-firewall-generator/">फ़ायरवॉल</a> इंटरनेट से आने वाला DNS ड्रॉप करता है।</li>
+</ul>

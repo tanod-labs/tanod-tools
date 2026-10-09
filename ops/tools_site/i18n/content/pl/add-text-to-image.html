@@ -1,0 +1,165 @@
+<!--meta
+{
+  "title": "Dodaj tekst do obrazu online: podpisy i memy | Tanod Tools",
+  "description": "Dodaj podpis lub znak wodny do zdjęcia: wybierz czcionkę, rozmiar, kolor, obrys, cień i tło, a tekst umieść, dotykając podglądu. Nic nie jest przesyłane.",
+  "h1": "Dodaj tekst do obrazu",
+  "lede": "Umieść na obrazie podpis, tytuł lub znak wodny, ustaw go dokładnie tam, gdzie chcesz, i zapisz wynik w pełnym rozmiarze.",
+  "blurb": "Dodaj do zdjęcia podpis lub znak wodny ze stylizowanym tekstem.",
+  "keywords": "podpis mem znak wodny tytuł nakładka napis na zdjęciu czcionka etykieta opis caption watermark text overlay",
+  "limits": "Podpisuje jeden obraz naraz (do 50 MB, około 100 megapikseli). Dostępne czcionki: Archivo, Bungee oraz szeryfowa, bezszeryfowa i monospace z urządzenia.",
+  "howto_title": "Jak dodać tekst do obrazu",
+  "howto": [
+    "Wybierz obraz i wpisz tekst. Naciśnij Enter, aby przejść do nowego wiersza.",
+    "Wybierz czcionkę, rozmiar i kolor. Dodaj obrys, cień lub tło, jeśli tekst jest słabo widoczny. Wybierz jedno z dziewięciu położeń albo dotknij podglądu, aby umieścić tekst w tym miejscu.",
+    "Naciśnij <strong>Dodaj tekst i zapisz</strong>, aby otrzymać obraz w oryginalnym rozmiarze."
+  ],
+  "faq": [
+    [
+      "Czy mój obraz jest przesyłany?",
+      "Nie. Tekst jest rysowany na obrazie w przeglądarce, na twoim urządzeniu. Nic nie jest wysyłane na serwer."
+    ],
+    [
+      "Jak mierzony jest rozmiar tekstu?",
+      "W procentach szerokości obrazu, dzięki czemu tekst zajmuje taką samą część obrazu w małym podglądzie i w pliku w pełnym rozmiarze. 6 procent to czytelny podpis na większości zdjęć; na tytuł wybierz 10 lub więcej."
+    ],
+    [
+      "Jak dokładnie ustawić tekst?",
+      "Wybierz jedno z dziewięciu położeń, a potem przesuń tekst polami przesunięcia X i Y, podając wartość w procentach obrazu. Możesz też dotknąć lub kliknąć podgląd, aby wyśrodkować tekst w tym punkcie. Gdy podgląd jest aktywny, strzałki przesuwają tekst o pół procenta, a z przytrzymanym Shiftem o pięć procent."
+    ],
+    [
+      "Jakich czcionek mogę używać?",
+      "Archivo i Bungee są ładowane z tej strony. Czcionki szeryfowa, bezszeryfowa i monospace to te, które twoje urządzenie przypisuje tym nazwom, więc na innym komputerze mogą wyglądać nieco inaczej. Zapisany obraz zachowuje dokładnie taki wygląd, bo litery są rysowane w pikselach."
+    ],
+    [
+      "Czy zachowana zostaje przezroczystość w PNG?",
+      "Tak. Zmieniają się tylko piksele pod tekstem, obrysem, cieniem i tłem; reszta przezroczystego PNG pozostaje przezroczysta. JPEG nie przechowuje przezroczystości, więc przy zapisie do JPEG te obszary stają się białe."
+    ],
+    [
+      "Czy mogę używać polskich znaków, innych alfabetów lub emoji?",
+      "Tak, o ile czcionki na twoim urządzeniu zawierają te znaki. Archivo i Bungee obejmują litery łacińskie z akcentami. Dla innych pism i emoji przeglądarka sięga po czcionkę z urządzenia, która je ma."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść obraz tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Wybierz obraz</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP lub AVIF. Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview txt-stage">
+    <canvas id="preview" tabindex="0" role="img" aria-label="Podgląd z twoim tekstem. Dotknij lub kliknij, aby umieścić tekst." aria-describedby="place-help"></canvas>
+  </div>
+  <p class="help" id="place-help">Dotknij lub kliknij obraz, aby umieścić tam tekst. Gdy obraz jest aktywny, strzałki przesuwają tekst o 0,5%, a Shift ze strzałką o 5%.</p>
+  <div class="opts txt-opts">
+    <div class="field txt-opts__wide">
+      <label for="text">Tekst</label>
+      <textarea id="text" rows="3" autocomplete="off" spellcheck="false" placeholder="Twój podpis">Twój podpis</textarea>
+    </div>
+    <div class="field">
+      <label for="font">Czcionka</label>
+      <select id="font">
+        <option value="archivo" selected>Archivo</option>
+        <option value="bungee">Bungee</option>
+        <option value="serif">Szeryfowa</option>
+        <option value="sans">Bezszeryfowa</option>
+        <option value="mono">Monospace</option>
+      </select>
+      <label class="check"><input type="checkbox" id="bold" checked>Pogrubienie</label>
+    </div>
+    <div class="field">
+      <label for="size">Rozmiar: <span class="num" id="size-out">6</span>% szerokości</label>
+      <input type="range" id="size" min="1" max="40" step="0.5" value="6">
+    </div>
+    <div class="field">
+      <label for="color">Kolor tekstu</label>
+      <input type="color" id="color" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Wyrównanie tekstu</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="left">Do lewej</label>
+        <label><input type="radio" name="align" value="center" checked>Do środka</label>
+        <label><input type="radio" name="align" value="right">Do prawej</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <span class="label">Obrys</span>
+      <label class="check"><input type="checkbox" id="outline" checked>Dodaj obrys liter</label>
+      <div class="txt-pair"><input type="color" id="outline-color" value="#111417" aria-label="Kolor obrysu"><input type="range" id="outline-w" min="1" max="30" value="8" aria-label="Grubość obrysu"></div>
+    </div>
+    <div class="field">
+      <span class="label">Cień</span>
+      <label class="check"><input type="checkbox" id="shadow">Dodaj cień</label>
+      <input type="color" id="shadow-color" value="#000000" aria-label="Kolor cienia">
+    </div>
+    <div class="field">
+      <span class="label">Tło pod tekstem</span>
+      <label class="check"><input type="checkbox" id="box">Narysuj prostokąt za tekstem</label>
+      <div class="txt-pair"><input type="color" id="box-color" value="#111417" aria-label="Kolor prostokąta"></div>
+    </div>
+    <div class="field">
+      <label for="box-opacity">Krycie prostokąta: <span class="num" id="box-opacity-out">70</span>%</label>
+      <input type="range" id="box-opacity" min="0" max="100" value="70">
+    </div>
+    <div class="field">
+      <label for="box-pad">Margines prostokąta: <span class="num" id="box-pad-out">40</span>% rozmiaru tekstu</label>
+      <input type="range" id="box-pad" min="0" max="150" value="40">
+    </div>
+    <fieldset class="field">
+      <legend>Położenie</legend>
+      <div class="pos" role="radiogroup" aria-label="Położenie na obrazie">
+        <label><input type="radio" name="pos" value="0,0"><span class="visually-hidden">Góra, lewa strona</span></label>
+        <label><input type="radio" name="pos" value="1,0"><span class="visually-hidden">Góra, środek</span></label>
+        <label><input type="radio" name="pos" value="2,0"><span class="visually-hidden">Góra, prawa strona</span></label>
+        <label><input type="radio" name="pos" value="0,1"><span class="visually-hidden">Środek, lewa strona</span></label>
+        <label><input type="radio" name="pos" value="1,1"><span class="visually-hidden">Środek</span></label>
+        <label><input type="radio" name="pos" value="2,1"><span class="visually-hidden">Środek, prawa strona</span></label>
+        <label><input type="radio" name="pos" value="0,2"><span class="visually-hidden">Dół, lewa strona</span></label>
+        <label><input type="radio" name="pos" value="1,2" checked><span class="visually-hidden">Dół, środek</span></label>
+        <label><input type="radio" name="pos" value="2,2"><span class="visually-hidden">Dół, prawa strona</span></label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="ox">Przesuń w prawo (% szerokości)</label>
+      <input type="number" id="ox" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="oy">Przesuń w dół (% wysokości)</label>
+      <input type="number" id="oy" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <fieldset class="field">
+      <legend>Zapisz jako</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Taki sam</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Przy opcji „Taki sam” PNG, JPEG i WebP zachowują swój format, a każdy inny jest zapisywany jako PNG.</p>
+    </fieldset>
+  </div>
+  <p class="help" id="fit-help" aria-live="polite"></p>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Dodaj tekst i zapisz</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Jak sprawić, by tekst na zdjęciu był czytelny</h2>
+<p>Tekst na obrazie musi odcinać się od tego, co jest za nim, a zdjęcia rzadko mają jednolite tło. Pomagają trzy rzeczy. Ciemny obrys sprawia, że białe litery są czytelne na jasnych obszarach. Miękki cień lekko unosi tekst bez ostrej krawędzi. Półprzezroczysty prostokąt za wierszami daje najstabilniejszy kontrast, ale kosztem zasłonięcia części obrazu.</p>
+<p>Ponieważ rozmiar jest podany w procentach szerokości obrazu, układ widoczny w podglądzie jest taki sam jak w pliku, niezależnie od rozmiaru oryginału. Margines, grubość obrysu i cień również skalują się razem z tekstem, więc w pełnym rozmiarze nic nie wygląda ciężej niż na ekranie.</p>
+<p>Podpisy umieszczaj w dolnej trzeciej części obrazu, gdzie widzowie się ich spodziewają, trzymaj krótkie wiersze i zostaw odstęp od krawędzi; dziewięciopunktowa siatka sama zachowuje niewielki margines. Tekst wyśrodkowany pasuje do tytułów, a wyrównany do lewej do podpisów z kilku wierszy.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Jeśli obraz jest zbyt „zajęty” pod tekst, najpierw dostosuj jasność lub kontrast w narzędziu <a href="/tools/image-filters/">Filtry do zdjęć</a>.</li>
+  <li>Gotowy obraz oprawisz w ramkę narzędziem <a href="/tools/add-border-to-image/">Dodaj ramkę do obrazu</a>.</li>
+  <li>Potrzebujesz tekstu na pliku PDF? <a href="/tools/watermark-pdf/">Dodaj znak wodny do PDF</a> nanosi tekst na każdą stronę.</li>
+</ul>

@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Tạo cân bằng tải PCC và failover MikroTik | Tanod Tools",
+  "description": "Tạo cân bằng tải PCC trên RouterOS v7 qua 2 đến 8 đường WAN với failover đệ quy, host kiểm tra, bảng định tuyến và masquerade. Có chú thích, chạy trong trình duyệt.",
+  "h1": "Tạo cân bằng tải và failover MikroTik",
+  "lede": "Nhập các đường WAN của bạn và nhận cân bằng tải PCC trên RouterOS v7 với failover bằng recursive route, hoặc chỉ failover, với từng khối đều có giải thích.",
+  "blurb": "PCC qua nhiều đường WAN với failover bằng recursive route.",
+  "keywords": "cân bằng tải mikrotik pcc per connection classifier dual wan failover định tuyến đệ quy check-gateway ping routeros v7 bảng định tuyến mark-routing nhiều wan hai nhà mạng load balancing recursive routing routing table multi wan two isp",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không bao giờ rời khỏi thiết bị",
+  "limits": "Tạo cú pháp RouterOS v7 (bảng định tuyến có fib, routing-table trên route). Chỉ IPv4. Các WAN có gateway thay đổi qua DHCP cần cập nhật gateway thủ công hoặc bằng script DHCP client. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập và không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách thiết lập cân bằng tải PCC trên MikroTik",
+  "howto": [
+    "Chọn cân bằng tải PCC kèm failover, hoặc chỉ failover.",
+    "Thêm từng WAN với interface, gateway (hoặc tên interface với PPPoE và LTE), một host kiểm tra công khai có trả lời ping, và trọng số cho tỷ lệ kết nối của nó.",
+    "Liệt kê các mạng nội bộ và interface list của LAN, tắt add-default-route trên các WAN client, và áp dụng script khi bật Safe Mode."
+  ],
+  "faq": [
+    ["PCC chia lưu lượng như thế nào?", "per-connection-classifier băm các trường của mỗi kết nối mới (cả hai địa chỉ, hoặc địa chỉ và cổng) vào N bucket, và mỗi WAN nhận một số bucket. Kết nối giữ nguyên mark của nó, nên mọi gói tin của nó dùng cùng một WAN. Trọng số 2 cho WAN hai bucket, gấp đôi phần của WAN có trọng số 1. Việc chia theo kết nối, không theo byte, nên một lượt tải lớn vẫn chỉ dùng một đường."],
+    ["Failover đệ quy là gì và vì sao nên dùng?", "check-gateway=ping trên một default route thông thường chỉ kiểm tra chặng đầu tiên của ISP, vốn thường vẫn hoạt động trong khi mạng của ISP phía sau đã hỏng. Ở đây mỗi WAN có một host route đến một host kiểm tra công khai, và các default route trỏ vào host đó thay vì gateway. Khi host ngừng trả lời qua WAN đó, RouterOS vô hiệu hóa các route đi qua nó và lưu lượng chuyển sang WAN tiếp theo."],
+    ["Vì sao có các quy tắc output drop cho host kiểm tra?", "Nếu đường của một WAN bị đứt, host route của nó biến mất và router sẽ đến được host kiểm tra qua một WAN khác, nên WAN đã hỏng trông như vẫn khỏe. Các quy tắc drop ngăn ping đến mỗi host kiểm tra đi ra qua bất kỳ interface nào ngoài WAN của chính nó."],
+    ["Tôi có cần tắt FastTrack không?", "Với PCC thì có. Routing mark được mangle áp dụng trên mọi gói tin, và gói tin fasttrack bỏ qua mangle, nên chúng sẽ đi theo bảng main thay vì WAN của chúng. Failover thuần hoạt động được khi bật FastTrack."],
+    ["Có gì thay đổi so với các hướng dẫn PCC cho RouterOS v6?", "Route ở v6 dùng routing-mark=, và mark được tạo ngầm. Ở v7, mỗi mark phải là một bảng định tuyến được tạo trong /routing table với fib, và route tham chiếu đến nó bằng routing-table=. Mangle vẫn dùng new-routing-mark. Công cụ hỗ trợ chuyển v6 sang v7 sẽ chuyển các route cũ và thêm các bảng."],
+    ["Những gì tôi nhập có được gửi đi đâu không?", "Không. Script được tạo trong trình duyệt của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="lb">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Chế độ</legend>
+      <div class="seg" role="radiogroup" aria-label="Chế độ">
+        <label><input type="radio" name="lb-mode" value="pcc" checked>Cân bằng tải PCC + failover</label>
+        <label><input type="radio" name="lb-mode" value="failover">Chỉ failover</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Đường WAN</legend>
+      <ul class="ros-rows" id="lb-wans"></ul>
+      <button class="btn btn--sm ros-add" id="lb-add" type="button">{{mark:i-plus}}Thêm WAN</button>
+      <span class="help">Liệt kê theo thứ tự ưu tiên cho failover và cho lưu lượng của chính router.</span>
+    </fieldset>
+    <fieldset class="gen-fs" id="lb-pcc-f">
+      <legend>Cân bằng</legend>
+      <div class="opts">
+        <div class="field"><label for="lb-lan">Interface list của LAN</label><input type="text" id="lb-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="lb-local">Mạng nội bộ</label><input type="text" id="lb-local" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field">
+          <label for="lb-class">Classifier</label>
+          <select id="lb-class">
+            <option value="both-addresses" selected>both-addresses (cố định theo client và server)</option>
+            <option value="both-addresses-and-ports">both-addresses-and-ports (phân tán mịn hơn)</option>
+            <option value="src-address">src-address (mỗi client một WAN)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Tùy chọn</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="lb-fast" checked>Tắt FastTrack (cần cho PCC)</label>
+        <label class="check"><input type="checkbox" id="lb-nat" checked>Masquerade trên mọi WAN</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Nguy cơ bị khóa khỏi router.</strong> Thay đổi route trên router ở xa có thể cắt đứt kết nối của bạn. Hãy thử trong môi trường lab, hoặc bật Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> trong terminal) trước.</span></p>
+    <label for="lb-out" class="label">Script RouterOS v7</label>
+    <textarea id="lb-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="lb-copy" type="button">Sao chép script</button>
+      <button class="btn" id="lb-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="lb-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Cấu hình được tạo ra hoạt động như thế nào</h2>
+<p>Cân bằng tải PCC có ba phần chính. <strong>Mangle</strong> đánh dấu mỗi kết nối mới từ LAN bằng một connection mark do per-connection classifier chọn, và đánh dấu các kết nối đến trên một WAN bằng chính WAN đó, để phản hồi cho port forward đi ra đúng đường chúng đi vào. Một bộ quy tắc mangle thứ hai biến mỗi connection mark thành <strong>routing mark</strong> trên mọi gói tin. Các <strong>bảng định tuyến</strong>, mỗi WAN một bảng, sau đó chứa một default route đi qua WAN đó, với các WAN khác ở distance cao hơn làm dự phòng.</p>
+<p>Failover dùng <strong>recursive route</strong>. Một host route đưa một host kiểm tra công khai chỉ đi qua từng WAN. Các default route dùng host kiểm tra làm gateway với <code>target-scope=11</code>, nên RouterOS phân giải nó qua host route đó, và <code>check-gateway=ping</code> ping host kiểm tra mỗi mười giây. Hai lần không có phản hồi sẽ làm route ngừng hoạt động, và distance kế tiếp tiếp quản; khi host trả lời trở lại, route quay về.</p>
+<h3>Trước khi áp dụng</h3>
+<ul>
+  <li>Đặt <code>add-default-route=no</code> trên các DHCP hoặc PPPoE client của WAN, nếu không default route riêng của chúng sẽ thắng.</li>
+  <li>Đang nâng cấp cấu hình PCC v6 cũ? Hãy chạy bản export của nó qua <a href="/tools/routeros-v7-migration-helper/">Hỗ trợ chuyển RouterOS v6 sang v7</a> để xem những gì thay đổi.</li>
+  <li>Giữ nguyên input và forward chain của tường lửa; <a href="/tools/mikrotik-firewall-generator/">Tạo tường lửa MikroTik</a> dùng interface list, nên hãy thêm mọi WAN vào list WAN.</li>
+</ul>

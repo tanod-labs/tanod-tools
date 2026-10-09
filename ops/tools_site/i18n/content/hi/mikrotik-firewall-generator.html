@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "MikroTik फ़ायरवॉल जनरेटर: RouterOS v7 के लिए | Tanod Tools",
+  "description": "मज़बूत RouterOS v7 फ़ायरवॉल बनाएं: input और forward चेन, FastTrack, invalid ड्रॉप, रेट-लिमिटेड पिंग, NAT और सर्विस लॉकडाउन। आपके ब्राउज़र में चलता है।",
+  "h1": "MikroTik फ़ायरवॉल जनरेटर",
+  "lede": "अपने WAN और LAN इंटरफ़ेस और मैनेजमेंट सबनेट चुनें, और कमेंट वाला RouterOS v7 फ़ायरवॉल बेसलाइन पाएं जिसे आप जाँचकर पेस्ट कर सकें।",
+  "blurb": "सर्विस लॉकडाउन के साथ मज़बूत RouterOS v7 फ़ायरवॉल बेसलाइन।",
+  "keywords": "मिक्रोटिक फ़ायरवॉल नियम routeros v7 फ़ायरवॉल फ़िल्टर input चेन forward चेन fasttrack invalid ड्रॉप winbox सुरक्षित राउटर स्क्रिप्ट mikrotik firewall rules routeros v7 firewall filter input chain forward chain fasttrack drop invalid winbox restrict ip service hardening mikrotik secure router script rsc",
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो टाइप करते हैं वह आपके डिवाइस से बाहर नहीं जाता",
+  "limits": "IPv4 के लिए RouterOS v7 सिंटैक्स बनाता है, वैकल्पिक IPv6 बेसलाइन के साथ। इंटरफ़ेस और लिस्ट के नाम जाँचे जाते हैं; स्क्रिप्ट आपके राउटर पर परखी नहीं गई है, इसलिए लागू करने से पहले उसे पढ़ लें। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik फ़ायरवॉल कैसे बनाएं",
+  "howto": [
+    "इंटरनेट की ओर वाले इंटरफ़ेस (जैसे <code>ether1</code> या <code>pppoe-out1</code>) और लोकल वाले (आम तौर पर <code>bridge</code>) भरें।",
+    "वे सबनेट लिखें जिनसे आप राउटर को मैनेज करते हैं। सिर्फ़ वही WinBox और SSH तक पहुँचेंगे, इसलिए वह एड्रेस भी शामिल करें जिससे आप अभी कनेक्ट हैं।",
+    "विकल्प चुनें, स्क्रिप्ट और उसके पास के नोट पढ़ें, फिर Safe Mode चालू करें (टर्मिनल में <kbd>Ctrl</kbd>+<kbd>X</kbd>) और उसे पेस्ट करें, या .rsc फ़ाइल डाउनलोड करके इम्पोर्ट करें।"
+  ],
+  "faq": [
+    ["input चेन, forward चेन से अलग क्यों है?", "input चेन उन पैकेट को फ़िल्टर करती है जो खुद राउटर को भेजे गए हैं: WinBox, SSH, DNS, API। forward चेन उन पैकेट को फ़िल्टर करती है जो आपके LAN और इंटरनेट के बीच राउटर से गुज़रते हैं। राउटर input पर पूरी तरह खुला हो सकता है जबकि उसके पीछे का LAN बिल्कुल सुरक्षित हो, और कई MikroTik डिवाइस इसी तरह ओपन DNS रिज़ॉल्वर या प्रॉक्सी बन जाते हैं।"],
+    ["established और related कनेक्शन पहले क्यों स्वीकार किए जाते हैं?", "लगभग हर पैकेट किसी ऐसे कनेक्शन का होता है जिसे फ़ायरवॉल पहले ही अनुमति दे चुका है। पहले नियम में उन्हें स्वीकार करने का मतलब है कि हर पैकेट एक ही बार जाँचा जाता है, पूरी चेन में घूमकर नहीं, और राउटर की अपनी DNS या NTP क्वेरी के जवाब बिना अतिरिक्त नियमों के गुज़र जाते हैं। invalid पैकेट उसके ठीक बाद ड्रॉप किए जाते हैं।"],
+    ["FastTrack क्या करता है, और इसे कब बंद करना चाहिए?", "FastTrack established कनेक्शन को चिह्नित करता है ताकि उनके पैकेट ज़्यादातर फ़ायरवॉल को छोड़ दें, जिससे छोटे राउटर पर थ्रूपुट कई गुना हो सकता है। पेच यह है: fasttrack हुए पैकेट सिंपल क्यू, क्यू ट्री, mangle नियम और IPsec पॉलिसी को भी छोड़ देते हैं। अगर आप हर ग्राहक के लिए बैंडविड्थ शेप करते हैं या पॉलिसी रूटिंग इस्तेमाल करते हैं, तो FastTrack बंद रखें या उन कनेक्शन को उससे बाहर रखें।"],
+    ["क्या इससे मैं खुद लॉक आउट हो जाऊँगा?", "हो सकते हैं, अगर आप जिस कंप्यूटर से मैनेज करते हैं वह किसी मैनेजमेंट सबनेट में नहीं है और LAN पर भरोसा नहीं किया गया है। पहले Safe Mode चालू करें (टर्मिनल में <kbd>Ctrl</kbd>+<kbd>X</kbd>, या WinBox में Safe Mode बटन): अगर आपका सेशन टूट जाए, तो RouterOS Safe Mode शुरू होने के बाद के सारे बदलाव वापस कर देता है।"],
+    ["क्या मैं इसे ऐसे राउटर पर पेस्ट कर सकता हूँ जिसमें अब भी डिफ़ॉल्ट कॉन्फ़िगरेशन है?", "हाँ। इंटरफ़ेस लिस्ट, लिस्ट के सदस्य और एड्रेस-लिस्ट एंट्री सिर्फ़ तब जोड़ी जाती हैं जब वे न हों। replace मोड के बिना, नए नियम डिफ़ॉल्ट वालों के बाद जुड़ते हैं, इसलिए डिफ़ॉल्ट \"LAN से न आने वाला सब ड्रॉप करें\" नियम पहले आ सकता है; क्रम जाँचें, या जिस राउटर तक आप लोकल पहुँच सकते हैं उस पर replace मोड इस्तेमाल करें।"],
+    ["क्या मेरा कॉन्फ़िगरेशन कहीं भेजा जाता है?", "नहीं। स्क्रिप्ट इसी पेज में JavaScript से जोड़ी जाती है। आप जो टाइप करते हैं वह न अपलोड होता है, न सेव, न लॉग, और एक बार लोड होने के बाद पेज ऑफ़लाइन भी चलता है।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>इंटरफ़ेस</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">WAN इंटरफ़ेस</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">इंटरनेट की ओर वाले, कॉमा से अलग किए हुए। ये इंटरफ़ेस लिस्ट WAN में जुड़ते हैं।</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">LAN इंटरफ़ेस</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">आम तौर पर ब्रिज। ये इंटरफ़ेस लिस्ट LAN में जुड़ते हैं।</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>मैनेजमेंट</legend>
+      <div class="field">
+        <label for="fw-mgmt">मैनेजमेंट सबनेट</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">सिर्फ़ यही WinBox (8291) और SSH (22) तक पहुँचते हैं। वह एड्रेस भी शामिल करें जिससे आप कनेक्ट होते हैं।</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">राउटर पर खोलने वाले पोर्ट</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">वैकल्पिक, उन सर्विस के लिए जो राउटर खुद इंटरनेट को देता है, जैसे WireGuard।</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>LAN पर भरोसा करें (LAN से राउटर तक सब कुछ स्वीकार करें)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>WinBox और SSH को मैनेजमेंट सबनेट तक सीमित करें और telnet, FTP, WebFig व API बंद करें</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>पड़ोसी खोज और MAC एक्सेस को LAN तक सीमित करें; बैंडविड्थ टेस्ट सर्वर, प्रॉक्सी, SOCKS और UPnP बंद करें</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>विकल्प</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>established कनेक्शन FastTrack करें</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>पिंग का जवाब दें, रेट सीमित के साथ</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>WAN पर Masquerade (सोर्स NAT)</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">IPsec टनल इसी राउटर पर खत्म होती हैं</label>
+        <label class="check"><input type="checkbox" id="fw-v6">IPv6 फ़ायरवॉल भी जोड़ें</label>
+        <label class="check"><input type="checkbox" id="fw-replace">replace मोड: पहले मौजूदा filter और NAT नियम हटाएं</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>लॉक-आउट का जोखिम।</strong> इसे दूर के राउटर पर लागू करने से पहले लैब में परखें, या Safe Mode चालू करें (टर्मिनल में <kbd>Ctrl</kbd>+<kbd>X</kbd>)।</span></p>
+    <label for="fw-out" class="label">RouterOS v7 स्क्रिप्ट</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>बनाया गया फ़ायरवॉल क्या करता है</h2>
+<p>स्क्रिप्ट MikroTik के अपने डिफ़ॉल्ट कॉन्फ़िगरेशन जैसी ही संरचना रखती है, बस ज़्यादा सख़्त। <strong>input चेन</strong> राउटर की रक्षा करती है: वह पहले से अनुमत कनेक्शन के पैकेट स्वीकार करती है, invalid पैकेट ड्रॉप करती है, पिंग का जवाब सीमित दर से देती है, मैनेजमेंट सबनेट को WinBox और SSH तक पहुँचने देती है, LAN को स्वीकार करती है (या उससे सिर्फ़ DNS, DHCP, NTP और ICMP), और बाकी सब कुछ बिना शर्त वाले आख़िरी नियम से ड्रॉप कर देती है। आख़िरी बिना शर्त ड्रॉप ही अपवादों की सूची को डिफ़ॉल्ट-deny नीति बनाता है।</p>
+<p><strong>forward चेन</strong> राउटर के पीछे के नेटवर्क की रक्षा करती है। established और related ट्रैफ़िक स्वीकार होता है (और चाहें तो fasttrack), invalid पैकेट ड्रॉप होते हैं, और WAN से आने वाले नए कनेक्शन ड्रॉप होते हैं, जब तक उन्हें किसी destination NAT नियम (पोर्ट फ़ॉरवर्ड) ने न बनाया हो। वही आख़िरी नियम इंटरनेट को राउटर के पीछे के निजी एड्रेस तक सीधे पहुँचने से रोकता है, जो अकेला masquerade नहीं करता।</p>
+<h3>सर्विस और सहायक</h3>
+<p>RouterOS डिफ़ॉल्ट रूप से कई मैनेजमेंट सर्विस पर सुनता है। स्क्रिप्ट सादे टेक्स्ट वाली सर्विस (telnet, FTP, HTTP पर WebFig) और API बंद करती है, और फ़ायरवॉल के पीछे दूसरी परत के रूप में WinBox और SSH पर एड्रेस पाबंदी जोड़ती है। MAC Telnet, MAC WinBox और पड़ोसी खोज लेयर 2 पर काम करते हैं और IP फ़ायरवॉल नियमों को नज़रअंदाज़ करते हैं, इसलिए उन्हें LAN इंटरफ़ेस लिस्ट तक सीमित किया जाता है। बैंडविड्थ टेस्ट सर्वर, वेब प्रॉक्सी, SOCKS और UPnP बंद किए जाते हैं; सिर्फ़ वही वापस चालू करें जो आप इस्तेमाल करते हैं।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>पहले से फ़ायरवॉल है? अपना एक्सपोर्ट <a href="/tools/mikrotik-firewall-auditor/">MikroTik फ़ायरवॉल ऑडिटर</a> में पेस्ट करके देखें कि क्या छूट रहा है।</li>
+  <li>राउटर के पीछे कोई सर्वर प्रकाशित कर रहे हैं? <a href="/tools/mikrotik-port-forwarding/">MikroTik पोर्ट फ़ॉरवर्डिंग जनरेटर</a> hairpin NAT के साथ dst-nat नियम लिखता है।</li>
+  <li>ब्लॉक लिस्ट या अलाउ लिस्ट चाहिए? उसे <a href="/tools/mikrotik-address-list-generator/">MikroTik एड्रेस लिस्ट जनरेटर</a> से बनाएं।</li>
+</ul>

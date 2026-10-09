@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "PDF'ten metne dönüştürücü, çevrimiçi ve ücretsiz | Tanod Tools",
+  "description": "PDF'teki metni tarayıcınızda sayfa sayfa çıkarın; kopyalayın veya .txt olarak indirin. Ücretsiz, kayıt gerekmez, yükleme yok. Taranmış PDF'ler için OCR gerekir.",
+  "h1": "PDF'ten metne",
+  "lede": "PDF'teki metni sayfa sayfa çıkarın, ardından kopyalayın ya da .txt dosyası olarak kaydedin. Taranmış PDF'lerde çıkarılacak metin yoktur; onlar için <a href=\"/tools/ocr-pdf/\">PDF OCR</a> aracını kullanın.",
+  "blurb": "PDF'ten metin çıkarın, kopyalayın veya .txt olarak kaydedin.",
+  "keywords": "pdf metne dönüştür pdf'ten metne pdf'den metne pdf metne çevirme pdf metin çıkarma pdf'ten metin çıkar pdf yazıya çevirme pdf metin kopyalama pdf txt pdf'ten txt'ye düz metin sayfa sayfa taranmış pdf ocr extract text from pdf pdf to txt pdf to text copy text from pdf pdf text extractor",
+  "limits": "Bir seferde tek PDF, en fazla 200 MB ve 500 sayfa. Araç, PDF'te saklanan metni okur. Taranmış bir PDF yalnızca sayfa resimlerinden oluşur ve metin içermez; onun için <a href=\"/tools/ocr-pdf/\">PDF OCR</a> aracı gerekir. Tablolar ve sütunlar satır satır çıkar; parola korumalı PDF'ler açılamaz.",
+  "howto_title": "PDF'ten metin nasıl çıkarılır",
+  "howto": [
+    "Bir PDF dosyası seçin veya sayfaya sürükleyin.",
+    "Sayfalar okunurken biraz bekleyin. Ardından tüm sayfaları ya da 1-3, 5 gibi bir aralığı seçin; her sayfanın başladığı yeri işaretlemek isteyip istemediğinizi de belirleyin.",
+    "<strong>.txt indir</strong> düğmesine basın ya da tüm metni veya listeden tek bir sayfanın metnini kopyalayın."
+  ],
+  "faq": [
+    ["PDF'im yükleniyor mu?", "Hayır. Metni tarayıcınız, açık kaynaklı pdf.js kitaplığıyla kendi cihazınızda okur. Sunucuya hiçbir şey gönderilmez ve sekmeyi kapattığınızda metin de silinir."],
+    ["Neden hiç metin çıkmadı ya da yalnızca bazı sayfaların metni çıktı?", "Araç, PDF'te saklanan metni okur. Taranmış bir PDF her sayfayı bir resim olarak saklar; resmin arkasında metin yoktur, dolayısıyla okunacak bir şey de yoktur. Aynı durum, geri kalanı normal olan bir belgeye eklenmiş taranmış sayfalar için de geçerlidir. Resimlerdeki harfleri tanımak için <a href=\"/tools/ocr-pdf/\">PDF OCR</a> aracını kullanın. Metni olmayan sayfalar, metin kutusunun altındaki listede işaretlenir."],
+    ["Biçimlendirme korunuyor mu?", "Hayır. Düz metin elde edersiniz: harfler, sayılar ve satır sonları. Yazı tipleri, renkler, resimler ve sayfa düzeni dışarıda kalır. Satırlar PDF'te nerede bitiyorsa orada bölünür; iki satır arasındaki boşluk olağandan büyükse, paragraflar arasında olduğu gibi araya boş bir satır eklenir."],
+    ["Bölünmüş satırları paragraf hâlinde nasıl birleştirebilirim?", "Metni <a href=\"/tools/remove-line-breaks/\">Satır sonlarını kaldır</a> aracına yapıştırın. Araç, her paragrafın içindeki satırları birleştirir, paragraflar arasındaki boş satırları korur ve satır sonunda tireyle bölünmüş kelimeleri de düzeltebilir."],
+    ["Bazı metinler neden garip bir sırada çıkıyor ya da tuhaf parçalara bölünüyor?", "Metin, PDF'in sakladığı sırayla çıkar; bu sıra genellikle okuma sırasıdır ama her zaman değil. Tablolar, birden çok sütunlu sayfalar ve tasarım programlarından dışa aktarılmış PDF'ler karışık çıkabilir; bazı PDF'ler de metni, gördüğünüz kelimelerle örtüşmeyen parçalar hâlinde saklar."],
+    ["İngilizce dışındaki dillerle çalışır mı?", "Evet. Metin Unicode olarak okunur; bu yüzden PDF'te düzgün bir metin katmanı olduğu sürece aksanlı harfler, Kiril ve Yunan alfabeleri, Hintçe, Çince ve diğer yazı sistemleri sorunsuz çıkar. Bir PDF alışılmadık bir yazı tipi düzeni kullanıyorsa, hangi programda kopyalarsanız kopyalayın metin bozuk karakterlerle çıkar; yaygın çözüm, o belgeye OCR uygulamaktır."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF'i buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF seçin</span></label>
+  <p class="drop__hint">Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Sayfalar</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Tüm sayfalar</label>
+        <label><input type="radio" name="scope" value="range">Bazı sayfalar</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Sayfa aralığı</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Seçenekler</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Her sayfanın başladığı yeri işaretle</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Sayfa</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>Metinli sayfa</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Kelime</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Karakter</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Çıkarılan metin</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}.txt indir</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Tüm metni kopyala</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <h3 class="util-h">Sayfa sayfa</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Her sayfada bulunan metin">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Sayfa</th><th scope="col">Kelime</th><th scope="col">Karakter</th><th scope="col"><span class="visually-hidden">Kopyala</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Bir PDF'teki metin nereden gelir</h2>
+<p>Bir kelime işlemci, bir web tarayıcısı ya da bir tasarım programıyla hazırlanan PDF, kelimelerini metin olarak saklar: her harf dizisi, bir yazı tipi ve sayfadaki bir konumla birlikte gelir. Bu aracın okuduğu şey, saklanan bu metindir. Tarayıcınız dosyayı pdf.js ile açar, her sayfadan metnini ister ve harf dizilerini dosyanın listelediği sırayla yeniden satırlar hâline getirir. Sayfanın ekranda nasıl göründüğüne hiç bakmaz.</p>
+<p>Taranmış bir PDF farklıdır. Bir tarama cihazı ya da telefon kamerası her sayfanın bir resmini üretir ve PDF yalnızca bu resimleri içerir; dolayısıyla okunacak metin yoktur: kelimeleri görürsünüz ama dosyanın içinde yer almazlar. Resimleri yeniden metne çevirmek, optik karakter tanıma (OCR) denen başka bir iştir ve bunu <a href="/tools/ocr-pdf/">PDF OCR</a> aracı yapar. Metni olmayan sayfalar, karışık bir dosyada taramaları normal sayfalardan ayırabilmeniz için metin kutusunun altındaki listede işaretlenir.</p>
+<p>Sonuç, hiçbir biçimlendirme içermeyen düz metindir. Satırlar PDF'te nerede bitiyorsa orada biter; iki satır arasındaki boşluk o sayfadaki olağan aralıktan belirgin biçimde büyükse araya boş bir satır eklenir. Paragraflar ve başlıklar bu şekilde ayrılır. Bazı yazı tiplerinin fi ve fl gibi harf çiftleri için kullandığı birleşik harfler (ligatürler) yeniden ayrı harflere çevrilir, görünmez yumuşak tireler ise atılır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Taranmış sayfalar, metni olmayan sayfalar olarak görünür. Onları <a href="/tools/ocr-pdf/">PDF OCR</a> ile işleyin ve sonucu okuyun.</li>
+  <li>Alt alta dizilmiş satırları akıcı paragraflara dönüştürmek için metni <a href="/tools/remove-line-breaks/">Satır sonlarını kaldır</a> aracına yapıştırın.</li>
+  <li>Yalnızca birkaç sayfa PDF olarak mı gerekiyor? <a href="/tools/extract-pdf-pages/">PDF sayfalarını ayıkla</a> aracı bunları ayırır, <a href="/tools/word-counter/">Kelime sayacı</a> da kopyaladığınız metni sayar.</li>
+</ul>

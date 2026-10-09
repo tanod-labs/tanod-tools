@@ -1,6 +1,6 @@
-import { $, live, openTextFile, wireCopy, setStatus, announce, fmtInt, tx } from "./textcore.js?v=5";
-import { $$, el, fmtBytes, baseName } from "./core.js?v=5";
-import { saveText } from "./csvcore.js?v=5";
+import { $, live, openTextFile, wireCopy, setStatus, announce, fmtInt, tx } from "./textcore.js?v=11";
+import { $$, el, fmtBytes, baseName } from "./core.js?v=11";
+import { saveText } from "./csvcore.js?v=11";
 
 const area = $("#md");
 const out = $("#out");

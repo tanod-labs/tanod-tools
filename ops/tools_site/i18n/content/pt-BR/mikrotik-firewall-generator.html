@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Gerador de firewall MikroTik para RouterOS v7 | Tanod Tools",
+  "description": "Monte um firewall RouterOS v7 reforçado: input e forward chains, FastTrack, drop de inválidos, ping com limite de taxa, NAT e bloqueio de serviços. Roda no navegador.",
+  "h1": "Gerador de firewall MikroTik",
+  "lede": "Escolha as interfaces WAN e LAN e as sub-redes de gerenciamento e receba uma base de firewall RouterOS v7 comentada, pronta para revisar e colar.",
+  "blurb": "Base de firewall RouterOS v7 reforçada, com bloqueio de serviços.",
+  "keywords": "regras de firewall mikrotik routeros v7 firewall filter input chain forward chain fasttrack drop invalid winbox restringir ip service hardening roteador mikrotik seguro script rsc gerador firewall",
+  "local_text": "Roda no navegador; nada do que você digita sai do seu dispositivo",
+  "limits": "Gera sintaxe RouterOS v7 para IPv4, com uma base IPv6 opcional. Os nomes de interfaces e listas são verificados; o script não é testado no seu roteador, então leia-o antes de aplicar. MikroTik e RouterOS são marcas registradas da SIA Mikrotīkls. Esta ferramenta é independente e não é afiliada nem endossada pela MikroTik.",
+  "howto_title": "Como montar um firewall MikroTik",
+  "howto": [
+    "Informe as interfaces voltadas para a internet (por exemplo <code>ether1</code> ou <code>pppoe-out1</code>) e as locais (normalmente <code>bridge</code>).",
+    "Liste as sub-redes a partir das quais você gerencia o roteador. Só elas alcançarão o WinBox e o SSH, então inclua o endereço de onde você está se conectando agora.",
+    "Escolha as opções, leia o script e as notas ao lado, depois ligue o Safe Mode (modo seguro) (<kbd>Ctrl</kbd>+<kbd>X</kbd> no terminal) e cole-o, ou baixe o arquivo .rsc e importe."
+  ],
+  "faq": [
+    ["Por que a input chain é separada da forward chain?", "A input chain filtra os pacotes destinados ao próprio roteador: WinBox, SSH, DNS, a API. A forward chain filtra os pacotes que passam por ele entre a LAN e a internet. Um roteador pode estar totalmente aberto na input enquanto a LAN atrás dele está perfeitamente segura, e é assim que muitos equipamentos MikroTik acabam como resolvedores DNS abertos ou proxies."],
+    ["Por que aceitar primeiro as conexões established e related?", "Quase todo pacote pertence a uma conexão que o firewall já permitiu. Aceitá-los na primeira regra faz cada pacote ser verificado uma vez, em vez de percorrer a chain inteira, e as respostas às consultas DNS ou NTP do próprio roteador passam sem regras extras. Os pacotes inválidos são descartados logo em seguida."],
+    ["O que o FastTrack faz e quando devo desligá-lo?", "O FastTrack marca as conexões estabelecidas para que seus pacotes pulem a maior parte do firewall, o que pode multiplicar a vazão em roteadores pequenos. O porém: pacotes com fasttrack também pulam simple queues, queue trees, regras mangle e políticas IPsec. Se você limita a banda por cliente ou usa roteamento por política, deixe o FastTrack desligado ou exclua essas conexões."],
+    ["Isto vai me deixar sem acesso?", "Pode, se o computador de onde você gerencia não estiver em uma sub-rede de gerenciamento e a LAN não for confiável. Ligue o Safe Mode antes (<kbd>Ctrl</kbd>+<kbd>X</kbd> em um terminal, ou o botão Safe Mode no WinBox): se a sua sessão cair, o RouterOS desfaz tudo o que foi feito desde que o Safe Mode começou."],
+    ["Posso colar isto em um roteador que ainda está com a configuração padrão?", "Sim. As interface lists, os membros das listas e as entradas de address list só são adicionados quando faltam. Sem o modo de substituição, as novas regras são anexadas depois das padrão, então a regra padrão \"drop all not coming from LAN\" pode vir primeiro; revise a ordem ou use o modo de substituição em um roteador ao qual você tenha acesso local."],
+    ["Minha configuração é enviada para algum lugar?", "Não. O script é montado por JavaScript nesta página. Nada do que você digita é enviado, armazenado ou registrado, e a página funciona offline depois de carregada."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Interfaces</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">Interfaces WAN</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">Voltadas para a internet, separadas por vírgula. Entram na interface list WAN.</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">Interfaces LAN</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">Normalmente a bridge. Entram na interface list LAN.</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Gerenciamento</legend>
+      <div class="field">
+        <label for="fw-mgmt">Sub-redes de gerenciamento</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">Só elas alcançam o WinBox (8291) e o SSH (22). Inclua o endereço de onde você se conecta.</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">Portas a abrir no roteador</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">Opcional, para serviços que o próprio roteador oferece à internet, como o WireGuard.</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>Confiar na LAN (aceitar tudo da LAN para o roteador)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>Restringir o WinBox e o SSH às sub-redes de gerenciamento e desativar telnet, FTP, WebFig e API</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>Limitar a descoberta de vizinhos e o acesso por MAC à LAN; desativar o servidor de bandwidth test, o proxy, o SOCKS e o UPnP</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opções</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>FastTrack nas conexões estabelecidas</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>Responder ping, com limite de taxa</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>Masquerade (source NAT) para a WAN</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">Túneis IPsec terminam neste roteador</label>
+        <label class="check"><input type="checkbox" id="fw-v6">Adicionar também um firewall IPv6</label>
+        <label class="check"><input type="checkbox" id="fw-replace">Modo de substituição: remover antes as regras de filter e NAT existentes</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Risco de perder o acesso.</strong> Teste em laboratório ou ligue o Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> no terminal) antes de aplicar isto em um roteador remoto.</span></p>
+    <label for="fw-out" class="label">Script RouterOS v7</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">Copiar script</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}Baixar .rsc</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>O que o firewall gerado faz</h2>
+<p>O script segue a mesma estrutura da configuração padrão da própria MikroTik, só que mais rigorosa. A <strong>input chain</strong> protege o roteador: aceita os pacotes de conexões já permitidas, descarta os inválidos, responde a uma taxa limitada de pings, deixa as sub-redes de gerenciamento chegarem ao WinBox e ao SSH, aceita a LAN (ou apenas DNS, DHCP, NTP e ICMP vindos dela) e descarta todo o resto com uma regra final sem condições. É o drop final incondicional que transforma uma lista de exceções em uma política de negação padrão.</p>
+<p>A <strong>forward chain</strong> protege a rede atrás do roteador. O tráfego established e related é aceito (e, opcionalmente, recebe fasttrack), os pacotes inválidos são descartados, e as novas conexões vindas da WAN são descartadas, a menos que uma regra de destination NAT (um port forward) as tenha criado. Essa última regra é a que impede a internet de alcançar diretamente os endereços privados atrás do roteador, o que o masquerade sozinho não faz.</p>
+<h3>Serviços e utilidades</h3>
+<p>O RouterOS escuta em vários serviços de gerenciamento por padrão. O script desativa os de texto puro (telnet, FTP, WebFig por HTTP) e a API, e acrescenta uma restrição de endereço ao WinBox e ao SSH como segunda camada atrás do firewall. MAC Telnet, MAC WinBox e a descoberta de vizinhos funcionam na camada 2 e ignoram as regras de firewall IP, por isso são limitados à interface list LAN. O servidor de bandwidth test, o proxy web, o SOCKS e o UPnP são desligados; reative apenas o que você usa.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Já tem um firewall? Cole seu export no <a href="/tools/mikrotik-firewall-auditor/">auditor de firewall MikroTik</a> para ver o que falta nele.</li>
+  <li>Vai publicar um servidor atrás do roteador? O <a href="/tools/mikrotik-port-forwarding/">gerador de port forwarding</a> escreve as regras dst-nat, com hairpin NAT.</li>
+  <li>Precisa de uma lista de bloqueio ou de liberação? Monte-a com o <a href="/tools/mikrotik-address-list-generator/">gerador de address list</a>.</li>
+</ul>

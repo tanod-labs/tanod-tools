@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Havacılık birim çevirici: knot, hPa, fit | Tanod Tools",
+  "description": "Havacılık birimlerini çevirin: knot, km/h, mph ve m/s; hPa, inHg ve mmHg; fit, metre, deniz ve kara mili; °C, °F ve kelvin.",
+  "h1": "Havacılık birim çevirici",
+  "lede": "Pilotların ve kontrolörlerin kullandığı birimleri çevirin: hız, basınç, uzunluk ve mesafe ile sıcaklık; her birim aynı anda gösterilir.",
+  "blurb": "Knot, hPa ve inHg, fit, deniz mili ve sıcaklık.",
+  "keywords": "havacılık birim çevirici knot km/h mph m/s hpa inhg mmhg fit metre deniz mili kara mili santigrat fahrenhayt kelvin qnh altimetre dikey hız mach knot çevirme",
+  "limits": "Kesin tanımlı çarpanlar; sonuçlar seçtiğiniz anlamlı basamak sayısına yuvarlanır (varsayılan 8). Mach, ISA deniz seviyesindeki ses hızı olan 340,294 m/s kullanır. Uçuş planlaması veya seyrüsefer için kullanılmaz.",
+  "howto_title": "Havacılık birimleri nasıl çevrilir",
+  "howto": [
+    "Neyi çevirdiğinizi seçin: hız, basınç, uzunluk ve mesafe veya sıcaklık.",
+    "Bir değer yazın ve hangi birimden hangi birime çevireceğinizi seçin. İki kutudan hangisine isterseniz yazabilirsiniz.",
+    "Sonucu ve formülü okuyun ya da aynı değeri her birimde görmek için tabloya bakın."
+  ],
+  "faq": [
+    ["Knot nasıl km/h'e çevrilir?", "1,852 ile çarpın; çünkü bir knot saatte bir deniz milidir ve bir deniz mili tam olarak 1.852 metredir. Yani 100 knot 185,2 km/h, yani yaklaşık 115 mph eder."],
+    ["hPa nasıl inHg'ye çevrilir?", "İnç cıvayı bulmak için hektopaskalı 33,8639'a bölün. Standart deniz seviyesi basıncı olan 1013,25 hPa, 29,9213 inHg'dir; yani 1013 QNH yaklaşık 29,91 inHg eder. Milibar (mb) ile hektopaskal aynı birimdir."],
+    ["Deniz mili ile kara mili arasındaki fark nedir?", "Deniz mili tam olarak 1.852 m'dir (yaklaşık 1,1508 kara mili) ve bir enlem dakikasıyla ilişkilidir. Kara mili 1.609,344 m'dir. ABD dışındaki havacılık mesafeleri ve knot cinsinden tüm hızlar deniz milini kullanır."],
+    ["Mach neden sabit bir hız değil?", "Mach, sıcaklıkla düşen yerel ses hızına oranıdır. Bu araç ISA deniz seviyesi değeri olan 340,294 m/s (yaklaşık 661,5 knot) değerini kullanır; bu yüzden yalnızca bir referanstır. Yolcu uçaklarının seyir irtifalarında Mach 1, 573 knota daha yakındır."],
+    ["Dakikada fit ne demek?", "Dikey hız birimidir: 500 ft/dk yaklaşık 2,54 m/s eder. Tırmanma ve alçalma hızları çevrilebilsin diye hız listesine eklenmiştir."],
+    ["Dönüşümler kesin mi?", "Çarpanlar kesin tanımlardır (örneğin 1 ft = 0,3048 m, 1 NM = 1.852 m, 1 inHg = 3.386,38864 Pa ve 1 mmHg = 133,322387415 Pa); bu yüzden yuvarlama yalnızca gösterilen son basamaktadır."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Ölçü</legend>
+  <div class="seg av-cats">
+    <label><input type="radio" name="ac-cat" value="speed" checked>Hız</label>
+    <label><input type="radio" name="ac-cat" value="pressure">Basınç</label>
+    <label><input type="radio" name="ac-cat" value="length">Uzunluk ve mesafe</label>
+    <label><input type="radio" name="ac-cat" value="temperature">Sıcaklık</label>
+  </div>
+</fieldset>
+<div class="uc">
+  <div class="field uc__side">
+    <label for="ac-from">Kaynak</label>
+    <input type="text" inputmode="decimal" id="ac-from" class="uc__val" value="1" autocomplete="off" spellcheck="false">
+    <select id="ac-from-u" aria-label="Çevrilecek birim"></select>
+  </div>
+  <button class="btn btn--icon uc__swap" id="ac-swap" type="button" aria-label="İki birimin yerini değiştir">{{mark:convert-image}}</button>
+  <div class="field uc__side">
+    <label for="ac-to">Hedef</label>
+    <input type="text" inputmode="decimal" id="ac-to" class="uc__val" autocomplete="off" spellcheck="false">
+    <select id="ac-to-u" aria-label="Çevrilecek hedef birim"></select>
+  </div>
+</div>
+<p class="uc__formula" id="ac-formula" aria-live="polite"></p>
+<p class="note" id="ac-warn" role="alert" hidden></p>
+<div class="uc__more">
+  <h2 class="util-h" id="ac-all-h">Tüm birimlerde</h2>
+  <div class="field uc__sig">
+    <label for="ac-sig">Anlamlı basamak</label>
+    <select id="ac-sig"><option value="4">4</option><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option></select>
+  </div>
+</div>
+<div class="calc-table">
+  <table class="dens">
+    <caption class="visually-hidden">Değerin bu türdeki her birimdeki karşılığı</caption>
+    <thead><tr><th scope="col">Birim</th><th scope="col">Değer</th></tr></thead>
+    <tbody id="ac-all"></tbody>
+  </table>
+</div>
+<!--explain-->
+<h2>Dönüşümler nasıl çalışır</h2>
+<p>Her kategorinin bir temel birimi vardır: hız için saniyede metre, basınç için paskal ve uzunluk için metre. Bir değer, biriminin temel birimdeki büyüklüğüyle çarpılır ve hedef birimin büyüklüğüne bölünür. Tüm çarpanlar kesin tanımlardır: 1 knot = 1.852/3.600 m/s, 1 mph = 1.609,344/3.600 m/s, 1 fit = 0,3048 m, 1 deniz mili = 1.852 m, 1 kara mili = 1.609,344 m, 1 hPa = 100 Pa, 1 mmHg = 133,322387415 Pa ve 1 inHg = 25,4 mmHg = 3.386,38864 Pa (ICAO Ek 5 ve NIST Özel Yayın 811'de kullanılan geleneksel değerler).</p>
+<p>Sıcaklığın sıfır noktaları farklı olduğu için kelvin üzerinden çevrilir: K = °C + 273,15 ve °F = °C × 9/5 + 32. Birim listesi, basıncın hektopaskal, irtifanın fit veya metre, hızın knot veya km/h olduğu ICAO Ek 5'i (Hava ve Yer Operasyonlarında Kullanılacak Ölçü Birimleri) izler. <strong>Uçuş planlaması veya seyrüsefer için kullanılmaz.</strong></p>

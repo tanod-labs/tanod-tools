@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Decodificador METAR y TAF: lee el clima aeronáutico | Tanod Tools",
+  "description": "Pega un METAR, SPECI o TAF en bruto y obtén un desglose en lenguaje claro: viento, visibilidad, tiempo, nubes, temperatura, presión y categoría de vuelo.",
+  "h1": "Decodificador METAR y TAF",
+  "lede": "Pega un informe METAR o TAF en bruto y léelo en lenguaje claro: viento, visibilidad, tiempo, nubes, temperatura, altímetro y períodos del pronóstico.",
+  "blurb": "Informes meteorológicos METAR y TAF en bruto, explicados.",
+  "keywords": "metar taf decodificador clima aeronautico meteorologia aviacion speci cavok viento visibilidad techo de nubes categoria de vuelo vfr ifr altimetro qnh decodificar traducir informe meteorologico aeropuerto",
+  "limits": "Solo para aprender y leer con rapidez. No sirve para planificar vuelos ni para navegar: usa siempre los briefings oficiales. Las observaciones (RMK) se muestran tal como están escritas, y cualquier grupo que el decodificador no entienda se enumera, nunca se adivina.",
+  "howto_title": "Cómo decodificar un METAR o un TAF",
+  "howto": [
+    "Pega el informe en bruto en el cuadro, empezando por METAR, SPECI, TAF o el código de estación de cuatro letras. Varios informes separados por = o en líneas distintas se decodifican uno tras otro.",
+    "Lee el desglose de abajo: cada grupo del código se traduce a palabras, con las unidades convertidas a nudos, km/h, pies y metros, °C y °F, hPa e inHg.",
+    "Revisa la categoría de vuelo y cualquier línea marcada como sin decodificar. Los grupos desconocidos se muestran exactamente como están escritos."
+  ],
+  "faq": [
+    [
+      "¿Qué diferencia hay entre un METAR y un TAF?",
+      "Un METAR es una observación del tiempo en un aeropuerto en este momento, que normalmente se emite cada hora (un SPECI es una actualización no programada tras un cambio significativo). Un TAF es un pronóstico para el aeropuerto, que normalmente cubre de 24 a 30 horas y se divide en un pronóstico base y grupos de cambio."
+    ],
+    [
+      "¿Cómo leo el grupo de viento, como 29016G25KT?",
+      "Los tres primeros dígitos son la dirección de la que sopla el viento, en grados verdaderos (290 es oesnoroeste), los dos o tres siguientes son la velocidad (16), G añade la velocidad de las ráfagas (25) y las últimas letras son la unidad: KT para nudos, MPS para metros por segundo, KMH para kilómetros por hora. VRB significa dirección variable; 00000KT es calma."
+    ],
+    [
+      "¿Qué significan los grupos de cambio del TAF?",
+      "FM (from, desde) inicia un nuevo conjunto de condiciones a una hora dada y sustituye todo lo anterior. BECMG indica un cambio gradual durante el período indicado. TEMPO indica fluctuaciones breves que duran menos de una hora cada vez y menos de la mitad del período. PROB30 y PROB40 dan la probabilidad de las condiciones que siguen. INTER es un término antiguo para TEMPO."
+    ],
+    [
+      "¿Cómo se calculan las categorías de vuelo?",
+      "El decodificador usa los umbrales de la FAA de EE. UU. a partir de la capa de nubes fragmentada o cubierta más baja (el techo de nubes) y la visibilidad: VFR por encima de 3000 ft y 5 SM, MVFR de 1000 a 3000 ft o de 3 a 5 SM, IFR de 500 a menos de 1000 ft o de 1 a menos de 3 SM, y LIFR por debajo de 500 ft o 1 SM. CAVOK cuenta como VFR. Otros países usan límites distintos, así que tómalo como una guía."
+    ],
+    [
+      "¿Por qué una parte de mi informe aparece sin decodificar?",
+      "El decodificador cubre los grupos básicos de la OACI y de la FAA. Los grupos regionales, los códigos de color militares, los grupos de estado de pista y cualquier cosa mal escrita se enumeran tal como están, en vez de adivinarse. Las observaciones después de RMK nunca se interpretan."
+    ],
+    [
+      "¿La página envía mi informe a algún lado?",
+      "No. El informe se decodifica con JavaScript en tu navegador y no se sube nada. Si quieres decodificar informes desde código, la API de decodificación de la guía de abajo hace el mismo trabajo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">METAR o TAF en bruto</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Un informe, o varios separados por = o por líneas que empiecen con METAR, SPECI o TAF.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Probar otro ejemplo</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Borrar</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>Cómo lee el decodificador un informe</h2>
+<p>Un METAR o un TAF es una cadena de grupos separados por espacios en un orden fijo, definido por el Anexo 3 de la OACI y el Manual de Claves de la OMM n.º 306 (FM 15 METAR y FM 51 TAF) y, en Estados Unidos, por el Manual de Información Aeronáutica de la FAA 7-1-30. El decodificador lee el código de estación, el día y la hora en UTC (DDHHMMZ), el viento (dirección, velocidad, ráfagas y variación), la visibilidad en metros o millas terrestres, el alcance visual en la pista, el tiempo presente, las capas de nubes, la visibilidad vertical, la temperatura y el punto de rocío, y el ajuste del altímetro (Q es hPa, A es inHg en centésimas).</p>
+<p>Los códigos de tiempo combinan una intensidad (- ligera, + fuerte, VC en las inmediaciones), descriptores (TS, SH, FZ y otros) y fenómenos (RA lluvia, SN nieve, FG niebla, BR neblina, etc.). Los grupos de nubes indican la cantidad (FEW, SCT, BKN, OVC) y la base en cientos de pies sobre el nivel del suelo, con CB o TCU para nubes convectivas. La humedad relativa se estima a partir de la temperatura y el punto de rocío con la fórmula de Magnus, es = 6.1094 e^(17.625 T / (T + 243.04)), por lo que es aproximada.</p>
+<p>Las categorías de vuelo siguen las definiciones de la FAA: el techo de nubes es la capa fragmentada o cubierta más baja, o la visibilidad vertical, y la categoría la determina el peor de los dos valores, techo o visibilidad. En un TAF, cada grupo base o de cambio se decodifica por separado, con su rango de tiempo en UTC y su propia categoría. Las horas se dan como día del mes y hora UTC porque los informes no incluyen mes ni año.</p>
+<p><strong>No sirve para planificar vuelos ni para navegar.</strong> Es un lector con fines educativos. Obtén siempre el pronóstico de una fuente oficial antes de volar.</p>

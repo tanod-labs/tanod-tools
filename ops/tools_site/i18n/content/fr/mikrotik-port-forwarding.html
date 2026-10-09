@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Redirection de ports et hairpin NAT MikroTik | Tanod Tools",
+  "description": "Écrivez des règles dst-nat RouterOS de redirection de ports TCP et UDP, avec hairpin NAT et restrictions de source en option. Validées, commentées, dans votre navigateur.",
+  "h1": "Générateur de redirection de ports MikroTik",
+  "lede": "Listez les ports à publier et les serveurs derrière eux, et obtenez des règles dst-nat RouterOS v7, avec hairpin NAT pour que les clients du LAN puissent aussi utiliser l'adresse publique.",
+  "blurb": "Règles dst-nat TCP et UDP, avec hairpin NAT.",
+  "keywords": "redirection de ports mikrotik port forwarding dst-nat nat de destination routeros ouvrir un port hairpin nat nat loopback dstnat to-addresses to-ports mikrotik rdp caméra nvr",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Génère de la syntaxe RouterOS v7 (valable aussi en v6) pour IPv4. Les ports et adresses sont vérifiés, mais pas testés sur votre routeur. MikroTik et RouterOS sont des marques de SIA Mikrotīkls. Cet outil est indépendant : il n'est ni affilié à MikroTik ni approuvé par MikroTik.",
+  "howto_title": "Comment rediriger un port sur un routeur MikroTik",
+  "howto": [
+    "Choisissez comment la règle reconnaît le trafic vers votre adresse publique : l'interface list WAN, une IP publique fixe, ou n'importe quelle adresse du routeur.",
+    "Ajoutez une ligne par service : protocole, port public, IP du serveur interne et, s'il est différent, son port interne.",
+    "Cochez hairpin NAT si les clients du LAN doivent joindre le service par son adresse publique, puis copiez le script ou téléchargez le fichier .rsc."
+  ],
+  "faq": [
+    ["Pourquoi ma redirection de port est-elle inaccessible depuis le LAN ?", "Un client du LAN envoie vers votre IP publique, le routeur traduit la destination vers le serveur, et le serveur répond directement au client puisque les deux sont dans le même sous-réseau. Le client attendait la réponse de l'IP publique et la rejette. Le hairpin NAT fait du masquerade sur ce trafic LAN vers LAN pour que la réponse repasse par le routeur. Cela ne fonctionne que si la règle dst-nat porte sur l'adresse publique plutôt que sur l'interface WAN, car le paquet arrive sur l'interface LAN."],
+    ["La règle doit-elle utiliser in-interface ou dst-address ?", "Utiliser l'interface list WAN est le plus simple et résiste à un changement d'IP publique, mais ne permet pas le hairpin NAT. dst-address fonctionne avec le hairpin mais doit être mis à jour si l'IP change. dst-address-type=local correspond à toute adresse du routeur, ce qui gère à la fois les IP dynamiques et le hairpin ; le revers est qu'il capte aussi ces ports sur l'adresse LAN du routeur lui-même."],
+    ["Faut-il aussi une règle de firewall filter ?", "Avec la configuration par défaut de MikroTik, non : sa chaîne forward ne rejette les nouvelles connexions du WAN que si elles sont « not DSTNATed », donc les connexions redirigées passent. Si vous avez écrit une chaîne forward plus stricte, acceptez connection-nat-state=dstnat avant votre drop final."],
+    ["Comment rediriger une plage de ports ?", "Saisissez la plage, par exemple 50000-50100, ou une liste comme 80,443, et laissez le port interne vide. Les ports sont redirigés tels quels. La traduction de port (8443 public vers 443 interne) fonctionne pour les ports uniques."],
+    ["Est-ce sûr de rediriger RDP, SSH ou Winbox ?", "Exposer des services d'accès à distance à tout internet attire les tentatives de force brute. Renseignez les réseaux source autorisés pour limiter une redirection à des adresses connues, ou placez plutôt le service derrière un VPN comme WireGuard."],
+    ["Ma configuration est-elle envoyée quelque part ?", "Non. Les règles sont générées par le JavaScript de cette page, et rien de ce que vous saisissez n'est envoyé, stocké ni journalisé."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Reconnaître le trafic vers</legend>
+      <div class="seg" role="radiogroup" aria-label="Reconnaître le trafic vers">
+        <label><input type="radio" name="pf-mode" value="list" checked>Liste WAN</label>
+        <label><input type="radio" name="pf-mode" value="iface">Interface WAN</label>
+        <label><input type="radio" name="pf-mode" value="ip">IP publique</label>
+        <label><input type="radio" name="pf-mode" value="local">Toute adresse du routeur</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">Interface list WAN</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">Adresse IP publique</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Redirections</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}Ajouter une redirection</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Options</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">Hairpin NAT (joindre le service depuis le LAN par son adresse publique)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">Sous-réseaux LAN</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">Réseaux source autorisés</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">Facultatif. Laissez vide pour accepter les connexions de n'importe où.</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">Script RouterOS v7</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">Copier le script</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}Télécharger en .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment fonctionne la redirection de ports sur RouterOS</h2>
+<p>Une redirection de port est une règle <code>dst-nat</code> dans la chaîne <code>dstnat</code> de <code>/ip firewall nat</code>. Quand une nouvelle connexion correspond à la règle (protocole, port de destination, et soit l'interface WAN, soit votre adresse publique), RouterOS réécrit sa destination vers l'adresse du serveur interne et, éventuellement, son port. Le suivi de connexion mémorise la traduction, donc les réponses sont réécrites en sens inverse automatiquement ; vous n'avez jamais besoin d'une règle pour le trafic retour.</p>
+<p>La traduction a lieu avant que la chaîne forward du filtre ne voie le paquet. C'est pourquoi la règle forward par défaut de MikroTik ne rejette les nouvelles connexions WAN que si <code>connection-nat-state=!dstnat</code> : une connexion traduite par une règle dst-nat est marquée dstnat et laissée passer, tandis que tout le reste venant d'internet est rejeté.</p>
+<h3>Hairpin NAT</h3>
+<p>Quand un ordinateur du LAN se connecte à l'adresse publique d'un serveur situé lui aussi dans le LAN, la règle dst-nat envoie le paquet au serveur, mais celui-ci voit l'adresse privée du client et lui répond directement. Le client reçoit alors une réponse d'une adresse avec laquelle il n'a jamais communiqué et l'ignore. La règle hairpin fait du masquerade sur le trafic du sous-réseau LAN vers le serveur : le serveur répond donc au routeur, qui retraduit la réponse. Le coût est que les journaux du serveur montrent l'adresse du routeur pour les clients du LAN. Un enregistrement DNS en split-horizon qui fait pointer le nom vers l'adresse interne évite complètement le NAT et constitue souvent la solution la plus propre.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vérifiez que votre firewall rejette bien ce qu'il doit avec l'<a href="/tools/mikrotik-firewall-auditor/">audit de firewall MikroTik</a>.</li>
+  <li>L'accès à distance est plus sûr via un VPN ; le <a href="/tools/mikrotik-wireguard-generator/">générateur WireGuard</a> en met un en place en quelques lignes.</li>
+  <li>Vous limitez une redirection à de nombreux réseaux source ? Créez la liste avec le <a href="/tools/mikrotik-address-list-generator/">générateur d'address lists</a>.</li>
+</ul>

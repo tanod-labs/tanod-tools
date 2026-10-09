@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Znajdź i zamień tekst online, także regex | Tanod Tools",
+  "description": "Znajdź i zamień tekst w przeglądarce: z uwzględnieniem wielkości liter, całych słów i opcjonalnie wyrażeń regularnych z grupami $1. Bezpłatnie, bez przesyłania.",
+  "h1": "Znajdź i zamień tekst",
+  "lede": "Zamień słowa lub wzorce w całym bloku tekstu i sprawdź liczbę trafień jeszcze przed zamianą.",
+  "blurb": "Znajdź i zamień z rozróżnianiem wielkości liter, całymi słowami i regex.",
+  "keywords": "znajdź i zamień tekst zamiana słów wyrażenia regularne regex zamień hurtowo wyszukiwanie find replace replace text",
+  "limits": "Tekst do ok. 5 MB. Wzorce regex działające dłużej niż 2 sekundy są przerywane.",
+  "howto_title": "Jak znaleźć i zamienić tekst",
+  "howto": [
+    "Wklej tekst do pola albo otwórz plik .txt.",
+    "Wpisz, czego szukać i czym to zastąpić. Liczba trafień aktualizuje się podczas pisania.",
+    "Kliknij <strong>Zamień wszystko</strong>, a potem skopiuj wynik lub pobierz go."
+  ],
+  "faq": [
+    ["Czy wyszukiwanie jest dosłowne, czy według wzorca?", "Domyślnie dosłowne: wpisany ciąg jest dopasowywany dokładnie, także znaki takie jak . i *. Włącz opcję „Wyrażenie regularne”, aby użyć składni wyrażeń regularnych JavaScriptu."],
+    ["Jak używać grup w zamienniku?", "W trybie wyrażeń regularnych $1, $2 itd. wstawiają tekst dopasowany przez pierwszą, drugą (itd.) grupę w nawiasach, $& wstawia całe dopasowanie, a $&lt;nazwa&gt; grupę nazwaną. Na przykład wyszukanie (\\w+)@(\\w+) i zamiana na $2 at $1 zamieni bob@example na example at bob. W trybie dosłownym zamiennik jest wstawiany dokładnie tak, jak go wpisano."],
+    ["Do czego służy „Całe słowo”?", "Szukany tekst jest dopasowywany tylko wtedy, gdy nie jest częścią dłuższego słowa, więc wyszukanie kot nie znajdzie słowa kotlet. W trybie dosłownym litery, cyfry i podkreślenie w dowolnym alfabecie traktowane są jako znaki słowa. W trybie wyrażeń regularnych wzorzec jest ujmowany w granice słowa (\\b), które rozpoznają tylko A–Z, cyfry i podkreślenie."],
+    ["Na czym polega limit 2 sekund?", "Niektóre wzorce, na przykład (a+)+$, mogą dla pewnych tekstów działać niezwykle długo. Tryb wyrażeń regularnych działa w osobnym wątku w tle; jeśli po 2 sekundach nie skończy, jest przerywany i pojawia się informacja, że wzorzec zajął zbyt dużo czasu, dzięki czemu strona nigdy się nie zawiesza."],
+    ["Czy wzorzec działa na wiele wierszy?", "W trybie wyrażeń regularnych ^ i $ pasują do początku i końca każdego wiersza, a kropka nie pasuje do podziału wiersza. Wielkość liter jest ignorowana, chyba że włączono opcję rozróżniania wielkości liter."],
+    ["Czy mój tekst jest przesyłany?", "Nie. Wszystko działa w Twojej przeglądarce, a nic nie jest zapisywane ani wysyłane."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Twój tekst</label>
+    <textarea id="text" spellcheck="false" placeholder="Wpisz lub wklej tutaj tekst."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Znajdź</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Zamień na</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Rozróżniaj wielkość liter</label>
+    <label class="check"><input type="checkbox" id="whole">Całe słowo</label>
+    <label class="check"><input type="checkbox" id="regex">Wyrażenie regularne</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Składnia wyrażeń regularnych JavaScriptu. W zamienniku użyj $1, $2 dla grup i $&amp; dla całego dopasowania.</p>
+  <p class="tt__report" id="info" aria-live="polite">Wpisz, czego szukać.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Zamień wszystko</button>
+    <button class="btn btn--quiet" id="clear" type="button">Wyczyść tekst</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Otwórz plik .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Wynik</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Kopiuj wynik</button>
+      <button class="btn" id="dl" type="button">Pobierz .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Użyj wyniku jako tekstu</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Hurtowa zamiana tekstu</h2>
+<p>Znajdź i zamień zmienia każde wystąpienie słowa lub wzorca jednym przebiegiem. Liczba trafień aktualizuje się podczas pisania, więc widać zasięg zmiany, zanim ją zastosujesz, a wynik pojawia się w osobnym polu, dzięki czemu oryginalny tekst nie zostanie nadpisany, dopóki nie wybierzesz „Użyj wyniku jako tekstu”.</p>
+<p>Wyrażenia regularne pozwalają opisać kształt zamiast stałego ciągu znaków: ciąg cyfr, datę, słowo z przecinkiem po nim. Grupy w nawiasach można w zamienniku przestawiać za pomocą $1, $2 itd. Ponieważ źle napisany wzorzec może działać bardzo długo, wzorce są wykonywane w wątku w tle, który jest przerywany po dwóch sekundach.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Wzorzec zbuduj i przetestuj najpierw w narzędziu <a href="/tools/regex-tester/">Tester wyrażeń regularnych</a>, które wypisuje każde dopasowanie i jego grupy.</li>
+  <li>Wielkość liter zmienisz w narzędziu <a href="/tools/case-converter/">Zmiana wielkości liter</a>.</li>
+  <li>Sprawdź zmiany za pomocą narzędzia <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+  <li>Powtarzające się wiersze usuniesz w narzędziu <a href="/tools/remove-duplicate-lines/">Usuń zduplikowane wiersze</a>.</li>
+</ul>

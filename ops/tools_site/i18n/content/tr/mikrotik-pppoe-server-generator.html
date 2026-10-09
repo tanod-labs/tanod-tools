@@ -1,0 +1,108 @@
+<!--meta
+{
+  "title": "MikroTik PPPoE sunucu oluşturucu (ISS, WISP) | Tanod Tools",
+  "description": "RouterOS PPPoE sunucusu oluşturun: adres havuzu, rate-limit'li plan profilleri, secret'lar, isteğe bağlı RADIUS ve NAT. Tarayıcınızda çalışır.",
+  "h1": "MikroTik PPPoE sunucu oluşturucu",
+  "lede": "Müşteri arayüzünü, adres havuzunu ve hız planlarını belirleyin; profiller, secret şablonu ve isteğe bağlı RADIUS içeren eksiksiz bir RouterOS PPPoE sunucusu alın.",
+  "blurb": "Havuz, plan profilleri, PPPoE sunucusu, secret'lar ve RADIUS.",
+  "keywords": "mikrotik pppoe sunucu kurulumu routeros pppoe-server ppp profile rate-limit ppp secret radius wisp iss müşteri planları ip pool local-address remote-address change-tcp-mss mikrotik pppoe server setup",
+  "limits": "RouterOS v7 sözdizimi üretir (v6'da da geçerlidir). Secret'lara bilerek yer tutucu parolalar verilir; sayfa hiçbir zaman gerçek parola istemez. Yalnızca IPv4; PPPoE için IPv6 önek devri kapsanmaz. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te PPPoE sunucusu nasıl kurulur",
+  "howto": [
+    "Müşteriye bakan arayüzü (bir Ethernet portu, bridge veya VLAN) ve bir hizmet adı girin.",
+    "Müşteri adres havuzunu ağ olarak, DNS sunucularını ve her hız planı için yükleme ve indirme hızıyla bir profil girin.",
+    "Kimlik doğrulamayı, RADIUS'u ve NAT'ı seçin, oluşturulacak yer tutucu hesap sayısını belirleyin; betiği kopyalayın veya indirin. Müşteriler bağlanmadan önce her CHANGE_ME değerini değiştirin."
+  ],
+  "faq": [
+    [
+      "PPP profilindeki hızlar nasıl çalışır?",
+      "Profilin rate-limit değeri yönlendiricinin bakış açısından rx/tx olarak yazılır: rx yönlendiricinin müşteriden aldığı (müşterinin yüklemesi), tx ise gönderdiği (müşterinin indirmesi) trafiktir. Bir oturum açıldığında RouterOS bu sınırlarla dinamik bir simple queue oluşturur. RADIUS, Mikrotik-Rate-Limit özniteliğiyle bunu müşteri başına geçersiz kılabilir."
+    ],
+    [
+      "Parolalar neden CHANGE_ME?",
+      "Müşteri parolaları gizlidir ve bir yapılandırma oluşturucunun onları bilmesi gerekmez. Betik yapı hazır olsun diye hesapları açıkça yer tutucu parolalarla oluşturur; gerçek parolaları yönlendiricide ayarlayın, faturalama sisteminizden içe aktarın ya da kimlik doğrulamayı bir RADIUS sunucusuna bırakın."
+    ],
+    [
+      "only-one ve one-session-per-host ne yapar?",
+      "Profildeki only-one, aynı kullanıcı adının aynı anda iki oturum açmasını engeller. Sunucudaki one-session-per-host ise tek bir MAC adresinin birden çok oturum açmasını engeller. Birlikte hesap paylaşımının çoğunu önlerler."
+    ],
+    [
+      "MTU neden 1480?",
+      "PPPoE, Ethernet çerçevesinin içine 8 baytlık bir başlık ekler; bu yüzden standart 1500 baytlık bir hatta bir oturum en fazla 1492 taşıyabilir. RouterOS varsayılan olarak 1480 kullanır; bu, VLAN etiketlerine ve garip CPE davranışlarına yer bırakır. Profildeki change-tcp-mss ise TCP'yi sınırlayarak büyük paketlerin parçalanmasını önler."
+    ],
+    [
+      "Hangi kimlik doğrulama yöntemlerine izin vermeliyim?",
+      "CHAP ve MS-CHAPv2 parolayı düz metin olarak göndermez. PAP gönderir ve yalnızca başka hiçbir şeyi desteklemeyen eski CPE'ler için etkinleştirmeye değer. RADIUS hepsiyle çalışır, ancak bazı RADIUS arka uçları özetlenmiş parolaları denetlemek için PAP gerektirir."
+    ],
+    [
+      "Bunların herhangi biri bir yere gönderiliyor mu?",
+      "Hayır. Betik tarayıcınızda üretilir."
+    ]
+  ],
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pp">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Sunucu</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-if">Müşteri arayüzü</label><input type="text" id="pp-if" class="mono" value="ether2" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-svc">Hizmet adı</label><input type="text" id="pp-svc" class="mono" value="isp" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-net">Müşteri havuzu ağı</label><input type="text" id="pp-net" class="mono" value="10.10.0.0/22" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-dns">DNS sunucuları</label><input type="text" id="pp-dns" class="mono" value="1.1.1.1, 8.8.8.8" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <fieldset class="field">
+        <legend>Kimlik doğrulama</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="pp-auth" value="pap">PAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="chap" checked>CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap1" checked>MS-CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap2" checked>MS-CHAPv2</label>
+        </div>
+      </fieldset>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Hız planları (profiller)</legend>
+      <ul class="ros-rows" id="pp-profiles"></ul>
+      <button class="btn btn--sm ros-add" id="pp-add" type="button">{{mark:i-plus}}Plan ekle</button>
+      <span class="help">İlk plan sunucunun varsayılan profilidir ve oluşturulan hesaplar onu kullanır.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Hesaplar ve seçenekler</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-count">Yer tutucu hesaplar</label><input type="text" id="pp-count" class="mono" value="3" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pp-user">Kullanıcı adı deseni</label><input type="text" id="pp-user" class="mono" value="customer{n}" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pp-one" checked>Kullanıcı adı başına tek oturum (only-one)</label>
+        <label class="check"><input type="checkbox" id="pp-nat" checked>Müşterileri WAN'a masquerade et</label>
+        <label class="check"><input type="checkbox" id="pp-radius">RADIUS sunucusu kullan</label>
+      </div>
+      <div class="opts" id="pp-radius-f" hidden>
+        <div class="field"><label for="pp-rad-ip">RADIUS sunucu adresi</label><input type="text" id="pp-rad-ip" class="mono" value="10.0.0.5" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <label class="check"><input type="checkbox" id="pp-coa" checked>CoA ve bağlantı kesme isteklerini kabul et</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pp-out" class="label">RouterOS betiği</label>
+    <textarea id="pp-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pp-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="pp-dl" type="button">{{mark:i-download}}İndir .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pp-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS PPPoE sunucusunun yapısı</h2>
+<p>RouterOS'ta bir PPPoE sunucusu dört parçadan oluşur. Bir <strong>IP havuzu</strong> müşteri adreslerini tutar. <strong>PPP profilleri</strong> her planı tanımlar: yönlendiricinin her oturumdaki yerel adresi, uzak adreslerin alınacağı havuz, dağıtılacak DNS sunucuları ve müşterinin kuyruğuna dönüşen <code>rate-limit</code>. <strong>PPPoE sunucusu</strong> ise müşteriye bakan arayüzde keşif isteklerini dinler. Kimin hangi profille oturum açabileceğine <strong>secret'lar</strong> ya da bir RADIUS sunucusu karar verir.</p>
+<p>Her oturum noktadan noktaya bir bağlantıdır; bu yüzden müşterilerin kendi alt ağlarına ihtiyacı yoktur: yönlendirici tüm oturumlar için tek bir yerel adres kullanır ve her müşteri havuzdan tek bir adres alır. Bu nedenle müşteri arayüzünde IP adresine ve DHCP sunucusuna gerek yoktur; başka hizmetlerle paylaşılan bir bridge veya VLAN üzerinde PPPoE ile IP trafiğini birbirinden ayrı tutun.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Burst'lü planlar mı istiyorsunuz? Değerleri <a href="/tools/mikrotik-burst-calculator/">MikroTik burst hesaplayıcı</a> ile bulun; bir profil veya RADIUS için rate-limit dizesinin tamamını yazdırır.</li>
+  <li>Müşterileriniz kule ya da bina başına ayrı VLAN'larda mı? VLAN'ları <a href="/tools/mikrotik-vlan-generator/">MikroTik VLAN oluşturucu</a> ile oluşturun ve VLAN başına bir PPPoE sunucusu ya da bunların üzerinde tek bir bridge çalıştırın.</li>
+  <li>Yönlendiricinin kendisini <a href="/tools/mikrotik-firewall-generator/">MikroTik güvenlik duvarı oluşturucu</a> ile koruyun: müşteriye bakan arayüzler WinBox'a veya SSH'a erişememelidir.</li>
+</ul>

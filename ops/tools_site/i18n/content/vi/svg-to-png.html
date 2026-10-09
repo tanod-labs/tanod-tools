@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Chuyển SVG sang PNG ở mọi kích thước, miễn phí | Tanod Tools",
+  "description": "Chuyển SVG thành PNG sắc nét ở 1x, 2x, 4x hoặc chiều rộng chính xác, với nền trong suốt hoặc có màu. Chạy trong trình duyệt; không có gì được tải lên.",
+  "h1": "SVG sang PNG",
+  "lede": "Kết xuất bản vẽ, biểu tượng hoặc logo SVG thành PNG sắc nét ở đúng kích thước bạn cần.",
+  "blurb": "Kết xuất biểu tượng và logo SVG thành PNG sắc nét.",
+  "keywords": "svg sang png chuyển svg thành png đổi svg sang png xuất biểu tượng logo vector sang bitmap độ phân giải cao nền trong suốt svg to png convert svg export icon logo raster transparent",
+  "limits": "Mỗi lần một SVG, tối đa 10 MB. Đầu ra tối đa khoảng 100 megapixel và 32.767 pixel mỗi cạnh.",
+  "howto_title": "Cách chuyển SVG sang PNG",
+  "howto": [
+    "Chọn một tệp .svg, hoặc kéo thả nó vào trang. Bản xem trước hiện ra cùng kích thước mà SVG yêu cầu.",
+    "Chọn tỷ lệ (1x, 2x, 4x) hoặc gõ chiều rộng chính xác, và chọn nền trong suốt hoặc nền đặc.",
+    "Nhấn <strong>Chuyển sang PNG</strong>, rồi tải ảnh xuống."
+  ],
+  "faq": [
+    ["PNG có sắc nét ở kích thước lớn không?", "Có. SVG được vẽ trực tiếp ở kích thước đầu ra, chứ không vẽ nhỏ rồi phóng to, nên đường cong và chữ được kết xuất sắc nét ở 2x, 4x hoặc bất kỳ chiều rộng nào bạn gõ."],
+    ["PNG có kích thước bao nhiêu ở 1x?", "Kích thước mà SVG khai báo trong thuộc tính <code>width</code> và <code>height</code>, được đổi sang pixel (xentimét, milimét, inch và point được đổi với 96 pixel mỗi inch). Nếu thiếu các thuộc tính đó thì dùng <code>viewBox</code>. Nếu cả hai đều không có, công cụ dùng mặc định của trình duyệt là 300 × 150 và thông báo cho bạn."],
+    ["Công cụ có giữ độ trong suốt không?", "Có, theo mặc định. Hãy bỏ chọn <em>Nền trong suốt</em> và chọn một màu nếu bạn cần nền đặc, chẳng hạn cho biểu tượng ứng dụng hoặc tài liệu."],
+    ["Tại sao phông chữ hoặc ảnh nhúng trông khác?", "SVG được vẽ như một ảnh khép kín, giống cách một trang web hiển thị SVG trong thẻ <code>img</code>. Phông chữ web và ảnh mà nó liên kết đến ở các trang khác không được tải về, nên chữ chuyển sang phông chữ có trên thiết bị của bạn và ảnh liên kết bị bỏ qua. Ảnh được nhúng ngay trong chính tệp SVG thì vẫn được vẽ."],
+    ["Mở SVG của người khác có an toàn không?", "Có, ở đây thì có. Tệp SVG có thể chứa script, nhưng tệp được tải như một bức ảnh, nơi trình duyệt không bao giờ chạy script hay theo liên kết, và nó không bao giờ được thêm vào trang. Không có gì được tải lên."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:svg-to-png drop__mark}}
+  <p class="drop__title">Thả tệp SVG vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/svg+xml,.svg">{{mark:i-plus}}<span data-pick-label>Chọn tệp SVG</span></label>
+  <p class="drop__hint">Tệp .svg tối đa 10 MB. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="editor" class="util-stack" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview svgp__preview"><canvas id="cv" role="img" aria-label="Xem trước SVG"></canvas></div>
+  <p class="note" id="size-note" hidden></p>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Kích thước</legend>
+      <div class="seg">
+        <label><input type="radio" name="scale" value="1">1x</label>
+        <label><input type="radio" name="scale" value="2" checked>2x</label>
+        <label><input type="radio" name="scale" value="4">4x</label>
+        <label><input type="radio" name="scale" value="custom">Chiều rộng</label>
+      </div>
+    </fieldset>
+    <div class="field" id="w-field" hidden>
+      <label for="width">Chiều rộng (px)</label>
+      <input type="number" id="width" min="1" max="32767" inputmode="numeric">
+      <p class="help">Chiều cao theo đúng tỷ lệ của SVG.</p>
+    </div>
+    <div class="field">
+      <span class="label">Nền</span>
+      <label class="check"><input type="checkbox" id="transparent" checked>Nền trong suốt</label>
+      <div id="bg-wrap" hidden><label class="visually-hidden" for="bg">Màu nền</label><input type="color" id="bg" value="#ffffff"></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Chuyển sang PNG</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Biến đồ họa vector thành điểm ảnh</h2>
+<p>SVG mô tả hình dạng bằng tọa độ, nên nó có thể được vẽ ở mọi kích thước mà không mất độ sắc nét. Tuy nhiên nhiều nơi vẫn cần ảnh bitmap: cửa hàng ứng dụng, trang cá nhân mạng xã hội, bộ slide, chữ ký email và các công cụ thiết kế cũ hơn. Chuyển sang PNG cố định bản vẽ ở một kích thước pixel, vì vậy hãy chọn kích thước lớn nhất bạn sẽ cần; bạn luôn có thể thu nhỏ PNG về sau, nhưng phóng to sẽ làm mờ.</p>
+<p>Bộ kết xuất SVG của chính trình duyệt thực hiện việc vẽ lên canvas, ở kích thước đầu ra, và canvas được lưu thành PNG với độ trong suốt đầy đủ. SVG được coi nghiêm ngặt là một bức ảnh: script bên trong không bao giờ chạy và không có gì nó liên kết đến được tải về.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Với màn hình có mật độ điểm ảnh cao, hãy xuất ở kích thước gấp 2 hoặc 3 lần kích thước ảnh được hiển thị.</li>
+  <li>Đang làm biểu tượng cho trang web? <a href="/tools/favicon-generator/">Tạo favicon</a> tạo mọi kích thước từ một ảnh.</li>
+  <li>Cần JPG hoặc WebP thay thế? Hãy chuyển PNG bằng <a href="/tools/convert-image/">Chuyển đổi định dạng ảnh</a>.</li>
+</ul>

@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "MikroTik पोर्ट फ़ॉरवर्डिंग और हेयरपिन NAT जनरेटर | Tanod Tools",
+  "description": "TCP और UDP के लिए RouterOS dst-nat पोर्ट फ़ॉरवर्डिंग रूल बनाएं, वैकल्पिक हेयरपिन NAT और source सीमा के साथ। जाँचे हुए, कमेंट सहित, आपके ब्राउज़र में।",
+  "h1": "MikroTik पोर्ट फ़ॉरवर्डिंग जनरेटर",
+  "lede": "जिन पोर्ट को खोलना है और उनके पीछे के सर्वर लिखें, और RouterOS v7 के dst-nat रूल पाएं, हेयरपिन NAT के साथ, ताकि LAN क्लाइंट भी पब्लिक एड्रेस से पहुँच सकें।",
+  "blurb": "TCP और UDP के लिए dst-nat रूल, हेयरपिन NAT के साथ।",
+  "keywords": "mikrotik पोर्ट फ़ॉरवर्डिंग, पोर्ट फॉरवर्ड, dst-nat, destination nat, routeros port forward, hairpin nat, nat loopback, dstnat to-addresses to-ports, पोर्ट खोलना, mikrotik rdp, camera nvr",
+  "limits": "यह IPv4 के लिए RouterOS v7 सिंटैक्स बनाता है (v6 में भी मान्य)। पोर्ट और एड्रेस की जाँच होती है, पर आपके राउटर पर उनका परीक्षण नहीं होता। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik राउटर पर पोर्ट कैसे फ़ॉरवर्ड करें",
+  "howto": [
+    "चुनें कि रूल आपके पब्लिक एड्रेस के ट्रैफ़िक को कैसे पहचाने: WAN interface list से, तय पब्लिक IP से, या राउटर के किसी भी एड्रेस से।",
+    "हर सर्विस के लिए एक पंक्ति जोड़ें: प्रोटोकॉल, पब्लिक पोर्ट, अंदरूनी सर्वर का IP और, अगर अलग हो, उसका अंदरूनी पोर्ट।",
+    "अगर LAN क्लाइंट को सर्विस पब्लिक एड्रेस से मिलनी चाहिए तो हेयरपिन NAT पर टिक करें, फिर स्क्रिप्ट कॉपी करें या .rsc फ़ाइल डाउनलोड करें।"
+  ],
+  "faq": [
+    [
+      "LAN के अंदर से मेरा पोर्ट फ़ॉरवर्ड क्यों नहीं खुलता?",
+      "LAN क्लाइंट आपके पब्लिक IP पर भेजता है, राउटर destination को सर्वर में बदल देता है, और सर्वर सीधे क्लाइंट को जवाब देता है, क्योंकि दोनों एक ही सबनेट में हैं। क्लाइंट को जवाब पब्लिक IP से आने की उम्मीद थी, इसलिए वह उसे छोड़ देता है। हेयरपिन NAT LAN से LAN के उस ट्रैफ़िक को masquerade करता है, जिससे जवाब राउटर से होकर लौटता है। यह तभी काम करता है जब dst-nat रूल WAN interface के बजाय पब्लिक एड्रेस से मैच करे, क्योंकि पैकेट LAN इंटरफ़ेस पर आता है।"
+    ],
+    [
+      "रूल को in-interface से मैच करना चाहिए या dst-address से?",
+      "WAN interface list से मैच करना सबसे आसान है और पब्लिक IP बदलने पर भी चलता रहता है, पर उससे हेयरपिन NAT नहीं हो सकता। dst-address से मैच करना हेयरपिन के साथ चलता है, पर IP बदलने पर इसे अपडेट करना पड़ता है। dst-address-type=local राउटर के किसी भी एड्रेस से मैच करता है, जिससे डायनेमिक IP और हेयरपिन दोनों एक साथ सँभल जाते हैं; बस यह कि वह राउटर के अपने LAN एड्रेस पर भी वे पोर्ट पकड़ लेता है।"
+    ],
+    [
+      "क्या फ़ायरवॉल filter रूल भी चाहिए?",
+      "MikroTik के डिफ़ॉल्ट कॉन्फ़िगरेशन में नहीं: उसकी forward chain WAN से आने वाले नए कनेक्शन तभी ड्रॉप करती है जब वे \"not DSTNATed\" हों, इसलिए पोर्ट-फ़ॉरवर्ड हुए कनेक्शन गुज़र जाते हैं। अगर आपने ज़्यादा सख़्त forward chain लिखी है, तो अपने आख़िरी drop से पहले connection-nat-state=dstnat को accept करें।"
+    ],
+    [
+      "पोर्ट की रेंज कैसे फ़ॉरवर्ड करूँ?",
+      "रेंज लिखें, जैसे 50000-50100, या सूची, जैसे 80,443, और अंदरूनी पोर्ट खाली छोड़ दें। पोर्ट बिना बदले फ़ॉरवर्ड होते हैं। पोर्ट बदलना (पब्लिक 8443 से अंदरूनी 443) अकेले पोर्ट के लिए काम करता है।"
+    ],
+    [
+      "क्या RDP, SSH या Winbox फ़ॉरवर्ड करना सुरक्षित है?",
+      "रिमोट-एक्सेस सर्विस को पूरे इंटरनेट के लिए खोल देने से brute-force की कोशिशें बढ़ती हैं। फ़ॉरवर्ड को जाने-पहचाने एड्रेस तक सीमित करने के लिए अनुमत source नेटवर्क भरें, या सर्विस को WireGuard जैसे VPN के पीछे रखें।"
+    ],
+    [
+      "क्या मेरा कॉन्फ़िगरेशन कहीं भेजा जाता है?",
+      "नहीं। रूल इसी पेज के JavaScript से बनते हैं, और आप जो भी टाइप करते हैं वह न अपलोड होता है, न सेव, न लॉग।"
+    ]
+  ],
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>ट्रैफ़िक किससे मैच करें</legend>
+      <div class="seg" role="radiogroup" aria-label="ट्रैफ़िक किससे मैच करें">
+        <label><input type="radio" name="pf-mode" value="list" checked>WAN list</label>
+        <label><input type="radio" name="pf-mode" value="iface">WAN इंटरफ़ेस</label>
+        <label><input type="radio" name="pf-mode" value="ip">पब्लिक IP</label>
+        <label><input type="radio" name="pf-mode" value="local">राउटर का कोई भी एड्रेस</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">WAN इंटरफ़ेस लिस्ट</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">पब्लिक IP एड्रेस</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>फ़ॉरवर्ड</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}फ़ॉरवर्ड जोड़ें</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>विकल्प</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">हेयरपिन NAT (LAN से सर्विस तक पब्लिक एड्रेस से पहुँचें)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">LAN सबनेट</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">अनुमत source नेटवर्क</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">वैकल्पिक। कहीं से भी कनेक्शन स्वीकार करने के लिए खाली छोड़ें।</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">RouterOS v7 स्क्रिप्ट</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS पर पोर्ट फ़ॉरवर्डिंग कैसे काम करती है</h2>
+<p>पोर्ट फ़ॉरवर्ड <code>/ip firewall nat</code> की <code>dstnat</code> chain में एक <code>dst-nat</code> रूल होता है। जब कोई नया कनेक्शन रूल से मैच करता है (प्रोटोकॉल, destination पोर्ट, और WAN इंटरफ़ेस या आपका पब्लिक एड्रेस), तो RouterOS उसका destination अंदरूनी सर्वर के एड्रेस और, चाहें तो पोर्ट में बदल देता है। Connection tracking इस बदलाव को याद रखता है, इसलिए जवाब अपने आप वापस बदल जाते हैं; लौटते ट्रैफ़िक के लिए अलग रूल की ज़रूरत नहीं पड़ती।</p>
+<p>यह बदलाव filter की forward chain के पैकेट देखने से पहले होता है। इसीलिए MikroTik का डिफ़ॉल्ट forward रूल WAN के नए कनेक्शन सिर्फ़ तभी ड्रॉप करता है जब <code>connection-nat-state=!dstnat</code> हो: जिस कनेक्शन को dst-nat रूल ने बदला है वह dstnat'ed मार्क हो जाता है और गुज़र जाता है, जबकि इंटरनेट से आने वाला बाकी सब ड्रॉप हो जाता है।</p>
+<h3>हेयरपिन NAT</h3>
+<p>जब LAN का कोई कंप्यूटर ऐसे सर्वर के पब्लिक एड्रेस से जुड़ता है जो खुद भी LAN में है, तो dst-nat रूल पैकेट को सर्वर तक भेज देता है, लेकिन सर्वर को क्लाइंट का प्राइवेट एड्रेस दिखता है और वह सीधे उसी को जवाब देता है। तब क्लाइंट को ऐसे एड्रेस से जवाब मिलता है जिससे उसने बात ही नहीं की थी, और वह उसे छोड़ देता है। हेयरपिन रूल LAN सबनेट से सर्वर की ओर जाने वाले ट्रैफ़िक को masquerade करता है, जिससे सर्वर राउटर को जवाब देता है और राउटर उसे वापस बदल देता है। इसकी कीमत यह है कि सर्वर के लॉग में LAN क्लाइंट के लिए राउटर का एड्रेस दिखता है। नाम को अंदरूनी एड्रेस की ओर ले जाने वाला split-horizon DNS रिकॉर्ड NAT से पूरी तरह बचा देता है और अक्सर यही साफ़-सुथरा हल होता है।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>अपना फ़ायरवॉल वह सब ड्रॉप करता है जो उसे करना चाहिए, यह <a href="/tools/mikrotik-firewall-auditor/">MikroTik फ़ायरवॉल ऑडिटर</a> से जाँचें।</li>
+  <li>रिमोट एक्सेस VPN से ज़्यादा सुरक्षित रहता है; <a href="/tools/mikrotik-wireguard-generator/">MikroTik WireGuard जनरेटर</a> कुछ ही लाइनों में एक सेट कर देता है।</li>
+  <li>किसी फ़ॉरवर्ड को कई source नेटवर्क तक सीमित करना है? सूची <a href="/tools/mikrotik-address-list-generator/">MikroTik एड्रेस लिस्ट जनरेटर</a> से बनाएं।</li>
+</ul>

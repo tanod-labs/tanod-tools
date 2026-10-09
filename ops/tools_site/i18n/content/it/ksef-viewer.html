@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Visualizzatore fatture KSeF: apri XML FA(3) e FA(2) | Tanod Tools",
+  "description": "Apri una fattura polacca KSeF (XML FA(3) o FA(2)) e leggila come una normale fattura. Stampa, salva in PDF o esporta in JSON. Nessun caricamento.",
+  "h1": "Visualizzatore fatture KSeF",
+  "lede": "Apri una fattura strutturata del KSeF polacco e leggila come una normale fattura: venditore, acquirente, righe, gruppi IVA e pagamento. L'XML viene letto nel tuo browser e non viene mai caricato.",
+  "blurb": "Leggi una fattura polacca KSeF (FA(3), FA(2)) come una normale fattura.",
+  "keywords": "visualizzatore ksef visualizzatore fatture ksef ksef viewer aprire fattura ksef leggere fattura xml polacca fattura elettronica polonia fa(3) fa(2) faktura ustrukturyzowana przeglądarka faktur ksef ksef xml in pdf",
+  "limits": "Un file alla volta, fino a 25 MB; vengono mostrate le prime 5.000 righe di fattura. Legge gli schemi KSeF FA(3) e FA(2), comprese le fatture di rettifica. Non vengono letti: l'allegato strutturato di FA(3) (Załącznik), le fatture FA_RR e il vecchio FA(1). Solo visualizzazione: non valida la fattura e non si collega al KSeF.",
+  "howto_title": "Come aprire una fattura KSeF",
+  "howto": [
+    "Scegli l'XML della fattura che hai salvato dal KSeF o dal tuo programma di contabilità, oppure trascinalo sulla pagina.",
+    "Leggi la fattura: venditore (Podmiot1) e acquirente (Podmiot2), righe, IVA per aliquota, totali, pagamento e note.",
+    "Premi <strong>Stampa o salva come PDF</strong>, <strong>Scarica JSON</strong> oppure <strong>Mostra XML originale</strong>."
+  ],
+  "faq": [
+    [
+      "La fattura viene inviata al KSeF o caricata?",
+      "No. Questa pagina non si collega al KSeF né ad alcun server. L'XML viene letto nel tuo browser e mostrato in questa pagina e, chiudendo la scheda, tutto viene cancellato."
+    ],
+    [
+      "Dove trovo l'XML di una fattura?",
+      "Nel KSeF puoi scaricare una fattura come file XML, e i programmi di contabilità che lavorano con il KSeF possono esportarla. Questa pagina legge il file che hai salvato."
+    ],
+    [
+      "Che differenza c'è tra FA(3) e FA(2)?",
+      "Sono versioni successive dello stesso schema di fattura (l'elemento radice è Faktura). FA(3) è la versione in uso da quando il KSeF è diventato obbligatorio, nel 2026; FA(2) è la precedente, e le fatture scritte con essa circolano ancora. Qui si leggono entrambe."
+    ],
+    [
+      "Disegna i codici QR del KSeF o la visualizzazione ufficiale?",
+      "No. Questa pagina mostra il contenuto dell'XML come una fattura leggibile. Non crea i codici QR della visualizzazione ufficiale ed è indipendente dal Ministero delle Finanze."
+    ],
+    [
+      "Perché alcune righe non hanno l'aliquota IVA?",
+      "Per le righe esenti (zw), in inversione contabile (oo) e non soggette (np) il file riporta un codice al posto dell'aliquota. Il codice è mostrato così com'è, insieme alla relativa categoria IVA."
+    ],
+    [
+      "Come vengono trattate le fatture di rettifica?",
+      "Una rettifica (KOR) elenca le righe com'erano e come sono ora, e i totali sono la differenza. Le vecchie righe sono contrassegnate come Prima della rettifica. Se il file li riporta, sono mostrati anche il numero della fattura rettificata e il suo numero KSeF."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Rilascia qui una fattura elettronica</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Scegli un file</span></label>
+  <p class="drop__hint">XML, un PDF con una fattura all'interno (ZUGFeRD, Factur-X) o un file .p7m firmato. Oppure trascinalo in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Stampa o salva come PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Scarica JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Scarica XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostra XML originale</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML originale" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Qui è mostrato solo l'inizio di un file lungo. Scarica l'XML per ottenerlo per intero.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Il KSeF e le sue fatture</h2>
+<p>Il KSeF, Krajowy System e-Faktur, è il sistema nazionale polacco di fatturazione elettronica, gestito dal Ministero delle Finanze. Le fatture vengono emesse come XML strutturato in uno schema chiamato FA e nel 2026 il sistema è diventato obbligatorio per le imprese, per fasi. L'XML memorizzato e scambiato è la fattura; la versione leggibile ne è una visualizzazione. Questa pagina crea quella visualizzazione nel tuo browser a partire dall'XML che hai.</p>
+<h2>Che cosa mostra il visualizzatore</h2>
+<p>Vedi il venditore (Podmiot1) e l'acquirente (Podmiot2) con il NIP o la partita IVA UE e gli indirizzi, il numero della fattura (P_2), le date (P_1, P_6), la valuta, ogni riga con quantità, unità di misura, prezzo e aliquota IVA, l'IVA per gruppo di aliquota (P_13 e P_14), il totale (P_15), i dati di pagamento con il conto bancario, le descrizioni aggiuntive, il piè di pagina e i numeri di registro, e le indicazioni che contano: scissione dei pagamenti, inversione contabile, IVA per cassa, autofatturazione ed esenzione. Gli importi sono mostrati esattamente come nel file.</p>
+<p>Non valida la fattura, non la confronta con il KSeF e non legge l'allegato strutturato di FA(3). Se la fattura è stata emessa in valuta estera, l'IVA in PLN è mostrata sotto i totali.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Scarica JSON ti dà la fattura sotto forma di semplici dati, con i nomi dei campi polacchi tradotti nei termini commerciali della norma EN 16931.</li>
+  <li>Qui si aprono anche altri formati: XRechnung, ZUGFeRD / Factur-X, FatturaPA e Peppol. Quando ne apri uno, la pagina ti suggerisce il visualizzatore adatto.</li>
+  <li>Mostra XML originale è utile quando ti serve un elemento che la fattura leggibile non riporta.</li>
+</ul>

@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "MikroTik एड्रेस लिस्ट जनरेटर, CIDR मर्ज | Tanod Tools",
+  "description": "IP, CIDR और रेंज की सूची को RouterOS फ़ायरवॉल एड्रेस-लिस्ट स्क्रिप्ट में बदलें। डुप्लिकेट हटाता है, ओवरलैप होते नेटवर्क मर्ज करता है, IPv4 और IPv6, वैकल्पिक टाइमआउट।",
+  "h1": "MikroTik एड्रेस लिस्ट जनरेटर",
+  "lede": "IP एड्रेस, नेटवर्क या रेंज किसी भी मिश्रण में पेस्ट करें और साफ़ RouterOS एड्रेस-लिस्ट स्क्रिप्ट पाएं, जिसमें डुप्लिकेट हटे हों और पास-पास के नेटवर्क मर्ज किए गए हों।",
+  "blurb": "IP और CIDR से डुप्लिकेट-रहित, मर्ज की हुई एड्रेस-लिस्ट स्क्रिप्ट।",
+  "keywords": "मिक्रोटिक एड्रेस लिस्ट जनरेटर ब्लॉकलिस्ट अलाउलिस्ट सीआईडीआर मर्ज सबनेट डुप्लिकेट हटाएं फ़ायरवॉल एड्रेस लिस्ट स्क्रिप्ट mikrotik address list generator routeros address-list import blocklist allowlist cidr aggregation merge subnets dedupe ip list firewall address list script rsc spamhaus drop",
+  "local_text": "आपके ब्राउज़र में चलता है; आपकी सूचियाँ आपके डिवाइस से बाहर नहीं जातीं",
+  "limits": "IPv4 और IPv6 एड्रेस, CIDR नेटवर्क और पहला-आख़िरी के रूप में लिखी रेंज पढ़ता है; लाइन में # या ; के बाद का सब कुछ नज़रअंदाज़ किया जाता है। बड़ी सूचियाँ (सैकड़ों हज़ार एंट्री) चलती हैं पर थोड़ा समय लेती हैं। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik एड्रेस लिस्ट कैसे बनाएं",
+  "howto": [
+    "एड्रेस पेस्ट करें, एक लाइन में एक या कॉमा या स्पेस से अलग किए हुए। नेटवर्क (<code>203.0.113.0/24</code>) और रेंज (<code>198.51.100.10-198.51.100.20</code>) भी चलती हैं।",
+    "सूची का नाम दें, और अगर हर एंट्री पर चाहिए तो टाइमआउट या कमेंट जोड़ें।",
+    "सबसे कम एंट्री पाने के लिए मर्जिंग चालू रखें, फिर स्क्रिप्ट कॉपी करें या .rsc फ़ाइल डाउनलोड करें और <code>/import file-name=list.rsc</code> चलाएं।"
+  ],
+  "faq": [
+    ["मर्जिंग क्या करती है?", "यह हर एंट्री को सॉर्ट करती है, ओवरलैप होने वाले या सटे हुए एड्रेस और नेटवर्क जोड़ती है, और नतीजा सबसे कम CIDR ब्लॉक के रूप में लिखती है जो ठीक उतने ही एड्रेस कवर करते हैं। 10.0.0.0/25 और 10.0.0.128/25 मिलकर 10.0.0.0/24 बन जाते हैं, और आपके पास पहले से मौजूद नेटवर्क के अंदर का अकेला एड्रेस गायब हो जाता है। ऐसा कुछ नहीं जोड़ा जाता जो पहले कवर न था।"],
+    ["एक रेंज कई एंट्री में क्यों बदल गई?", "10.0.0.5-10.0.0.20 जैसी रेंज किसी एक नेटवर्क सीमा से मेल नहीं खाती, इसलिए इसे उन CIDR ब्लॉक के रूप में लिखा जाता है जो उसे ठीक-ठीक कवर करते हैं: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 और 10.0.0.20/32। RouterOS रेंज भी मानता है, पर CIDR एंट्री पढ़ना और मिलाना आसान होता है।"],
+    ["मेरा इम्पोर्ट \"already have such entry\" पर बीच में रुक जाता है। क्यों?", "RouterOS ऐसा एड्रेस जोड़ने से मना कर देता है जो सूची में पहले से है, और इम्पोर्ट पहली त्रुटि पर रुक जाता है। \"पहले से मौजूद एंट्री छोड़ें\" पर निशान लगाएं: तब हर लाइन <code>:do { … } on-error={}</code> में लपेटी जाती है, इसलिए डुप्लिकेट छूट जाते हैं और इम्पोर्ट आगे चलता रहता है। या सूची को पहले खाली करने के लिए \"सूची बदल दें\" पर निशान लगाएं।"],
+    ["सूची को फ़ायरवॉल नियम में कैसे इस्तेमाल करूँ?", "इसे <code>src-address-list=</code> या <code>dst-address-list=</code> से मैच करें, उदाहरण के लिए <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>। raw टेबल में ड्रॉप करने से कनेक्शन ट्रैकिंग छूट जाती है, जो बड़ी ब्लॉक लिस्ट के लिए सस्ता पड़ता है।"],
+    ["क्या मेरी सूचियाँ अपलोड होती हैं?", "नहीं। पार्सिंग और मर्जिंग आपके ब्राउज़र में चलती है, और आप जो पेस्ट करते हैं वह कहीं नहीं भेजा जाता।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">एड्रेस, नेटवर्क या रेंज</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">एक लाइन में एक, या कॉमा से अलग किए हुए। # या ; के बाद का टेक्स्ट नज़रअंदाज़ होता है।</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">सूची का नाम</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">टाइमआउट</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">वैकल्पिक, जैसे 1h, 1d या 1w।</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">कमेंट</label>
+        <input type="text" id="al-comment" value="" placeholder="इम्पोर्ट किया 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>ओवरलैप होते और सटे नेटवर्क मर्ज करें</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>पहले से मौजूद एंट्री छोड़ें</label>
+      <label class="check"><input type="checkbox" id="al-replace">सूची बदल दें (पहले उसकी मौजूदा एंट्री हटाएं)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">RouterOS स्क्रिप्ट</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS पर एड्रेस लिस्ट</h2>
+<p>एड्रेस लिस्ट <code>/ip firewall address-list</code> के तहत (और IPv6 के लिए <code>/ipv6 firewall address-list</code> के तहत) IP एड्रेस और नेटवर्क का नाम वाला समूह है। फ़ायरवॉल, NAT, mangle और raw नियम एक ही शर्त से पूरी सूची मैच कर सकते हैं, जिससे नियमों का सेट छोटा और तेज़ रहता है: RouterOS सूची की सदस्यता एक ट्री में खोजता है, हर नेटवर्क के लिए एक-एक नियम नहीं चलता। सूचियाँ मैनेजमेंट नेटवर्क, ग्राहकों की रेंज, थ्रेट फ़ीड की ब्लॉक लिस्ट, या ऐसे एड्रेस रखने का आम तरीका हैं जिन्हें कोई नियम <code>action=add-src-to-address-list</code> से डायनामिक रूप से जोड़ता है।</p>
+<p>एक ही सूची में अकेले एड्रेस, CIDR नेटवर्क और रेंज हो सकती हैं, और ओवरलैप होती एंट्री की अनुमति है, इसीलिए इम्पोर्ट की गई फ़ीड बेतरतीब होती जाती हैं। यह पेज सूची को राउटर तक पहुँचने से पहले साफ़ करता है: यह हर एंट्री को सामान्य रूप देता है (होस्ट बिट के साथ लिखा नेटवर्क, जैसे 10.1.2.3/24, 10.1.2.0/24 बन जाता है), हूबहू डुप्लिकेट हटाता है, और मर्जिंग चालू होने पर सब कुछ CIDR ब्लॉक के सबसे छोटे सेट में समेट देता है। अकेले होस्ट के लिए स्क्रिप्ट सादा एड्रेस इस्तेमाल करती है, जैसा RouterOS खुद छापता है।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>नेटवर्क का आकार, रेंज और मास्क <a href="/tools/subnet-calculator/">सबनेट कैलकुलेटर</a> में जाँचें।</li>
+  <li>सूची इस्तेमाल करने वाले फ़ायरवॉल नियम चाहिए? <a href="/tools/mikrotik-firewall-generator/">MikroTik फ़ायरवॉल जनरेटर</a> से शुरू करें।</li>
+  <li>इसके बजाय सादे टेक्स्ट की सूची साफ़ करनी है? <a href="/tools/remove-duplicate-lines/">डुप्लिकेट लाइनें हटाएं</a> क्रम और मूल टेक्स्ट को बनाए रखता है।</li>
+</ul>

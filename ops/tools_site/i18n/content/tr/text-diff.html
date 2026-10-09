@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Metin karşılaştır online (diff denetleyici) | Tanod Tools",
+  "description": "İki metni karşılaştırın; nelerin eklendiğini ve silindiğini satır, kelime veya karakter bazında görün. Ücretsiz, tarayıcınızda çalışır, hiçbir şey yüklenmez.",
+  "h1": "Metin karşılaştır (diff)",
+  "lede": "Bir özgün ve bir değiştirilmiş sürümü yapıştırın; nelerin eklendiğini ve silindiğini tam olarak görün.",
+  "blurb": "İki metin arasındaki farkları bulun.",
+  "keywords": "metin karşılaştır diff iki metin fark değişiklikler satır kelime karakter yan yana karşılaştırma farkları bul diff checker compare two texts difference changes",
+  "limits": "Satır karşılaştırması her tarafta yaklaşık 10.000 satırı destekler. Kelime ve karakter karşılaştırması toplamda yaklaşık 300.000 karakterle sınırlıdır.",
+  "howto_title": "İki metin nasıl karşılaştırılır",
+  "howto": [
+    "Özgün metni soldaki, değiştirilmiş sürümü sağdaki kutuya yapıştırın.",
+    "Satır, kelime veya karakter bazında ve yan yana ya da satır içi karşılaştırmayı seçin.",
+    "<strong>Karşılaştır</strong> düğmesine basın. Eklemeler yeşil zeminde artı işaretiyle, silmeler gri zeminde üstü çizili olarak işaretlenir."
+  ],
+  "faq": [
+    ["Hangi karşılaştırmayı seçmeliyim?", "Satır; kod, listeler ve yapılandırma dosyaları için en iyisidir ve en hızlısıdır. Kelime, küçük bir düzenlemenin bütün bir satırı değişmiş gibi göstereceği düz yazı için uygundur. Karakter ise değişen bir rakam ya da yazım hatası gibi en küçük düzenlemeleri gösterir."],
+    ["Değişiklikler nasıl işaretlenir?", "Eklenen metnin yanında artı işareti ve yeşil zemin bulunur. Silinen metinde eksi işareti, gri zemin ve üstü çizgi vardır. İşaret, farkın yalnızca renge dayanmaması için oradadır."],
+    ["Büyük/küçük harfi yok say ve boşlukları yok say ne yapar?", "Büyük/küçük harfi yok say, büyük ve küçük harfi eşit sayar. Boşlukları yok say (yalnızca satır kipinde), satırların içindeki ve çevresindeki boşluk ve sekme farklarını dikkate almaz."],
+    ["Değişmeyen bazı satırlar neden gizli?", "Satır kipinde, birbirinin aynı uzun satır dizileri katlanır ve her değişikliğin çevresinde üç satırlık bağlam bırakılır. Göstermek için katlama çubuğuna basın."],
+    ["Ne kadar büyük bir dosyayı karşılaştırabilirim?", "Metinler çoğunlukla birbirine benzediğinde her tarafta yaklaşık 10.000 satır rahatça çalışır. Tamamen farklı iki uzun metin çok daha uzun sürer ve karşılaştırma bir süre sonra bir mesajla vazgeçer."],
+    ["Metnim yükleniyor mu?", "Hayır. Karşılaştırma, açık kaynaklı jsdiff kütüphanesiyle tarayıcınızda çalışır ve metin saklanmaz."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="a">Özgün</label>
+      <textarea id="a" class="mono" spellcheck="false" wrap="off"></textarea>
+    </div>
+    <div class="field">
+      <label for="b">Değiştirilmiş</label>
+      <textarea id="b" class="mono" spellcheck="false" wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <fieldset>
+      <legend>Karşılaştırma ölçütü</legend>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="lines" checked>Satır</label>
+        <label><input type="radio" name="mode" value="words">Kelime</label>
+        <label><input type="radio" name="mode" value="chars">Karakter</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Görünüm</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="side" checked>Yan yana</label>
+        <label><input type="radio" name="layout" value="inline">Satır içi</label>
+      </div>
+    </fieldset>
+    <div>
+      <label class="check"><input type="checkbox" id="ic">Büyük/küçük harfi yok say</label>
+      <label class="check"><input type="checkbox" id="iw">Boşlukları yok say (satırlar)</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Karşılaştır</button>
+    <button class="btn" id="swap" type="button">{{mark:i-refresh}}Yer değiştir</button>
+    <button class="btn btn--quiet" id="clear" type="button">Temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>.txt dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="diff__sum" id="sum" hidden><span class="add" id="sum-add"></span><span id="sum-del"></span></p>
+  <div id="result" hidden></div>
+</div>
+<!--explain-->
+<h2>Karşılaştırma nasıl çalışır</h2>
+<p>Bir diff, özgün metni değiştirilmiş metne dönüştüren en kısa düzenleme listesini bulur. Eşleşen bölümlere dokunulmaz; geriye kalanlar özgünden silinmiş ve yeni sürüme eklenmiş olarak gösterilir. Bu araç tarayıcınızda çalışan açık kaynaklı jsdiff kütüphanesini kullanır.</p>
+<p>Bir satır bloğu değiştirildiğinde, yan yana görünümde eski ve yeni sürümler aynı satırlarda gösterilir; böylece bunları çapraz okuyabilirsiniz. Telefonda iki taraf üst üste dizilir. ".txt dosyası aç" en son kullandığınız kutuyu doldurur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Listeleri, <a href="/tools/remove-duplicate-lines/">Tekrar eden satırları sil</a> ile temizledikten sonra karşılaştırın.</li>
+  <li>Önce aynı düzenlemeyi her yerde <a href="/tools/find-and-replace/">Bul ve değiştir</a> ile yapın.</li>
+  <li>İki veri dışa aktarımını mı karşılaştırıyorsunuz? Her kayıt tek satırda olsun diye önce <a href="/tools/json-to-csv/">JSON'dan CSV'ye</a> ile dönüştürün.</li>
+  <li>Karşılaştırmayı ters yönde görmek için Yer değiştir düğmesine basın.</li>
+</ul>

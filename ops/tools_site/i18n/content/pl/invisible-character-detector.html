@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "Wykrywacz niewidocznych znaków i ASCII smuggling | Tanod Tools",
+  "description": "Znajdź znaki o zerowej szerokości, bidi i tagi Unicode, odczytaj ukryty tekst ASCII i wykryj podobne słowa. Za darmo, w Twojej przeglądarce.",
+  "h1": "Wykrywacz niewidocznych znaków i dekoder ASCII smuggling",
+  "lede": "Wklej tekst, aby znaleźć znaki, których nie widać, i odczytać tekst ukryty w niewidocznych znakach tagów Unicode: spacje o zerowej szerokości, znaki kierunku tekstu, ukryte znaki tagów Unicode oraz słowa łączące litery łacińskie z podobnymi cyrylickimi lub greckimi.",
+  "blurb": "Znajdź niewidoczny Unicode, odczytaj ukryty tekst ASCII i wykryj podobne słowa.",
+  "keywords": "wykrywacz niewidocznych znaków dekoder ascii smuggling spacja o zerowej szerokości ukryte znaki unicode bidi trojan source znaki tagów unicode ascii smuggling prompt injection homoglify cyrylica podobne słowa usuń znaki o zerowej szerokości",
+  "local_text": "Działa w przeglądarce; nic, co wpiszesz, nie opuszcza Twojego urządzenia",
+  "limits": "Tekst do kilku milionów znaków. Sprawdzanie obejmuje punkty kodowe Unicode: znajduje ukryte znaki, ale nie wie, czy dany znak jest nieszkodliwy w Twoim tekście. Prawdziwe sekwencje emoji, takie jak flagi i emoji rodzin, nie są oznaczane.",
+  "howto_title": "Jak znaleźć niewidoczne znaki",
+  "howto": [
+    "Wklej tekst do sprawdzenia albo wybierz <em>Wczytaj przykład</em>, aby zobaczyć, co znajduje narzędzie.",
+    "Przeczytaj liczby dla każdego rodzaju znaków, wyróżniony tekst i tabelę z wierszem, kolumną i punktem kodowym każdego wyniku.",
+    "Wybierz <em>Kopiuj oczyszczony tekst</em>, aby dostać tekst bez niewidocznych znaków."
+  ],
+  "faq": [
+    [
+      "Czym są znaki o zerowej szerokości?",
+      "To znaki, które nie zajmują miejsca na ekranie, takie jak spacja o zerowej szerokości (U+200B), rozdzielacz o zerowej szerokości (U+200C), łącznik słów (U+2060) i znacznik kolejności bajtów (U+FEFF). Wkradają się do tekstu kopiowanego ze stron internetowych i komunikatorów i bez żadnego widocznego śladu potrafią psuć wyszukiwanie, hasła, kod i nazwy plików. Łącznik i rozdzielacz bywają też używane celowo w niektórych pismach, np. perskim i w hindi, więc sprawdź, zanim je usuniesz."
+    ],
+    [
+      "Czym jest atak Trojan Source?",
+      "Unicode ma znaki sterujące, które zmieniają kierunek wyświetlania tekstu, np. wymuszenie kierunku od prawej do lewej (U+202E). W kodzie źródłowym mogą sprawić, że wiersz wygląda inaczej, niż czyta go kompilator, więc z pozoru niewinny komentarz może ukrywać prawdziwy kod. Narzędzie wypisuje każdy dwukierunkowy znak sterujący, abyś mógł je zobaczyć."
+    ],
+    [
+      "Czym są znaki tagów Unicode i dlaczego mają znaczenie?",
+      "Znaki tagów (od U+E0000 do U+E007F) odwzorowują ASCII, ale nic nie wyświetlają. Tekst zapisany nimi jest niewidoczny dla czytelnika, lecz może go odczytać oprogramowanie, także asystenci AI, co pozwala przemycić ukryte polecenia do promptu lub dokumentu. Narzędzie dekoduje każdy ciąg znaków tagów z powrotem do tekstu ASCII, który układa, i pokazuje go w widocznym miejscu. Nazywa się to ASCII smuggling. Flaga Anglii, Szkocji lub Walii jest celowo zbudowana z kilku znaków tagów, więc kompletna sekwencja flagi nie jest oznaczana."
+    ],
+    [
+      "Dlaczego słowo jest oznaczone jako z mieszanych alfabetów?",
+      "Cyrylica i greka mają litery wyglądające tak samo jak łacińskie, np. cyrylickie а i łacińskie a. Słowo, które je miesza, jak pаypal z cyrylickim а, może uchodzić za prawdziwą nazwę, a prowadzić gdzie indziej. Narzędzie wypisuje każde słowo łączące litery łacińskie z cyrylickimi, greckimi lub ormiańskimi i pokazuje, które litery do niego nie pasują."
+    ],
+    [
+      "Czy oznacza emoji?",
+      "Nie. Łącznik o zerowej szerokości między dwoma emoji, jak w emoji rodzin lub zawodów, oraz selektor wariantu po emoji są częścią budowy emoji, więc zostają pominięte. Te same znaki w innych miejscach, np. między dwiema literami, są zgłaszane."
+    ],
+    [
+      "Czy mój tekst jest przesyłany?",
+      "Nie. Tekst jest sprawdzany w Twojej przeglądarce i nigdy nie opuszcza Twojego urządzenia."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Tekst do sprawdzenia</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Wklej tekst tutaj"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Wczytaj przykład</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Wyczyść</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Wklej tekst, aby go sprawdzić.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Ukryty tekst odczytany ze znaków tagów</h3>
+    <p class="help">Te niewidoczne znaki układają czytelny tekst poniżej. Traktuj go jako niezaufany, zwłaszcza jeśli tekst trafi do asystenta AI.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Znaki o zerowej szerokości</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Znaki kierunku tekstu</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Znaki tagów Unicode</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Znaki sterujące</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Inne niewidoczne znaki</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Nietypowe spacje</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Słowa z mieszanych alfabetów</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Wyróżniony tekst</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Tekst z oznaczonymi ukrytymi znakami"></div>
+    <h3 class="util-h">Oczyszczony tekst</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Zamień też nietypowe spacje na zwykłe</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Tekst bez niewidocznych znaków</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Kopiuj oczyszczony tekst</button>
+    </div>
+    <h3 class="util-h">Wyniki</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Tabela wyników">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Wiersz:kolumna</th><th scope="col">Nr znaku</th><th scope="col">Punkt kodowy</th><th scope="col">Co to jest</th><th scope="col">Rodzaj</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak znajdowane są ukryte znaki</h2>
+<p>Unicode definiuje wiele znaków, które niczego nie drukują: spacje i łączniki o zerowej szerokości, znaczniki odwracające kierunek tekstu, miękkie łączniki, spacje o nietypowej szerokości oraz znaki tagów odwzorowujące ASCII. We właściwym miejscu są przydatne, w niewłaściwym stają się utrapieniem albo bronią. Narzędzie czyta tekst punkt kodowy po punkcie kodowym i przypisuje każdy wynik do rodzaju, abyś zobaczył, co tam jest, zanim zdecydujesz, co z tym zrobić.</p>
+<p>Raportowanych jest siedem rodzajów. <strong>Znaki o zerowej szerokości</strong> to m.in. spacja o zerowej szerokości, łączniki i znacznik kolejności bajtów. <strong>Znaki kierunku tekstu</strong> to osadzenia, wymuszenia, izolacje i znaczniki używane w atakach Trojan Source na kod źródłowy. <strong>Znaki tagów Unicode</strong> to blok U+E0000, służący do przemycania niewidocznych poleceń w tekście dla asystentów AI; każdy ciąg jest dekodowany, więc możesz przeczytać ASCII, który układa. <strong>Znaki sterujące</strong> to kody C0 i C1 poza tabulatorem i podziałami wiersza. <strong>Inne niewidoczne znaki</strong> obejmują miękki łącznik, niewidoczne operatory matematyczne, znaki wypełniające i selektory wariantów, a <strong>nietypowe spacje</strong> to spacja niełamliwa, spacje em i en oraz spacja ideograficzna. Wreszcie <strong>słowa z mieszanych alfabetów</strong> to słowa łączące litery łacińskie z cyrylickimi, greckimi lub ormiańskimi, czyli typowy sposób podrabiania nazwy domeny albo nazwy użytkownika.</p>
+<p>Spacje o zerowej szerokości pojawiają się też w tekście wygenerowanym przez AI. Asystenci czatu i potoki przetwarzania tekstu czasem zostawiają w wyniku spacje lub łączniki o zerowej szerokości, a te same znaki mogą służyć jako niewidoczny znak wodny, więc wklejona odpowiedź może zawierać więcej, niż widać. Sprawdzenie tekstu tym narzędziem pokazuje dokładnie, co jest w nim ukryte.</p>
+<p>Niektóre z tych znaków mają swoje miejsce w prawdziwym tekście, więc narzędzie zostawia je w spokoju tam, gdzie są normalne. Kompletna flaga Anglii, Szkocji lub Walii (czarna flaga, a po niej kilka liter tagów i tag anulujący), łącznik o zerowej szerokości między dwoma emoji oraz selektor prezentacji emoji po emoji są w porządku. Łącznik lub rozdzielacz wewnątrz słów perskich, w hindi czy arabskich również jest normalny, ale zostaje zgłoszony, bo narzędzie nie zna języka Twojego tekstu.</p>
+<p>Oczyszczona kopia usuwa znaki o zerowej szerokości, kierunku, tagów, sterujące i inne niewidoczne. Nigdy nie zmienia słów z mieszanych alfabetów, bo zamiana litery zmieniłaby tekst; popraw je ręcznie po sprawdzeniu wyróżnionego słowa.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Policz to, co zostało, w <a href="/tools/character-counter/">liczniku znaków</a>, który liczy znaki, bajty i wiersze.</li>
+  <li>Porównaj oryginał z oczyszczonym tekstem w narzędziu <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+  <li>Aby usunąć jeden konkretny znak wszędzie, użyj <a href="/tools/find-and-replace/">Znajdź i zamień</a>.</li>
+</ul>

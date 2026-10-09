@@ -1,0 +1,99 @@
+<!--meta
+{
+  "title": "Da JSON a YAML online | Tanod Tools",
+  "description": "Converti JSON in YAML nel browser. Valori come yes, null e 012 sono messi tra virgolette per restare stringhe e il risultato viene riletto per verifica.",
+  "h1": "Convertitore da JSON a YAML",
+  "lede": "Incolla JSON e ottieni YAML pulito, con le stringhe ambigue tra virgolette perché mantengano il loro significato.",
+  "blurb": "Converti JSON in YAML.",
+  "keywords": "da json a yaml converti yml configurazione kubernetes compose openapi swagger trasforma json to yaml",
+  "limits": "Input fino a circa 10 MB. Converte solo i dati; JSON non ha commenti, quindi nello YAML non ne possono comparire.",
+  "howto_title": "Come convertire JSON in YAML",
+  "howto": [
+    "Incolla il JSON nella casella oppure premi <strong>Inserisci un esempio</strong>.",
+    "Scegli un rientro di 2 o 4 spazi e attiva Ordina chiavi per elencare ogni mappatura in ordine alfabetico.",
+    "Se il JSON non è valido vedi riga e colonna. Altrimenti copia lo YAML o scaricalo come file <code>.yaml</code>."
+  ],
+  "faq": [
+    [
+      "Il mio JSON viene caricato?",
+      "No. Viene analizzato e convertito da codice eseguito nel tuo browser, quindi nulla di ciò che incolli lascia il tuo dispositivo."
+    ],
+    [
+      "Perché alcune stringhe sono tra virgolette?",
+      "Un semplice <code>yes</code>, <code>null</code>, <code>1.0</code>, <code>012</code> o <code>0x1F</code> verrebbe riletto come booleano, null o numero e non come la stringa che avevi. Il convertitore mette tra virgolette quelle stringhe (e le stringhe vuote) in modo che lo YAML significhi ciò che significava il JSON."
+    ],
+    [
+      "Come faccio a sapere che lo YAML corrisponde al JSON?",
+      "Dopo la conversione, la pagina rilegge lo YAML con un parser YAML 1.2 e lo confronta con i tuoi dati. Se mai differiscono, sopra il risultato compare un avviso."
+    ],
+    [
+      "Come vengono scritte le stringhe su più righe?",
+      "Una stringa con interruzioni di riga viene scritta come block scalar (<code>|</code>), che la mantiene leggibile. Il testo su una sola riga resta su una riga, a meno che tu non spunti l'opzione di a capo automatico."
+    ],
+    [
+      "Cambia l'ordine delle mie chiavi?",
+      "Le chiavi mantengono l'ordine, con una stranezza di JavaScript: le chiavi che sono numeri interi, come \"1\", vengono elencate per prime, in ordine numerico. Spunta Ordina chiavi per ordinare alfabeticamente ogni livello."
+    ],
+    [
+      "E i numeri grandi?",
+      "Gli interi più grandi di 9.007.199.254.740.991 vengono scritti esattamente come digitati, senza arrotondamento. I numeri decimali con più di circa 17 cifre significative vengono arrotondati al valore più vicino che un double può contenere."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">JSON</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Inserisci un esempio</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Cancella</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="{&quot;name&quot;: &quot;example&quot;, &quot;tags&quot;: [&quot;a&quot;, &quot;b&quot;]}"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Rientro</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spazi</label>
+      <label><input type="radio" name="indent" value="4">4 spazi</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Opzioni</span>
+    <label class="check"><input type="checkbox" id="o-sort">Ordina chiavi (tutti i livelli)</label>
+    <label class="check"><input type="checkbox" id="o-flat">Non indentare gli elementi di elenco</label>
+    <label class="check"><input type="checkbox" id="o-wrap">A capo automatico del testo lungo a 80 colonne</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Input</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Output</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Variazione</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Risultato</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Copia</button>
+    <button class="btn" id="f-dl" type="button">Scarica .yaml</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Trasformare il JSON in YAML leggibile</h2>
+<p>YAML è in gran parte un modo più comodo per le persone di scrivere gli stessi dati del JSON. Parentesi graffe e virgolette lasciano il posto a rientri e parole semplici, ed è per questo che la configurazione di Kubernetes, Compose e dei sistemi CI è di solito scritta in YAML. Partendo da un JSON, come una risposta API o un manifest generato, la conversione è meccanica, ma un dettaglio richiede attenzione: YAML decide il tipo di un valore da come appare.</p>
+<p>In YAML un semplice <code>true</code> è un booleano, <code>null</code> è null e <code>1.0</code> è un numero. Una stringa JSON che per caso somiglia a uno di questi, come <code>"null"</code>, <code>"1.0"</code> o <code>"0x1F"</code>, deve essere tra virgolette nello YAML o cambierà tipo alla lettura. Il convertitore mette tra virgolette proprio quelle, più le stringhe vuote e il testo che inizia con simboli che in YAML hanno un significato, e poi controlla l'output rileggendolo.</p>
+<p>Il testo su più righe diventa un blocco letterale, molto più facile da leggere di una lunga stringa con escape <code>\n</code>. Oggetti e array vuoti vengono scritti come <code>{}</code> e <code>[]</code>. Poiché JSON non ha commenti, lo YAML parte senza nessuno; puoi aggiungere i tuoi in seguito.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Per tornare da YAML a JSON usa <a href="/tools/yaml-to-json/">Da YAML a JSON</a>.</li>
+  <li>Se non sei sicuro che sia ben formato, valida e formatta prima il JSON con <a href="/tools/json-formatter/">Formatta e valida JSON</a>.</li>
+  <li>Preferisci un foglio di calcolo? <a href="/tools/json-to-csv/">Da JSON a CSV</a> appiattisce un array di oggetti.</li>
+</ul>

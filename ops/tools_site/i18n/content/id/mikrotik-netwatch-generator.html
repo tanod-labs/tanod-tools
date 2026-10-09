@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Generator Netwatch MikroTik: peringatan down/up | Tanod Tools",
+  "description": "Buat skrip /tool netwatch RouterOS yang memantau host Anda dan mengirim peringatan ntfy, Telegram, atau email saat host mati dan pulih. Di browser Anda.",
+  "h1": "Generator Netwatch MikroTik",
+  "lede": "Pantau gateway ISP dan host lain dari router itu sendiri: daftar host, pilih interval dan cara notifikasi, lalu dapatkan skrip Netwatch siap tempel dengan peringatan down dan up.",
+  "blurb": "Entri Netwatch dengan peringatan ntfy, Telegram, atau email.",
+  "keywords": "mikrotik netwatch generator routeros tool netwatch up-script down-script ntfy telegram bot email peringatan tool fetch ping pemantauan gateway isp mati notifikasi v7 v6",
+  "local_text": "Berjalan di browser Anda; tidak ada yang Anda ketik keluar dari perangkat Anda",
+  "limits": "Menghasilkan entri /tool netwatch RouterOS yang mem-ping host IPv4 (type=icmp di v7, bentuk lama host= di v6) dan menjalankan skrip pada setiap perubahan status. Di sini tidak bisa diuji pada router Anda, jadi periksa setiap baris dulu. Token bot dan pengaturan email tersimpan di router sebagai teks biasa. Netwatch berjalan di router dan tidak bisa melaporkan bahwa router itu sendiri offline. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara mengatur peringatan Netwatch di MikroTik",
+  "howto": [
+    "Daftar host yang dipantau beserta label masing-masing: gateway ISP Anda dulu, lalu alamat publik yang andal seperti 8.8.8.8 dan 1.1.1.1.",
+    "Pilih interval dan timeout, versi RouterOS (v7 atau v6), dan cara Anda ingin diberi tahu: topik ntfy, bot Telegram, atau email.",
+    "Salin skrip atau unduh file .rsc, tempel ke terminal router, lalu periksa /tool netwatch print dan /log print."
+  ],
+  "faq": [
+    [
+      "Apa yang dilakukan Netwatch?",
+      "Netwatch mem-ping setiap host sesuai interval yang Anda atur. Saat host tidak menjawab dalam batas timeout, host ditandai down dan down-script-nya dijalankan sekali; saat menjawab lagi, up-script dijalankan. Skrip yang dihasilkan menulis satu baris log dan, jika Anda memilih metode, mengirim pesan dengan /tool fetch atau /tool e-mail."
+    ],
+    [
+      "Mengapa Netwatch tidak bisa memberi tahu bahwa router itu sendiri offline?",
+      "Netwatch adalah bagian dari router. Jika router kehilangan daya, crash, atau kehilangan uplink, tidak ada lagi yang menjalankan skrip atau mengirim pesan. Untuk itu Anda perlu pemeriksaan dari luar yang menyadari saat router berhenti menjawab. Lihat <a href=\"https://tanod.dev/learn/mikrotik-router-offline-alert.html\">panduan peringatan router offline</a> dan <a href=\"https://tanod.dev/monitor/\">heartbeat eksternal</a> gratis."
+    ],
+    [
+      "Apakah saya akan menerima pesan down saat link internet saya gagal?",
+      "Sering kali tidak pada saat itu. Pesan dikirim lewat router yang sama, jadi jika host yang dipantau adalah gateway satu-satunya uplink Anda, down-script berjalan tetapi pesan baru bisa keluar setelah link kembali. Pesan up kemudian memberi tahu bahwa link sudah pulih. Memantau link kedua atau host di LAN memberi peringatan yang tidak bergantung pada link yang gagal."
+    ],
+    [
+      "Apa beda keluaran v7 dan v6?",
+      "Di RouterOS v7 entri memakai type=icmp, yang memilih probe ping. RouterOS v6 tidak punya parameter type, jadi entri hanya memakai host, interval, dan timeout. Jika rilis v7 Anda lama dan menolak type=icmp, hapus dari setiap baris."
+    ],
+    [
+      "Bagaimana tanda kutip, backslash, dan tanda dolar pada label ditangani?",
+      "Label dan nama router di-escape untuk string RouterOS: backslash, tanda kutip ganda, tanda dolar, dan tanda tanya masing-masing diberi backslash. Skrip disimpan sebagai string di dalam entri Netwatch, jadi escape diterapkan dua kali: sekali untuk pesan dan sekali untuk skrip yang tersimpan."
+    ],
+    [
+      "Apakah konfigurasi atau token bot saya dikirim ke suatu tempat?",
+      "Tidak. Semuanya dibuat di browser Anda. Setelah skrip ditempel, routerlah yang menghubungi ntfy atau Telegram saat status host berubah."
+    ]
+  ]
+}
+-->
+<!--tool-->
+
+<div class="ros-gen" id="nw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Host yang dipantau</legend>
+      <ul class="ros-rows" id="nw-hosts"></ul>
+      <button class="btn btn--sm ros-add" id="nw-add" type="button">{{mark:i-plus}}Tambah host</button>
+      <span class="help">Ganti 203.0.113.1 dengan alamat gateway ISP Anda.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Waktu dan versi</legend>
+      <div class="opts">
+        <div class="field"><label for="nw-interval">Interval</label><input type="text" id="nw-interval" class="mono" value="30s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-timeout">Timeout</label><input type="text" id="nw-timeout" class="mono" value="1s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-router">Nama router (tampil di pesan)</label><input type="text" id="nw-router" class="mono" value="MikroTik" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Versi RouterOS">
+        <label><input type="radio" name="nw-ver" value="v7" checked>RouterOS v7</label>
+        <label><input type="radio" name="nw-ver" value="v6">RouterOS v6</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Notifikasi</legend>
+      <div class="seg" role="radiogroup" aria-label="Metode notifikasi">
+        <label><input type="radio" name="nw-notify" value="none">Tidak ada (hanya log)</label>
+        <label><input type="radio" name="nw-notify" value="ntfy" checked>ntfy</label>
+        <label><input type="radio" name="nw-notify" value="telegram">Telegram</label>
+        <label><input type="radio" name="nw-notify" value="email">Email</label>
+      </div>
+      <div class="field" id="nw-ntfy-f">
+        <label for="nw-ntfy">URL topik ntfy</label>
+        <input type="text" id="nw-ntfy" class="mono" value="https://ntfy.sh/my-router-alerts" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="nw-telegram-f" hidden>
+        <div class="field"><label for="nw-tg-token">Token bot</label><input type="text" id="nw-tg-token" class="mono" value="" placeholder="123456789:ABC-DEF" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-tg-chat">ID chat</label><input type="text" id="nw-tg-chat" class="mono" value="" placeholder="-1001234567890" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="field" id="nw-email-f" hidden>
+        <label for="nw-mail-to">Kirim peringatan ke</label>
+        <input type="text" id="nw-mail-to" class="mono" value="" placeholder="ops@example.com" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="nw-out" class="label">Skrip RouterOS</label>
+    <textarea id="nw-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="nw-copy" type="button">Salin skrip</button>
+      <button class="btn" id="nw-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="nw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Netwatch di RouterOS</h2>
+<p>Netwatch, di <code>/tool netwatch</code>, memeriksa sebuah host setiap <code>interval</code> dan mencatat statusnya sebagai up atau down. Host dianggap down jika tidak menjawab dalam <code>timeout</code>. Pada setiap perubahan, RouterOS menjalankan <code>down-script</code> atau <code>up-script</code> milik entri, dan di situlah peringatan dikirim: <code>/tool fetch</code> memposting ke topik ntfy atau memanggil URL <code>sendMessage</code> Telegram, dan <code>/tool e-mail send</code> memakai pengaturan email yang sudah dikonfigurasi di router.</p>
+<p>Pantau lebih dari satu host. Satu alamat publik bisa gagal karena alasan yang tidak berkaitan dengan link Anda, jadi memasangkan gateway ISP dengan dua alamat publik independen memberi tahu apakah masalahnya di last mile atau di internet secara umum. Jaga timeout lebih pendek dari interval dan hindari interval sangat pendek pada banyak host.</p>
+<h3>Yang tidak bisa diberitahukan Netwatch</h3>
+<p>Netwatch berjalan di router, jadi tidak bisa melaporkan bahwa router itu sendiri offline: listrik padam, crash, atau uplink mati tidak menyisakan apa pun untuk menjalankan skrip. Untuk itu Anda perlu pemeriksaan dari luar yang menyadari saat router berhenti menjawab. Baca <a href="https://tanod.dev/learn/mikrotik-router-offline-alert.html">cara mendapat peringatan saat router MikroTik offline</a> dan gunakan <a href="https://tanod.dev/monitor/">heartbeat eksternal</a> gratis. Jika Anda juga mengatur lalu lintas pada link yang sama, bandingkan dengan <a href="/tools/mikrotik-load-balancing/">generator load balancing</a>, yang failover-nya memakai host pemeriksa sendiri.</p>

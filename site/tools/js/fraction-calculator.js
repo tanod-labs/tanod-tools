@@ -1,7 +1,7 @@
 // Fraction calculator: exact BigInt arithmetic (ratcore.js) with steps, mixed numbers and repeating decimals.
-import { $, $$, el, setStatus, copyText, tx, txn, EN } from "./core.js?v=5";
-import { DECIMAL } from "./i18n.js?v=5";
-import * as R from "./ratcore.js?v=5";
+import { $, $$, el, setStatus, copyText, tx, txn, EN } from "./core.js?v=11";
+import { DECIMAL } from "./i18n.js?v=11";
+import * as R from "./ratcore.js?v=11";
 
 const A = $("#fc-a"), B = $("#fc-b"), C = $("#fc-c");
 const status = $("#status"), res = $("#fc-res");

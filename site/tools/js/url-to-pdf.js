@@ -1,5 +1,5 @@
-import { $, setStatus, showResults, clearNode, announce, UserError, prefs, tx, txn } from "./core.js?v=5";
-import { serverInit, runServerJob, serverJob, blobFromBase64, available } from "./servercore.js?v=5";
+import { $, setStatus, showResults, clearNode, announce, UserError, prefs, tx, txn } from "./core.js?v=11";
+import { serverInit, runServerJob, serverJob, blobFromBase64, available } from "./servercore.js?v=11";
 
 const url = $("#url"), go = $("#go"), status = $("#status"), result = $("#result"), help = $("#url-help");
 const HELP = help.textContent;

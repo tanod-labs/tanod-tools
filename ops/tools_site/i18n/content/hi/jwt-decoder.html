@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "JWT डिकोडर: JSON Web Token के क्लेम पढ़ें | Tanod Tools",
+  "description": "ब्राउज़र में JSON Web Token डिकोड करें: हेडर, पेलोड और क्लेम, exp, nbf और iat तारीख़ों के रूप में और खत्म होने में बचा समय। टोकन कहीं नहीं भेजा जाता।",
+  "h1": "JWT डिकोडर",
+  "lede": "JSON Web Token पेस्ट करके उसका हेडर और पेलोड पढ़ें, जिसमें खत्म होने और जारी होने के समय असली तारीख़ों में दिखते हैं।",
+  "blurb": "JWT का हेडर, क्लेम और एक्सपायरी पढ़ें।",
+  "keywords": "जेडब्ल्यूटी डिकोडर json web token टोकन डिकोड क्लेम एक्सपायरी jws jwe bearer token decode claims exp iat nbf expiry oauth id token",
+  "limits": "1 MB तक के टोकन। सिर्फ़ डिकोडिंग: सिग्नेचर दिखाया जाता है, पर जाँचा नहीं जाता।",
+  "howto_title": "JWT कैसे डिकोड करें",
+  "howto": [
+    "टोकन को बॉक्स में पेस्ट करें। शुरू में लगा <code>Bearer </code> और आसपास के स्पेस या कोट नज़रअंदाज़ किए जाते हैं।",
+    "नीचे हेडर और पेलोड पढ़ें, और खत्म होने, शुरू होने से पहले और जारी होने के समय अपने टाइम ज़ोन और UTC में देखें।",
+    "डिकोड किया पेलोड या हेडर कहीं और चाहिए तो उसे फ़ॉर्मैट किए JSON के रूप में कॉपी करें।"
+  ],
+  "faq": [
+    ["क्या यह सिग्नेचर जाँचता है?", "नहीं। यह पेज सिर्फ़ टोकन को डिकोड करता है। कोई भी किसी भी हेडर और पेलोड के साथ टोकन बना सकता है, इसलिए यहाँ दिखने वाली सामग्री क्लेम है, सबूत नहीं। कोई टोकन असली है या नहीं, यह सिर्फ़ वही सेवा बता सकती है जिसके पास साइनिंग की (या RS256 और ES256 टोकन के लिए पब्लिक की) है, और उसे एक्सपायरी, ऑडियंस और इश्यूअर भी जाँचने होंगे।"],
+    ["क्या यहाँ टोकन पेस्ट करना सुरक्षित है?", "यह पेज टोकन को कहीं नहीं भेजता: वह आपके ब्राउज़र में चलने वाले कोड से डिकोड होता है और सेव नहीं किया जाता। फिर भी, चालू एक्सेस टोकन जब तक मान्य है, पासवर्ड जैसा है। प्रोडक्शन टोकन किसी भी वेबसाइट पर पेस्ट करने से बचें, और डीबग करते समय एक्सपायर हो चुके या टेस्ट टोकन को तरजीह दें।"],
+    ["कुछ टोकन पढ़े क्यों नहीं जा सकते?", "तीन की जगह पाँच हिस्सों वाला टोकन एन्क्रिप्टेड JWT (JWE) है। उसका हेडर पढ़ा जा सकता है, पर पेलोड एन्क्रिप्टेड है और सिर्फ़ पाने वाले की की से पढ़ा जा सकता है, इसलिए यह टूल हेडर दिखाता है और हिस्सों के बारे में समझाता है। दूसरी त्रुटियाँ, जैसे हिस्सों की गलत संख्या या ऐसा टेक्स्ट जो मान्य Base64url या JSON नहीं है, इस बताने के साथ दिखाई जाती हैं कि क्या गड़बड़ हुई।"],
+    ["समय कैसे निकाले जाते हैं?", "<code>exp</code>, <code>nbf</code> और <code>iat</code> क्लेम NumericDate हैं: 1 जनवरी 1970 UTC से बीते सेकंड। इन्हें आपके डिवाइस के टाइम ज़ोन और UTC में दिखाया जाता है, और आपके डिवाइस की घड़ी से मिलाकर बताया जाता है कि टोकन एक्सपायर हुआ या नहीं। अगर आपकी घड़ी ग़लत है तो सापेक्ष समय भी ग़लत होंगे। मिलीसेकंड जैसा दिखने वाला मान चिह्नित किया जाता है, क्योंकि यह एक आम बग है।"],
+    ["alg, typ और kid का क्या मतलब है?", "<code>alg</code> साइनिंग एल्गोरिदम है, जैसे HS256 (साझा सीक्रेट), RS256 या ES256 (की की जोड़ी)। <code>typ</code> आम तौर पर JWT होता है। <code>kid</code> वह की ID है जो इश्यूअर ने इस्तेमाल की, जो वेरिफ़ायर को बताती है कि सिग्नेचर किस की से जाँचना है। जिस टोकन में <code>alg</code> का मान <code>none</code> हो वह बिना साइन किया है और किसी भी ज़रूरी चीज़ के लिए कभी स्वीकार नहीं करना चाहिए।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">टोकन</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">उदाहरण टोकन आज़माएं</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">साफ़ करें</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>सिग्नेचर जाँचा नहीं गया।</strong> यह पेज टोकन को डिकोड करता है; यह नहीं जाँचता कि वह असली है। कोई भी किसी भी सामग्री के साथ टोकन बना सकता है।</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>एल्गोरिदम</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>प्रकार</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>की ID</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>हिस्से</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">समय</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">क्लेम</th><th scope="col">आपका टाइम ज़ोन, फिर UTC</th><th scope="col">सापेक्ष</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">हेडर</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">पेलोड</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">क्लेम</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">क्लेम</th><th scope="col">मतलब</th><th scope="col">मान</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">सिग्नेचर</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}पेलोड कॉपी करें</button>
+      <button class="btn" id="jw-copy-h" type="button">हेडर कॉपी करें</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>JSON Web Token के अंदर क्या होता है</h2>
+<p>साइन किया हुआ JWT बिंदुओं से जुड़े Base64url टेक्स्ट के तीन टुकड़े होता है: हेडर, पेलोड और सिग्नेचर। हेडर और पेलोड बस Base64url में लिखा JSON होते हैं, इसीलिए कोई भी उन्हें पढ़ सकता है। Base64url एक एन्कोडिंग है, एन्क्रिप्शन नहीं, इसलिए JWT पेलोड में कभी सीक्रेट न रखें, जब तक टोकन एन्क्रिप्टेड न हो।</p>
+<p>पेलोड में क्लेम होते हैं। कुछ नाम पंजीकृत हैं: <code>iss</code> (टोकन किसने जारी किया), <code>sub</code> (वह किसके बारे में है), <code>aud</code> (वह किसके लिए है), <code>exp</code> (वह कब खत्म होगा), <code>nbf</code> (इससे पहले मान्य नहीं), <code>iat</code> (कब जारी हुआ) और <code>jti</code> (अनोखी ID)। सेवाएँ अपने क्लेम भी जोड़ती हैं, जैसे रोल, स्कोप या ईमेल पता।</p>
+<p>सिग्नेचर ही क्लेम को भरोसेमंद बनाता है, और उसे जाँचने के लिए साइनिंग की चाहिए, जो सिर्फ़ इश्यूअर और टोकन स्वीकार करने वाली सेवाओं के पास होनी चाहिए। यह डिकोडर जान-बूझकर पढ़ने पर ही रुक जाता है: यह दिखाता है कि टोकन क्या कहता है और कब खत्म होगा, जो आम तौर पर लॉगिन या API कॉल डीबग करते समय चाहिए होता है।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>किसी भी दूसरे Unix समय को तारीख़ में बदलने के लिए <a href="/tools/unix-timestamp-converter/">Unix टाइमस्टैम्प कन्वर्टर</a> इस्तेमाल करें।</li>
+  <li>बड़े पेलोड को <a href="/tools/json-formatter/">JSON फ़ॉर्मैट और वैलिडेट करें</a> से फ़ॉर्मैट या जाँचें।</li>
+  <li>किसी अकेले Base64url हिस्से को हाथ से <a href="/tools/base64-encode-decode/">Base64 एन्कोड और डिकोड</a> से डिकोड करें।</li>
+</ul>

@@ -1,0 +1,86 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "Color contrast checker",
+  "title": "Color contrast checker: WCAG AA and AAA ratio | Tanod Tools",
+  "description": "Check the WCAG contrast ratio of text on a background from HEX, RGB, HSL or a CSS name, with AA and AAA results for normal and large text. Free, in your browser.",
+  "h1": "Color contrast checker",
+  "lede": "Enter a text colour and a background colour to get the WCAG contrast ratio and a pass or fail for AA and AAA, for normal and for large text, with a live preview.",
+  "blurb": "WCAG contrast ratio with AA and AAA results and a live preview.",
+  "keywords": "color contrast checker wcag contrast ratio accessibility aa aaa normal text large text foreground background hex rgb hsl css color names relative luminance",
+  "local_text": "Runs in your browser; nothing you type leaves your device",
+  "limits": "Uses the WCAG 2.x contrast ratio, which measures luminance contrast only. It cannot judge colour-blindness pairs such as red on green, thin or small fonts, or text over images and gradients. Reads HEX (3, 4, 6 or 8 digits), rgb(), hsl() and CSS colour names; other CSS colour syntax is read by your browser where it can.",
+  "howto_title": "How to check colour contrast",
+  "howto": [
+    "Type or paste the text colour and the background colour as HEX, <code>rgb()</code>, <code>hsl()</code> or a CSS colour name such as <code>navy</code>, or pick each with the colour picker.",
+    "Read the contrast ratio, from 1:1 for no contrast to 21:1 for black on white.",
+    "Check the table: normal text needs 4.5:1 for AA and 7:1 for AAA, and large text needs 3:1 for AA and 4.5:1 for AAA. The preview shows how the text looks."
+  ],
+  "faq": [
+    ["How is the contrast ratio calculated?", "With the WCAG 2.x formula: each colour's relative luminance is worked out from its sRGB values, and the ratio is (lighter + 0.05) divided by (darker + 0.05). It ranges from 1:1 (no contrast) to 21:1 (black on white). The ratio is shown to two decimals and the unrounded value is shown beside it."],
+    ["What ratios do AA and AAA require?", "Normal text needs 4.5:1 for AA and 7:1 for AAA. Large text, meaning at least 24 px regular or about 18.7 px bold, needs 3:1 for AA and 4.5:1 for AAA. A ratio is not rounded up across a limit: 4.499:1 is shown as 4.49 and fails AA for normal text."],
+    ["Why does #777777 on white fail AA?", "Its contrast is 4.48:1, just under the 4.5:1 that AA asks for normal text, so it fails for body text but passes for large text, which needs only 3:1. A slightly darker grey such as #767676 reaches 4.54:1 and passes."],
+    ["What happens with transparent colours?", "A partly transparent text colour is blended with the background first, the way a screen shows it, and the blended colour is measured. A partly transparent background is assumed to sit on white. Channels are rounded to whole numbers after blending."],
+    ["Does a passing ratio mean the text is accessible?", "Not by itself. The ratio measures lightness contrast only. It says nothing about colour-blindness pairs, very thin fonts, text on photos or gradients, or whether colour is the only way a meaning is shown. Treat it as a minimum, not a guarantee."],
+    ["Is anything sent to a server?", "No. The colours are read and measured in your browser, and nothing you type leaves your device."]
+  ],
+  "related": ["color-converter", "color-palette-generator", "css-gradient-generator", "image-color-picker", "qr-code-generator", "favicon-generator"]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="cc">
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="cc-fg">Text colour</label>
+        <input type="text" id="cc-fg" class="mono" value="#777777" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="cc-fg-pick">Picker</label>
+        <input type="color" id="cc-fg-pick" value="#777777">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="cc-bg">Background colour</label>
+        <input type="text" id="cc-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="cc-bg-pick">Picker</label>
+        <input type="color" id="cc-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="cc-swap" type="button">Swap colours</button>
+  </div>
+  <p class="tt__report" id="cc-info" aria-live="polite"></p>
+  <div class="col-sample" id="cc-sample" aria-hidden="true">
+    <span class="col-sample__big">Large text, 24 px</span>
+    <span class="col-sample__small">Normal body text at 15 px, the size most paragraphs use.</span>
+  </div>
+  <p>Contrast ratio <span class="col-ratio" id="cc-ratio" aria-live="polite">–</span> <small class="help" id="cc-raw"></small></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Use</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Normal text, AA</th><td class="num">4.5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Normal text, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Large text, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Large text, AAA</th><td class="num">4.5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="cc-note" hidden></p>
+</div>
+<!--explain-->
+<h2>What the contrast ratio means</h2>
+<p>The WCAG contrast ratio compares the brightness of two colours. Each colour is turned into a relative luminance between 0 (black) and 1 (white), using the sRGB values with the gamma curve removed and the three channels weighted by how bright the eye finds them: green most, then red, then blue. The ratio is the lighter luminance plus 0.05 divided by the darker luminance plus 0.05, so it runs from 1:1 for identical colours to 21:1 for black on white.</p>
+<p>WCAG 2 sets minimums by text size. Normal text needs 4.5:1 for level AA and 7:1 for the stricter level AAA. Large text, which is easier to read, needs 3:1 for AA and 4.5:1 for AAA. Large means at least 24 px, or about 18.7 px in bold.</p>
+<p>The ratio looks at lightness only. Two colours can pass and still be hard to tell apart for people with colour blindness, and thin fonts or text over a photo may need more contrast than the minimum. Use the figure as a floor and look at the preview.</p>
+<h3>For developers / AI agents</h3>
+<p>Need to check contrast in code, in a build step or from an AI agent? There is an API for it: see the <a href="https://tanod.dev/learn/color-contrast-checker-api.html">colour contrast checker API guide</a>.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need to convert a colour between HEX, RGB, HSL and CMYK first? Use the <a href="/tools/color-converter/">Color converter</a>.</li>
+  <li>Building a set of matching colours? The <a href="/tools/color-palette-generator/">Color palette generator</a> shows contrast against white and black for every swatch.</li>
+  <li>Need the colour of a pixel in a screenshot? Use the <a href="/tools/image-color-picker/">Image colour picker</a>.</li>
+</ul>

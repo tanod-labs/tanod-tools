@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "Usuń dane EXIF ze zdjęć, w tym GPS | Tanod Tools",
+  "description": "Zobacz, co zdradza zdjęcie (GPS, aparat, data), a potem usuń dane EXIF, XMP i IPTC bez ponownego kodowania obrazu. Działa w przeglądarce, nic nie jest przesyłane.",
+  "h1": "Usuń dane EXIF ze zdjęć",
+  "lede": "Zobacz lokalizację, aparat i datę ukryte w zdjęciu, a potem usuń je, nie dotykając samego obrazu.",
+  "blurb": "Usuń GPS, dane aparatu i inne metadane ze zdjęć.",
+  "keywords": "usuń exif, usuwanie danych exif, usuń metadane zdjęcia, lokalizacja gps, prywatność zdjęć, czyszczenie metadanych, xmp, iptc, metadata gps privacy, strip exif remover, photo scrub",
+  "limits": "Do 50 obrazów w partii, po 50 MB każdy. JPEG, PNG i WebP są czyszczone bez ponownego kodowania; GIF, BMP i AVIF są rysowane od nowa i zapisywane jako PNG.",
+  "howto_title": "Jak usunąć dane EXIF ze zdjęcia",
+  "howto": [
+    "Wybierz zdjęcia lub przeciągnij je na stronę. Każde pokazuje listę zawartości, a lokalizacja GPS jest wyróżniona.",
+    "Zostaw włączone „Zachowaj orientację”, aby zdjęcia, które na niej polegają, nie obróciły się na bok, albo wyłącz, by usunąć wszystko.",
+    "Naciśnij <strong>Usuń metadane</strong>, a potem pobierz czyste kopie lub plik .zip. Pliki dostają w nazwie „-clean”."
+  ],
+  "faq": [
+    ["Czy moje zdjęcia są przesyłane?", "Nie. Plik jest odczytywany i zapisywany od nowa w przeglądarce, a nic nie jest wysyłane na serwer. Możesz sprawdzić listę zawartości każdego zdjęcia, zanim cokolwiek zostanie zmienione."],
+    ["Czy ponownie kompresuje mój JPEG?", "Nie. Dla JPEG, PNG i WebP narzędzie przepisuje kontener pliku i pomija bloki metadanych. Dane obrazu są kopiowane bajt po bajcie, więc nie ma utraty jakości, a piksele pozostają identyczne."],
+    ["Co dokładnie jest usuwane?", "JPEG: EXIF i XMP (APP1), IPTC (APP13), komentarze oraz bloki aplikacji inne niż nagłówek JFIF, profil kolorów i znacznik kolorów Adobe. PNG: fragmenty tekstowe (tEXt, zTXt, iTXt, które mogą zawierać XMP), EXIF i czas modyfikacji. WebP: fragmenty EXIF i XMP. Dane doklejone po końcu obrazu JPEG lub PNG też są odrzucane."],
+    ["Czym jest „Zachowaj orientację”?", "Wiele aparatów zapisuje zdjęcie na boku i dodaje znacznik orientacji, który mówi przeglądarkom, aby je obróciły. Jeśli ten znacznik zostanie usunięty, zdjęcie może wyświetlać się na boku. Przy włączonej opcji (domyślnie) do pliku wraca malutki blok EXIF zawierający tylko numer orientacji, jeśli oryginał nie był ustawiony pionowo. Nie zawiera żadnych danych o lokalizacji ani aparacie. Wyłącz opcję, aby usunąć także to."],
+    ["Czy profil kolorów jest usuwany?", "Nie. Wbudowany profil kolorów ICC jest zachowywany, ponieważ jego usunięcie może zmienić wygląd kolorów. Opisuje obsługę kolorów, a nie to, gdzie i jak wykonano zdjęcie."],
+    ["Jak wiarygodna jest lista znalezionych danych?", "Odczytuje standardowe pola EXIF (aparat, obiektyw, data, oprogramowanie, GPS, orientacja) i liczy resztę. Producenci aparatów dodają prywatne dane we własnych formatach, które są liczone, ale nie opisywane. Oczyszczony plik jest po zapisaniu sprawdzany, czy nie pozostała żadna lokalizacja EXIF, dane aparatu, XMP ani metadane tekstowe."],
+    ["Co dzieje się z plikami GIF, BMP lub AVIF?", "To narzędzie nie edytuje tych kontenerów. Rysuje obraz od nowa i zapisuje go jako PNG, który nie zawiera metadanych. GIF staje się swoją pierwszą klatką."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść tutaj zdjęcia</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Wybierz zdjęcia</span></label>
+  <p class="drop__hint">JPEG, PNG lub WebP (także GIF, BMP, AVIF). Lub przeciągnij je w dowolne miejsce na tej stronie.</p>
+</div>
+<ol class="files" id="files" aria-label="Zdjęcia do oczyszczenia" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Zachowaj orientację, aby zdjęcia nie obracały się na bok</label>
+      <p class="help">Zapisuje z powrotem malutki blok EXIF zawierający tylko numer orientacji, i to tylko wtedy, gdy zdjęcie nie jest już ustawione pionowo.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Usuń metadane</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Wyczyść wszystko</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Co może zdradzić zdjęcie</h2>
+<p>Większość aparatów i telefonów zapisuje w każdym zdjęciu dodatkowe informacje: markę i model, czas wykonania, oprogramowanie, które je edytowało, a przy włączonej lokalizacji współrzędne GPS miejsca, w którym stałeś. Ten blok nazywa się EXIF. Programy do edycji dodają bloki XMP i IPTC z podpisami, nazwiskami autorów i słowami kluczowymi. Wiele serwisów usuwa je przy przesyłaniu, ale nie wszystkie, a plik wysłany e-mailem lub czatem zwykle zachowuje wszystko.</p>
+<p>To narzędzie najpierw pokazuje, co zawiera każde zdjęcie, a potem to usuwa, przepisując kontener pliku. JPEG to ciąg oznaczonych bloków, po których następuje skompresowany obraz; bloki metadanych są pomijane, a dane obrazu kopiowane bez zmian. Dlatego wynik nie jest ponownie kompresowany i wygląda identycznie.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Sprawdź listę przed udostępnieniem: wyróżniona lokalizacja oznacza, że zdjęcie zawiera współrzędne.</li>
+  <li>Zrzuty ekranu i edytowane eksporty też mogą zawierać metadane tekstowe. Przepuść je również przez to narzędzie.</li>
+  <li>Aby dodatkowo zmniejszyć plik, użyj potem narzędzia <a href="/tools/compress-image/">Kompresuj obraz</a>; ono także koduje obraz od nowa i usuwa metadane.</li>
+</ul>

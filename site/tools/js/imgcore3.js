@@ -1,7 +1,7 @@
 // Tanod Tools image core, batch 3: small shared helpers for merge images, add text, filters, borders and placeholders.
 // Pure pixel maths lives here so the page code stays short. Nothing here touches the network.
-import { UserError, tx, fmtNum, EN } from "./core.js?v=5";
-import { newCanvas, ctx2d, scaleTo, MAX_PIXELS } from "./imgcore.js?v=5";
+import { UserError, tx, fmtNum, EN } from "./core.js?v=11";
+import { newCanvas, ctx2d, scaleTo, MAX_PIXELS } from "./imgcore.js?v=11";
 
 export const MAX_SIDE = 32767; // the largest canvas side the common browsers allow
 

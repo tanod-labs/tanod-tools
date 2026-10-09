@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "MikroTik VLAN oluşturucu: bridge filtering (v7) | Tanod Tools",
+  "description": "RouterOS v7 bridge VLAN filtering oluşturun: access, trunk, hybrid portlar, VLAN tablosu, VLAN arayüzleri ve adresler; kilitlenmemek için en son etkinleşir.",
+  "h1": "MikroTik VLAN oluşturucu",
+  "lede": "VLAN'larınızı ve hangi portların bunları taşıdığını tanımlayın; filtrelemenin en son açılacağı şekilde sıralanmış RouterOS v7 bridge VLAN filtering yapılandırmasını alın.",
+  "blurb": "Access, trunk ve hybrid portlarla bridge VLAN filtering.",
+  "keywords": "mikrotik vlan yapılandırması routeros v7 bridge vlan filtering trunk port access port hybrid pvid tagged untagged frame-types ingress-filtering vlan arayüzü crs switch mikrotik vlan generator",
+  "limits": "Tek bir bridge ile RouterOS v7 bridge VLAN filtering üretir (MikroTik'in güncel cihazlar için önerdiği yöntem). Eski switch çipi menüleri (/interface ethernet switch) kullanılmaz. Adresler IPv4'tür. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik bridge üzerinde VLAN'lar nasıl yapılandırılır",
+  "howto": [
+    "VLAN'ları kimlik, ad ve yönlendiricinin yönlendireceği VLAN'lar için yönlendiricinin o VLAN'daki adresiyle listeleyin.",
+    "Portları listeleyin: access portlar tek bir VLAN'ı etiketsiz taşır, trunk portlar VLAN'ları etiketli taşır, hybrid portlar ikisini de yapar.",
+    "Kilitlenme notunu okuyun, Safe Mode'u açın (terminalde <kbd>Ctrl</kbd>+<kbd>X</kbd>) ve betiği çalıştırın; VLAN filtering en son satırda etkinleştirilir."
+  ],
+  "faq": [
+    [
+      "vlan-filtering'i açmak neden insanları dışarıda bırakır?",
+      "vlan-filtering açılana kadar bridge her şeyi iletir ve VLAN ayarlarının etkisi olmaz. Açıldığı anda çerçeveler yalnızca VLAN tablosunun izin verdiği yerlerde kabul edilir. Bağlandığınız port, yönlendirici adresi olan bir VLAN'ın üyesi değilse oturumunuz kopar. Betik bu yüzden filtrelemeyi en son açar ve Safe Mode bu yüzden önemlidir: bağlantı kesilirse RouterOS değişikliği geri alır."
+    ],
+    [
+      "Access, trunk ve hybrid portlar arasındaki fark nedir?",
+      "Access port, VLAN'dan haberi olmayan tek bir cihazı bağlar: gelen etiketsiz çerçeveler portun PVID'sine konur ve etiketsiz çıkar. Trunk port başka bir switch'i veya erişim noktasını bağlar ve birden çok VLAN'ı 802.1Q etiketleriyle taşır. Hybrid port ikisini de yapar; tipik olarak etiketsiz bir yönetim ya da veri VLAN'ı ve etiketli diğerleri olan bir IP telefon veya erişim noktası için kullanılır."
+    ],
+    [
+      "Bridge'in kendisi neden bazı VLAN'larda etiketli?",
+      "Bridge arayüzü, yönlendiricinin switch'e açılan kendi portudur. Yönlendiricinin bir VLAN'da, bridge üzerindeki bir VLAN arayüzü aracılığıyla adres sahibi olması için bridge'in o VLAN'ın etiketli üyesi olması gerekir. Yalnızca portlar arasında anahtarlanan VLAN'larda buna gerek yoktur."
+    ],
+    [
+      "Bridge VLAN filtering'in üstüne /interface vlan da gerekir mi?",
+      "Yalnızca yönlendiricinin dahil olduğu VLAN'lar için: IP adresi, DHCP sunucusu ve güvenlik duvarı kuralları VLAN arayüzüne bağlanır. Salt katman 2 VLAN'lar için yalnızca bridge VLAN tablosu yeterlidir."
+    ],
+    [
+      "Bu donanıma devredilir mi?",
+      "CRS3xx switch'lerde ve güncel RouterOS v7'li bazı diğer cihazlarda bridge VLAN filtering switch çipinde çalışır. Diğerlerinde işlemcide çalışır ve bu, verimden yer. Uyguladıktan sonra /interface bridge port print çıktısında portlardaki H bayrağına bakın."
+    ],
+    [
+      "Yapılandırmam bir yere gönderiliyor mu?",
+      "Hayır. Betik tarayıcınızda üretilir."
+    ]
+  ],
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="vl">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Bridge</legend>
+      <div class="field"><label for="vl-bridge">Bridge adı</label><input type="text" id="vl-bridge" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="vl-exists" checked>Bridge zaten var</label>
+        <label class="check"><input type="checkbox" id="vl-inbridge" checked>Portlar zaten bridge içinde</label>
+        <label class="check"><input type="checkbox" id="vl-tagonly">Yönlendirici bridge'den yalnızca etiketli çerçeveleri kabul eder (yönetim yalnızca bir VLAN üzerinden)</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>VLAN'lar</legend>
+      <ul class="ros-rows" id="vl-vlans"></ul>
+      <button class="btn btn--sm ros-add" id="vl-vadd" type="button">{{mark:i-plus}}VLAN ekle</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Portlar</legend>
+      <ul class="ros-rows" id="vl-ports"></ul>
+      <button class="btn btn--sm ros-add" id="vl-padd" type="button">{{mark:i-plus}}Port ekle</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Kilitlenme riski.</strong> VLAN filtering'i açmak, yönlendirici adresi olan bir VLAN'ın üyesi olmayan her portun bağlantısını keser. Bir laboratuvarda deneyin ya da önce Safe Mode'u açın (terminalde <kbd>Ctrl</kbd>+<kbd>X</kbd>).</span></p>
+    <label for="vl-out" class="label">RouterOS v7 betiği</label>
+    <textarea id="vl-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="vl-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="vl-dl" type="button">{{mark:i-download}}İndir .rsc</button>
+    </div>
+    <ul class="ros-notes" id="vl-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Bridge VLAN filtering, v7 yöntemi</h2>
+<p>Güncel RouterOS'ta VLAN çalıştırmanın önerilen yolu, <code>vlan-filtering=yes</code> olan tek bir bridge'dir. Her <strong>bridge portunun</strong> bir <code>pvid</code> değeri (üzerine gelen etiketsiz çerçevelerin ait olduğu VLAN) ve etiketsiz çerçeveleri, etiketli çerçeveleri veya ikisini de kabul edip etmediğini belirten <code>frame-types</code> ayarı vardır. <code>/interface bridge vlan</code> altındaki <strong>bridge VLAN tablosu</strong> ise her VLAN kimliği için hangi portların onu etiketli, hangilerinin etiketsiz gönderdiğini listeler. <code>ingress-filtering=yes</code> ile bir port, üyesi olmadığı VLAN'ların etiketli çerçevelerini de düşürür.</p>
+<p>Yönlendirici, bridge üzerinde oluşturulan bir <strong>VLAN arayüzü</strong> aracılığıyla bir VLAN'a katılır; bridge de o VLAN'ın etiketli üyesi olarak listelenir. Bu arayüz IP adresini alır ve VLAN için ağ geçidi, DHCP sunucusu ve güvenlik duvarı sınırı olur. Eski rehberler VLAN'ları switch çipi menüsünde ya da VLAN başına ayrı bir bridge ile yapılandırır; bridge VLAN filtering'i donanıma devreden cihazlarda tek bridge yöntemi hem daha basit hem hızlıdır.</p>
+<h3>Güvenle uygulama</h3>
+<ul>
+  <li>Her şeyi filtering kapalıyken kurun, ardından betiğin yaptığı gibi sonda tek adımda etkinleştirin. Uzaktan çalışırken Safe Mode veya seri konsol kullanın.</li>
+  <li>Her yönlendirilen VLAN'a <a href="/tools/mikrotik-dhcp-server-generator/">MikroTik DHCP sunucu oluşturucu</a> ile kendi DHCP sunucusunu verin; misafirleri diğer VLAN'lardan <a href="/tools/mikrotik-firewall-generator/">MikroTik güvenlik duvarı oluşturucu</a> ile üretilen forward chain kurallarıyla ayrı tutun.</li>
+  <li>Yapılandırmayı öncesi ve sonrasıyla <a href="/tools/routeros-export-diff/">RouterOS export karşılaştırma</a> ile karşılaştırın.</li>
+</ul>

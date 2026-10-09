@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "Da CSV a JSON: convertitore online gratis | Tanod Tools",
+  "description": "Converti CSV in JSON nel browser. Gestisce campi tra virgolette, a capo nelle celle, delimitatori diversi e righe di intestazione. Gratis, nulla viene caricato.",
+  "h1": "Convertitore da CSV a JSON",
+  "lede": "Incolla un CSV o apri un file .csv e ottieni un array JSON di oggetti o di righe, con il delimitatore rilevato per te.",
+  "blurb": "Trasforma le righe CSV in un array JSON.",
+  "keywords": "csv json convertire csv in json convertitore csv json foglio di calcolo excel esportazione tsv punto e virgola array di oggetti csv to json",
+  "limits": "Input fino a circa 10 MB, incollato o da un file .csv o .tsv. Il risultato si aggiorna mentre scrivi.",
+  "howto_title": "Come convertire CSV in JSON",
+  "howto": [
+    "Incolla il CSV nella casella, oppure apri un file .csv.",
+    "Controlla il delimitatore (viene rilevato automaticamente) e se la prima riga contiene i nomi delle colonne. Attiva la conversione di numeri e true/false se vuoi valori tipizzati.",
+    "Copia il JSON o scaricalo come file .json."
+  ],
+  "faq": [
+    ["I miei dati vengono caricati?", "No. Il CSV viene letto e convertito nel tuo browser, e nulla viene inviato altrove né conservato. Chiudendo la scheda viene cancellato."],
+    ["Quali formati CSV legge?", "Il CSV standard descritto nella RFC 4180: campi separati da un delimitatore, campi che contengono il delimitatore, virgolette o a capo racchiusi tra virgolette doppie, e una virgoletta dentro un campo tra virgolette scritta due volte (<code>\"\"</code>). Funzionano i fine riga di Windows (CRLF), Unix (LF) e del vecchio Mac (CR), e un byte-order mark all'inizio viene ignorato. Sono supportati i delimitatori virgola, punto e virgola, tabulazione e pipe."],
+    ["Come viene rilevato il delimitatore?", "Lo strumento prova virgola, punto e virgola, tabulazione e pipe sulle prime righe e sceglie quello che divide più righe nello stesso numero di campi. I file salvati da Excel in molte impostazioni regionali europee usano il punto e virgola, ed è per questo che conta. Se la scelta è sbagliata, scegli tu il delimitatore."],
+    ["Perché i miei numeri sono tra virgolette?", "Per impostazione predefinita ogni valore resta testo, esattamente come scritto nel CSV, perché il CSV non ha tipi e tirare a indovinare può rovinare dati come CAP o ID. Attiva <em>Converti numeri, true/false e null</em> per ottenere valori tipizzati. Anche in quel caso i valori con uno zero iniziale (007) e i numeri più lunghi di 15 cifre restano testo, così non vengono modificati né arrotondati."],
+    ["Cosa succede con nomi di colonna ripetuti o vuoti, o con righe irregolari?", "I nomi di colonna vuoti diventano column_1, column_2 e così via, e un nome ripetuto riceve _2, _3 in coda, così nessun valore ne sovrascrive un altro. Le righe con meno campi dell'intestazione ricevono valori vuoti; quelle con più campi ricevono chiavi column_N aggiuntive. Entrambi i casi sono segnalati sopra il risultato, così puoi controllare la sorgente."],
+    ["Posso ottenere array invece di oggetti?", "Sì. Disattiva <em>La prima riga è l'intestazione</em> e ogni riga diventa un array di valori, compresa la prima."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="nome,email,età&#10;Anna,anna@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Delimitatore</label>
+      <select id="delim">
+        <option value="auto" selected>Rileva automaticamente</option>
+        <option value=",">Virgola ( , )</option>
+        <option value=";">Punto e virgola ( ; )</option>
+        <option value="&#9;">Tabulazione</option>
+        <option value="|">Pipe ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Impaginazione</label>
+      <select id="indent">
+        <option value="2" selected>Indentato, 2 spazi</option>
+        <option value="4">Indentato, 4 spazi</option>
+        <option value="min">Minificato</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>La prima riga è l'intestazione (array di oggetti)</label>
+    <label class="check"><input type="checkbox" id="types">Converti numeri, true/false e null</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Incolla un CSV per iniziare.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copia JSON</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Scarica .json</button>
+    <button class="btn btn--quiet" id="clear" type="button">Cancella</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>Apri un file .csv</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Dalle righe CSV al JSON</h2>
+<p>Il CSV è il minimo comune denominatore dei dati: ogni foglio di calcolo e database può esportarlo. Il JSON è ciò che si aspettano la maggior parte delle API web, degli script e dei file di configurazione. Questo strumento legge il CSV con un parser che segue lo standard CSV, quindi una virgola dentro un indirizzo tra virgolette o un a capo dentro un commento tra virgolette restano dentro la loro cella invece di spezzare la riga.</p>
+<p>Con una riga di intestazione, ogni riga diventa un oggetto le cui chiavi sono i nomi delle colonne, nell'ordine delle colonne. Senza, ogni riga diventa un array. I valori restano testo a meno che tu non chieda di convertire numeri e true/false, perché un file CSV non ha tipi e un'ipotesi automatica può trasformare in silenzio un CAP come 02134 nel numero 2134.</p>
+<p>La riga sotto le opzioni ti dice quante righe e colonne sono state lette e quale delimitatore è stato usato. Se alcune righe hanno più o meno campi dell'intestazione, una nota indica quali, il che di solito segnala un delimitatore fuori posto o una virgoletta non chiusa nella sorgente.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Vuoi fare il contrario? Usa <a href="/tools/json-to-csv/">Da JSON a CSV</a>.</li>
+  <li>Per controllare o riformattare il risultato, incollalo in <a href="/tools/json-formatter/">Formatta e valida JSON</a>.</li>
+  <li>Ripulisci prima le righe ripetute con <a href="/tools/remove-duplicate-lines/">Rimuovi righe duplicate</a>.</li>
+</ul>

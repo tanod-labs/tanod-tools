@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "IPv4 ve IPv6 alt ağ hesaplayıcı (CIDR) | Tanod Tools",
+  "description": "Önek veya maske içeren bir IPv4 ya da IPv6 adresi girin; ağ, yayın, ana makine aralığı, sayılar, wildcard maskesi ve ikilik görünümü alın, alt ağlara bölün.",
+  "h1": "Alt ağ hesaplayıcı",
+  "lede": "Herhangi bir IPv4 veya IPv6 alt ağı için ağı, ana makine aralığını ve sayıları hesaplayın, sonra daha küçük alt ağlara bölün.",
+  "blurb": "Ana makine aralıkları ve alt ağ bölmeleri içeren IPv4 ve IPv6 CIDR hesaplayıcı.",
+  "keywords": "alt ağ hesaplayıcı cidr hesaplama ip hesaplayıcı ağ maskesi wildcard maskesi yayın adresi kullanılabilir ana makine ipv6 öneki subnet bölme subnet calculator cidr calculator netmask broadcast usable hosts rfc 1918",
+  "limits": "Yalnızca IPv4 ve IPv6, her seferinde bir alt ağ. Adres türü sayfada yerleşik IANA özel amaçlı aralıklarından okunur; yani bir genel adresin kime ait olduğunu bilmez. Alt ağ bölme tabloları 256 satırda durur.",
+  "howto_title": "Alt ağ nasıl hesaplanır",
+  "howto": [
+    "Bir adresi önek uzunluğuyla yazın; örneğin <code>192.168.1.10/24</code> ya da <code>2001:db8::/32</code>. Noktalı maskeli bir IPv4 adresi de (örneğin <code>192.168.1.10 255.255.255.0</code>) çalışır.",
+    "Ağ adresini, ana makine aralığını ve sayıları okuyun. Adreste ana makine bitleri ayarlıysa sayfa hangi ağa normalleştirildiğini söyler.",
+    "Daha küçük ağlar planlamak için <strong>Şuna böl</strong> altına daha uzun bir önek girin ve alt ağ tablosunu okuyun."
+  ],
+  "faq": [
+    ["Kullanılabilir ana makine sayısı neden adres sayısından iki eksik?", "Sıradan bir IPv4 alt ağında ilk adres ağı adlandırır, son adres yayın adresidir; bu yüzden hiçbiri bir cihaza verilemez. Bir /24'te 256 adres ve 254 kullanılabilir ana makine vardır. İki istisna bulunur: /31'in iki adresi vardır ve noktadan noktaya bağlantıda ikisi de kullanılabilir (RFC 3021), /32 ise tek bir ana makinedir."],
+    ["Wildcard maskesi neyi gösterir?", "Ağ maskesinin tersine çevrilmiş halidir: 0 bitlerinin eşleşmesi gerekir, 1 bitleri yok sayılır. 255.255.255.0 için wildcard 0.0.0.255'tir. Cisco cihazlarındaki erişim listeleri ve OSPF network ifadeleri bu biçimi kullanır."],
+    ["010.0.0.1 neden reddediliyor?", "Baştaki sıfır, bazı sistemlerin o kısmı sekizlik okumasına neden olur; yani 010, 8 anlamına gelir, diğerleri ise onluk 10 olarak okur. Aynı metin iki farklı makineyi gösterebilir, bu yüzden sayfa sayıyı sıfırsız yazmanızı ister."],
+    ["IPv6 alt ağ hesaplamasında nasıl farklıdır?", "IPv6'da yayın adresi yoktur; bu yüzden bir önekteki her adres atanabilir ve sayı basitçe 2 üssü (128 eksi önek) olur. Normal LAN alt ağları /64'tür. Sayfa adresi RFC 5952'deki sıkıştırılmış biçimde ve sekiz adet 4 haneli grubun tamamıyla birlikte gösterir."],
+    ["IPv6 adresinin sıkıştırılmış biçimi nedir?", "Her gruptaki baştaki sıfırlar atılır ve iki veya daha fazla art arda gelen tamamen sıfır gruptan oluşan en uzun dizi <code>::</code> ile değiştirilir; eşitlik varsa en soldaki alınır. Tek bir sıfır grubu hiçbir zaman sıkıştırılmaz; bu yüzden <code>2001:db8:0:1:1:1:1:1</code> adresindeki 0 korunur."],
+    ["Adreslerim bir yere gönderiliyor mu?", "Hayır. Hesaplamalar tarayıcınızda büyük tam sayılarla yapılır, yazdığınız hiçbir şey bir yere gönderilmez ve sayfa yüklendikten sonra çevrimdışı da çalışır."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Önek veya maskeli IP adresi</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Örnekler">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + maske</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Alt ağ ayrıntıları"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Daha küçük alt ağlara böl</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Şu önek uzunluğuna böl: /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="örneğin 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Bölmemek için boş bırakın. Yukarıdaki önekten uzun olmalıdır.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Alt ağlar</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Alt ağlar ve CIDR gösterimi</h2>
+<p>Bir IP adresinin iki parçası vardır: baştaki bitler ağı, kalan bitler ağ içindeki ana makineyi adlandırır. Eğik çizgiden sonraki önek uzunluğu, kaç baştaki bitin ağa ait olduğunu söyler; yani <code>192.168.1.10/24</code>, 32 bitin ilk 24'ünün ağ, son 8'inin 256 adresten birini belirlediği anlamına gelir. Tüm ana makine bitlerini 0 yapmak ağ adresini, hepsini 1 yapmak yayın adresini verir; bu yüzden bunlar normalde cihazlara verilmez.</p>
+<p>Ağ maskesi aynı bilginin adres olarak yazılmış halidir: 24 bir-bit ve ardından 8 sıfır-bit 255.255.255.0 eder. Yalnızca bitişik maskeler geçerlidir; bu yüzden 255.0.255.0 gibi bir şey reddedilir. IPv6 aynı şekilde 128 bitle çalışır, ancak yayın adresi yoktur ve aralık çok daha büyüktür: standart bir /64 LAN alt ağı 2<sup>64</sup> adres, yani yaklaşık 18 kentilyon adres barındırır.</p>
+<p>Bazı aralıkların nerede görünürlerse görünsünler özel anlamı vardır. 10.0.0.0/8, 172.16.0.0/12 ve 192.168.0.0/16 özeldir ve genel internette yönlendirilmez; 100.64.0.0/10 taşıyıcı sınıfı NAT için paylaşılan adres alanıdır, 169.254.0.0/16 bağlantı yerelidir ve 192.0.2.0, 198.51.100.0 ile 203.0.113.0 blokları belgeleme için ayrılmıştır. Sayfa, adresinizin içine düştüğü aralığı etiketler.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Bir sekizliyi ya da adresin tamamını ikilik ve onluk arasında <a href="/tools/number-base-converter/">Sayı tabanı dönüştürücü</a> ile çevirin.</li>
+  <li>Sunucuda dosya izinleri de mi ayarlıyorsunuz? <a href="/tools/chmod-calculator/">chmod hesaplayıcı</a> 755'i rwxr-xr-x'e ve tersine çevirir.</li>
+  <li>Başarısız bir sağlık denetiminden gelen durum kodunu <a href="/tools/http-status-codes/">HTTP durum kodları</a> başvurusunda okuyun.</li>
+</ul>

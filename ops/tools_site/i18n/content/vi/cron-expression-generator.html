@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Tạo biểu thức cron kèm thời điểm chạy kế tiếp | Tanod Tools",
+  "description": "Tạo lịch cron năm trường bằng mẫu có sẵn và các nút điều khiển, xem mô tả bằng tiếng thường và kiểm tra các lần chạy kế tiếp ở bất kỳ múi giờ nào trước khi dùng.",
+  "h1": "Tạo biểu thức cron",
+  "lede": "Tạo lịch crontab từ những lựa chọn đơn giản, rồi kiểm tra nó diễn đạt thế nào bằng ngôn ngữ thông thường và khi nào nó chạy tiếp theo.",
+  "blurb": "Tạo lịch cron bằng các nút điều khiển và xem các lần chạy kế tiếp.",
+  "keywords": "tạo biểu thức cron tạo cron tạo crontab trình tạo lịch cron cron job mỗi 5 phút cú pháp cron các ngày trong tuần lúc 9 giờ sáng cron expression generator cron builder",
+  "limits": "Cron chuẩn năm trường như Vixie cron và cronie dùng: phút, giờ, ngày trong tháng, tháng và ngày trong tuần. Quartz và các định dạng có trường giây khác không được tạo ra, và biểu thức dán vào mà các nút điều khiển không hiển thị được sẽ được giữ nguyên như đã gõ.",
+  "howto_title": "Cách tạo biểu thức cron",
+  "howto": [
+    "Bắt đầu từ một mẫu có sẵn, hoặc đặt từng trường chạy mọi lúc, mỗi N đơn vị kể từ một điểm bắt đầu, vào các giá trị cụ thể hoặc giữa hai giá trị.",
+    "Kiểm tra biểu thức, mô tả bằng ngôn ngữ thông thường và các lần chạy kế tiếp theo múi giờ mà máy chủ của bạn dùng.",
+    "Sao chép biểu thức vào crontab, lịch CI hoặc trình lập lịch của bạn. Bạn cũng có thể dán một biểu thức có sẵn để nạp vào các nút điều khiển."
+  ],
+  "faq": [
+    ["Làm sao để chạy tác vụ mỗi 15 phút?", "Đặt Phút thành <em>Mỗi 15 phút bắt đầu từ 0</em>, cách này viết ra <code>*/15 * * * *</code>. Tác vụ chạy vào phút 0, 15, 30 và 45 của mỗi giờ."],
+    ["Điểm bắt đầu khác 0 được viết như thế nào?", "Điểm bắt đầu như phút 5 với bước nhảy 10 được viết là <code>5-59/10</code>, chạy vào 5, 15, 25, 35, 45 và 55. Dạng ngắn hơn <code>5/10</code> dùng được ở một số phiên bản cron nhưng bị các phiên bản khác từ chối, nên dạng dài là lựa chọn có tính di động."],
+    ["Vì sao một số ngày được chọn bằng khoảng còn số khác bằng danh sách?", "Ba giá trị liên tiếp trở lên được viết thành một khoảng, nên thứ Hai đến thứ Sáu là <code>1-5</code>, còn thứ Hai, thứ Tư và thứ Sáu là <code>1,3,5</code>. Cả hai đều có nghĩa chính xác là các giá trị bạn đã chọn."],
+    ["Chuyện gì xảy ra khi tôi đặt cả ngày trong tháng và ngày trong tuần?", "Cron chuẩn chạy tác vụ khi một trong hai khớp, chứ không phải cả hai. <code>0 9 1 * 1</code> chạy vào ngày mùng 1 của tháng và vào mọi thứ Hai. Công cụ thêm ghi chú khi lựa chọn của bạn rơi vào trường hợp đó."],
+    ["Các lần chạy kế tiếp dùng múi giờ nào?", "Múi giờ bạn chọn bên dưới biểu thức. Bản thân cron dùng múi giờ của máy hoặc container chạy nó, trừ khi crontab đặt <code>CRON_TZ</code>. Nhiều máy chủ dùng UTC, nên hãy kiểm tra trước khi tin một thời điểm."],
+    ["Công cụ có hỗ trợ giây, @daily hay cú pháp Quartz không?", "Nó chỉ tạo biểu thức năm trường. Dán <code>@daily</code> hoặc lối tắt khác vẫn dùng được và được chuyển thành năm trường tương ứng. Biểu thức sáu trường và kiểu Quartz bị từ chối, vì trường đầu tiên của chúng là giây. <a href=\"/tools/cron-expression-explainer/\">Giải thích biểu thức cron</a> nói chi tiết về điều này."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Biểu thức cron</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Sao chép</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Mẫu có sẵn">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Mỗi phút</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Mỗi 5 phút</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Mỗi 15 phút</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Mỗi giờ</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Mỗi ngày lúc nửa đêm</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">Các ngày trong tuần lúc 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Mỗi Chủ nhật</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">Ngày mùng 1 và 15</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Ngày mùng 1 hằng tháng</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Mỗi năm</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Nạp một biểu thức có sẵn</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Nạp</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Dán biểu thức năm trường hoặc một lối tắt như @daily.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Những lần chạy kế tiếp</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Múi giờ</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">Bắt đầu từ</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Để trống để bắt đầu từ bây giờ.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Số lần</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Thời điểm chạy kế tiếp"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Đã có biểu thức và chỉ muốn được giải thích? Hãy dùng <a href="/tools/cron-expression-explainer/">Giải thích biểu thức cron</a>.</p>
+</div>
+<!--explain-->
+<h2>Tạo lịch cron</h2>
+<p>Biểu thức cron gồm năm trường cách nhau bằng dấu cách: phút, giờ, ngày trong tháng, tháng và ngày trong tuần. Mỗi trường trả lời một câu hỏi về thời điểm tác vụ nên chạy, và tác vụ chạy khi tất cả đều khớp. Để một trường là <code>*</code> nghĩa là mọi giá trị, đó là lý do <code>0 * * * *</code> chạy vào đầu mỗi giờ và <code>0 0 * * *</code> chạy mỗi ngày một lần lúc nửa đêm.</p>
+<p>Công cụ tạo cho mỗi trường bốn cách để nói điều bạn muốn. Một bước nhảy như <code>*/15</code> nghĩa là cứ mỗi 15 giá trị, một danh sách như <code>1,15</code> chọn các giá trị cụ thể, một khoảng như <code>9-17</code> bao gồm mọi thứ giữa hai giá trị, và <code>*</code> nghĩa là mọi giá trị. Khi bạn chọn các giá trị, ba giá trị liên tiếp trở lên được viết thành một khoảng, nên thứ Hai đến thứ Sáu cho ra <code>1-5</code> thay vì <code>1,2,3,4,5</code>.</p>
+<p>Hai cái bẫy làm vướng hầu hết mọi người. Cron dùng đồng hồ của máy nó chạy, nên một tác vụ đặt lúc 09:00 chạy vào 09:00 giờ máy chủ, có thể không phải giờ của bạn; danh sách các lần chạy kế tiếp cho phép bạn kiểm tra ở nhiều múi giờ. Và khi cả trường ngày trong tháng lẫn ngày trong tuần đều bị giới hạn, tác vụ chạy khi một trong hai khớp, có thể nghĩa là nhiều lần chạy hơn bạn mong đợi.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Để đọc một biểu thức do người khác viết, hãy dán nó vào <a href="/tools/cron-expression-explainer/">Giải thích biểu thức cron</a>.</li>
+  <li>Đổi thời điểm chạy trong log sang Unix timestamp và ngược lại bằng <a href="/tools/unix-timestamp-converter/">Chuyển đổi Unix timestamp</a>.</li>
+  <li>Script chạy theo lịch cần được bật bit thực thi; hãy tính mode phù hợp bằng <a href="/tools/chmod-calculator/">Tính chmod</a>.</li>
+</ul>

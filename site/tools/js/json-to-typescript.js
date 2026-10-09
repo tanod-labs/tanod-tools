@@ -1,5 +1,5 @@
-import { $, debounce, copyText, textBlob, tx, txn } from "./core.js?v=5";
-import { jsonToTs } from "./dev3core.js?v=5";
+import { $, debounce, copyText, textBlob, tx, txn } from "./core.js?v=11";
+import { jsonToTs } from "./dev3core.js?v=11";
 
 const input = $("#t-in"), out = $("#t-out"), info = $("#t-info"), root = $("#t-root");
 const radios = document.querySelectorAll('input[name="t-style"]');

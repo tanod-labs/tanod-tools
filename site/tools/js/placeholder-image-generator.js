@@ -1,6 +1,6 @@
-import { $, $$, fmtBytes, setStatus, runJob, copyText, announce, debounce, UserError, tx, EN, fmtNum } from "./core.js?v=5";
-import { newCanvas, ctx2d, release, encodeCanvas, MIME, EXT, MAX_PIXELS, dims } from "./imgcore.js?v=5";
-import { sizeProblem } from "./imgcore3.js?v=5";
+import { $, $$, fmtBytes, setStatus, runJob, copyText, announce, debounce, UserError, tx, EN, fmtNum } from "./core.js?v=11";
+import { newCanvas, ctx2d, release, encodeCanvas, MIME, EXT, MAX_PIXELS, dims } from "./imgcore.js?v=11";
+import { sizeProblem } from "./imgcore3.js?v=11";
 
 const MAX_SIDE_PX = 8000;
 const FONT = "system-ui, Arial, Helvetica, sans-serif"; // same stack in the canvas and in the SVG

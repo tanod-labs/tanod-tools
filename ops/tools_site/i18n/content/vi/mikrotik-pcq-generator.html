@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Tạo PCQ MikroTik: băng thông đều cho từng người dùng | Tanod Tools",
+  "description": "Tạo queue type PCQ RouterOS cùng simple queue hoặc queue tree với mangle mark, để mỗi máy khách nhận phần đường truyền công bằng, có giới hạn. Ngay trong trình duyệt.",
+  "h1": "Tạo PCQ MikroTik",
+  "lede": "Chia đường truyền công bằng cho mọi máy khách bằng một Per Connection Queue: chọn tốc độ cho mỗi người dùng và tổng băng thông, rồi nhận queue type cùng simple queue hoặc queue tree.",
+  "blurb": "Queue type PCQ với simple queue hoặc queue tree.",
+  "keywords": "tạo pcq mikrotik, pcq mikrotik, chia đều băng thông, băng thông đều cho từng người dùng, giới hạn tốc độ mikrotik, mikrotik pcq generator per connection queue routeros pcq-rate pcq-classifier dst-address src-address queue tree mangle packet mark equal bandwidth per user wisp fair share",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không rời khỏi thiết bị của bạn",
+  "limits": "Tạo cú pháp RouterOS v7 (cũng hợp lệ trên v6) cho IPv4. Phương pháp queue tree đánh dấu các kết nối mà máy khách LAN mở ra hướng WAN; phần còn lại đi qua không bị giới hạn. pcq-limit và pcq-total-limit giữ nguyên giá trị mặc định. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với hay được MikroTik bảo trợ.",
+  "howto_title": "Cách thiết lập PCQ trên MikroTik",
+  "howto": [
+    "Chọn phương pháp: một simple queue cho subnet LAN (đơn giản nhất) hoặc queue tree dùng mangle mark (kiểm soát tốt hơn).",
+    "Nhập tốc độ cho mỗi máy khách, hoặc 0 để chia đều tổng băng thông, cùng tổng upload và download thấp hơn một chút so với tốc độ đường truyền thực tế.",
+    "Sao chép tập lệnh hoặc tải xuống tệp .rsc, và bảo đảm FastTrack đã tắt đối với lưu lượng cần giới hạn."
+  ],
+  "faq": [
+    ["PCQ làm gì?", "Queue type PCQ phân loại gói tin vào các sub-queue theo một classifier, thường là địa chỉ của máy khách, rồi phục vụ lần lượt từng sub-queue. Khi đặt pcq-rate, mỗi sub-queue bị giới hạn ở tốc độ đó; với pcq-rate 0, giới hạn của queue cha được chia đều cho các máy khách đang hoạt động tại thời điểm ấy. Nhờ vậy, một queue duy nhất đủ để chia công bằng cho hàng trăm máy khách, thay vì phải tạo hàng trăm simple queue."],
+    ["Vì sao download phân loại theo dst-address còn upload theo src-address?", "Gói tin download đi đến máy khách nên địa chỉ của máy khách là đích; gói tin upload xuất phát từ máy khách nên nó là nguồn. Nếu đổi ngược, mọi máy khách sẽ rơi vào cùng một sub-queue được xác định theo địa chỉ các máy chủ từ xa."],
+    ["Vì sao queue tree dùng parent=global và forward chain?", "Gói tin upload phải được phân loại trước khi source NAT thay địa chỉ của máy khách bằng địa chỉ WAN, và queue global chạy trước source NAT. Đánh dấu ở forward chain thì thấy gói tin download sau khi destination NAT đã khôi phục địa chỉ của máy khách. Nếu đánh dấu trên interface WAN, mọi upload sẽ dồn vào một sub-queue."],
+    ["Address mask dùng để làm gì?", "Với /32, mỗi địa chỉ là một sub-queue riêng. WISP cấp cho mỗi khách hàng một subnet nhỏ, chẳng hạn /29, có thể đặt mask là 29 để cả subnet dùng chung một sub-queue và một mức tốc độ."],
+    ["PCQ không có tác dụng. Tôi nên kiểm tra gì?", "Trước hết là FastTrack: gói tin đã fasttrack sẽ bỏ qua mangle và mọi queue. Sau đó là các giá trị tổng: nếu max-limit cao hơn mức đường truyền thực sự cung cấp, queue không bao giờ đầy, và thiết bị của nhà mạng sẽ là nơi xếp hàng thay cho router của bạn."],
+    ["Cấu hình của tôi có bị gửi đi đâu không?", "Không. Mọi thứ được tạo ngay trong trình duyệt của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pcq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Phương pháp</legend>
+      <div class="seg" role="radiogroup" aria-label="Phương pháp">
+        <label><input type="radio" name="pcq-method" value="simple" checked>Simple queue</label>
+        <label><input type="radio" name="pcq-method" value="tree">Queue tree + mangle</label>
+      </div>
+      <div class="field" id="pcq-simple-f">
+        <label for="pcq-target">Subnet LAN (target)</label>
+        <input type="text" id="pcq-target" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="pcq-tree-f" hidden>
+        <div class="field"><label for="pcq-lan">Interface list LAN</label><input type="text" id="pcq-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-wan">Interface list WAN</label><input type="text" id="pcq-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Tốc độ</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-down-rate">Download mỗi máy khách (pcq-rate)</label><input type="text" id="pcq-down-rate" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-rate">Upload mỗi máy khách (pcq-rate)</label><input type="text" id="pcq-up-rate" class="mono" value="2M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-down-max">Tổng download</label><input type="text" id="pcq-down-max" class="mono" value="95M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-max">Tổng upload</label><input type="text" id="pcq-up-max" class="mono" value="45M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <span class="help">Giá trị mỗi máy khách là 0 hoặc để trống nghĩa là chia đều tổng băng thông.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Tùy chọn</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-mask">Address mask (mỗi mask một sub-queue)</label><input type="text" id="pcq-mask" class="mono" value="32" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="pcq-name">Tiền tố tên</label><input type="text" id="pcq-name" class="mono" value="pcq" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pcq-out" class="label">Tập lệnh RouterOS</label>
+    <textarea id="pcq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pcq-copy" type="button">Sao chép tập lệnh</button>
+      <button class="btn" id="pcq-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pcq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Per Connection Queue trong thực tế</h2>
+<p>PCQ là một queue type, được định nghĩa trong <code>/queue type</code> với <code>kind=pcq</code>, sau đó simple queue hoặc queue tree sẽ sử dụng nó. <code>pcq-classifier</code> quyết định thế nào được tính là một luồng: <code>dst-address</code> cho download, nên download của mỗi máy khách là một luồng, và <code>src-address</code> cho upload. RouterOS tạo các luồng con ngay khi cần và xóa chúng khi không còn lưu lượng, vì vậy bạn không phải bảo trì gì khi máy khách đến rồi đi.</p>
+<p>Hai thiết lập quyết định kết quả. <code>pcq-rate</code> giới hạn từng luồng; để ở 0 thì các luồng đơn giản là chia đều phần mà <code>max-limit</code> của queue cho phép. max-limit của queue dùng PCQ nên thấp hơn một chút so với dung lượng thực của đường truyền: PCQ chỉ chia băng thông công bằng được khi gói tin xếp hàng tại router chứ không phải tại modem phía trên.</p>
+<h3>Simple queue hay queue tree?</h3>
+<p>Phương pháp simple queue không cần đánh dấu: chỉ một queue với subnet LAN làm target và <code>queue=upload-type/download-type</code>. Phương pháp queue tree dùng mangle để đánh dấu các kết nối từ LAN ra WAN cùng hai queue dưới <code>parent=global</code>; lưu lượng giữa các mạng nội bộ không bị giới hạn, và đây là điểm khởi đầu cho các lớp ưu tiên. Dù chọn cách nào, cài đặt burst cho từng máy khách vẫn thuộc về simple queue; hãy so sánh với <a href="/tools/mikrotik-simple-queue-generator/">Tạo simple queue MikroTik</a> và <a href="/tools/mikrotik-burst-calculator/">Tính burst MikroTik</a>.</p>

@@ -1,4 +1,4 @@
-import { $, $$, debounce, dropzone, copyText, textBlob, setStatus, fmtBytes, fmtNum, announce, tx } from "./core.js?v=5";
+import { $, $$, debounce, dropzone, copyText, textBlob, setStatus, fmtBytes, fmtNum, announce, tx } from "./core.js?v=11";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const SHOW_LIMIT = 2_000_000;

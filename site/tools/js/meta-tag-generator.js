@@ -1,5 +1,5 @@
-import { $, $$, copyText, tx, txn, EN, fmtNum } from "./core.js?v=5";
-import { parseHex } from "./colorcore.js?v=5";
+import { $, $$, copyText, tx, txn, EN, fmtNum } from "./core.js?v=11";
+import { parseHex } from "./colorcore.js?v=11";
 
 const f = {
   title: $("#m-title"), desc: $("#m-desc"), canon: $("#m-canon"),

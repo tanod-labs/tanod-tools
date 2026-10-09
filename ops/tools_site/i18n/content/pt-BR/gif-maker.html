@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Criador de GIF: crie um GIF animado com imagens | Tanod Tools",
+  "description": "Crie um GIF animado a partir de várias imagens no navegador: defina ordem, intervalo e tamanho, veja a prévia e baixe. Grátis, sem cadastro, nada é enviado.",
+  "h1": "Criador de GIF",
+  "lede": "Transforme algumas imagens em um GIF animado. Coloque-as em ordem, escolha por quanto tempo cada uma aparece e qual será o tamanho do GIF, confira a prévia e baixe.",
+  "blurb": "Crie um GIF animado a partir de várias imagens.",
+  "keywords": "criador de gif criar gif gif animado fazer gif imagens para gif fotos para gif apresentacao de slides quadros intervalo atraso repeticao animacao gif maker create animated gif images to gif",
+  "limits": "De 2 a 60 imagens, de até 50 MB cada. O GIF pode ter até 1.200 pixels de largura, e todos os quadros têm a proporção da primeira imagem. Um quadro de GIF comporta no máximo 256 cores, então as fotos podem apresentar faixas, e não há transparência: as áreas transparentes recebem a cor de fundo. Imagens animadas adicionadas são usadas a partir do primeiro quadro.",
+  "howto_title": "Como criar um GIF animado",
+  "howto": [
+    "Escolha duas ou mais imagens ou arraste-as para a página. Use os botões para cima e para baixo para definir a ordem.",
+    "Defina o intervalo entre os quadros e a largura, e escolha como imagens de proporções diferentes se encaixam. Confira a prévia.",
+    "Clique em <strong>Criar GIF</strong>, confira o resultado e baixe o arquivo."
+  ],
+  "faq": [
+    ["Minhas imagens são enviadas?", "Não. As imagens são desenhadas e o GIF é gravado por um código executado no seu navegador, com o codificador de código aberto gifenc. Nada é enviado a um servidor."],
+    ["Como deixo a animação mais rápida ou mais lenta?", "Altere o intervalo entre os quadros, em milissegundos: 1000 corresponde a um segundo e 100 a dez quadros por segundo. O menor intervalo oferecido é 20 ms, porque os navegadores reproduzem intervalos menores em uma velocidade bem mais lenta."],
+    ["Por que meu GIF fica granulado ou com faixas?", "Um quadro de GIF pode usar no máximo 256 cores, então fotos e degradês suaves mostram faixas. Esta ferramenta escolhe as melhores 256 cores para cada quadro separadamente, o que mantém cada quadro o mais próximo possível da respectiva imagem, dentro do que o formato permite. Gráficos chapados e capturas de tela são os que ficam melhores."],
+    ["Por que meu GIF fica tão grande?", "O GIF comprime mal e guarda cada quadro por inteiro, então o tamanho cresce com a largura, a altura e o número de quadros. Para diminuí-lo, use uma largura menor, menos imagens ou menos cores por quadro."],
+    ["O que acontece com imagens de tamanhos ou proporções diferentes?", "Todos os quadros têm a proporção da primeira imagem. <em>Ajustar ao quadro</em> mostra cada imagem inteira e preenche o espaço que sobra com a cor de fundo, <em>Preencher e cortar</em> cobre o quadro inteiro e corta o excedente, a partir do centro, e <em>Esticar</em> deforma cada imagem para que ela ocupe o quadro todo."],
+    ["A transparência é mantida?", "Não. Um GIF só consegue marcar uma cor como transparente, então a ferramenta preenche as áreas transparentes com a cor de fundo que você escolher. Assim, todos os quadros têm a mesma aparência em qualquer lugar."],
+    ["O que faz a opção de reproduzir para a frente e depois para trás?", "Depois do último quadro, a ferramenta acrescenta os quadros de novo em ordem inversa, sem repetir o primeiro e o último, para que a animação vá e volte de forma suave em vez de saltar de volta para o início."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Solte duas ou mais imagens aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Escolher imagens</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP ou AVIF. Ou arraste para qualquer lugar desta página.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Quadros, em ordem" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Intervalo entre os quadros (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1000 ms equivalem a um segundo. O menor intervalo é 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Largura (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">A altura acompanha a primeira imagem: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Imagens com outras proporções</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Ajustar ao quadro</label>
+        <label><input type="radio" name="gm-fit" value="cover">Preencher e cortar</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Esticar</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Cor de fundo</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Repetir</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>Para sempre</label>
+        <label><input type="radio" name="gm-loop" value="once">Uma vez</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Cores por quadro</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (melhor qualidade)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (menor arquivo)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Ordem</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Reproduzir para a frente e depois para trás</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Prévia</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Prévia da animação"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Criar GIF</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Limpar tudo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Como um GIF animado é montado</h2>
+<p>Um GIF é uma pilha de imagens comuns exibidas uma após a outra. Cada quadro traz a sua própria tabela de cores, com no máximo 256 cores, e um intervalo: o tempo, em centésimos de segundo, até o próximo quadro aparecer. Uma configuração de repetição no início do arquivo diz ao visualizador se a animação deve se repetir para sempre ou parar depois de uma exibição. Não há compressão de vídeo: cada quadro é guardado inteiro, empacotado com um método simples sem perdas, e é por isso que os GIFs ficam grandes rapidamente.</p>
+<p>Criar um GIF a partir de fotos significa escolher as 256 cores que melhor representam cada imagem e depois trocar cada pixel pela mais próxima delas. Esta ferramenta faz isso para cada quadro separadamente, com o codificador de código aberto gifenc, depois de desenhar todas as imagens no mesmo tamanho para que os quadros se alinhem. O tamanho vem da largura que você escolhe e das proporções da primeira imagem, e as demais imagens são ajustadas dentro dele, cortadas para preenchê-lo ou esticadas, conforme a sua escolha.</p>
+<p>Suas imagens são lidas uma por vez enquanto o GIF é gravado, então uma lista longa de fotos grandes não precisa caber toda na memória ao mesmo tempo. A prévia acima do botão reproduz os mesmos quadros em tamanho menor, para você avaliar a ordem, a velocidade e o ajuste antes de confirmar; ela pausa com um botão e começa pausada se o seu sistema estiver configurado para reduzir o movimento.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Seja breve: alguns segundos a 10 quadros por segundo bastam, e menos quadros, e menores, geram um arquivo bem menor.</li>
+  <li>Antes, deixe as imagens com a mesma proporção usando <a href="/tools/crop-image/">Recortar imagem</a>, ou reduza fotos grandes com <a href="/tools/resize-image/">Redimensionar imagem</a>.</li>
+  <li>Quer uma só imagem em vez de uma animação? <a href="/tools/merge-images/">Juntar imagens</a> as une lado a lado ou em grade.</li>
+</ul>

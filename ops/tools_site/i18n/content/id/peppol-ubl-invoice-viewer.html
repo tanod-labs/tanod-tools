@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Penampil faktur Peppol / UBL: baca BIS Billing 3.0 | Tanod Tools",
+  "description": "Buka faktur atau nota kredit Peppol BIS Billing 3.0 (XML UBL) dan baca sebagai faktur biasa. Cetak, simpan PDF, atau ekspor JSON. Tanpa unggah.",
+  "h1": "Penampil faktur Peppol / UBL",
+  "lede": "Buka faktur atau nota kredit Peppol atau UBL 2.1 lainnya dan baca sebagai faktur biasa, lengkap dengan para pihak, baris, PPN, dan rincian pembayaran. Dibaca di browser Anda dan tidak pernah diunggah.",
+  "blurb": "Baca faktur Peppol BIS Billing 3.0 atau UBL sebagai faktur biasa.",
+  "keywords": "penampil faktur peppol peppol invoice viewer ubl invoice viewer penampil ubl peppol bis billing 3.0 buka xml peppol baca faktur ubl 2.1 buka xml ubl nota kredit ubl en 16931 viewer faktur elektronik peppol cara membuka faktur peppol",
+  "limits": "Satu file sekali proses, hingga 25 MB; 5.000 baris item pertama ditampilkan. Membaca UBL 2.1 Invoice dan CreditNote sebagaimana dipakai Peppol BIS Billing 3.0 dan profil EN 16931 lainnya, juga di dalam amplop Peppol (SBDH). Tidak dibaca: dokumen UBL lain seperti pesanan atau pemberitahuan pengiriman. Hanya penampil: tanpa validasi, dan tidak ada yang dikirim ke jaringan Peppol.",
+  "howto_title": "Cara membuka faktur Peppol",
+  "howto": [
+    "Pilih file XML UBL, atau seret ke halaman ini.",
+    "Baca fakturnya: penjual dan pembeli beserta alamat Peppol mereka, tanggal, baris item, rincian PPN, total, dan rincian pembayaran.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong>, <strong>Unduh JSON</strong>, atau <strong>Tampilkan XML mentah</strong>."
+  ],
+  "faq": [
+    [
+      "Apakah faktur saya diunggah?",
+      "Tidak. XML dibaca di browser Anda dengan parser bawaan dan ditampilkan di halaman ini. Tidak ada server yang menerimanya, dan semuanya terhapus begitu Anda menutup tab."
+    ],
+    [
+      "Apa itu Peppol BIS Billing 3.0?",
+      "Format faktur dan nota kredit yang dipakai di jaringan Peppol. Formatnya berupa dokumen UBL 2.1 yang mengikuti standar Eropa EN 16931 dengan beberapa aturan tambahan Peppol. Banyak negara memakainya, dan XRechnung adalah kerabat dekatnya dengan tambahan khas Jerman."
+    ],
+    [
+      "Apakah dokumen Peppol lain, seperti pesanan, bisa dibuka?",
+      "Tidak. Hanya faktur dan nota kredit. Jika Anda membuka pesanan, balasan pesanan, atau pemberitahuan pengiriman, halaman ini memberi tahu jenis dokumennya dan bahwa dokumen itu tidak dapat ditampilkan."
+    ],
+    [
+      "Apakah faktur yang dibungkus amplop bisa dibuka?",
+      "Bisa. Jika faktur datang di dalam Standard Business Document Header (SBDH), faktur di dalamnya ditemukan dan ditampilkan."
+    ],
+    [
+      "Apakah alamat Peppol ditampilkan?",
+      "Ya. Alamat elektronik penjual dan pembeli ditampilkan beserta skemanya, misalnya 0088 untuk GLN atau 0007 untuk nomor organisasi Swedia."
+    ],
+    [
+      "Bagaimana jika PPN dinyatakan dalam mata uang kedua?",
+      "Beberapa negara mewajibkan PPN dalam mata uang nasional. Bila faktur mencantumkannya, jumlah PPN dalam mata uang tersebut ditampilkan di bawah total."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Peppol, UBL, dan EN 16931</h2>
+<p>Peppol adalah jaringan untuk bertukar dokumen bisnis antarperusahaan dan badan publik, yang dipakai di sebagian besar Eropa dan sekitarnya. Fakturnya berupa file XML UBL 2.1: standar dari OASIS yang menjadi dasar standar Eropa EN 16931. Karena itu, faktur Peppol BIS Billing 3.0 memiliki rangkaian istilah bisnis yang tetap, seperti pengenal PPN penjual, baris faktur, dan rincian PPN, yang dibaca halaman ini dan ditata sebagai faktur biasa.</p>
+<p>Banyak negara memakai struktur yang sama dengan tambahan masing-masing, misalnya XRechnung di Jerman. Jika file menyebutkan profilnya dalam customization identifier, profil itu ditampilkan di bagian kepala. Sejak 1 Januari 2025 setiap usaha di Jerman wajib mampu menerima faktur elektronik terstruktur, dan Prancis mewajibkannya mulai 1 September 2026, sehingga file seperti ini sampai kepada semakin banyak orang yang belum pernah melihat XML-nya.</p>
+<h2>Apa yang ditampilkan, dan apa yang tidak</h2>
+<p>Anda melihat para pihak beserta pengenal PPN, alamat hukum dan alamat elektronik, pengiriman dan penerima pembayaran bila ada, tanggal dan referensi, setiap baris item dengan kuantitas, satuan, harga, dan PPN, diskon dan biaya tambahan, rincian PPN dengan alasan pembebasan, total (termasuk PPN dalam mata uang kedua), sarana pembayaran dengan IBAN, BIC, dan referensi, catatan, serta dokumen terlampir. Halaman ini tidak memvalidasi faktur dan tidak memakai jaringan Peppol.</p>
+<h3>Tips</h3>
+<ul>
+  <li>File XRechnung Jerman juga bisa dibuka di <a href="/tools/xrechnung-viewer/">Penampil XRechnung</a>.</li>
+  <li>PDF yang berisi faktur juga bisa dibuka di sini, tetapi <a href="/tools/zugferd-factur-x-viewer/">Penampil ZUGFeRD / Factur-X</a> dibuat khusus untuk itu.</li>
+  <li>Unduh JSON memberi Anda faktur sebagai data biasa dengan nama istilah bisnis EN 16931.</li>
+</ul>

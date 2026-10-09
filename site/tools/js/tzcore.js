@@ -1,5 +1,5 @@
 // Time-zone helpers for the date tools, built on the browser's Intl time-zone data. Nothing is sent anywhere.
-import { tx, EN, dateFormat } from "./i18n.js?v=5";
+import { tx, EN, dateFormat } from "./i18n.js?v=11";
 
 export const LOCAL_ZONE = (() => {
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (_) { return "UTC"; }

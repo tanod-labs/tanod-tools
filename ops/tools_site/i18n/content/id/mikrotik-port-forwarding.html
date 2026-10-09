@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Generator port forwarding dan hairpin NAT MikroTik | Tanod Tools",
+  "description": "Tulis aturan dst-nat port forwarding RouterOS untuk TCP dan UDP, dengan hairpin NAT dan pembatasan sumber opsional. Divalidasi, berkomentar, dan dibuat di browser.",
+  "h1": "Generator port forwarding MikroTik",
+  "lede": "Tuliskan port yang ingin dipublikasikan beserta server di belakangnya, lalu dapatkan aturan dst-nat RouterOS v7, lengkap dengan hairpin NAT agar klien LAN juga bisa memakai alamat publik.",
+  "blurb": "Aturan dst-nat untuk TCP dan UDP, dengan hairpin NAT.",
+  "keywords": "port forwarding mikrotik dst-nat destination nat routeros port forward hairpin nat nat loopback dstnat to-addresses to-ports buka port mikrotik rdp kamera cctv nvr",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 (juga valid di v6) untuk IPv4. Port dan alamat diperiksa, tetapi tidak diuji pada router Anda. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara melakukan port forward di router MikroTik",
+  "howto": [
+    "Pilih cara aturan mengenali lalu lintas ke alamat publik Anda: interface list WAN, IP publik tetap, atau salah satu alamat router.",
+    "Tambahkan satu baris per layanan: protokol, port publik, IP server internal dan, jika berbeda, port internalnya.",
+    "Centang hairpin NAT jika klien LAN perlu menjangkau layanan lewat alamat publiknya, lalu salin skrip atau unduh file .rsc."
+  ],
+  "faq": [
+    ["Mengapa port forward saya tidak bisa dijangkau dari dalam LAN?", "Klien LAN mengirim ke IP publik Anda, router menerjemahkan tujuannya ke server, dan server menjawab klien secara langsung karena keduanya ada di subnet yang sama. Klien mengharapkan jawaban dari IP publik, jadi ia membuangnya. Hairpin NAT me-masquerade lalu lintas LAN-ke-LAN itu sehingga balasan kembali lewat router. Ini hanya berfungsi jika aturan dst-nat mencocokkan alamat publik, bukan interface WAN, karena paketnya datang di interface LAN."],
+    ["Apakah aturan sebaiknya mencocokkan in-interface atau dst-address?", "Mencocokkan interface list WAN paling sederhana dan tetap berfungsi saat IP publik berubah, tetapi tidak bisa untuk hairpin NAT. Mencocokkan dst-address bekerja dengan hairpin tetapi harus diperbarui jika IP berubah. dst-address-type=local mencocokkan alamat mana pun di router, sehingga menangani IP dinamis dan hairpin sekaligus; kekurangannya, port itu juga ikut tertangkap di alamat LAN router sendiri."],
+    ["Apakah saya perlu aturan firewall filter juga?", "Dengan konfigurasi default MikroTik, tidak: forward chain-nya hanya men-drop koneksi baru dari WAN yang \"not DSTNATed\", jadi koneksi hasil port forward lolos. Jika Anda menulis forward chain yang lebih ketat, accept connection-nat-state=dstnat sebelum drop terakhir Anda."],
+    ["Bagaimana cara meneruskan rentang port?", "Masukkan rentangnya, misalnya 50000-50100, atau daftar seperti 80,443, dan biarkan port internal kosong. Port diteruskan tanpa diubah. Penerjemahan port (publik 8443 ke internal 443) hanya untuk port tunggal."],
+    ["Amankah meneruskan RDP, SSH, atau Winbox?", "Membuka layanan akses jarak jauh ke seluruh internet mengundang percobaan brute-force. Isi jaringan sumber yang diizinkan untuk membatasi forward ke alamat yang dikenal, atau letakkan layanan di balik VPN seperti WireGuard."],
+    ["Apakah konfigurasi saya dikirim ke suatu tempat?", "Tidak. Aturan dibuat oleh JavaScript di halaman ini, dan apa pun yang Anda ketik tidak diunggah, disimpan, atau dicatat."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Cocokkan lalu lintas ke</legend>
+      <div class="seg" role="radiogroup" aria-label="Cocokkan lalu lintas ke">
+        <label><input type="radio" name="pf-mode" value="list" checked>List WAN</label>
+        <label><input type="radio" name="pf-mode" value="iface">Interface WAN</label>
+        <label><input type="radio" name="pf-mode" value="ip">IP publik</label>
+        <label><input type="radio" name="pf-mode" value="local">Alamat router mana pun</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">Interface list WAN</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">Alamat IP publik</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Forward</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}Tambah forward</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opsi</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">Hairpin NAT (jangkau layanan dari LAN lewat alamat publiknya)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">Subnet LAN</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">Jaringan sumber yang diizinkan</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">Opsional. Biarkan kosong untuk menerima koneksi dari mana saja.</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">Skrip RouterOS v7</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">Salin skrip</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Cara kerja port forwarding di RouterOS</h2>
+<p>Port forward adalah aturan <code>dst-nat</code> di chain <code>dstnat</code> pada <code>/ip firewall nat</code>. Saat koneksi baru datang dan cocok dengan aturan (protokol, port tujuan, dan interface WAN atau alamat publik Anda), RouterOS menulis ulang tujuannya ke alamat server internal dan, opsional, port-nya. Connection tracking mengingat terjemahan itu, sehingga balasan ditulis balik secara otomatis; Anda tidak pernah memerlukan aturan tersendiri untuk lalu lintas baliknya.</p>
+<p>Penerjemahan terjadi sebelum forward chain pada filter melihat paketnya. Itulah sebabnya aturan forward default MikroTik hanya men-drop koneksi WAN baru bila <code>connection-nat-state=!dstnat</code>: koneksi yang diterjemahkan oleh aturan dst-nat ditandai sebagai dstnat dan diizinkan lewat, sedangkan yang lain dari internet di-drop.</p>
+<h3>Hairpin NAT</h3>
+<p>Ketika komputer di LAN terhubung ke alamat publik sebuah server yang juga ada di LAN, aturan dst-nat mengirim paket ke server, tetapi server melihat alamat privat klien dan membalasnya secara langsung. Klien lalu menerima jawaban dari alamat yang tidak pernah diajaknya bicara dan membuangnya. Aturan hairpin me-masquerade lalu lintas dari subnet LAN ke server, sehingga server menjawab router, yang menerjemahkan balasan kembali. Konsekuensinya, log server menampilkan alamat router untuk klien LAN. Record DNS split-horizon yang mengarahkan nama ke alamat internal menghindari NAT sepenuhnya dan sering menjadi solusi yang lebih bersih.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Pastikan firewall Anda men-drop yang seharusnya dengan <a href="/tools/mikrotik-firewall-auditor/">auditor firewall MikroTik</a>.</li>
+  <li>Akses jarak jauh lebih aman lewat VPN; <a href="/tools/mikrotik-wireguard-generator/">generator WireGuard</a> menyiapkannya dalam beberapa baris.</li>
+  <li>Membatasi forward ke banyak jaringan sumber? Buat daftarnya dengan <a href="/tools/mikrotik-address-list-generator/">generator address list</a>.</li>
+</ul>

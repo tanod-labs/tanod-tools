@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "MikroTik WireGuard कॉन्फ़िग जनरेटर (RouterOS v7) | Tanod Tools",
+  "description": "RouterOS v7 WireGuard सर्वर और तैयार peer कॉन्फ़िग बनाएं। कीज़ Web Crypto से आपके ब्राउज़र में बनती हैं और आपके डिवाइस से बाहर नहीं जातीं।",
+  "h1": "MikroTik WireGuard जनरेटर",
+  "lede": "टनल नेटवर्क और अपने peer तय करें, और RouterOS v7 WireGuard कॉन्फ़िगरेशन के साथ हर लैपटॉप, फ़ोन या रिमोट साइट के लिए एक कॉन्फ़िग फ़ाइल पाएं।",
+  "blurb": "RouterOS v7 WireGuard सर्वर और peer कॉन्फ़िग फ़ाइलें।",
+  "keywords": "mikrotik wireguard सेटअप, वायरगार्ड, routeros v7 wireguard interface, peers, allowed-address, public key private key जनरेटर, wg-quick client config, road warrior, site to site vpn",
+  "limits": "RouterOS v7 चाहिए (WireGuard v6 पर उपलब्ध नहीं है)। कीज़ आपके ब्राउज़र के Web Crypto X25519 से बनती हैं; अगर आपके ब्राउज़र में वह नहीं है, तो राउटर अपनी की खुद बनाता है और कॉन्फ़िग में प्लेसहोल्डर रहते हैं। टनल एड्रेस सिर्फ़ IPv4 हैं। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर WireGuard कैसे सेट करें",
+  "howto": [
+    "इंटरफ़ेस का नाम, listen पोर्ट, राउटर का टनल एड्रेस (जैसे <code>10.66.0.1/24</code>) और वह पब्लिक एड्रेस डालें जिससे क्लाइंट जुड़ेंगे।",
+    "हर peer के लिए एक पंक्ति उसके टनल एड्रेस के साथ जोड़ें; site-to-site लिंक के लिए उसके पीछे के नेटवर्क जोड़ें। Full या split टनल चुनें।",
+    "RouterOS स्क्रिप्ट पेस्ट करें, फ़ायरवॉल रूल को अपने drop रूल के ऊपर ले जाएं, और हर peer की .conf फ़ाइल उसके WireGuard ऐप में इम्पोर्ट करें।"
+  ],
+  "faq": [
+    [
+      "क्या वेब पेज में बनी कीज़ सुरक्षित हैं?",
+      "इन्हें आपके ब्राउज़र का बिल्ट-इन Web Crypto X25519 बनाता है, वही कर्व जो WireGuard इस्तेमाल करता है, और ये सिर्फ़ इस पेज की मेमोरी में और इसके दिखाए टेक्स्ट में रहती हैं। कुछ भी कहीं नहीं भेजा जाता: पेज का कोई सर्वर हिस्सा नहीं है, और इसकी सिक्योरिटी पॉलिसी दूसरी साइट से कनेक्शन रोकती है। टैब बंद करते ही ये चली जाती हैं, इसलिए जो कॉन्फ़िग चाहिए उन्हें पहले सेव कर लें।"
+    ],
+    [
+      "अगर मेरा ब्राउज़र X25519 कीज़ नहीं बना सकता तो?",
+      "पेज आपको बता देता है और कहीं और बनी कीज़ पर चला जाता है: RouterOS स्क्रिप्ट में private key नहीं होती, इसलिए इंटरफ़ेस बनते समय राउटर अपनी की खुद बनाता है। उसकी public key पढ़ने के लिए /interface wireguard print चलाएं, उसे peer कॉन्फ़िग में पेस्ट करें, और हर peer की public key (उसके WireGuard ऐप से) यहाँ की टेबल में पेस्ट करें।"
+    ],
+    [
+      "MikroTik peer पर allowed-address क्या है?",
+      "यह एक्सेस लिस्ट और रूटिंग टेबल दोनों का काम करता है: राउटर peer से पैकेट सिर्फ़ इन source एड्रेस के साथ स्वीकार करता है, और इन destination का ट्रैफ़िक उसी peer को भेजता है। एक डिवाइस के लिए यह उस डिवाइस का /32 होता है। रिमोट साइट के लिए साइट का LAN जोड़ें, और स्क्रिप्ट उसका रूट भी जोड़ देती है।"
+    ],
+    [
+      "Full टनल या split टनल?",
+      "Full टनल (peer पर AllowedIPs 0.0.0.0/0) डिवाइस का सारा ट्रैफ़िक राउटर से होकर भेजती है, जो भरोसे के बाहर वाले Wi-Fi पर काम आती है; इसके लिए राउटर को टनल एड्रेस इंटरनेट के लिए masquerade करने होंगे। Split टनल सिर्फ़ टनल नेटवर्क और आपकी दी हुई सूची के नेटवर्क भेजती है, इसलिए सामान्य ब्राउज़िंग स्थानीय रहती है।"
+    ],
+    [
+      "peer को PersistentKeepalive क्यों चाहिए?",
+      "NAT के पीछे वाला फ़ोन या लैपटॉप तभी पैकेट पा सकता है जब तक उसका NAT मैपिंग ज़िंदा हो। हर 25 सेकंड में एक keepalive उसे खुला रखता है, जिससे राउटर peer तक पहुँच पाता है और रुकने के बाद टनल जल्दी लौट आती है।"
+    ],
+    [
+      "preshared key क्या जोड़ती है?",
+      "हैंडशेक में मिलाया गया एक अतिरिक्त symmetric secret, जो public-key एक्सचेंज पर भविष्य के क्वांटम हमलों के विरुद्ध सुरक्षा की एक और परत जोड़ता है। यह वैकल्पिक है, और दोनों तरफ़ एक जैसी होनी चाहिए।"
+    ]
+  ],
+  "local_text": "कीज़ आपके ब्राउज़र में बनती हैं और आपके डिवाइस से बाहर नहीं जातीं"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>राउटर</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">इंटरफ़ेस का नाम</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Listen पोर्ट (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">राउटर का टनल एड्रेस</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">पब्लिक एड्रेस (endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">Peer के लिए DNS</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>कीज़</legend>
+      <div class="seg" role="radiogroup" aria-label="कीज़">
+        <label><input type="radio" name="wg-keys" value="browser" checked>इसी ब्राउज़र में बनाएं</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">कहीं और बनी</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>यह ब्राउज़र X25519 कीज़ नहीं बना सकता, इसलिए राउटर अपनी की खुद बनाएगा और आप peer की public key नीचे पेस्ट करें।</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>हर peer के लिए preshared key जोड़ें</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}नई कीज़</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Peer जोड़ें</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer का ट्रैफ़िक</legend>
+      <div class="seg" role="radiogroup" aria-label="Peer का ट्रैफ़िक">
+        <label><input type="radio" name="wg-route" value="full" checked>Full टनल (सारा ट्रैफ़िक)</label>
+        <label><input type="radio" name="wg-route" value="split">Split टनल</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">जिन नेटवर्क तक peer टनल से पहुँचते हैं</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>टनल को LAN interface list में जोड़ें</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">RouterOS v7 स्क्रिप्ट</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS v7 पर WireGuard</h2>
+<p>WireGuard RouterOS 7 में आया और दो जगह कॉन्फ़िगर होता है: <code>/interface wireguard</code> में राउटर की की-जोड़ी और listen पोर्ट रहते हैं, और <code>/interface wireguard peers</code> में हर रिमोट डिवाइस या साइट की एक एंट्री, जिसे उसकी public key से पहचाना जाता है। टनल इंटरफ़ेस को फिर किसी भी दूसरे इंटरफ़ेस की तरह IP एड्रेस मिलता है, और फ़ायरवॉल रूल, रूट और interface list उस पर आम तौर पर लागू होते हैं। इसमें यूज़रनेम या पासवर्ड नहीं होता: peer वही है जिसके पास कॉन्फ़िगर की गई public key से मेल खाती private key है।</p>
+<p>हर peer का <code>allowed-address</code> पूरे सेटअप का मूल है। यह उन source एड्रेस की सूची है जो राउटर उस peer से स्वीकार करता है और साथ ही उन destination की भी जो वह उस peer को भेजता है। डिवाइस की ओर <code>AllowedIPs</code> यही काम उलटी दिशा में करता है: 0.0.0.0/0 सब कुछ टनल से भेजता है, जबकि नेटवर्कों की सूची टनल को सिर्फ़ उन्हीं नेटवर्कों तक सीमित रखती है।</p>
+<h3>जुड़ने से पहले</h3>
+<ul>
+  <li>राउटर को अपनी input chain में, किसी भी drop रूल के ऊपर, listen पोर्ट पर UDP स्वीकार करना चाहिए। <a href="/tools/mikrotik-firewall-generator/">MikroTik फ़ायरवॉल जनरेटर</a> इसे <code>udp/13231</code> के साथ आपके लिए खोल सकता है।</li>
+  <li>अगर राउटर किसी और NAT डिवाइस के पीछे है, तो UDP पोर्ट उस तक फ़ॉरवर्ड करें, जैसा <a href="/tools/mikrotik-port-forwarding/">MikroTik पोर्ट फ़ॉरवर्डिंग जनरेटर</a> दिखाता है।</li>
+  <li>Peer कॉन्फ़िग में private key होती हैं। उन्हें भरोसेमंद माध्यम से डिवाइस तक पहुँचाएं और बची हुई कॉपी मिटा दें।</li>
+</ul>

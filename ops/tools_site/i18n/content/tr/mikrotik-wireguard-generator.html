@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "MikroTik WireGuard oluşturucu (RouterOS v7) | Tanod Tools",
+  "description": "RouterOS v7 WireGuard sunucusu ve hazır peer yapılandırmaları oluşturun. Anahtarlar tarayıcınızda Web Crypto ile üretilir ve cihazınızdan asla çıkmaz.",
+  "h1": "MikroTik WireGuard oluşturucu",
+  "lede": "Tünel ağını ve peer'lerinizi belirleyin; RouterOS v7 WireGuard yapılandırmasını ve her dizüstü, telefon veya uzak site için bir yapılandırma dosyasını alın.",
+  "blurb": "RouterOS v7 WireGuard sunucusu ve peer yapılandırma dosyaları.",
+  "keywords": "mikrotik wireguard kurulumu routeros v7 wireguard arayüzü peer allowed-address genel anahtar özel anahtar oluşturucu wg-quick istemci yapılandırması uzaktan erişim siteden siteye vpn mikrotik wireguard setup",
+  "limits": "RouterOS v7 gerekir (WireGuard v6'da yoktur). Anahtarlar tarayıcınızın Web Crypto X25519 desteğiyle üretilir; tarayıcınızda yoksa yönlendirici kendi anahtarını üretir ve yapılandırmalarda yer tutucular bulunur. Yalnızca IPv4 tünel adresleri. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te WireGuard nasıl kurulur",
+  "howto": [
+    "Arayüz adını, dinleme portunu, yönlendiricinin tünel adresini (örneğin <code>10.66.0.1/24</code>) ve istemcilerin bağlanacağı genel adresi girin.",
+    "Her peer için tünel adresiyle bir satır ekleyin; siteden siteye bağlantılarda arkasındaki ağları da ekleyin. Tam ya da bölünmüş tüneli seçin.",
+    "RouterOS betiğini yapıştırın, güvenlik duvarı kuralını drop kurallarınızın üstüne taşıyın ve her peer'in .conf dosyasını kendi WireGuard uygulamasına aktarın."
+  ],
+  "faq": [
+    [
+      "Anahtarlar bir web sayfasında üretilirse güvenli mi?",
+      "Anahtarlar, tarayıcınızın yerleşik Web Crypto X25519 uygulamasıyla, yani WireGuard'ın kullandığı eğriyle üretilir ve yalnızca bu sayfanın belleğinde ve size gösterdiği metinde bulunur. Hiçbir şey bir yere gönderilmez: sayfanın sunucu tarafı yoktur ve güvenlik ilkesi diğer sitelere bağlantıyı engeller. Sekmeyi kapatınca anahtarlar silinir; bu yüzden gereken yapılandırmaları önceden kaydedin."
+    ],
+    [
+      "Tarayıcım X25519 anahtarları üretemezse ne olur?",
+      "Sayfa sizi bilgilendirir ve başka yerde üretilen anahtarlara geçer: RouterOS betiği özel anahtarı içermez, arayüz oluşturulurken yönlendirici kendi anahtarını üretir. Genel anahtarını okumak için /interface wireguard print komutunu çalıştırın, peer yapılandırmalarına yapıştırın ve her peer'in genel anahtarını (kendi WireGuard uygulamasından) buradaki tabloya yapıştırın."
+    ],
+    [
+      "MikroTik peer'inde allowed-address nedir?",
+      "Hem erişim listesi hem yönlendirme tablosu olarak çalışır: yönlendirici peer'den yalnızca bu kaynak adreslerle gelen paketleri kabul eder ve bu hedefler için trafiği o peer'e gönderir. Tek bir cihaz için cihazın /32 adresidir. Uzak bir site için sitenin LAN'ını ekleyin; betik ona bir rota da ekler."
+    ],
+    [
+      "Tam tünel mi, bölünmüş tünel mi?",
+      "Tam tünel (peer'de AllowedIPs 0.0.0.0/0) cihazın tüm trafiğini yönlendirici üzerinden gönderir; güvenilmeyen Wi-Fi ağlarında işe yarar ve yönlendiricinin tünel adreslerini internete masquerade etmesi gerekir. Bölünmüş tünel yalnızca tünel ağını ve sizin listelediğiniz ağları gönderir, böylece normal gezinme yerel kalır."
+    ],
+    [
+      "Peer neden PersistentKeepalive ister?",
+      "NAT arkasındaki bir telefon veya dizüstü, yalnızca NAT eşlemesi canlıyken paket alabilir. 25 saniyede bir gönderilen keepalive eşlemeyi açık tutar; böylece yönlendirici peer'e ulaşabilir ve tünel bir duraklamadan sonra hızla geri gelir."
+    ],
+    [
+      "Preshared key ne katar?",
+      "El sıkışmaya karıştırılan ek bir simetrik sır; genel anahtar değişimine yönelik gelecekteki kuantum saldırılarına karşı ek bir koruma katmanı sağlar. İsteğe bağlıdır ve iki tarafta da eşleşmelidir."
+    ]
+  ],
+  "local_text": "Anahtarlar tarayıcınızda üretilir ve cihazınızdan asla çıkmaz"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Yönlendirici</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">Arayüz adı</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Dinleme portu (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">Yönlendirici tünel adresi</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">Genel adres (endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">Peer'ler için DNS</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Anahtarlar</legend>
+      <div class="seg" role="radiogroup" aria-label="Anahtarlar">
+        <label><input type="radio" name="wg-keys" value="browser" checked>Bu tarayıcıda üret</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">Başka yerde üretildi</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>Bu tarayıcı X25519 anahtarları üretemiyor; bu yüzden yönlendirici kendi anahtarını üretir ve peer'lerin genel anahtarlarını aşağıya yapıştırırsınız.</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>Her peer için preshared key ekle</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}Yeni anahtarlar</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer'ler</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Peer ekle</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer trafiği</legend>
+      <div class="seg" role="radiogroup" aria-label="Peer trafiği">
+        <label><input type="radio" name="wg-route" value="full" checked>Tam tünel (tüm trafik)</label>
+        <label><input type="radio" name="wg-route" value="split">Bölünmüş tünel</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">Peer'lerin tünel üzerinden eriştiği ağlar</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>Tüneli LAN arayüz listesine ekle</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">RouterOS v7 betiği</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}İndir .rsc</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS v7'de WireGuard</h2>
+<p>WireGuard RouterOS 7 ile geldi ve iki yerde yapılandırılır: <code>/interface wireguard</code> yönlendiricinin anahtar çiftini ve dinleme portunu, <code>/interface wireguard peers</code> ise genel anahtarıyla tanımlanan her uzak cihaz veya site için bir kayıt tutar. Tünel arayüzü ardından diğer arayüzler gibi bir IP adresi alır; güvenlik duvarı kuralları, rotalar ve arayüz listeleri ona da her zamanki gibi uygulanır. Kullanıcı adı ya da parola yoktur: peer, yapılandırılmış bir genel anahtarla eşleşen özel anahtarı elinde tutan kişidir.</p>
+<p>Her peer'in <code>allowed-address</code> değeri kurulumun kalbidir. Yönlendiricinin o peer'den kabul ettiği kaynak adresleri ve aynı zamanda o peer'e gönderdiği hedefleri listeler. Cihaz tarafında <code>AllowedIPs</code> aynı işi tersine yapar: 0.0.0.0/0 her şeyi tünelden geçirir, bir ağ listesi ise tüneli yalnızca o ağlarla sınırlar.</p>
+<h3>Bağlanmadan önce</h3>
+<ul>
+  <li>Yönlendirici, input chain'inde dinleme portundaki UDP'yi herhangi bir drop kuralının üstünde kabul etmelidir. <a href="/tools/mikrotik-firewall-generator/">MikroTik güvenlik duvarı oluşturucu</a> bunu <code>udp/13231</code> ile sizin için açabilir.</li>
+  <li>Yönlendirici başka bir NAT cihazının arkasındaysa UDP portunu ona yönlendirin; <a href="/tools/mikrotik-port-forwarding/">MikroTik port yönlendirme oluşturucu</a> bunun nasıl yapıldığını gösterir.</li>
+  <li>Peer yapılandırmaları özel anahtarlar içerir. Bunları cihazlara güvenilir bir kanaldan aktarın ve açıkta kalan kopyaları silin.</li>
+</ul>

@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "JSON'dan CSV'ye dönüştürücü, çevrimiçi ve ücretsiz | Tanod Tools",
+  "description": "Bir JSON dizisini tarayıcınızda CSV'ye çevirin. İç içe nesneler nokta.yol sütunları olur, tırnaklama otomatiktir ve Excel seçeneği vardır. Hiçbir şey yüklenmez.",
+  "h1": "JSON'dan CSV'ye dönüştürücü",
+  "lede": "Bir JSON dizisi yapıştırın veya bir .json dosyası açın; Excel, Google Sheets ya da Numbers'ta açabileceğiniz CSV alın.",
+  "blurb": "Bir JSON dizisini elektronik tablolar için CSV'ye çevirin.",
+  "keywords": "json csv dönüştürme excel elektronik tablo dışa aktarma düzleştirme iç içe nesne dizisi json to csv convert spreadsheet export flatten nested array of objects",
+  "limits": "Yapıştırılan ya da .json dosyasından alınan en fazla yaklaşık 10 MB girdi. Sonuç siz yazdıkça güncellenir.",
+  "howto_title": "JSON nasıl CSV'ye dönüştürülür",
+  "howto": [
+    "JSON'unuzu kutuya yapıştırın veya bir .json dosyası açın. Nesne dizisi, nesne başına bir satır verir.",
+    "Ayırıcıyı ve iç içe nesnelerin nasıl yazılacağını seçin. Dosya Excel'de açılacaksa Excel seçeneğini açın.",
+    "CSV'yi kopyalayın veya .csv dosyası olarak indirin."
+  ],
+  "faq": [
+    ["JSON'um yükleniyor mu?", "Hayır. Tarayıcınızda ayrıştırılır ve dönüştürülür; hiçbir şey bir yere gönderilmez veya saklanmaz."],
+    ["Hangi JSON biçimleri çalışır?", "Nesne dizisi (nesne başına bir satır, anahtar başına bir sütun), dizi dizisi (her iç dizi bir satırdır), düz değerler dizisi (tek sütun) veya tek bir nesne (tek satır). Sütunlar, anahtarların ilk görüldüğü sırayla görünür; yani diğerlerinde olmayan bir anahtara sahip bir nesne bir sütun ekler ve o anahtarı olmayan satırlar boş bir hücre alır."],
+    ["İç içe nesneler ve diziler nasıl işlenir?", "<em>Nokta yollarına düzleştir</em> ile <code>{\"address\": {\"city\": \"Lyon\"}}</code> gibi iç içe bir nesne <code>address.city</code> adlı bir sütun olur. <em>JSON metni olarak tut</em> ile iç içe nesnenin tamamı JSON olarak tek bir hücreye girer. Diziler her zaman tek bir hücrede JSON metni olarak yazılır, çünkü bir listeyi sütunlara yaymanın tek bir doğru yolu yoktur."],
+    ["Dosyayı Excel'de açtığımda aksanlı harfler neden yanlış görünüyor?", "Windows'taki Excel, dosya bir bayt sırası işaretiyle (BOM) başlamadıkça çoğu zaman eski bir bölgesel kodlama varsayar. İndirmeden önce <em>Excel için bayt sırası işareti ekle</em> seçeneğini açın; Excel dosyayı UTF-8 olarak okuyacaktır. Google Sheets ve Numbers her durumda UTF-8 okur. Excel'iniz noktalı virgül bekliyorsa ayırıcı olarak noktalı virgülü de seçin."],
+    ["Değerler ne zaman tırnak içine alınır?", "Yalnızca gerektiğinde: ayırıcı, çift tırnak veya satır sonu içeren ya da boşlukla başlayan veya biten bir değer çift tırnak içine alınır ve içindeki her tırnak ikiye katlanır. Sayılar JSON'da göründükleri gibi yazılır; bu yüzden uzun kimlikler yuvarlanmaz. <code>null</code> boş bir hücre olur."],
+    ["JSON'um neden geçersiz diyor?", "İleti, okumanın durduğu satırı ve sütunu verir. Olağan nedenler sondaki virgül, çift yerine tek tırnak veya eksik bir paranteztir. <a href=\"/tools/json-formatter/\">JSON biçimlendir ve doğrula</a> aracı, tam yeri bir işaretle gösterir."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Ayırıcı</label>
+      <select id="delim">
+        <option value="," selected>Virgül ( , )</option>
+        <option value=";">Noktalı virgül ( ; )</option>
+        <option value="&#9;">Sekme</option>
+        <option value="|">Dikey çizgi ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">İç içe nesneler</label>
+      <select id="nested">
+        <option value="flatten" selected>Nokta yollarına düzleştir (address.city)</option>
+        <option value="json">Tek hücrede JSON metni olarak tut</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Başlık satırı ekle</label>
+    <label class="check"><input type="checkbox" id="crlf">Windows satır sonları (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Excel için bayt sırası işareti ekle (yalnızca indirmede)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Başlamak için JSON yapıştırın.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}CSV'yi kopyala</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.csv indir</button>
+    <button class="btn btn--quiet" id="clear" type="button">Temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>.json dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>JSON'u elektronik tabloya çevirme</h2>
+<p>API'ler ve dışa aktarmalar size çoğu zaman JSON verir, oysa veriye ihtiyacı olan kişiler bir elektronik tablo ister. CSV ikisini birbirine bağlar: dizideki her nesne bir satır, her anahtar bir sütun olur. Gerçek verilerdeki nesnelerin hepsi nadiren aynı anahtarlara sahip olduğundan araç, gördüğü her anahtarı ilk gördüğü sırayla toplar ve bir nesnenin o sütun için değeri yoksa hücreyi boş bırakır.</p>
+<p>Elektronik tablolar düzdür; bu yüzden iç içe verilerin bir şekilde sütunlara sıkıştırılması gerekir. Düzleştirme, <code>user.name</code> ve <code>user.email</code> değerlerini ayrı sütunlara çevirir; bu, çoğu rapora uyar. İç içe nesneleri JSON metni olarak tutmak sütun sayısını düşük tutar ve özgün yapıyı sonradan yeniden kurmanıza olanak verir.</p>
+<p>CSV olağan kurallara (RFC 4180) uyar: değerler yalnızca gerektiğinde tırnak içine alınır ve bir değerin içindeki tırnaklar ikiye katlanır. Sayılar, JavaScript sayılarında olacağı gibi yuvarlanmak yerine JSON'unuzdaki tam basamaklarını korur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Ters yöne mi gidiyorsunuz? <a href="/tools/csv-to-json/">CSV'den JSON'a</a> aracını kullanın.</li>
+  <li>JSON dönüşmüyorsa sorunu <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile bulun.</li>
+  <li>İki dışa aktarmayı satır satır <a href="/tools/text-diff/">Metin karşılaştır</a> ile karşılaştırın.</li>
+</ul>

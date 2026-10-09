@@ -1,0 +1,85 @@
+<!--meta
+{
+  "title": "CSV'den JSON'a dönüştürücü, çevrimiçi ve ücretsiz | Tanod Tools",
+  "description": "CSV'yi tarayıcınızda JSON'a dönüştürün. Tırnaklı alanları, hücre içi satır sonlarını, noktalı virgül ve sekme ayırıcılarını işler. Hiçbir şey yüklenmez.",
+  "h1": "CSV'den JSON'a dönüştürücü",
+  "lede": "CSV yapıştırın veya bir .csv dosyası açın; ayırıcı sizin için algılanarak nesne ya da satır dizisi biçiminde bir JSON dizisi alın.",
+  "blurb": "CSV satırlarını JSON dizisine çevirin.",
+  "keywords": "csv json dönüştürme csv'den json'a csv json çevirici elektronik tablo excel dışa aktarım tsv noktalı virgül nesne dizisi csv to json",
+  "limits": "Yapıştırılan ya da bir .csv veya .tsv dosyasından yaklaşık 10 MB'a kadar girdi. Sonuç siz yazdıkça güncellenir.",
+  "howto_title": "CSV nasıl JSON'a dönüştürülür?",
+  "howto": [
+    "CSV'nizi kutuya yapıştırın ya da bir .csv dosyası açın.",
+    "Ayırıcıyı (otomatik algılanır) ve ilk satırın sütun adlarını içerip içermediğini denetleyin. Türlü değerler istiyorsanız sayı ve true/false dönüşümünü açın.",
+    "JSON'u kopyalayın veya .json dosyası olarak indirin."
+  ],
+  "faq": [
+    ["Verilerim yükleniyor mu?", "Hayır. CSV tarayıcınızda okunur ve dönüştürülür; hiçbir şey bir yere gönderilmez veya saklanmaz. Sekmeyi kapatmak onu siler."],
+    ["Hangi CSV biçimlerini okuyor?", "RFC 4180'de tanımlanan standart CSV: bir ayırıcıyla ayrılmış alanlar, ayırıcı, tırnak veya satır sonu içeren alanların çift tırnak içine alınması ve tırnaklı bir alanın içindeki tırnağın iki kez yazılması (<code>\"\"</code>). Windows (CRLF), Unix (LF) ve eski Mac (CR) satır sonlarının hepsi çalışır ve başlangıçtaki bayt sırası işareti yok sayılır. Virgül, noktalı virgül, sekme ve dikey çizgi ayırıcıları desteklenir."],
+    ["Ayırıcı nasıl algılanıyor?", "Araç ilk satırlarda virgül, noktalı virgül, sekme ve dikey çizgiyi dener ve satırların çoğunu aynı sayıda alana bölen ayırıcıyı seçer. Excel'in birçok Avrupa yerel ayarında kaydettiği dosyalar noktalı virgül kullanır; bu yüzden bu önemlidir. Tahmin yanlışsa ayırıcıyı kendiniz seçin."],
+    ["Sayılarım neden tırnak içinde?", "Varsayılan olarak her değer, CSV'de yazıldığı gibi metin kalır; çünkü CSV'nin türü yoktur ve tahmin yürütmek posta kodu veya kimlik gibi verilere zarar verebilir. Türlü değerler için <em>Sayıları, true/false ve null'u dönüştür</em> seçeneğini açın. O zaman bile baştaki sıfırlı değerler (007) ve 15 basamaktan uzun sayılar değiştirilmesin ya da yuvarlanmasın diye metin kalır."],
+    ["Yinelenen veya boş sütun adları ya da eşit olmayan satırlarda ne olur?", "Boş sütun adları column_1, column_2 olarak devam eder ve yinelenen bir ada _2, _3 eklenir; böylece hiçbir değer bir diğerinin üzerine yazılmaz. Başlıktan daha az alanlı satırlar boş değer alır; daha fazla alanlı satırlar fazladan column_N anahtarları alır. İkisi de kaynağı denetleyebilmeniz için sonucun üstünde bildirilir."],
+    ["Nesne yerine dizi alabilir miyim?", "Evet. <em>İlk satır başlıktır</em> seçeneğini kapatın; ilk satır dahil her satır bir değer dizisi olur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">CSV</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="ad,e-posta,yaş&#10;Ayşe,ayse@example.com,34"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">JSON</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Ayırıcı</label>
+      <select id="delim">
+        <option value="auto" selected>Otomatik algıla</option>
+        <option value=",">Virgül ( , )</option>
+        <option value=";">Noktalı virgül ( ; )</option>
+        <option value="&#9;">Sekme</option>
+        <option value="|">Dikey çizgi ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="indent">Düzen</label>
+      <select id="indent">
+        <option value="2" selected>Girintili, 2 boşluk</option>
+        <option value="4">Girintili, 4 boşluk</option>
+        <option value="min">Küçültülmüş</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="header" checked>İlk satır başlıktır (nesne dizisi)</label>
+    <label class="check"><input type="checkbox" id="types">Sayıları, true/false ve null'u dönüştür</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Başlamak için CSV yapıştırın.</p>
+  <p class="note" id="warn" hidden></p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}JSON'u kopyala</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.json indir</button>
+    <button class="btn btn--quiet" id="clear" type="button">Temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/csv,.csv,.tsv,text/plain,.txt">{{mark:i-upload}}<span>.csv dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>CSV satırlarından JSON'a</h2>
+<p>CSV, verinin en düşük ortak paydasıdır: her elektronik tablo ve veritabanı onu dışa aktarabilir. JSON ise çoğu web API'sinin, betiğin ve yapılandırma dosyasının beklediği biçimdir. Bu araç CSV'yi CSV standardını izleyen bir ayrıştırıcıyla okur; böylece tırnaklı bir adres içindeki virgül ya da tırnaklı bir yorum içindeki satır sonu, satırı bölmek yerine kendi hücresinin içinde kalır.</p>
+<p>Başlık satırıyla her satır, anahtarları sütun adları olan ve sütun sırasını izleyen bir nesne olur. Başlık olmadan her satır bir dizi olur. Sayıların ve true/false değerlerinin dönüştürülmesini istemediğiniz sürece değerler metin olarak tutulur; çünkü bir CSV dosyasının türü yoktur ve otomatik bir tahmin, 02134 gibi bir posta kodunu sessizce 2134 sayısına çevirebilir.</p>
+<p>Seçeneklerin altındaki satır, kaç satır ve sütun okunduğunu ve hangi ayırıcının kullanıldığını söyler. Bazı satırların başlıktan daha fazla ya da daha az alanı varsa bir not hangi satırlar olduğunu belirtir; bu genellikle kaynakta başıboş bir ayırıcıya veya kapatılmamış bir tırnağa işaret eder.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Ters yönde mi gidiyorsunuz? <a href="/tools/json-to-csv/">JSON'dan CSV'ye</a> aracını kullanın.</li>
+  <li>Sonucu denetlemek veya yeniden biçimlendirmek için <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> aracına yapıştırın.</li>
+  <li>Önce yinelenen satırları <a href="/tools/remove-duplicate-lines/">Tekrar eden satırları sil</a> ile temizleyin.</li>
+</ul>

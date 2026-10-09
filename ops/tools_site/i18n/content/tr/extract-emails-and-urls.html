@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "E-posta, URL, alan adı ve IP ayıklama | Tanod Tools",
+  "description": "Metinden e-posta, URL, alan adı, IP, telefon numarası ve hashtag ayıklayın. Yinelenenleri kaldırın, sayın, kopyalayın veya CSV indirin. Ücretsiz.",
+  "h1": "E-posta ve URL ayıklama",
+  "lede": "Herhangi bir metni yapıştırın; içindeki e-posta adreslerini, web adreslerini, alan adlarını, IP adreslerini, telefon numarasına benzeyen sayıları ve hashtagleri ayrı listeler hâlinde, tekrarsız ve sayılarıyla alın.",
+  "blurb": "Metinden e-posta, URL, alan adı, IP, telefon ve hashtag çıkarın.",
+  "keywords": "metinden e-posta ayıklama e-posta ayıklayıcı metinden url ayıklama bağlantı ayıklayıcı alan adı ayıklama ip adresi ayıklayıcı telefon numarası ayıklayıcı hashtag ayıklayıcı yinelenenleri kaldır csv",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "Birkaç milyon karaktere kadar metin. Telefon numaraları biçimlerine göre tanınır (boşluk, tire, nokta veya parantez içeren 7 ila 15 rakam), bu yüzden bazı başka sayılar eşleşebilir ve bazı biçimler kaçabilir. example.com gibi yalın alan adları yalnızca .com, .org veya ülke kodu gibi bilinen bir uzantıyla bulunur.",
+  "howto_title": "Metinden e-posta ve bağlantılar nasıl ayıklanır",
+  "howto": [
+    "Metninizi yapıştırın; örneğin bir web sayfası, e-posta yazışması, günlük kaydı veya belge.",
+    "Yinelenenlerin kaldırılıp kaldırılmayacağını ve her listenin nasıl sıralanacağını seçin.",
+    "Bir listeyi kopyalayın veya metin ya da CSV dosyası olarak indirin."
+  ],
+  "faq": [
+    [
+      "Neleri buluyor?",
+      "Altı tür öğeyi: e-posta adresleri, URL'ler (http, https, ftp ve www ile başlayan adresler), alan adları, IPv4 adresleri, telefon numarasına benzeyen sayılar ve hashtagler. Her birinin sayısıyla birlikte ayrı bir listesi olur."
+    ],
+    [
+      "Neyin yinelenen olduğuna nasıl karar veriyor?",
+      "E-postalar, alan adları ve hashtagler büyük/küçük harf ayrımı yapılmadan karşılaştırılır; yani Bob@Example.com ile bob@example.com tek sayılır ve ilk yazım korunur. URL'ler ve IP adresleri birebir eşleşmelidir. Telefon numaraları rakamlarına göre karşılaştırılır, yani 555-123-4567 ile 555 123 4567 aynı numaradır. Her eşleşmeyi korumak için <em>Yinelenenleri kaldır</em> seçeneğini kapatın."
+    ],
+    [
+      "Alan adları nereden geliyor?",
+      "Her URL'nin ana bilgisayar adından ve her e-posta adresinin @ işaretinden sonraki kısmından, ayrıca example.com gibi bilinen uzantılı yalın adlardan. Baştaki www. atılır. Ana bilgisayar olarak kullanılan IP adresleri bunun yerine IP adresleri altında listelenir."
+    ],
+    [
+      "Bir telefon numarası neden kaçtı veya yanlış bir sayı neden listelendi?",
+      "Telefon numarasına benzeyen sayı, boşluk, tire, nokta, parantez ve baştaki artı işareti içerebilen 7 ila 15 rakamlık bir dizidir. Tarihler ve IP adresleri atlanır, ancak tirelerle yazılmış bir sipariş numarası yine de telefona benzeyebilir ve bu uzunluğun dışında tek bir rakam dizisi olarak yazılan sayı yok sayılır. Listeyi ilk eleme olarak görüp kontrol edin."
+    ],
+    [
+      "CSV dosyalarında ne var?",
+      "Değer ve sayı olmak üzere iki sütun; her öğe için bir satır. Dosya, e-tabloların aksanlı karakterleri doğru açması için bayt sırası işaretli UTF-8 biçimindedir."
+    ],
+    [
+      "Metnim yükleniyor mu?",
+      "Hayır. Metin tarayıcınızda taranır ve cihazınızdan asla çıkmaz."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ex">
+  <div class="field">
+    <label for="ex-in">Taranacak metin</label>
+    <textarea id="ex-in" class="mono" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Metni buraya yapıştırın"></textarea>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="ex-sort">Her listeyi sırala</label>
+      <select id="ex-sort">
+        <option value="none">Bulunma sırasına göre</option>
+        <option value="az">A'dan Z'ye</option>
+        <option value="count">En sık olan önce</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ex-unique" checked>Yinelenenleri kaldır</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ex-example" type="button">Örnek yükle</button>
+    <button class="btn btn--quiet" id="ex-clear" type="button" disabled>Temizle</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ex-report" aria-live="polite">Başlamak için metni yapıştırın.</p>
+  <div class="ex-lists" id="ex-lists"></div>
+</div>
+<!--explain-->
+<h2>Listeler nasıl oluşturulur</h2>
+<p>Araç, metninizi her öğe türü için desenlerle tarar ve eşleşmeleri göründükleri sırayla gösterir. E-posta adresi; bir ad, bir @ işareti ve geçerli uzantılı bir alan adından oluşur. URL, http, https, ftp veya www ile başlar ve sonraki boşluğa, tırnağa veya açılı ayraca kadar sürer; çevresindeki cümlenin noktalaması (nokta, virgül, açılış eşi olmayan kapanış parantezi) adresin parçası sayılmaz. Alan adı, bir URL'nin ana bilgisayar adı veya bir e-posta adresinin @ işaretinden sonraki kısmıdır; baştaki www. kaldırılır.</p>
+<p>IPv4 adresleri, noktalarla ayrılmış 0 ile 255 arasındaki dört sayıdır; bu yüzden 192.168.1.1 listelenir, 999.1.1.1 listelenmez. Telefon numarasına benzeyen sayılar biçimlerine göre bulunur, çünkü telefon numarası pek çok şekilde yazılabilir: boşluk, tire, nokta veya parantezli 7 ila 15 rakam ve isteğe bağlı bir artı işareti. 2026-10-08 gibi yazılan tarihler telefon numarası sanılmaz. Hashtagler # ile başlar ve en az bir harf gerektirir; bu yüzden #2026 atlanır.</p>
+<p>Yinelenenler kaldırıldığında her liste, her farklı öğeyi bir kez ve kaç kez geçtiğiyle birlikte gösterir; bu da en sık yazan göndericiyi veya en çok bağlantı verilen siteyi bulmak için kullanışlıdır. Bir listeyi A'dan Z'ye veya sayıya göre sıralayabilir, ardından satır başına bir öğe olacak şekilde kopyalayabilir ya da düz metin dosyası veya değer ve sayı sütunlu CSV olarak indirebilirsiniz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Kopyaladığınız listeyi düzenlemek için tekrar eden satırları <a href="/tools/remove-duplicate-lines/">Yinelenen satırları kaldır</a> ile silin veya <a href="/tools/sort-lines-alphabetically/">Satırları alfabetik sırala</a> ile sıraya koyun.</li>
+  <li>Aracın kapsamadığı bir desene mi ihtiyacınız var? <a href="/tools/regex-tester/">Regex test aracında</a> oluşturun.</li>
+  <li>Yüzde işareti içeren bağlantılar <a href="/tools/url-encode-decode/">URL kodlama ve çözme</a> ile okunabilir.</li>
+</ul>

@@ -1,0 +1,66 @@
+<!--meta
+{
+  "category": "aviation",
+  "name": "Density altitude and pressure altitude calculator",
+  "title": "Density altitude and pressure altitude calculator (ISA)",
+  "description": "Work out pressure altitude and density altitude from field elevation, altimeter setting and temperature, using the ISA standard atmosphere.",
+  "h1": "Density altitude and pressure altitude calculator",
+  "lede": "Enter the field elevation, the altimeter setting and the outside air temperature to get the pressure altitude, density altitude and ISA deviation.",
+  "blurb": "Pressure and density altitude from the ISA standard atmosphere.",
+  "keywords": "density altitude pressure altitude calculator isa standard atmosphere altimeter setting qnh qnh inhg hpa temperature deviation takeoff performance hot high",
+  "limits": "Dry-air ISA calculation; humidity is ignored, which makes the density altitude a little low on humid days. Not for flight planning or navigation: use the aircraft's performance charts and official data.",
+  "howto_title": "How to calculate density altitude",
+  "howto": [
+    "Enter the airport elevation and pick feet or metres.",
+    "Enter the altimeter setting (QNH) in hPa or inHg and the outside air temperature in °C or °F.",
+    "Read the pressure altitude and the density altitude, and see how far the temperature is from standard."
+  ],
+  "faq": [
+    ["What is density altitude?", "It is the altitude in the standard atmosphere at which the air has the same density as the air you are in. Hot, high or humid air is thin, so density altitude can be much higher than the real elevation. That reduces engine power, propeller thrust and wing lift, which lengthens the take-off run and cuts climb rate."],
+    ["What is pressure altitude?", "It is the altitude the altimeter shows when set to the standard 1013.25 hPa (29.92 inHg). It is the elevation in the ISA at which the pressure equals the actual pressure, and it is the base for performance charts and flight levels."],
+    ["How is the ISA temperature worked out?", "The standard atmosphere has 15 °C at sea level and cools by 6.5 °C per 1,000 m (1.98 °C per 1,000 ft) up to 11 km. The ISA deviation is the real temperature minus the ISA temperature at the pressure altitude; each degree above standard raises the density altitude by roughly 120 ft."],
+    ["Why does my result differ from a rule of thumb or a chart?", "Charts and the rule DA = PA + 120 × (OAT − ISA temperature) are linear approximations. This tool inverts the ISA density profile directly, so it differs by a few hundred feet on hot days. The exact value is also shown next to the rule-of-thumb value."],
+    ["Does humidity matter?", "Yes, slightly. Water vapour is lighter than dry air, so humid air is thinner. This calculator uses dry air, so on a hot, humid day the true density altitude is a little higher."],
+    ["Where do I get the altimeter setting?", "From the METAR or ATIS: Q1013 is hPa and A2992 is inHg in hundredths. The METAR decoder on this site converts both. If you only have the station pressure, use the pressure altitude directly."]
+  ],
+  "related": ["crosswind-calculator", "aviation-unit-converter", "metar-taf-decoder", "unit-converter", "scientific-calculator", "flight-distance-calculator"]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="da-elev">Field elevation</label>
+    <input type="text" id="da-elev" inputmode="decimal" autocomplete="off" value="5434" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-elev-u">Elevation unit</label>
+    <select id="da-elev-u"><option value="ft" selected>feet</option><option value="m">metres</option></select>
+  </div>
+  <div class="field">
+    <label for="da-qnh">Altimeter setting (QNH)</label>
+    <input type="text" id="da-qnh" inputmode="decimal" autocomplete="off" value="1013.25" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-qnh-u">Pressure unit</label>
+    <select id="da-qnh-u"><option value="hpa" selected>hPa</option><option value="inhg">inHg</option></select>
+  </div>
+  <div class="field">
+    <label for="da-oat">Outside air temperature</label>
+    <input type="text" id="da-oat" inputmode="decimal" autocomplete="off" value="30" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-oat-u">Temperature unit</label>
+    <select id="da-oat-u"><option value="c" selected>°C</option><option value="f">°F</option></select>
+  </div>
+</div>
+<p class="note" id="da-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="da-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Density altitude</span> <span class="calc-main__val num" id="da-main"></span></p>
+  <dl class="stats" id="da-stats"></dl>
+  <p class="help" id="da-info"></p>
+</div>
+<!--explain-->
+<h2>The formulas</h2>
+<p>The calculation uses the International Standard Atmosphere (ICAO Doc 7488, ISO 2533): sea-level temperature T0 = 288.15 K, pressure P0 = 1013.25 hPa, density 1.225 kg/m³, a lapse rate L = 0.0065 K/m up to 11,000 m, and then a constant 216.65 K. The pressure at altitude h in the troposphere is P = P0 · (1 − L·h/T0)^(g/(R·L)), where g = 9.80665 m/s², R = 287.05287 J/(kg·K) and the exponent is 5.25588.</p>
+<p>Station pressure is found from the altimeter setting as P_station = QNH · (1 − L·elevation/T0)^5.25588. The pressure altitude is the ISA altitude with that pressure: h = (T0/L) · (1 − (P_station/P0)^(1/5.25588)). Air density is ρ = P_station / (R · T) from the ideal gas law with the outside air temperature in kelvin, and the density altitude is the ISA altitude with that density: h = (T0/L) · (1 − (ρ/ρ0)^(1/4.25588)). Above 11 km the isothermal layer is used instead. The temperature deviation is the OAT minus the ISA temperature at the pressure altitude.</p>
+<p>Conversions are exact (1 ft = 0.3048 m, 1 inHg = 3,386.38864 Pa). <strong>Not for flight planning or navigation.</strong></p>

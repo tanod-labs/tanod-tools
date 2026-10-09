@@ -1,0 +1,93 @@
+<!--meta
+{
+  "title": "Kalkulator procentu składanego | Tanod Tools",
+  "description": "Kalkulator procentu składanego z miesięcznymi wpłatami: saldo końcowe, naliczone odsetki i tabela rok po roku. Za darmo, w przeglądarce.",
+  "h1": "Kalkulator procentu składanego",
+  "lede": "Wpisz kwotę początkową, roczną stopę procentową, częstotliwość kapitalizacji odsetek i liczbę lat, opcjonalnie z miesięczną wpłatą, aby zobaczyć, do ilu urosną Twoje pieniądze.",
+  "blurb": "Saldo końcowe, naliczone odsetki i tabela rok po roku.",
+  "keywords": "kalkulator procentu składanego kalkulator oszczędności wzrost inwestycji miesięczna wpłata częstotliwość kapitalizacji dzienna miesięczna roczna ciągła efektywna stopa roczna tabela rok po roku",
+  "local_text": "Działa w przeglądarce; nic, co wpiszesz, nie opuszcza Twojego urządzenia",
+  "limits": "Stała stopa przez cały okres, bez opłat, podatków i inflacji. Wpłaty są dokonywane co miesiąc, na koniec miesiąca, chyba że wybierzesz początek, i rosną według miesięcznego odpowiednika stopy kapitalizacji. Okres do 100 lat w pełnych miesiącach. To ilustracja, a nie prognoza.",
+  "howto_title": "Jak obliczyć procent składany",
+  "howto": [
+    "Wpisz kwotę początkową, roczną stopę procentową i liczbę lat.",
+    "Wybierz, jak często odsetki są kapitalizowane, i dodaj miesięczną wpłatę, jeśli będziesz oszczędzać regularnie.",
+    "Odczytaj saldo końcowe, łączną kwotę wpłat i naliczone odsetki, a następnie sprawdź tabelę rok po roku."
+  ],
+  "faq": [
+    ["Jaki jest wzór na procent składany?", "Bez wpłat saldo wynosi A = P × (1 + r/n)^(n × t), gdzie P to kwota początkowa, r to roczna stopa w postaci ułamka dziesiętnego, n to liczba kapitalizacji w roku, a t to liczba lat. Przy kapitalizacji ciągłej A = P × e^(r × t)."],
+    ["Jak uwzględniane są miesięczne wpłaty?", "Kalkulator liczy miesiąc po miesiącu. Co miesiąc saldo rośnie o miesięczny odpowiednik Twojej stopy kapitalizacji, a następnie na koniec miesiąca, lub na początku, jeśli tak wybierzesz, dodawana jest wpłata. Przy kapitalizacji miesięcznej jest to standardowa wartość przyszła renty."],
+    ["Jaką różnicę robi częstotliwość kapitalizacji?", "Im częściej odsetki są doliczane, tym bardziej rośnie saldo, ale zysk szybko się wypłaszcza. Przy 5% przez dziesięć lat 10 000 zamienia się w 16 288,95 przy kapitalizacji rocznej, 16 470,09 przy miesięcznej i 16 486,65 przy dziennej."],
+    ["Czym jest efektywna stopa roczna?", "To rzeczywisty roczny wzrost po uwzględnieniu kapitalizacji. Nominalne 5% z kapitalizacją miesięczną to efektywnie 5,12% rocznie."],
+    ["Czy uwzględnia podatki, opłaty lub inflację?", "Nie. Realne zyski są niższe po opłatach i podatkach, a siła nabywcza salda końcowego spada przez inflację. Użyj niższej stopy, aby zobaczyć ostrożny scenariusz."],
+    ["Czy to, co wpisuję, jest wysyłane?", "Nie. Wszystko jest obliczane w Twojej przeglądarce i nic nie opuszcza urządzenia."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ci">
+  <div class="opts">
+    <div class="field">
+      <label for="ci-p">Kwota początkowa</label>
+      <input type="text" id="ci-p" class="mono" inputmode="decimal" value="10000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-r">Roczna stopa procentowa (%)</label>
+      <input type="text" id="ci-r" class="mono" inputmode="decimal" value="5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-y">Lata</label>
+      <input type="text" id="ci-y" class="mono" inputmode="decimal" value="10" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-f">Kapitalizacja</label>
+      <select id="ci-f">
+        <option value="annually">Rocznie</option>
+        <option value="semiannually">Dwa razy w roku</option>
+        <option value="quarterly">Kwartalnie</option>
+        <option value="monthly" selected>Miesięcznie</option>
+        <option value="weekly">Tygodniowo</option>
+        <option value="daily">Codziennie</option>
+        <option value="continuous">Ciągła</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ci-m">Miesięczna wpłata (opcjonalnie)</label>
+      <input type="text" id="ci-m" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-t">Wpłaty są dodawane</label>
+      <select id="ci-t">
+        <option value="end" selected>Na koniec każdego miesiąca</option>
+        <option value="start">Na początku każdego miesiąca</option>
+      </select>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ci-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Saldo końcowe</span> <span id="ci-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Suma wpłat</dt><dd id="ci-dep">0</dd></div>
+      <div><dt>Naliczone odsetki</dt><dd id="ci-int">0</dd></div>
+      <div><dt>Efektywna stopa roczna</dt><dd id="ci-ear">0</dd></div>
+    </dl>
+    <h3 class="util-h">Rok po roku</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Wzrost rok po roku">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Rok</th><th scope="col">Wpłaty</th><th scope="col">Odsetki</th><th scope="col">Saldo</th></tr></thead>
+        <tbody id="ci-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak procent składany pomnaża pieniądze</h2>
+<p>Odsetki proste są płacone tylko od kwoty, od której zaczynasz. Odsetki składane są płacone od kwoty początkowej oraz od odsetek już doliczonych, więc saldo rośnie w każdym okresie szybciej. Przez kilka lat różnica jest niewielka, przez dziesięciolecia ogromna, dlatego wczesny start liczy się w oszczędzaniu bardziej niż niemal cokolwiek innego.</p>
+<p>Bez regularnych wpłat wynik wynika ze wzoru A = P(1 + r/n)^(nt). Kalkulator radzi sobie też z miesięczną wpłatą, przechodząc o jeden miesiąc naprzód: saldo rośnie o miesięczny odpowiednik stopy kapitalizacji, a potem dodawana jest wpłata. Przy kapitalizacji miesięcznej i wpłatach na koniec miesiąca zgadza się to z podręcznikową wartością przyszłą renty. Suma wpłat obejmuje kwotę początkową plus każdą wpłatę, a naliczone odsetki to saldo końcowe pomniejszone o tę sumę.</p>
+<p>Tabela rok po roku pokazuje wpłaty z każdego roku, odsetki naliczone w tym roku i saldo na jego koniec, dzięki czemu widać, jak część odsetkowa wyprzedza część z wpłat. Jeśli okres nie jest całkowitą liczbą lat, ostatni wiersz obejmuje niepełny rok. Efektywna stopa roczna pokazuje, co stopa nominalna i częstotliwość kapitalizacji naprawdę oznaczają w ciągu roku.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Pożyczasz zamiast oszczędzać? <a href="/tools/loan-calculator/">Kalkulator kredytu</a> pokazuje ratę i odsetki, które zapłacisz.</li>
+  <li>Sprawdź zmianę stopy lub udział w sumie w <a href="/tools/percentage-calculator/">kalkulatorze procentów</a>.</li>
+  <li>Zapisz saldo końcowe słownie do dokumentu za pomocą <a href="/tools/number-to-words/">Liczby słownie</a>.</li>
+</ul>

@@ -1,0 +1,62 @@
+<!--meta
+{
+  "category": "mikrotik",
+  "name": "RouterOS export diff",
+  "title": "RouterOS export diff: compare two MikroTik configs | Tanod Tools",
+  "description": "Compare two RouterOS /export files section by section: added and removed lines per menu, long lines joined, headers ignored and secrets masked. In your browser.",
+  "h1": "RouterOS export diff",
+  "lede": "Paste two exports, such as before and after a change or two routers that should match, and see exactly what differs, menu by menu.",
+  "blurb": "Section-by-section diff of two RouterOS exports.",
+  "keywords": "routeros export diff compare mikrotik config compare two exports configuration changes rsc diff backup compare router config audit change review",
+  "local_text": "Both exports are compared in your browser and never leave your device",
+  "limits": "Compares exports line by line within each menu, after joining wrapped lines and dropping the header. Changes in the order of rules show as removed and added lines. Secret values are masked by default. MikroTik and RouterOS are trademarks of SIA Mikrotīkls. This tool is independent and not affiliated with or endorsed by MikroTik.",
+  "howto_title": "How to compare two RouterOS configurations",
+  "howto": [
+    "On each router, or before and after a change, run <code>/export</code> (v6: <code>/export hide-sensitive</code>) and copy the output, or open the saved .rsc files.",
+    "Paste the older export on the left and the newer one on the right. The comparison updates as you type.",
+    "Expand the highlighted sections to read what was added (+) and removed (−), and copy the changes as text for a change log."
+  ],
+  "faq": [
+    ["Why compare by section instead of the whole file?", "An export is a list of menus, and the same menu always appears in the same place. Comparing menu by menu keeps a change in /ip firewall filter from being mixed up with lines in /ip address, and lets you see at a glance which parts of the configuration changed."],
+    ["Why do long lines from my export look different here?", "RouterOS wraps long lines in an export with a backslash at the end and continues on the next line. The diff joins them back into one logical line and collapses repeated spaces, so a rule that only re-wrapped doesn't count as a change."],
+    ["A rule only moved, but it shows as removed and added. Why?", "Order matters in firewall, NAT and mangle chains: a rule that moves can change what the router does. The diff therefore keeps order and shows a moved rule as removed from its old position and added at the new one."],
+    ["Are passwords and keys hidden?", "With \"Mask secrets\" on, the values of passwords, secrets, private and preshared keys, MD5 keys and SNMP communities are replaced with ***** in the comparison. Either way, nothing you paste leaves your browser."],
+    ["Can I use it for one export only?", "Yes. With one side filled, the page lists that export's sections with their line counts, which is a quick way to read a long configuration."]
+  ],
+  "related": ["routeros-v7-migration-helper", "mikrotik-firewall-auditor", "text-diff", "mikrotik-firewall-generator", "mikrotik-vlan-generator"],
+  "scripts": ["/tools/vendor/diff/diff.min.js"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="ros-xdiff" id="xd">
+  <div class="ros-pair">
+    <div class="field">
+      <label for="xd-a">Older export (before)</label>
+      <textarea id="xd-a" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}Open .rsc file<input type="file" id="xd-file-a" accept=".rsc,.txt,text/plain"></label>
+    </div>
+    <div class="field">
+      <label for="xd-b">Newer export (after)</label>
+      <textarea id="xd-b" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge vlan-filtering=yes&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}Open .rsc file<input type="file" id="xd-file-b" accept=".rsc,.txt,text/plain"></label>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="xd-mask" checked>Mask secrets</label>
+    <label class="check"><input type="checkbox" id="xd-nocomments" checked>Ignore # comment lines</label>
+    <label class="check"><input type="checkbox" id="xd-all">Show unchanged sections</label>
+  </div>
+  <div class="ros-results" id="xd-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="xd-copy" type="button" hidden>Copy changes as text</button></div>
+</div>
+<!--explain-->
+<h2>Reading a RouterOS configuration diff</h2>
+<p>An export is the router's configuration written as the commands that would recreate it: a menu line such as <code>/ip firewall filter</code> followed by the <code>add</code> and <code>set</code> commands for that menu. Only settings that differ from the defaults appear, which keeps exports short but means a setting returned to its default simply disappears from the newer export. The diff treats each menu as a section, compares its commands in order, and highlights the sections that changed.</p>
+<p>Some differences are noise rather than changes: the header with the export date, software ID and serial number is dropped, wrapped lines are joined, and comment lines can be ignored. What is left is what the router would actually do differently. Order is kept on purpose: firewall, NAT, mangle and queue rules are processed top to bottom, so moving a rule is a real change.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Keep a dated export after every change window and compare it with the previous one to see exactly what was done.</li>
+  <li>Checking a v6 to v7 upgrade? Compare the converted script from the <a href="/tools/routeros-v7-migration-helper/">migration helper</a> with an export taken after the upgrade.</li>
+  <li>For plain text that isn't an export, the general <a href="/tools/text-diff/">text diff</a> compares word by word too.</li>
+</ul>

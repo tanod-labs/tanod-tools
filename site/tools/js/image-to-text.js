@@ -1,5 +1,5 @@
-import { $, el, fmtBytes, dropzone, setStatus, clearNode, baseName, announce, UserError, copyText, textBlob, blobLink, tx, txn, fmtNum } from "./core.js?v=5";
-import { serverInit, runServerJob, serverJob, blobToBase64, checkSize, available, MAX_FILE_BYTES } from "./servercore.js?v=5";
+import { $, el, fmtBytes, dropzone, setStatus, clearNode, baseName, announce, UserError, copyText, textBlob, blobLink, tx, txn, fmtNum } from "./core.js?v=11";
+import { serverInit, runServerJob, serverJob, blobToBase64, checkSize, available, MAX_FILE_BYTES } from "./servercore.js?v=11";
 
 // The image is prepared here first: turned upright, scaled so text is a size the OCR engine reads well (longest side
 // 1,600 to 3,200 pixels) and saved as PNG (or JPEG for large photos). Only that copy is sent.

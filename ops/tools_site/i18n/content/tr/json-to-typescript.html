@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "JSON'dan TypeScript arayüzlerine dönüştürücü | Tanod Tools",
+  "description": "JSON örneği yapıştırın, TypeScript interface veya type tanımlarını alın: iç içe nesneler adlandırılır, isteğe bağlı alanlar algılanır, karışık diziler birleşim türü olur.",
+  "h1": "JSON'dan TypeScript'e",
+  "lede": "Örnek bir JSON belgesini, verinizden çıkarılan isteğe bağlı alanlar ve birleşim türleriyle TypeScript arayüzlerine veya tür takma adlarına dönüştürün.",
+  "blurb": "JSON örneğinden TypeScript arayüzleri veya türleri.",
+  "keywords": "json typescript dönüştürme json ts arayüz oluşturucu tür oluşturucu api yanıtı türleri json'dan typescript türü json to typescript interface generator type generator quicktype json2ts",
+  "limits": "Türler yapıştırdığınız örnekten çıkarılır; bu yüzden bir şemayı değil, o örneği betimler: örneğinizde dize olan bir alan başka bir yerde sayı olabilir. Tüm sayılar <code>number</code> olur, tarihler <code>string</code> kalır. Özellik sırası, tam sayı anahtarlarını önce listeleyen JSON.parse'ı izler.",
+  "howto_title": "JSON'dan TypeScript nasıl üretilir",
+  "howto": [
+    "Kutuya bir JSON yanıtı veya dosyası yapıştırın. Birkaç dizi öğesi sonucu iyileştirir, çünkü bazı öğelerde eksik olan alanlar isteğe bağlı olur.",
+    "En üst düzey türün adını belirleyin, <code>interface</code> veya <code>type</code> seçin ve gerektiği gibi <strong>export</strong>, <strong>readonly</strong> veya isteğe bağlı alan algılamasını işaretleyin.",
+    "Tanımları kopyalayın veya <code>.ts</code> dosyası olarak indirin. Adlar anahtar adlarınızdan geldiği için bunları gözden geçirin."
+  ],
+  "faq": [
+    ["Bir alanın isteğe bağlı olduğuna nasıl karar verir?", "Nesne dizisi olduğunda nesneler tek bir biçimde birleştirilir. Bazı öğelerde bulunup hepsinde bulunmayan bir anahtar <code>?</code> alır. Bazı öğelerde bulunan ama <code>null</code> tutan bir anahtar isteğe bağlı değildir; <code>T | null</code> olur. Her anahtarın zorunlu işaretlenmesini tercih ediyorsanız isteğe bağlı alan algılamasını kapatın."],
+    ["İç içe türler nasıl adlandırılır?", "Her iç içe nesne anahtarından PascalCase olarak adlandırılır; yani <code>billing_address</code>, <code>BillingAddress</code> olur. Dizilerde, anahtar 3 harften uzunsa ve ss, us veya is ile bitmiyorsa öğe türü sondaki \"s\" harfini atar: <code>users</code>, <code>User</code> verir; <code>address</code> ise <code>AddressItem</code> verir. İki farklı biçim aynı adı isterse ikincisi numaralanır: <code>User</code> ve <code>User2</code>."],
+    ["Aynı biçimdeki nesnelere ne olur?", "Tek bir tanımı paylaşırlar. <code>billing</code> ve <code>shipping</code> ikisi de <code>{ street, city }</code> tutuyorsa, ilk göründüğü yerin adını taşıyan tek bir arayüz elde edersiniz. Aynı anahtarlara ama farklı değer türlerine sahip iki nesne farklı biçimlerdir ve ayrı adlar alır."],
+    ["Boş bir dizi neden unknown[] olarak yazılıyor?", "Boş bir dizi örnek içermez; bu nedenle öğeleri hakkında hiçbir şey çıkarılamaz. <code>unknown[]</code> dürüst yanıttır; öğe türünü öğrendiğinizde elle değiştirin. Değerleri karıştıran bir dizi, <code>(string | number)[]</code> gibi bir birleşim türü olur."],
+    ["Çıktı gerçek API'den farklı olabilir mi?", "Evet. Bir örnek yalnızca içerdiği değerleri gösterir. Örneğinizde her zaman bulunan ama üretimde bazen eksik olan bir alan burada zorunlu olur; sabit değerli bir dize de düz <code>string</code> olur. Sıkı doğrulama için bir şema kullanın; hızlı başlangıç için bu çıktıyı kullanıp uyarlayın."],
+    ["JSON'um yükleniyor mu?", "Hayır. Yapıştırdığınız hiçbir şey bir yere gönderilmez; dönüştürme tarayıcınızda çalışır ve sayfa yüklendikten sonra ağ bağlantınızı kesebilirsiniz."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">JSON örneği</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">En üst düzey tür adı</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Şununla tanımla</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Değiştiriciler</span>
+      <label class="check"><input type="checkbox" id="t-export" checked><code>export</code> ekle</label>
+      <label class="check"><input type="checkbox" id="t-readonly">Özellikleri <code>readonly</code> yap</label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>İsteğe bağlı alanları algıla</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">TypeScript'i kopyala</button>
+    <button class="btn" id="t-dl" type="button">.ts indir</button>
+  </div>
+</div>
+<!--explain-->
+<h2>JSON örneğinden tür çıkarımı</h2>
+<p>TypeScript türleri verinin biçimini betimler ve bir JSON yanıtı zaten bir biçim içerir: her anahtar, arkasındaki değerin türü ve nesnelerin nasıl iç içe geçtiği. Bir dönüştürücü örneği dolaşır ve bu biçimi tanımlar halinde yazar; böylece bir API'yi güvenle çağırabilmek için kırk alanı elle yazmanız gerekmez.</p>
+<p>En önemli adım, dizilerle ne yapılacağıdır. Nesne dizisindeki her öğe okunur ve biçimleri birleştirilir: her öğede bulunan bir anahtar zorunlu kalır, yalnızca bazı öğelerde bulunan bir anahtar isteğe bağlı olur ve türü farklı olan değerler birleşim türüne dönüşür. Birkaç kayıt içeren bir örneğin, tek kayıt içerenden çok daha iyi türler vermesinin nedeni budur. <code>null</code> değeri, eksik bir anahtardan farklı ele alınır; çünkü alanı okuyan kod için bu ikisi farklı anlamlar taşır.</p>
+<p>Çıkarılan türler bir başlangıç noktasıdır, sözleşme değil. Bir dizenin her zaman üç değerden biri olduğunu, bir sayının aslında tam sayı bir kimlik olduğunu ya da tüm örneklerinizde bulunan bir alanın üretimde kaybolabileceğini bilemezler. Sonucu okuyun, kötü çıkan adları değiştirin ve önemli olan türleri sıkılaştırın.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Önce örneğinizin düzgün biçimli olduğunu, sözdizimi hatasının tam karakterini gösteren <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile denetleyin.</li>
+  <li>Bunun yerine bir YAML yapılandırmasıyla mı çalışıyorsunuz? <a href="/tools/yaml-to-json/">YAML'dan JSON'a</a> ile dönüştürün ve sonucu buraya yapıştırın.</li>
+  <li>Bir belirtecin (token) yükünü türlemeden önce içine bakmanız mı gerekiyor? <a href="/tools/jwt-decoder/">JWT çözücü</a> ile çözün.</li>
+</ul>

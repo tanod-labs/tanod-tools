@@ -1,0 +1,106 @@
+<!--meta
+{
+  "title": "Unisci immagini: affiancate, in colonna o a griglia | Tanod Tools",
+  "description": "Combina da 2 a 20 immagini in una sola: affiancate, in colonna o a griglia, con spazi, allineamento e colore di sfondo. Nulla viene caricato.",
+  "h1": "Unisci immagini",
+  "lede": "Unisci più immagini in una sola: in riga, in colonna o a griglia, con la spaziatura e lo sfondo che scegli.",
+  "blurb": "Unisci le immagini in riga, colonna o griglia.",
+  "keywords": "unisci immagini combina immagini affianca collage foto una accanto all'altra in colonna verticale orizzontale griglia sprite sheet merge images",
+  "limits": "Da 2 a 20 immagini per unione, 50 MB ciascuna. L'immagine unita può arrivare a 100 megapixel e 32.767 pixel per lato. Output in PNG, JPEG o WebP.",
+  "howto_title": "Come unire le immagini",
+  "howto": [
+    "Scegli due o più immagini oppure trascinale nella pagina. Usa i pulsanti su e giù dell'elenco per stabilire l'ordine.",
+    "Scegli <strong>Affiancate</strong>, <strong>In colonna</strong> o <strong>Griglia</strong>, poi imposta lo spazio, l'allineamento, lo sfondo e se ridimensionare le immagini per uniformarle.",
+    "Controlla l'anteprima, scegli PNG, JPEG o WebP e premi <strong>Unisci immagini</strong>."
+  ],
+  "faq": [
+    ["Le mie immagini vengono caricate?", "No. Le immagini vengono decodificate e disegnate su un unico canvas nel tuo browser. Nulla viene inviato a un server."],
+    ["Che succede quando le immagini hanno dimensioni diverse?", "Per impostazione predefinita ognuna mantiene la propria dimensione e le più piccole vengono collocate all'inizio, al centro o alla fine della riga o della colonna, come scegli tu, con il colore di sfondo che riempie lo spazio vuoto. Per allinearle, imposta \"Uniforma le dimensioni\" in modo da ridimensionarle sulla più piccola o sulla più grande dell'insieme."],
+    ["Come funziona Uniforma le dimensioni in ogni disposizione?", "Affiancate porta tutte le immagini alla stessa altezza, mantenendo le proporzioni. In colonna porta tutte le immagini alla stessa larghezza. In una griglia ogni immagine viene adattata dentro la stessa cella senza ritaglio, quindi le forme si mantengono e lo spazio che avanza prende il colore di sfondo."],
+    ["Lo sfondo può essere trasparente?", "Sì, per PNG e WebP. Gli spazi e ogni area vuota restano trasparenti. JPEG non può memorizzare la trasparenza, quindi con JPEG selezionato quelle aree vengono riempite con il colore di sfondo."],
+    ["Perché la mia unione è stata rifiutata perché troppo grande?", "L'unione somma le dimensioni delle immagini, e una riga di diverse foto grandi diventa larghissima molto in fretta. Il risultato è limitato a 100 megapixel e a 32.767 pixel per lato perché il browser riesca a crearlo. Ridimensiona sulla più piccola, usa una griglia o togli qualche immagine."],
+    ["L'ordine nell'elenco conta?", "Sì. La prima immagine va in alto a sinistra in ogni disposizione, e una griglia riempie ogni riga da sinistra a destra prima di iniziare la successiva. I pulsanti su e giù cambiano l'ordine e l'anteprima si aggiorna subito."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Rilascia qui due o più immagini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Scegli le immagini</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. Oppure trascinale in un punto qualsiasi di questa pagina.</p>
+</div>
+<ol class="files mrg-list" id="files" aria-label="Immagini da unire, in ordine" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts mrg-opts">
+    <fieldset class="field">
+      <legend>Disposizione</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="row" checked>Affiancate</label>
+        <label><input type="radio" name="layout" value="column">In colonna</label>
+        <label><input type="radio" name="layout" value="grid">Griglia</label>
+      </div>
+    </fieldset>
+    <div class="field" id="cols-field" hidden>
+      <label for="cols">Colonne</label>
+      <input type="number" id="cols" min="1" max="20" step="1" value="2" inputmode="numeric">
+    </div>
+    <fieldset class="field">
+      <legend>Allineamento</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="start">Inizio</label>
+        <label><input type="radio" name="align" value="center" checked>Centro</label>
+        <label><input type="radio" name="align" value="end">Fine</label>
+      </div>
+      <p class="help" id="align-help"></p>
+    </fieldset>
+    <div class="field">
+      <label for="scale">Uniforma le dimensioni</label>
+      <select id="scale">
+        <option value="none" selected>Mantieni le dimensioni originali</option>
+        <option value="min">Ridimensiona sulla più piccola</option>
+        <option value="max">Ridimensiona sulla più grande</option>
+      </select>
+      <p class="help" id="scale-help"></p>
+    </div>
+    <div class="field">
+      <label for="gap">Spazio (px)</label>
+      <input type="number" id="gap" min="0" max="10000" step="1" value="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="bg">Colore di sfondo</label>
+      <input type="color" id="bg" value="#ffffff">
+      <label class="check"><input type="checkbox" id="transparent">Trasparente (PNG e WebP)</label>
+    </div>
+    <fieldset class="field">
+      <legend>Formato di output</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="png" checked>PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help" id="fmt-help">PNG mantiene ogni pixel e l'eventuale trasparenza.</p>
+    </fieldset>
+  </div>
+  <p class="help">Anteprima, ridotta per adattarsi. Il file salvato viene creato a dimensione piena.</p>
+  <div class="preview mrg-preview"><canvas id="preview" role="img" aria-label="Anteprima dell'immagine unita"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Unisci immagini</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Cancella tutto</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Come si uniscono immagini di dimensioni diverse</h2>
+<p>Una riga di immagini è alta quanto la più alta del gruppo, e una colonna è larga quanto la più larga. Tutto ciò che è più piccolo lascia spazio libero, quindi l'impostazione di allineamento decide dove si colloca l'immagine al suo interno: all'inizio, al centro o alla fine. Lo spazio libero viene riempito con il colore di sfondo, oppure lasciato trasparente in PNG e WebP.</p>
+<p>Il ridimensionamento è l'altro modo di gestire dimensioni discordanti. Ridimensionare sulla più piccola non ingrandisce mai nulla, quindi niente diventa sfocato, ma le foto grandi perdono dettaglio. Ridimensionare sulla più grande mantiene nitide quelle grandi e allarga quelle piccole. In una griglia vale la stessa idea, applicata alla forma di una singola cella in cui viene adattata ogni immagine.</p>
+<p>Larghezze e altezze si sommano in fretta. Cinque foto larghe 4000 pixel in una riga formano un'immagine larga 20.000 pixel, che può essere più di quanto un browser riesca a gestire, quindi la pagina ti ferma e ti dice la dimensione prima che tu prema il pulsante.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Per un collage da stampare o condividere, aggiungi poi una cornice con <a href="/tools/add-border-to-image/">Aggiungi un bordo a un'immagine</a>.</li>
+  <li>Se il file unito è troppo pesante da inviare, <a href="/tools/compress-image/">Comprimi immagine</a> o <a href="/tools/resize-image/">Ridimensiona immagine</a> lo ridurranno.</li>
+  <li>Vuoi le immagini in un documento? <a href="/tools/jpg-to-pdf/">Da JPG a PDF</a> mette ciascuna su una pagina.</li>
+</ul>

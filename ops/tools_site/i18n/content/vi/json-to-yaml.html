@@ -1,0 +1,99 @@
+<!--meta
+{
+  "title": "Chuyển JSON sang YAML trực tuyến | Tanod Tools",
+  "description": "Chuyển JSON sang YAML trong trình duyệt. Các giá trị như yes, null và 012 được đặt trong ngoặc kép để vẫn là chuỗi, và kết quả được đọc lại để xác nhận khớp.",
+  "h1": "Chuyển JSON sang YAML",
+  "lede": "Dán JSON và nhận lại YAML gọn gàng, với các chuỗi dễ nhầm được đặt trong ngoặc kép để giữ nguyên ý nghĩa.",
+  "blurb": "Chuyển JSON sang YAML.",
+  "keywords": "json sang yaml chuyển đổi json thành yml cấu hình kubernetes compose openapi swagger json to yaml convert config transform",
+  "limits": "Đầu vào tối đa khoảng 10 MB. Công cụ chỉ chuyển đổi dữ liệu; JSON không có chú thích, nên YAML cũng không có.",
+  "howto_title": "Cách chuyển JSON sang YAML",
+  "howto": [
+    "Dán JSON vào ô, hoặc nhấn <strong>Chèn mẫu</strong>.",
+    "Chọn thụt lề 2 hoặc 4 dấu cách, và bật Sắp xếp khóa để liệt kê mọi mapping theo thứ tự abc.",
+    "Nếu JSON không hợp lệ, bạn sẽ thấy dòng và cột. Nếu không, hãy sao chép YAML hoặc tải xuống dưới dạng tệp <code>.yaml</code>."
+  ],
+  "faq": [
+    [
+      "JSON của tôi có bị tải lên không?",
+      "Không. Nó được phân tích và chuyển đổi bằng mã chạy trong trình duyệt của bạn, nên không có gì bạn dán rời khỏi thiết bị."
+    ],
+    [
+      "Vì sao một số chuỗi được đặt trong ngoặc kép?",
+      "Một <code>yes</code>, <code>null</code>, <code>1.0</code>, <code>012</code> hay <code>0x1F</code> để trần sẽ được đọc lại thành boolean, null hoặc số, chứ không phải chuỗi như bạn có. Bộ chuyển đổi đặt các chuỗi đó (và chuỗi rỗng) trong ngoặc kép để YAML mang đúng ý nghĩa của JSON."
+    ],
+    [
+      "Làm sao tôi biết YAML khớp với JSON?",
+      "Sau khi chuyển đổi, trang đọc lại YAML bằng trình phân tích YAML 1.2 và so sánh với dữ liệu của bạn. Nếu chúng khác nhau, một thông báo sẽ hiện phía trên kết quả."
+    ],
+    [
+      "Chuỗi nhiều dòng được viết như thế nào?",
+      "Chuỗi chứa ký tự xuống dòng được viết dưới dạng block scalar (<code>|</code>), giữ cho nó dễ đọc. Văn bản một dòng vẫn nằm trên một dòng trừ khi bạn đánh dấu tùy chọn ngắt dòng."
+    ],
+    [
+      "Công cụ có thay đổi thứ tự khóa của tôi không?",
+      "Khóa giữ nguyên thứ tự, trừ một đặc điểm của JavaScript: các khóa là số nguyên, như \"1\", được liệt kê lên trước, theo thứ tự số. Đánh dấu Sắp xếp khóa để sắp xếp mọi cấp theo thứ tự abc."
+    ],
+    [
+      "Còn các số lớn thì sao?",
+      "Số nguyên lớn hơn 9.007.199.254.740.991 được ghi đúng như đã nhập, không bị làm tròn. Số thập phân có hơn khoảng 17 chữ số có nghĩa được làm tròn đến giá trị gần nhất mà kiểu double có thể lưu."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">JSON</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Chèn mẫu</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Xóa</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="{&quot;name&quot;: &quot;example&quot;, &quot;tags&quot;: [&quot;a&quot;, &quot;b&quot;]}"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Thụt lề</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 dấu cách</label>
+      <label><input type="radio" name="indent" value="4">4 dấu cách</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Tùy chọn</span>
+    <label class="check"><input type="checkbox" id="o-sort">Sắp xếp khóa (mọi cấp)</label>
+    <label class="check"><input type="checkbox" id="o-flat">Không thụt lề các mục danh sách</label>
+    <label class="check"><input type="checkbox" id="o-wrap">Ngắt văn bản dài ở 80 cột</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Đầu vào</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Đầu ra</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Thay đổi</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Kết quả</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Sao chép</button>
+    <button class="btn" id="f-dl" type="button">Tải xuống .yaml</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Biến JSON thành YAML dễ đọc</h2>
+<p>YAML phần lớn là cách viết thân thiện hơn với con người cho cùng loại dữ liệu mà JSON chứa. Dấu ngoặc nhọn và dấu nháy nhường chỗ cho thụt lề và chữ thường, đó là lý do cấu hình cho Kubernetes, Compose và các hệ thống CI thường được viết bằng nó. Xuất phát từ JSON, chẳng hạn một phản hồi API hay một manifest được tạo tự động, việc chuyển đổi mang tính cơ học, nhưng có một chi tiết cần cẩn thận: YAML xác định kiểu của giá trị từ hình thức của nó.</p>
+<p>Trong YAML, <code>true</code> để trần là boolean, <code>null</code> là null và <code>1.0</code> là số. Một chuỗi JSON tình cờ trông giống một trong số đó, như <code>"null"</code>, <code>"1.0"</code> hay <code>"0x1F"</code>, phải được đặt trong ngoặc kép ở YAML nếu không sẽ đổi kiểu khi được đọc. Bộ chuyển đổi đặt đúng các chuỗi đó trong ngoặc kép, cộng với chuỗi rỗng và văn bản bắt đầu bằng ký hiệu có ý nghĩa trong YAML, rồi kiểm tra kết quả bằng cách đọc lại.</p>
+<p>Văn bản nhiều dòng trở thành literal block, dễ đọc hơn nhiều so với một chuỗi dài có các ký tự thoát <code>\n</code>. Đối tượng và mảng rỗng được viết là <code>{}</code> và <code>[]</code>. Vì JSON không có chú thích, YAML bắt đầu mà không có chú thích nào; bạn có thể tự thêm sau.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Để đi từ YAML trở lại JSON, hãy dùng <a href="/tools/yaml-to-json/">YAML sang JSON</a>.</li>
+  <li>Hãy kiểm tra và làm đẹp JSON trước bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a> nếu bạn không chắc nó đúng cú pháp.</li>
+  <li>Muốn một bảng tính thay vì YAML? <a href="/tools/json-to-csv/">JSON sang CSV</a> làm phẳng một mảng đối tượng.</li>
+</ul>

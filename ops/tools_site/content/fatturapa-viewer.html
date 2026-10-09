@@ -1,0 +1,107 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "FatturaPA viewer",
+  "icon": "fatturapa-viewer",
+  "module": "einvoice-viewer",
+  "title": "FatturaPA viewer: open XML and signed P7M invoices | Tanod Tools",
+  "description": "Open an Italian FatturaPA invoice (XML or signed .p7m) and read it as a normal invoice. Print, save as PDF or export JSON. Nothing is uploaded.",
+  "h1": "FatturaPA viewer",
+  "lede": "Open an Italian electronic invoice (fattura elettronica), also when it is signed as .p7m, and read it as an ordinary invoice. The file is opened in your browser and never uploaded.",
+  "blurb": "Read a FatturaPA XML or signed .p7m invoice as a normal invoice.",
+  "keywords": "fatturapa viewer visualizzatore fattura elettronica leggere fattura xml aprire file p7m fattura elettronica p7m visualizza fattura pa fpr12 fpa12 xml fattura in pdf sdi",
+  "limits": "One file at a time, up to 25 MB; the first 5,000 line items are shown across all invoices of a file. Reads FatturaPA 1.2.x (FPR12 and FPA12), including files with several invoices. From a signed .p7m the XML is taken out of the envelope, but the signature is not verified: this page cannot tell you who signed the file or whether it was changed. Viewer only: no validation, nothing is sent to SDI.",
+  "howto_title": "How to open a fattura elettronica",
+  "howto": [
+    "Choose the .xml or .xml.p7m file, or drag it onto the page.",
+    "For a .p7m the page takes the XML out of the signature envelope, then shows the invoice: seller (cedente), buyer (cessionario), lines, VAT summary, totals and payment.",
+    "Press <strong>Print or save as PDF</strong>, <strong>Download JSON</strong>, or <strong>Show raw XML</strong>."
+  ],
+  "faq": [
+    [
+      "Is my invoice uploaded?",
+      "No. The file, including a signed .p7m, is read in your browser and shown on this page. No server receives it, and closing the tab clears everything."
+    ],
+    [
+      "Does it check the digital signature of a .p7m file?",
+      "No. A .p7m is a CMS (PKCS#7) envelope around the XML invoice. This page only reads the envelope to get the XML out. It does not check the certificate, the signature or the time stamp, so it cannot say who signed the file or whether it was changed. Use a tool that verifies signatures if that matters."
+    ],
+    [
+      "Which FatturaPA files are supported?",
+      "FatturaPA 1.2, 1.2.1 and 1.2.2 in both forms: FPR12 (invoices to businesses and consumers) and FPA12 (invoices to public administration). A file can hold several invoices; each one is shown. The simplified invoice (FSM10) is not supported."
+    ],
+    [
+      "Why is the amount due not the document total?",
+      "The amount due is the sum of the payment lines (ImportoPagamento) when the file has them. It can differ from the document total: with split payment (scissione dei pagamenti) the VAT is not paid to the supplier, and with withholding tax (ritenuta d'acconto) the withheld amount is not either. Both are marked on the invoice."
+    ],
+    [
+      "What do codes such as TD01, MP05, N4 and RF01 mean?",
+      "They come from the official code lists of the FatturaPA format: TD01 is an invoice, TD04 a credit note, MP05 a bank transfer, N4 an exempt operation, RF01 the ordinary tax regime. Where a code has an everyday name it is shown with the code in brackets; otherwise the code is shown as it is."
+    ],
+    [
+      "Is this the official viewer?",
+      "No. This page is independent of the Agenzia delle Entrate and of SDI. It is not the official stylesheet, and a file shown here has not been sent to or checked by SDI."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "zugferd-factur-x-viewer",
+    "ksef-viewer",
+    "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "vietnam-e-invoice-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>The fattura elettronica in short</h2>
+<p>In Italy invoices are exchanged as XML files through the Sistema di Interscambio (SDI) of the Agenzia delle Entrate. Invoices to public bodies have used the FatturaPA format since 2014 and 2015, and businesses have had to use it for almost all domestic invoices since 2019. The XML, not a PDF copy, is the invoice, so what arrives is often a file you cannot read. This page turns it back into an invoice.</p>
+<h2>Signed .p7m files</h2>
+<p>Many invoices arrive as <code>name.xml.p7m</code>. The .p7m is a signed envelope in the CMS (PKCS#7) format: the XML invoice is stored inside it together with the signature and the signer's certificate. Italian providers write these envelopes in slightly different ways (fixed or open-ended lengths, content in pieces, even base64 text), and a file can be signed twice. This page reads the envelope with a small parser written for this site, takes out the XML, and says plainly that it did not check the signature.</p>
+<h2>What the viewer shows</h2>
+<p>You see the cedente/prestatore (seller) and cessionario/committente (buyer) with VAT numbers and tax codes, the document type, number and date, the reasons for the invoice (Causale), every line with quantity, unit, price, discount and VAT rate, the VAT summary with the exemption code and legal reference, social security contributions, withholding tax, stamp duty, the payment lines with IBAN and due dates, and attached files. It does not validate the invoice and does not talk to SDI.</p>
+<h3>Tips</h3>
+<ul>
+  <li>For a PDF with an XML inside use the <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD / Factur-X viewer</a>; this page accepts those too.</li>
+  <li>Download JSON gives you the invoice as data for your own spreadsheet or program.</li>
+  <li>Show raw XML lets you look for a field that the readable invoice leaves out.</li>
+</ul>

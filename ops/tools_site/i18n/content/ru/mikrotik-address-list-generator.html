@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Генератор Address List для MikroTik, объединение CIDR | Tanod Tools",
+  "description": "Превратите список IP, CIDR и диапазонов в скрипт address-list для RouterOS. Удаляет дубликаты, объединяет сети, поддерживает IPv4, IPv6 и timeout.",
+  "h1": "Генератор Address List для MikroTik",
+  "lede": "Вставьте IP-адреса, сети или диапазоны в любом сочетании и получите чистый скрипт address-list для RouterOS без дубликатов и с объединёнными смежными сетями.",
+  "blurb": "IP и CIDR в скрипт address-list без дубликатов и с объединением сетей.",
+  "keywords": "генератор address list mikrotik routeros address-list импорт чёрный список белый список cidr агрегация объединение подсетей удаление дубликатов список ip файрвол скрипт rsc spamhaus drop blocklist allowlist",
+  "local_text": "Работает в браузере; ваши списки не покидают устройство",
+  "limits": "Читает адреса IPv4 и IPv6, сети CIDR и диапазоны вида первый-последний; всё после # или ; в строке игнорируется. Большие списки (сотни тысяч записей) обрабатываются, но это занимает некоторое время. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен этой компанией.",
+  "howto_title": "Как создать address list для MikroTik",
+  "howto": [
+    "Вставьте адреса: по одному в строке либо через запятые или пробелы. Сети (<code>203.0.113.0/24</code>) и диапазоны (<code>198.51.100.10-198.51.100.20</code>) тоже подходят.",
+    "Задайте имя списка и при желании timeout или комментарий для каждой записи.",
+    "Оставьте объединение включённым, чтобы записей было как можно меньше, затем скопируйте скрипт или скачайте файл .rsc и выполните <code>/import file-name=list.rsc</code>."
+  ],
+  "faq": [
+    ["Что делает объединение?", "Оно сортирует все записи, соединяет пересекающиеся и соприкасающиеся адреса и сети и записывает результат наименьшим числом блоков CIDR, которые покрывают в точности те же адреса. 10.0.0.0/25 и 10.0.0.128/25 становятся 10.0.0.0/24, а отдельный адрес внутри уже имеющейся сети исчезает. Ничего, что не было покрыто раньше, не добавляется."],
+    ["Почему диапазон превратился в несколько записей?", "Диапазон вроде 10.0.0.5-10.0.0.20 не совпадает с границей одной сети, поэтому записывается блоками CIDR, которые покрывают его точно: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 и 10.0.0.20/32. RouterOS принимает и диапазоны, но записи CIDR легче читать и сравнивать."],
+    ["Импорт останавливается на полпути с ошибкой «already have such entry». Почему?", "RouterOS отказывается добавлять адрес, который уже есть в списке, а импорт останавливается на первой ошибке. Включите «Пропускать уже существующие записи»: тогда каждая строка оборачивается в <code>:do { … } on-error={}</code>, дубликаты пропускаются, и импорт продолжается. Или включите «Заменить список», чтобы сначала очистить его."],
+    ["Как использовать список в правиле файрвола?", "Сопоставляйте его через <code>src-address-list=</code> или <code>dst-address-list=</code>, например <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. Отбрасывание в таблице raw обходит отслеживание соединений, что дешевле для больших чёрных списков."],
+    ["Мои списки загружаются на сервер?", "Нет. Разбор и объединение выполняются в вашем браузере, ничего из вставленного никуда не отправляется."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Адреса, сети или диапазоны</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">По одному в строке или через запятые. Текст после # или ; игнорируется.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">Имя списка</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">Необязательно, например 1h, 1d или 1w.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Комментарий</label>
+        <input type="text" id="al-comment" value="" placeholder="imported 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Объединять пересекающиеся и смежные сети</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Пропускать уже существующие записи</label>
+      <label class="check"><input type="checkbox" id="al-replace">Заменить список (сначала удалить его текущие записи)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">Скрипт RouterOS</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Address list в RouterOS</h2>
+<p>Address list — это именованный набор IP-адресов и сетей в разделе <code>/ip firewall address-list</code> (и <code>/ipv6 firewall address-list</code> для IPv6). Правила файрвола, NAT, mangle и raw могут сопоставлять весь список одним условием, благодаря чему наборы правил остаются короткими и быстрыми: RouterOS ищет принадлежность списку по дереву, а не перебирает по одному правилу на каждую сеть. Списки обычно используют для сетей управления, диапазонов клиентов, чёрных списков из фидов угроз и адресов, которые правило добавляет динамически через <code>action=add-src-to-address-list</code>.</p>
+<p>В одном списке могут быть отдельные адреса, сети CIDR и диапазоны, а пересекающиеся записи допустимы, из-за чего импортированные фиды и становятся неряшливыми. Эта страница приводит список в порядок до того, как он попадёт на маршрутизатор: нормализует каждую запись (сеть, записанная с битами хоста, например 10.1.2.3/24, становится 10.1.2.0/24), удаляет точные дубликаты и при включённом объединении сводит всё к минимальному набору блоков CIDR. Для одиночного хоста скрипт использует простой адрес, как его выводит сам RouterOS.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Размер, диапазон и маску сети можно проверить в инструменте «<a href="/tools/subnet-calculator/">Калькулятор подсетей</a>».</li>
+  <li>Нужны правила файрвола, использующие список? Начните с инструмента «<a href="/tools/mikrotik-firewall-generator/">Генератор файрвола MikroTik</a>».</li>
+  <li>Чистите обычный текстовый список? «<a href="/tools/remove-duplicate-lines/">Удалить дубликаты строк</a>» сохраняет порядок и исходный текст.</li>
+</ul>

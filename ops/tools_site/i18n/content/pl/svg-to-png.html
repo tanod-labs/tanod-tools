@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Konwerter SVG na PNG w dowolnym rozmiarze, za darmo | Tanod Tools",
+  "description": "Zamień SVG na ostry PNG w skali 1x, 2x, 4x lub o dokładnej szerokości, z przezroczystym lub kolorowym tłem. Działa w przeglądarce; nic nie jest przesyłane.",
+  "h1": "SVG na PNG",
+  "lede": "Wyrenderuj rysunek SVG, ikonę lub logo jako wyraźny plik PNG w potrzebnym rozmiarze.",
+  "blurb": "Renderuj ikony i logo SVG jako ostre pliki PNG.",
+  "keywords": "svg na png konwertuj svg png eksport ikona logo wektor na bitmapę wysoka rozdzielczość przezroczyste tło svg to png convert export vector to raster high resolution transparent",
+  "limits": "Jeden plik SVG naraz, do 10 MB. Wynik do około 100 megapikseli i 32 767 pikseli na bok.",
+  "howto_title": "Jak zamienić SVG na PNG",
+  "howto": [
+    "Wybierz plik .svg albo przeciągnij go na stronę. Pojawi się podgląd z rozmiarem, jakiego żąda SVG.",
+    "Wybierz skalę (1x, 2x, 4x) lub wpisz dokładną szerokość, a następnie wybierz tło przezroczyste albo jednolite.",
+    "Kliknij <strong>Konwertuj na PNG</strong>, a potem pobierz obraz."
+  ],
+  "faq": [
+    ["Czy PNG będzie ostry w dużym rozmiarze?", "Tak. SVG jest rysowany bezpośrednio w rozmiarze wynikowym, a nie rysowany małym i powiększany, więc krzywe i tekst są renderowane wyraźnie w 2x, 4x lub w dowolnej wpisanej szerokości."],
+    ["Jaki rozmiar ma PNG w skali 1x?", "Taki, jaki SVG deklaruje w atrybutach <code>width</code> i <code>height</code>, przeliczony na piksele (centymetry, milimetry, cale i punkty są przeliczane przy 96 pikselach na cal). Jeśli ich brakuje, używany jest <code>viewBox</code>. Jeśli nie ma żadnego z nich, stosowany jest domyślny rozmiar przeglądarki 300 na 150, o czym narzędzie informuje."],
+    ["Czy przezroczystość jest zachowana?", "Tak, domyślnie. Odznacz <em>Przezroczyste tło</em> i wybierz kolor, jeśli potrzebujesz tła jednolitego, na przykład dla ikony aplikacji lub dokumentu."],
+    ["Dlaczego czcionki lub osadzone obrazy wyglądają inaczej?", "SVG jest rysowany jako samodzielny obraz, tak samo jak strona internetowa pokazuje SVG w znaczniku <code>img</code>. Czcionki internetowe i obrazy, do których odwołuje się plik na innych stronach, nie są pobierane, więc tekst wraca do czcionek zainstalowanych na urządzeniu, a obrazy zewnętrzne są pomijane. Obrazy osadzone wewnątrz samego pliku SVG są rysowane."],
+    ["Czy bezpiecznie jest otwierać SVG od kogoś innego?", "Tak, tutaj tak. Pliki SVG mogą zawierać skrypty, ale plik jest wczytywany jako obraz, w którym przeglądarki nigdy nie uruchamiają skryptów ani nie otwierają odnośników, i nigdy nie jest dodawany do strony. Nic nie jest przesyłane."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:svg-to-png drop__mark}}
+  <p class="drop__title">Upuść plik SVG tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/svg+xml,.svg">{{mark:i-plus}}<span data-pick-label>Wybierz plik SVG</span></label>
+  <p class="drop__hint">Plik .svg do 10 MB. Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="editor" class="util-stack" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview svgp__preview"><canvas id="cv" role="img" aria-label="Podgląd pliku SVG"></canvas></div>
+  <p class="note" id="size-note" hidden></p>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Rozmiar</legend>
+      <div class="seg">
+        <label><input type="radio" name="scale" value="1">1x</label>
+        <label><input type="radio" name="scale" value="2" checked>2x</label>
+        <label><input type="radio" name="scale" value="4">4x</label>
+        <label><input type="radio" name="scale" value="custom">Szerokość</label>
+      </div>
+    </fieldset>
+    <div class="field" id="w-field" hidden>
+      <label for="width">Szerokość (px)</label>
+      <input type="number" id="width" min="1" max="32767" inputmode="numeric">
+      <p class="help">Wysokość wynika z proporcji pliku SVG.</p>
+    </div>
+    <div class="field">
+      <span class="label">Tło</span>
+      <label class="check"><input type="checkbox" id="transparent" checked>Przezroczyste tło</label>
+      <div id="bg-wrap" hidden><label class="visually-hidden" for="bg">Kolor tła</label><input type="color" id="bg" value="#ffffff"></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Konwertuj na PNG</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Zamiana grafiki wektorowej na piksele</h2>
+<p>SVG opisuje kształty za pomocą współrzędnych, więc można go rysować w dowolnym rozmiarze bez utraty ostrości. Wiele miejsc nadal jednak wymaga bitmapy: sklepy z aplikacjami, profile w mediach społecznościowych, prezentacje, podpisy w e-mailach i starsze programy graficzne. Konwersja do PNG utrwala rysunek w jednym rozmiarze w pikselach, więc wybierz największy rozmiar, jakiego będziesz potrzebować; PNG można później zmniejszyć, ale powiększenie go rozmywa.</p>
+<p>Rysowaniem zajmuje się wbudowany w przeglądarkę renderer SVG, który rysuje na kanwie w rozmiarze wynikowym, a kanwa jest zapisywana jako PNG z pełną przezroczystością. SVG jest traktowany wyłącznie jako obraz: skrypty w nim zawarte nigdy się nie uruchamiają, a nic, do czego się odwołuje, nie jest pobierane.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Dla ekranów o dużej gęstości pikseli eksportuj w rozmiarze 2x lub 3x względem rozmiaru, w jakim obraz jest wyświetlany.</li>
+  <li>Robisz ikonę strony? <a href="/tools/favicon-generator/">Generator favicon</a> tworzy wszystkie rozmiary z jednego obrazu.</li>
+  <li>Potrzebujesz JPG lub WebP? Zamień PNG w narzędziu <a href="/tools/convert-image/">Konwertuj obraz</a>.</li>
+</ul>

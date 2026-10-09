@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Xem hóa đơn Peppol và UBL: đọc BIS Billing 3.0 | Tanod Tools",
+  "description": "Mở hóa đơn hoặc giấy báo có Peppol BIS Billing 3.0 (XML UBL) và đọc như hóa đơn bình thường. In, lưu PDF hoặc xuất JSON. Không tải lên.",
+  "h1": "Xem hóa đơn Peppol / UBL",
+  "lede": "Mở hóa đơn hoặc giấy báo có Peppol hay UBL 2.1 khác và đọc như một hóa đơn thông thường, với các bên, dòng hàng, thuế GTGT và thông tin thanh toán. Tệp được đọc trong trình duyệt và không bao giờ được tải lên.",
+  "blurb": "Đọc hóa đơn Peppol BIS Billing 3.0 hoặc UBL như một hóa đơn bình thường.",
+  "keywords": "xem hóa đơn peppol xem hóa đơn ubl mở file ubl xml peppol bis billing 3.0 đọc hóa đơn ubl 2.1 giấy báo có ubl hóa đơn điện tử peppol en 16931 peppol invoice viewer ubl invoice viewer open peppol xml",
+  "limits": "Mỗi lần một tệp, tối đa 25 MB; 5.000 dòng hàng đầu tiên được hiển thị. Đọc được UBL 2.1 Invoice và CreditNote như Peppol BIS Billing 3.0 và các profile EN 16931 khác sử dụng, kể cả khi nằm trong lớp bao Peppol (SBDH). Không đọc: các tài liệu UBL khác như đơn đặt hàng hay thông báo giao hàng. Chỉ để xem: không kiểm tra hợp lệ, và không gửi gì vào mạng Peppol.",
+  "howto_title": "Cách mở hóa đơn Peppol",
+  "howto": [
+    "Chọn tệp XML UBL, hoặc kéo thả vào trang.",
+    "Đọc hóa đơn: bên bán và bên mua cùng địa chỉ Peppol của họ, ngày tháng, các dòng hàng, chi tiết thuế GTGT, các khoản tổng và thông tin thanh toán.",
+    "Nhấn <strong>In hoặc lưu thành PDF</strong>, <strong>Tải xuống JSON</strong> hoặc <strong>Hiện XML gốc</strong>."
+  ],
+  "faq": [
+    [
+      "Hóa đơn của tôi có bị tải lên không?",
+      "Không. XML được đọc trong trình duyệt bằng bộ phân tích tích hợp sẵn rồi hiển thị trên trang này. Không có máy chủ nào nhận được nó, và đóng thẻ là mọi thứ biến mất."
+    ],
+    [
+      "Peppol BIS Billing 3.0 là gì?",
+      "Đây là định dạng hóa đơn và giấy báo có dùng trên mạng Peppol. Nó là tài liệu UBL 2.1 tuân theo tiêu chuẩn châu Âu EN 16931 kèm một số quy tắc bổ sung của Peppol. Nhiều quốc gia sử dụng nó, và XRechnung là một biến thể gần với các bổ sung riêng của Đức."
+    ],
+    [
+      "Công cụ có mở được các tài liệu Peppol khác, như đơn đặt hàng, không?",
+      "Không. Chỉ hóa đơn và giấy báo có. Nếu bạn mở đơn đặt hàng, phản hồi đơn hàng hay thông báo giao hàng, trang sẽ cho bạn biết đó là tài liệu gì và rằng nó không thể hiển thị."
+    ],
+    [
+      "Có mở được hóa đơn nằm trong một lớp bao không?",
+      "Có. Nếu hóa đơn đến bên trong Standard Business Document Header (SBDH), hóa đơn nằm trong sẽ được tìm thấy và hiển thị."
+    ],
+    [
+      "Địa chỉ Peppol có được hiển thị không?",
+      "Có. Địa chỉ điện tử của bên bán và bên mua được hiển thị cùng sơ đồ định danh của nó, ví dụ 0088 cho GLN hoặc 0007 cho mã số tổ chức của Thụy Điển."
+    ],
+    [
+      "Nếu thuế GTGT được ghi bằng đồng tiền thứ hai thì sao?",
+      "Một số quốc gia yêu cầu thuế GTGT bằng nội tệ. Khi hóa đơn có ghi, số tiền thuế GTGT bằng đồng tiền đó được hiển thị bên dưới các khoản tổng."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Thả hóa đơn điện tử vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Chọn tệp</span></label>
+  <p class="drop__hint">XML, PDF có hóa đơn bên trong (ZUGFeRD, Factur-X) hoặc tệp .p7m đã ký. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}In hoặc lưu thành PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Tải xuống JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Tải xuống XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Hiện XML gốc</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML gốc" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Ở đây chỉ hiển thị phần đầu của tệp dài. Hãy tải xuống XML để có toàn bộ nội dung.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Peppol, UBL và EN 16931</h2>
+<p>Peppol là mạng trao đổi chứng từ kinh doanh giữa doanh nghiệp và cơ quan nhà nước, được dùng ở phần lớn châu Âu và một số nơi khác. Hóa đơn của nó là tệp XML UBL 2.1: một tiêu chuẩn của OASIS mà tiêu chuẩn châu Âu EN 16931 dựa vào. Vì vậy, một hóa đơn Peppol BIS Billing 3.0 có một bộ thuật ngữ nghiệp vụ cố định, chẳng hạn mã số thuế GTGT của bên bán, các dòng hàng và chi tiết thuế GTGT, mà trang này đọc và trình bày như một hóa đơn bình thường. Đây là các chuẩn của châu Âu, không phải hệ thống hóa đơn điện tử của Việt Nam.</p>
+<p>Nhiều quốc gia dùng cùng cấu trúc này kèm các bổ sung riêng, ví dụ XRechnung ở Đức. Nếu tệp ghi tên profile trong customization identifier thì nó được hiển thị ở phần đầu. Từ ngày 1 tháng 1 năm 2025, mọi doanh nghiệp tại Đức phải có khả năng nhận hóa đơn điện tử có cấu trúc, và Pháp yêu cầu điều đó từ ngày 1 tháng 9 năm 2026, nên các tệp thế này ngày càng đến tay nhiều người chưa từng thấy XML.</p>
+<h2>Những gì được hiển thị và những gì không</h2>
+<p>Bạn thấy các bên cùng mã số thuế GTGT, địa chỉ pháp lý và địa chỉ điện tử, nơi giao hàng và người thụ hưởng nếu có, ngày tháng và số tham chiếu, từng dòng hàng với số lượng, đơn vị, đơn giá và thuế GTGT, chiết khấu và phụ phí, chi tiết thuế GTGT kèm lý do miễn thuế, các khoản tổng (cả thuế GTGT bằng đồng tiền thứ hai), phương thức thanh toán với IBAN, BIC và mã tham chiếu, ghi chú và tài liệu đính kèm. Công cụ không kiểm tra hợp lệ hóa đơn và không dùng mạng Peppol.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Tệp XRechnung của Đức cũng mở được bằng <a href="/tools/xrechnung-viewer/">Xem XRechnung</a>.</li>
+  <li>PDF có hóa đơn bên trong cũng mở được ở đây, nhưng <a href="/tools/zugferd-factur-x-viewer/">Xem ZUGFeRD / Factur-X</a> được làm riêng cho loại tệp đó.</li>
+  <li>Tải xuống JSON cho bạn hóa đơn dưới dạng dữ liệu thuần với tên theo các thuật ngữ nghiệp vụ của EN 16931.</li>
+</ul>

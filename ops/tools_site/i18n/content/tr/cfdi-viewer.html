@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Meksika CFDI görüntüleyici: CFDI 4.0 ve 3.3 XML faturalarını açın | Tanod Tools",
+  "description": "Bir Meksika CFDI'sını (XML) açın ve normal bir fatura gibi okuyun; UUID ve SAT ile doğrulama bağlantısı da gösterilir. Yazdırın, PDF olarak kaydedin veya JSON dışa aktarın. Ücretsiz, hiçbir şey yüklenmez.",
+  "h1": "Meksika CFDI görüntüleyici",
+  "lede": "Bir Meksika e-faturasını (CFDI 4.0 veya 3.3) açın ve sıradan bir fatura gibi okuyun: UUID, seri ve folio, RFC'leriyle düzenleyen ve alıcı, kalemler, orana göre IVA, kesilen vergiler ve vergi damgası. XML tarayıcınızda okunur ve hiçbir zaman yüklenmez.",
+  "blurb": "Bir Meksika CFDI 4.0 veya 3.3 XML dosyasını normal fatura olarak okuyun; UUID ve SAT ile doğrulama bağlantısı dahil.",
+  "keywords": "cfdi görüntüleyici cfdi 4.0 cfdi xml açma cfdi xml okuma meksika e-fatura uuid folio fiscal cfdi sat doğrulama timbre fiscal digital comprobante fiscal digital por internet rfc düzenleyen alıcı cfdi 3.3",
+  "limits": "Bir seferde bir dosya, en fazla 25 MB; ilk 5.000 kalem gösterilir. CFDI 4.0 ve 3.3 dosyalarını (SAT ad alanındaki cfdi:Comprobante öğesi) okur; ingreso (fatura) ve egreso (iade/alacak notu) türleri dahildir. Pagos ve Nómina gibi tamamlayıcılar gösterilmez. Mühür (Sello) ve SAT damgası doğrulanmaz. Yalnızca görüntüleyicidir: CFDI'yı doğrulamaz ve SAT ile bağlantı kurmaz; SAT ile doğrula bağlantısı kendiniz tıkladığınız sıradan bir bağlantıdır.",
+  "howto_title": "CFDI nasıl açılır",
+  "howto": [
+    "SAT portalından, sertifikasyon sağlayıcınızdan (PAC) veya muhasebe yazılımınızdan indirdiğiniz CFDI XML dosyasını seçin ya da sayfaya sürükleyin.",
+    "Faturayı okuyun: UUID (folio fiscal), seri ve folio, tarih, RFC'leriyle düzenleyen ve alıcı, kalemler, orana göre IVA, kesilen vergiler, toplamlar ve ödeme.",
+    "SAT'ın kendi kontrol sayfasını açmak için <strong>SAT ile doğrula</strong>'ya, ya da <strong>Yazdır veya PDF olarak kaydet</strong>, <strong>JSON indir</strong> veya <strong>Ham XML'i göster</strong>'e basın."
+  ],
+  "faq": [
+    [
+      "CFDI yüklenir mi veya SAT'a gönderilir mi?",
+      "Hayır. Bu sayfa SAT'a, sağlayıcınıza veya herhangi bir sunucuya bağlanmaz. XML tarayıcınızda okunur ve bu sayfada gösterilir; sekmeyi kapatmak her şeyi siler."
+    ],
+    [
+      "SAT ile doğrula bağlantısı ne yapar?",
+      "SAT'ın herkese açık doğrulama sayfasına giden sıradan bir bağlantıdır; belgelenmiş adres kalıbıyla UUID, düzenleyen ve alıcı RFC'leri, toplam tutar ve mührün son 8 karakteriyle oluşturulur. Bu sayfayı açtığınızda hiçbir şey gönderilmez; bilgiler yalnızca bağlantıya tıkladığınızda SAT'a gider ve SAT kendi yanıtını gösterir."
+    ],
+    [
+      "Mühür ve SAT damgası kontrol edilir mi?",
+      "Hayır. Dijital mühür ve Timbre Fiscal Digital burada doğrulanmaz; bunları taşıyan dosyada bir not görünür. Bu sayfa bir CFDI'nın geçerli olup olmadığını ya da sonradan değiştirilip değiştirilmediğini söyleyemez. Bunun için SAT bağlantısını kullanın."
+    ],
+    [
+      "Hangi CFDI sürümleri ve türleri açılır?",
+      "CFDI 4.0 ve 3.3. Ingreso faturaları ve egreso alacak notları tam gösterilir; traslado, pago ve nómina belgeleri başlık, taraflar ve toplamlarla açılır, ancak tamamlayıcıları gösterilmez. 3.2 gibi eski sürümler okunmaz."
+    ],
+    [
+      "Vergiler nasıl gösterilir?",
+      "IVA orana göre gösterilir (%16, %8, %0 ve muaf), IEPS gibi diğer yüklenen vergiler ek bilgiler altında listelenir, kesilen vergiler (ISR, IVA) listelenir ve toplamlardan düşülür. Ödenecek tutar, dosyadaki Total değeridir."
+    ],
+    [
+      "CFDI'nın XML dosyasını nereden alırım?",
+      "SAT portalından (Mis comprobantes), damgayı vuran sağlayıcıdan (PAC) indirin veya muhasebe yazılımınızdan dışa aktarın. Bu sayfa XML'i okur, basılı PDF'yi değil."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Meksika'nın CFDI'ı</h2>
+<p>Meksika'da faturalar CFDI (Comprobante Fiscal Digital por Internet) olarak düzenlenir: yetkili bir sertifikasyon sağlayıcısının (PAC) damgalayıp vergi idaresi SAT'a kaydettiği bir XML dosyası. 4.0 sürümü 3.3'ün yerini aldı. Damga, faturayı tanımlayan folio fiscal olan UUID'yi ekler. Fatura XML'in kendisidir; basılı hâli onun bir çizimidir. Bu sayfa o çizimi, elinizdeki XML'den tarayıcınızda yapar.</p>
+<h2>Görüntüleyici neyi gösterir</h2>
+<p>Büyük puntolu UUID'yi, seri ve folio'yu, tarihi, damgalama zamanını ve PAC'ı, RFC, ad, vergi rejimi ve vergi adresi posta koduyla düzenleyeni (Emisor) ve alıcıyı (Receptor), ödeme şeklini (FormaPago) ve yöntemini (MetodoPago: PUE veya PPD), birim, miktar, fiyat, indirim ve IVA ile her kalemi, orana göre IVA'yı, kesilen vergileri, toplamları, yabancı para biriminde kuru ve alacak notunun ilişkili CFDI'ını görürsünüz. Tutarlar dosyadakiyle birebir gösterilir.</p>
+<p>SAT ile doğrula bağlantısı SAT'ın kendi kontrol sayfasını yeni sekmede açar; bu sayfanın kendisi hiçbir şey göndermez. Mührü veya damgayı doğrulamaz, CFDI'ı SAT'ın katalog ve kurallarına göre denetlemez ve Pagos veya Nómina gibi tamamlayıcıları göstermez.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>JSON indir, faturayı düz veri olarak verir; CFDI alanları EN 16931 iş terimleriyle eşleştirilir.</li>
+  <li>Diğer biçimler de burada açılır: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol, Türk e-Faturası ve Vietnam hóa đơn. Birini açtığınızda sayfa uygun görüntüleyiciyi önerir.</li>
+  <li>Ham XML'i göster, okunur faturada görünmeyen bir özelliğe ihtiyaç duyduğunuzda işe yarar.</li>
+</ul>

@@ -1,4 +1,4 @@
-import { $, el, setStatus, fmtNum, tx, txn, EN, LANG, LOCALE } from "./core.js?v=5";
+import { $, el, setStatus, fmtNum, tx, txn, EN, LANG, LOCALE } from "./core.js?v=11";
 
 const MAX_CHARS = 100000;
 const CHUNK = 200;

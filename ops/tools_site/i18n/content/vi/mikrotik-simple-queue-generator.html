@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Tạo simple queue MikroTik: băng thông theo từng IP | Tanod Tools",
+  "description": "Tạo simple queue RouterOS cho từng IP hoặc mọi host trong một subnet: max-limit, limit-at, burst và queue cha cho tổng gói cước. Có chú thích, chạy trong trình duyệt.",
+  "h1": "Tạo simple queue MikroTik",
+  "lede": "Đặt gói băng thông một lần và nhận một simple queue cho mỗi địa chỉ máy khách, có thể kèm burst và một queue cha giới hạn cả nhóm.",
+  "blurb": "Giới hạn băng thông theo IP, có burst và queue cha.",
+  "keywords": "tạo simple queue mikrotik, giới hạn băng thông theo ip, giới hạn tốc độ mikrotik, quản lý băng thông, giới hạn tốc độ khách hàng, mikrotik simple queue generator bandwidth limit per ip routeros queue simple max-limit limit-at burst limit parent queue wisp hotspot script",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không rời khỏi thiết bị của bạn",
+  "limits": "Tạo cú pháp RouterOS v7 (cũng hợp lệ trên v6) cho target IPv4, tối đa 2048 queue. Mọi queue dùng chung một gói; khi nhiều máy khách chia sẻ một đường truyền, PCQ nhẹ CPU hơn. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với hay được MikroTik bảo trợ.",
+  "howto_title": "Cách giới hạn băng thông theo IP trên MikroTik",
+  "howto": [
+    "Liệt kê các địa chỉ máy khách (mỗi dòng một địa chỉ, có thể kèm tên phía sau), hoặc nhập một subnet để tạo queue cho mọi host trong đó.",
+    "Nhập gói cước dưới dạng max-limit upload và download, cộng limit-at và burst nếu bạn dùng. Tốc độ nhận hậu tố k, M hoặc G.",
+    "Có thể thêm một queue cha cho tổng dung lượng đường truyền, rồi sao chép tập lệnh hoặc tải xuống tệp .rsc."
+  ],
+  "faq": [
+    ["Trong max-limit, bên nào là upload?", "Tốc độ của simple queue được viết theo dạng upload/download từ góc nhìn của target: max-limit=5M/20M cho phép máy khách gửi 5 Mbit/s và nhận 20 Mbit/s. Công cụ gắn nhãn các trường đúng như vậy, nên bạn không phải nhớ thứ tự."],
+    ["Vì sao queue của tôi không giới hạn gì cả?", "Nguyên nhân phổ biến nhất là FastTrack: các kết nối đã fasttrack bỏ qua simple queue. Hãy tắt rule fasttrack trong /ip firewall filter, hoặc loại trừ các địa chỉ có queue khỏi rule đó. Cũng cần kiểm tra thứ tự: simple queue được đối chiếu từ trên xuống, và một queue đứng trước có target chồng lấn sẽ lấy lưu lượng trước."],
+    ["limit-at và queue cha có tác dụng gì?", "Queue cha giới hạn cả nhóm ở dung lượng thực của đường truyền. limit-at là tốc độ được đảm bảo cho mỗi queue con khi queue cha đã đầy; vượt mức đó, các queue con chia nhau phần băng thông còn lại tới max-limit của chúng. Nếu tổng các limit-at lớn hơn queue cha thì không thể đáp ứng tất cả."],
+    ["Một router xử lý được bao nhiêu simple queue?", "Tùy vào CPU và lưu lượng, nhưng mỗi gói tin phải duyệt danh sách từ đầu, nên hàng nghìn queue sẽ tốn tài nguyên. Với các gói đồng nhất cho nhiều máy khách, queue type PCQ giới hạn công bằng cho từng máy chỉ bằng một queue; Tạo PCQ MikroTik viết sẵn phần đó."],
+    ["Target /32 có cần ghi prefix không?", "RouterOS lưu target một địa chỉ ở dạng /32 trong cả hai trường hợp. Công cụ ghi chúng kèm /32 để các target hiển thị giống nhau trong bản export."],
+    ["Gói cước của tôi có bị gửi đi đâu không?", "Không. Các queue được tạo ngay trong trình duyệt và những gì bạn nhập không rời khỏi thiết bị của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="sq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Máy khách</legend>
+      <div class="seg" role="radiogroup" aria-label="Máy khách">
+        <label><input type="radio" name="sq-mode" value="list" checked>Danh sách địa chỉ</label>
+        <label><input type="radio" name="sq-mode" value="subnet">Mọi host trong một subnet</label>
+      </div>
+      <div class="field" id="sq-list-f">
+        <label for="sq-list">Địa chỉ hoặc mạng, có thể kèm tên phía sau mỗi dòng</label>
+        <textarea id="sq-list" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">192.168.88.10 alice
+192.168.88.11 bob
+192.168.88.64/28 office</textarea>
+      </div>
+      <div class="opts" id="sq-net-f" hidden>
+        <div class="field">
+          <label for="sq-net">Subnet</label>
+          <input type="text" id="sq-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="sq-skip">Bỏ qua các địa chỉ này</label>
+          <input type="text" id="sq-skip" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sq-prefix">Tiền tố tên (cho các dòng không có tên)</label>
+        <input type="text" id="sq-prefix" class="mono" value="client-" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Gói cho mỗi máy khách</legend>
+      <div class="opts">
+        <div class="field"><label for="sq-up-max">max-limit upload</label><input type="text" id="sq-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-max">max-limit download</label><input type="text" id="sq-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-at">limit-at upload</label><input type="text" id="sq-up-at" class="mono" value="" placeholder="không bắt buộc" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-at">limit-at download</label><input type="text" id="sq-down-at" class="mono" value="" placeholder="không bắt buộc" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-burst">Cho phép burst</label></div>
+      <div class="opts" id="sq-burst-f" hidden>
+        <div class="field"><label for="sq-up-burst">burst-limit upload</label><input type="text" id="sq-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-burst">burst-limit download</label><input type="text" id="sq-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-thr">burst-threshold upload</label><input type="text" id="sq-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-thr">burst-threshold download</label><input type="text" id="sq-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-time">burst-time</label><input type="text" id="sq-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Queue cha</legend>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-parent">Giới hạn cả nhóm bằng một queue cha</label></div>
+      <div class="opts" id="sq-parent-f" hidden>
+        <div class="field"><label for="sq-pname">Tên queue cha</label><input type="text" id="sq-pname" class="mono" value="total" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-ptarget">Target của queue cha</label><input type="text" id="sq-ptarget" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pup">Tổng upload</label><input type="text" id="sq-pup" class="mono" value="50M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pdown">Tổng download</label><input type="text" id="sq-pdown" class="mono" value="200M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="sq-out" class="label">Tập lệnh RouterOS</label>
+    <textarea id="sq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="sq-copy" type="button">Sao chép tập lệnh</button>
+      <button class="btn" id="sq-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="sq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Tóm tắt về simple queue</h2>
+<p>Một simple queue trong <code>/queue simple</code> giới hạn lưu lượng đến và đi từ <em>target</em> của nó: một địa chỉ, một mạng hoặc một interface. RouterOS đối chiếu từng gói tin với danh sách từ trên xuống và đưa nó vào queue đầu tiên có target khớp, theo cả hai chiều, nên một queue giới hạn được cả upload lẫn download của máy khách. Nhờ vậy simple queue là cách nhanh nhất để cấp cho mỗi khách hàng hay thiết bị một gói riêng, và là lựa chọn quen thuộc trên các router WISP và hotspot nhỏ.</p>
+<p>Mỗi queue có một <code>max-limit</code> (mức trần), một <code>limit-at</code> tùy chọn (tốc độ được đảm bảo khi queue cha bị nghẽn) và các thiết lập burst tùy chọn. Queue <code>parent</code> gom các queue con dưới một mức tổng: max-limit của queue cha nên bằng dung lượng thực của đường truyền, thấp hơn một chút so với mức nhà mạng cung cấp, để router chứ không phải modem là nơi gói tin xếp hàng và các ưu tiên của gói cước phát huy tác dụng.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Tính burst-threshold và burst-time bằng <a href="/tools/mikrotik-burst-calculator/">Tính burst MikroTik</a>.</li>
+  <li>Hàng trăm máy khách dùng cùng một gói? Chỉ một <a href="/tools/mikrotik-pcq-generator/">queue PCQ</a> đã chia đều phần cho từng máy với ít CPU hơn nhiều.</li>
+  <li>Khách hàng PPPoE nhận queue từ rate-limit của profile; xem <a href="/tools/mikrotik-pppoe-server-generator/">Tạo PPPoE server MikroTik</a>.</li>
+</ul>

@@ -1,0 +1,110 @@
+<!--meta
+{
+  "title": "Base64: кодирование и декодирование текста и файлов | Tanod Tools",
+  "description": "Кодируйте текст и файлы в Base64 и декодируйте обратно в текст или файл. UTF-8, URL-safe Base64 и data URL прямо в браузере. Бесплатно, без загрузки.",
+  "h1": "Кодирование и декодирование Base64",
+  "lede": "Преобразуйте текст или файлы в Base64 и обратно: с поддержкой UTF-8, URL-safe и data URL.",
+  "blurb": "Кодирование и декодирование Base64 для текста и файлов.",
+  "keywords": "base64 кодировать декодировать закодировать раскодировать base64 онлайн data url utf-8 url-safe файл в base64 base64 в файл decode encode",
+  "limits": "Файлы до 25 МБ. Функция «Base64 в файл» принимает данные, которые после декодирования занимают до 25 МБ.",
+  "howto_title": "Как кодировать и декодировать Base64",
+  "howto": [
+    "Для текста введите или вставьте его в поле, выберите «Кодировать» или «Декодировать», и результат появится по мере ввода.",
+    "Включите URL-safe Base64 или перенос строк по 76 символов, если место, куда вы вставляете результат, этого требует.",
+    "Для файла переключитесь на «Файл» и перетащите его сюда, чтобы получить Base64 или data URL. Чтобы сделать наоборот, вставьте Base64, задайте имя файла и скачайте его."
+  ],
+  "faq": [
+    ["Загружается ли мой текст или файл?", "Нет. Всё преобразуется в вашем браузере, ничего никуда не отправляется и не сохраняется."],
+    ["Работает ли он с буквами с диакритикой и эмодзи?", "Да. Перед кодированием текст преобразуется в байты UTF-8, а после декодирования читается как UTF-8, поэтому символы вроде é, ö, ✓ и эмодзи проходят туда и обратно без искажений. (Встроенная в браузер функция <code>btoa</code> на них бы выдала ошибку.)"],
+    ["Что такое URL-safe Base64?", "В нём символы <code>+</code> и <code>/</code> заменены на <code>-</code> и <code>_</code>, а завершающее заполнение <code>=</code> убрано, чтобы результат можно было вставить в URL или имя файла. При декодировании инструмент понимает оба алфавита."],
+    ["Почему при декодировании сообщается о недопустимом символе?", "Base64 использует только буквы, цифры, плюс и косую черту (или минус и подчёркивание), а в конце могут стоять знаки равенства. Пробелы и переводы строк игнорируются, но любой другой символ инструмент показывает вместе с его позицией, чтобы вы могли его найти."],
+    ["Чем data URL отличается от обычного Base64?", "Data URL — это Base64 с префиксом вроде <code>data:image/png;base64,</code>, благодаря которому браузер может сразу использовать его как источник изображения или файла. Включите параметр data URL в режиме «Файл», чтобы получить такую форму."],
+    ["Почему Base64 получается больше исходного файла?", "Base64 записывает каждые 3 байта четырьмя символами, поэтому закодированный текст примерно на треть больше оригинала. Это способ передать двоичные данные в виде текста, а не шифрование и не сжатие."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Что преобразовать</legend>
+  <div class="seg" role="radiogroup" aria-label="Режим">
+    <label><input type="radio" name="mode" value="text" checked>Текст</label>
+    <label><input type="radio" name="mode" value="file">Файл</label>
+  </div>
+</fieldset>
+
+<div id="b-textpanel" class="util-stack">
+  <div class="field">
+    <span class="label" id="b-dir-l">Направление</span>
+    <div class="seg" role="radiogroup" aria-labelledby="b-dir-l">
+      <label><input type="radio" name="dir" value="encode" checked>Кодировать</label>
+      <label><input type="radio" name="dir" value="decode">Декодировать</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="b-in">Входные данные</label>
+    <textarea id="b-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Введите или вставьте сюда"></textarea>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="b-url">Алфавит URL-safe (- _ и без заполнения)</label>
+    <label class="check" id="b-wrap-l"><input type="checkbox" id="b-wrap">Переносить строки по 76 символов</label>
+  </div>
+  <div class="field">
+    <label for="b-out">Результат</label>
+    <textarea id="b-out" class="mono" rows="6" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="b-copy" type="button" disabled>Копировать</button>
+    <button class="btn" id="b-dl" type="button" disabled>Скачать .txt</button>
+    <button class="btn btn--quiet" id="b-swap" type="button" disabled>Использовать результат как входные данные</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="b-clear" type="button">Очистить</button>
+  </div>
+</div>
+
+<div id="b-filepanel" class="util-stack" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Перетащите сюда файл для кодирования</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Выбрать файл</span></label>
+    <p class="drop__hint">До 25 МБ. Или перетащите его в любое место этой страницы.</p>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="f-url">Алфавит URL-safe (- _ и без заполнения)</label>
+    <label class="check"><input type="checkbox" id="f-wrap">Переносить строки по 76 символов</label>
+    <label class="check"><input type="checkbox" id="f-data">Создать data: URL</label>
+  </div>
+  <div id="f-result" hidden>
+    <p class="help" id="f-info"></p>
+    <pre class="out" id="f-out" tabindex="0" aria-label="Предпросмотр Base64"></pre>
+    <div class="actions">
+      <button class="btn btn--primary" id="f-copy" type="button">Копировать</button>
+      <button class="btn" id="f-dl" type="button">Скачать .txt</button>
+    </div>
+  </div>
+
+  <h2 class="util-h">Base64 в файл</h2>
+  <div class="field">
+    <label for="d-in">Base64 (или data: URL)</label>
+    <textarea id="d-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Вставьте сюда Base64"></textarea>
+  </div>
+  <div class="field">
+    <label for="d-name">Имя файла</label>
+    <input type="text" id="d-name" value="decoded.bin" autocomplete="off" spellcheck="false">
+    <span class="help" id="d-info"></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="d-dl" type="button" disabled>Декодировать и скачать</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Для чего нужен Base64</h2>
+<p>Base64 представляет любую последовательность байтов с помощью 64 безопасных текстовых символов: A–Z, a–z, 0–9, плюса и косой черты. Каждые 3 байта превращаются в 4 символа, а последняя группа дополняется знаками <code>=</code>. Благодаря этому двоичные данные можно безопасно помещать в письма, JSON, HTML, URL и другие места, рассчитанные только на текст. Это кодирование, а не шифрование: любой может его обратить.</p>
+<p>Текст сначала превращается в байты, и здесь важна кодировка символов. Инструмент использует UTF-8, стандарт в вебе, поэтому нелатинский текст и символы переживают преобразование туда и обратно. При декодировании проверяется, что результат является корректным UTF-8, и если это не так, вы получите сообщение: обычно это значит, что данные были файлом, а не текстом.</p>
+<p>В режиме файла браузер читает файл и кодирует его небольшими порциями, чтобы страница не зависала. В обратную сторону инструмент декодирует вставленный Base64 в байты и отдаёт их вам как загрузку. По первым байтам он подбирает расширение файла для распространённых форматов, таких как PNG, JPEG, GIF, PDF и ZIP.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Работаете с JSON, в котором есть значения Base64? Приведите его в порядок с помощью инструмента «<a href="/tools/json-formatter/">Форматирование и проверка JSON</a>».</li>
+  <li>Нужны случайные идентификаторы? Загляните в «<a href="/tools/uuid-generator/">Генератор UUID</a>».</li>
+  <li>Экранирование текста для ссылки или строки запроса — другая задача: для неё подойдёт «<a href="/tools/url-encode-decode/">Кодирование и декодирование URL</a>». Чтобы прочитать JWT, внутри которого Base64url, используйте «<a href="/tools/jwt-decoder/">Декодер JWT</a>».</li>
+</ul>

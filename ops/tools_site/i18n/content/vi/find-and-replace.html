@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Tìm và thay thế văn bản trực tuyến, hỗ trợ regex | Tanod Tools",
+  "description": "Tìm và thay thế văn bản trong trình duyệt với tùy chọn phân biệt hoa thường, khớp cả từ và biểu thức chính quy có nhóm $1. Miễn phí, không tải lên.",
+  "h1": "Tìm và thay thế văn bản",
+  "lede": "Thay thế từ hoặc mẫu trong cả một khối văn bản, và xem có bao nhiêu kết quả khớp trước khi thay.",
+  "blurb": "Tìm và thay thế với phân biệt hoa thường, khớp cả từ và regex.",
+  "keywords": "tìm và thay thế thay thế văn bản thay từ thay hàng loạt tìm kiếm biểu thức chính quy regex find replace replace text regular expression substitute bulk search",
+  "limits": "Văn bản tối đa khoảng 5 MB. Mẫu regex chạy quá 2 giây sẽ bị dừng.",
+  "howto_title": "Cách tìm và thay thế văn bản",
+  "howto": [
+    "Dán văn bản vào ô, hoặc mở một tệp .txt.",
+    "Nhập nội dung cần tìm và nội dung thay thế. Số kết quả khớp được cập nhật khi bạn nhập.",
+    "Nhấn <strong>Thay thế tất cả</strong>, rồi sao chép kết quả hoặc tải xuống."
+  ],
+  "faq": [
+    ["Tìm kiếm theo đúng chữ hay theo mẫu?", "Mặc định là đúng chữ: những gì bạn nhập được khớp chính xác, kể cả các ký tự như . và *. Bật \"Biểu thức chính quy\" để dùng cú pháp biểu thức chính quy của JavaScript."],
+    ["Làm sao dùng nhóm trong phần thay thế?", "Ở chế độ biểu thức chính quy, $1, $2 và tiếp theo sẽ chèn văn bản khớp với nhóm trong ngoặc thứ nhất, thứ hai (và cứ thế), $& chèn toàn bộ phần khớp và $&lt;name&gt; chèn một nhóm có tên. Ví dụ, tìm (\\w+)@(\\w+) và thay bằng $2 at $1 sẽ biến bob@example thành example at bob. Ở chế độ đúng chữ, phần thay thế được chèn đúng như đã nhập."],
+    ["Khớp cả từ có tác dụng gì?", "Tùy chọn này chỉ khớp văn bản cần tìm khi nó không nằm trong một từ dài hơn, nên tìm cat sẽ không khớp với category. Ở chế độ đúng chữ, chữ cái, chữ số và dấu gạch dưới được tính là ký tự của từ ở mọi hệ chữ viết. Ở chế độ biểu thức chính quy, mẫu của bạn được bao bằng ranh giới từ (\\b), vốn chỉ nhận diện A-Z, chữ số và dấu gạch dưới."],
+    ["Giới hạn 2 giây là gì?", "Một số mẫu, như (a+)+$, có thể mất cực kỳ nhiều thời gian trên một số văn bản. Chế độ biểu thức chính quy chạy trong một worker nền riêng; nếu sau 2 giây vẫn chưa xong, nó bị dừng và bạn được báo rằng mẫu chạy quá lâu, nên trang không bao giờ bị treo."],
+    ["Mẫu có áp dụng trên nhiều dòng không?", "Ở chế độ biểu thức chính quy, ^ và $ khớp ở đầu và cuối mỗi dòng, còn dấu chấm không khớp với ký tự xuống dòng. Hoa thường bị bỏ qua trừ khi bật Phân biệt hoa thường."],
+    ["Văn bản của tôi có bị tải lên không?", "Không. Mọi thứ chạy trong trình duyệt của bạn và không có gì được lưu hay gửi đi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Văn bản của bạn</label>
+    <textarea id="text" spellcheck="false" placeholder="Nhập hoặc dán văn bản của bạn vào đây."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Tìm</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Thay bằng</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Phân biệt hoa thường</label>
+    <label class="check"><input type="checkbox" id="whole">Khớp cả từ</label>
+    <label class="check"><input type="checkbox" id="regex">Biểu thức chính quy</label>
+  </div>
+  <p class="help" id="regex-help" hidden>Cú pháp biểu thức chính quy của JavaScript. Dùng $1, $2 cho các nhóm và $&amp; cho toàn bộ phần khớp trong phần thay thế.</p>
+  <p class="tt__report" id="info" aria-live="polite">Nhập nội dung cần tìm.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Thay thế tất cả</button>
+    <button class="btn btn--quiet" id="clear" type="button">Xóa văn bản</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>Mở tệp .txt</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Kết quả</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Sao chép kết quả</button>
+      <button class="btn" id="dl" type="button">Tải xuống .txt</button>
+      <button class="btn btn--quiet" id="use" type="button">Dùng kết quả làm văn bản</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Thay thế văn bản hàng loạt</h2>
+<p>Tìm và thay thế đổi mọi lần xuất hiện của một từ hoặc mẫu chỉ trong một lượt. Số kết quả khớp được cập nhật khi bạn nhập, nên bạn thấy được thay đổi ảnh hưởng đến đâu trước khi áp dụng, và kết quả hiện ở một ô riêng nên văn bản gốc không bao giờ bị ghi đè cho đến khi bạn chọn "Dùng kết quả làm văn bản".</p>
+<p>Biểu thức chính quy cho phép bạn mô tả một hình dạng thay vì một chuỗi cố định: một dãy chữ số, một ngày tháng, một từ theo sau là dấu phẩy. Các nhóm trong ngoặc có thể được sắp xếp lại ở phần thay thế bằng $1, $2 và tiếp theo. Vì một mẫu viết không tốt có thể chạy rất lâu, các mẫu được thực thi trong một worker nền và bị dừng sau hai giây.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Hãy xây dựng và gỡ lỗi mẫu trước trong <a href="/tools/regex-tester/">Kiểm tra regex</a>, nơi liệt kê mọi kết quả khớp và các nhóm của chúng.</li>
+  <li>Đổi chữ hoa chữ thường bằng <a href="/tools/case-converter/">Chuyển đổi chữ hoa chữ thường</a>.</li>
+  <li>Kiểm tra chỉnh sửa bằng <a href="/tools/text-diff/">So sánh văn bản</a>.</li>
+  <li>Xóa các dòng lặp bằng <a href="/tools/remove-duplicate-lines/">Xóa dòng trùng lặp</a>.</li>
+</ul>

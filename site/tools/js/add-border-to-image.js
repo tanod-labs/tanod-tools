@@ -1,6 +1,6 @@
-import { $, $$, fmtBytes, clearNode, tx, txn } from "./core.js?v=5";
-import { batchTool, decode, newCanvas, ctx2d, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=5";
-import { thumbOf, rrPath, clamp } from "./imgcore3.js?v=5";
+import { $, $$, fmtBytes, clearNode, tx, txn } from "./core.js?v=11";
+import { batchTool, decode, newCanvas, ctx2d, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=11";
+import { thumbOf, rrPath, clamp } from "./imgcore3.js?v=11";
 
 const prev = $("#preview"), prevLabel = $("#preview-label");
 const radio = (name) => document.querySelector(`input[name="${name}"]:checked`).value;

@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Penampil faktur KSeF: buka XML FA(3) dan FA(2) | Tanod Tools",
+  "description": "Buka faktur KSeF Polandia (XML FA(3) atau FA(2)) dan baca sebagai faktur biasa. Cetak, simpan PDF, atau ekspor JSON. Gratis, tanpa unggah.",
+  "h1": "Penampil faktur KSeF",
+  "lede": "Buka faktur terstruktur dari KSeF Polandia dan baca sebagai faktur biasa: penjual, pembeli, baris, kelompok PPN, dan pembayaran. XML dibaca di browser Anda dan tidak pernah diunggah.",
+  "blurb": "Baca faktur KSeF Polandia (FA(3), FA(2)) sebagai faktur biasa.",
+  "keywords": "penampil ksef ksef viewer buka faktur ksef baca faktur ksef faktur elektronik polandia ksef fa(3) fa(2) faktura ustrukturyzowana buka xml ksef ksef xml ke pdf visualisasi faktur ksef krajowy system e-faktur",
+  "limits": "Satu file sekali proses, hingga 25 MB; 5.000 baris item pertama ditampilkan. Membaca skema KSeF FA(3) dan FA(2), termasuk faktur koreksi. Tidak dibaca: lampiran terstruktur FA(3) (Załącznik), faktur FA_RR, dan FA(1) yang lebih lama. Hanya penampil: tidak memvalidasi faktur dan tidak terhubung ke KSeF.",
+  "howto_title": "Cara membuka faktur KSeF",
+  "howto": [
+    "Pilih XML faktur yang Anda simpan dari KSeF atau dari program akuntansi Anda, atau seret ke halaman ini.",
+    "Baca fakturnya: penjual (Podmiot1) dan pembeli (Podmiot2), baris item, PPN per tarif, total, pembayaran, dan catatan.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong>, <strong>Unduh JSON</strong>, atau <strong>Tampilkan XML mentah</strong>."
+  ],
+  "faq": [
+    [
+      "Apakah faktur dikirim ke KSeF atau diunggah?",
+      "Tidak. Halaman ini tidak terhubung ke KSeF maupun server mana pun. XML dibaca di browser Anda dan ditampilkan di halaman ini, dan semuanya terhapus begitu Anda menutup tab."
+    ],
+    [
+      "Di mana saya mendapatkan XML sebuah faktur?",
+      "Di KSeF Anda bisa mengunduh faktur sebagai file XML, dan program akuntansi yang bekerja dengan KSeF dapat mengekspornya. Halaman ini membaca file yang sudah Anda simpan."
+    ],
+    [
+      "Apa bedanya FA(3) dan FA(2)?",
+      "Keduanya versi berurutan dari skema faktur yang sama (elemen akarnya Faktura). FA(3) adalah versi yang dipakai sejak KSeF wajib dimulai pada 2026; FA(2) adalah versi sebelumnya, dan faktur yang ditulis dengannya masih beredar. Keduanya dibaca di sini."
+    ],
+    [
+      "Apakah halaman ini menggambar kode QR KSeF atau visualisasi resminya?",
+      "Tidak. Halaman ini menampilkan isi XML sebagai faktur yang mudah dibaca. Halaman ini tidak membuat kode QR dari visualisasi resmi, dan independen dari Kementerian Keuangan."
+    ],
+    [
+      "Mengapa beberapa baris tidak memiliki tarif PPN?",
+      "Untuk baris yang dibebaskan (zw), reverse charge (oo), dan di luar objek pajak (np), file memberikan kode, bukan tarif. Kode ditampilkan apa adanya, beserta kategori PPN yang sesuai."
+    ],
+    [
+      "Bagaimana dengan faktur koreksi?",
+      "Koreksi (KOR) mencantumkan baris sebagaimana sebelumnya dan sebagaimana sekarang, dan totalnya adalah selisihnya. Baris lama ditandai Sebelum koreksi. Nomor faktur yang dikoreksi dan nomor KSeF-nya ditampilkan jika file mencantumkannya."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>KSeF dan fakturnya</h2>
+<p>KSeF, Krajowy System e-Faktur, adalah sistem faktur elektronik nasional Polandia yang dijalankan oleh Kementerian Keuangan. Faktur diterbitkan sebagai XML terstruktur dalam skema bernama FA, dan pada 2026 sistem ini menjadi wajib bagi pelaku usaha, secara bertahap. XML yang disimpan dan dipertukarkan itulah fakturnya; versi yang mudah dibaca hanyalah visualisasinya. Halaman ini membuat visualisasi tersebut di browser Anda dari XML yang Anda miliki.</p>
+<h2>Apa yang ditampilkan penampil</h2>
+<p>Anda melihat penjual (Podmiot1) dan pembeli (Podmiot2) beserta NIP atau nomor PPN UE dan alamatnya, nomor faktur (P_2), tanggal (P_1, P_6), mata uang, setiap baris item dengan kuantitas, satuan, harga, dan tarif PPN, PPN per kelompok tarif (P_13 dan P_14), total (P_15), rincian pembayaran dengan rekening bank, deskripsi tambahan, footer dan nomor registri, serta penanda yang penting: split payment, reverse charge, akuntansi basis kas, penerbitan oleh pembeli, dan pembebasan. Jumlah uang ditampilkan persis seperti di file.</p>
+<p>Halaman ini tidak memvalidasi faktur, tidak memeriksanya terhadap KSeF, dan tidak membaca lampiran terstruktur FA(3). Jika faktur diterbitkan dalam mata uang asing, PPN dalam PLN ditampilkan di bawah total.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Unduh JSON memberi Anda faktur sebagai data biasa, dengan nama field berbahasa Polandia yang diterjemahkan ke istilah bisnis EN 16931.</li>
+  <li>Format lain juga bisa dibuka di sini: XRechnung, ZUGFeRD / Factur-X, FatturaPA, dan Peppol. Halaman ini menyarankan penampil yang sesuai saat Anda membukanya.</li>
+  <li>Tampilkan XML mentah membantu bila Anda memerlukan elemen yang tidak ditampilkan pada faktur yang mudah dibaca.</li>
+</ul>

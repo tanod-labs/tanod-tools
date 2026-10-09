@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Konwerter JSON na CSV online, bezpłatny | Tanod Tools",
+  "description": "Zamień tablicę JSON na CSV w przeglądarce. Zagnieżdżone obiekty stają się kolumnami ze ścieżką po kropkach, jest opcja dla Excela. Bez przesyłania.",
+  "h1": "Konwerter JSON na CSV",
+  "lede": "Wklej tablicę JSON lub otwórz plik .json i uzyskaj CSV, który otworzysz w Excelu, Arkuszach Google lub Numbers.",
+  "blurb": "Zamień tablicę JSON na CSV dla arkuszy kalkulacyjnych.",
+  "keywords": "json na csv konwersja json do csv excel arkusz kalkulacyjny eksport spłaszczanie zagnieżdżone tablica obiektów json to csv",
+  "limits": "Dane wejściowe do ok. 10 MB, wklejone lub z pliku .json. Wynik aktualizuje się podczas pisania.",
+  "howto_title": "Jak zamienić JSON na CSV",
+  "howto": [
+    "Wklej JSON do pola albo otwórz plik .json. Tablica obiektów daje po jednym wierszu na obiekt.",
+    "Wybierz separator i sposób zapisu zagnieżdżonych obiektów. Włącz opcję dla Excela, jeśli plik będzie otwierany w Excelu.",
+    "Skopiuj CSV lub pobierz go jako plik .csv."
+  ],
+  "faq": [
+    ["Czy mój JSON jest przesyłany?", "Nie. Jest parsowany i konwertowany w Twojej przeglądarce, a nic nie jest nigdzie wysyłane ani zapisywane."],
+    ["Jakie kształty JSON działają?", "Tablica obiektów (jeden wiersz na obiekt, jedna kolumna na klucz), tablica tablic (każda wewnętrzna tablica to wiersz), tablica zwykłych wartości (jedna kolumna) lub pojedynczy obiekt (jeden wiersz). Kolumny pojawiają się w kolejności, w jakiej klucze zostały po raz pierwszy zauważone, więc obiekt z kluczem, którego brakuje innym, dodaje kolumnę, a wiersze bez niego dostają pustą komórkę."],
+    ["Jak obsługiwane są zagnieżdżone obiekty i tablice?", "Przy opcji <em>Spłaszcz do ścieżek z kropkami</em> zagnieżdżony obiekt, taki jak <code>{\"address\": {\"city\": \"Lyon\"}}</code>, staje się kolumną o nazwie <code>address.city</code>. Przy opcji <em>Zachowaj jako tekst JSON</em> cały zagnieżdżony obiekt trafia do jednej komórki jako JSON. Tablice są zawsze zapisywane jako tekst JSON w jednej komórce, ponieważ nie ma jednego właściwego sposobu rozłożenia listy na kolumny."],
+    ["Dlaczego polskie znaki wyglądają źle po otwarciu pliku w Excelu?", "Excel w Windows często zakłada stare kodowanie regionalne, chyba że plik zaczyna się od znacznika kolejności bajtów (BOM). Włącz <em>Dodaj znacznik kolejności bajtów dla Excela</em> przed pobraniem, a Excel odczyta plik jako UTF-8. Arkusze Google i Numbers odczytują UTF-8 w obu przypadkach. Jeśli Twój Excel oczekuje średników, wybierz też separator średnik."],
+    ["Kiedy wartości są ujmowane w cudzysłów?", "Tylko wtedy, gdy trzeba: wartość zawierająca separator, cudzysłów, podział wiersza albo zaczynająca się lub kończąca spacją jest ujmowana w cudzysłów podwójny, a każdy cudzysłów w środku jest podwajany. Liczby są zapisywane dokładnie tak, jak w JSON, więc długie identyfikatory nie są zaokrąglane. <code>null</code> staje się pustą komórką."],
+    ["Dlaczego pokazuje, że mój JSON jest niepoprawny?", "Komunikat podaje wiersz i kolumnę, w których odczyt się zatrzymał. Zwykłe przyczyny to końcowy przecinek, apostrofy zamiast cudzysłowów podwójnych lub brakujący nawias. Narzędzie <a href=\"/tools/json-formatter/\">Formatuj i waliduj JSON</a> pokazuje dokładne miejsce znacznikiem."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Separator</label>
+      <select id="delim">
+        <option value="," selected>Przecinek ( , )</option>
+        <option value=";">Średnik ( ; )</option>
+        <option value="&#9;">Tabulator</option>
+        <option value="|">Kreska pionowa ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Zagnieżdżone obiekty</label>
+      <select id="nested">
+        <option value="flatten" selected>Spłaszcz do ścieżek z kropkami (address.city)</option>
+        <option value="json">Zachowaj jako tekst JSON w jednej komórce</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Dodaj wiersz nagłówka</label>
+    <label class="check"><input type="checkbox" id="crlf">Zakończenia wierszy Windows (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Dodaj znacznik kolejności bajtów dla Excela (tylko przy pobieraniu)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wklej JSON, aby zacząć.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj CSV</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Pobierz .csv</button>
+    <button class="btn btn--quiet" id="clear" type="button">Wyczyść</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Otwórz plik .json</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Zamiana JSON na arkusz kalkulacyjny</h2>
+<p>Interfejsy API i eksporty często dają JSON, a osoby potrzebujące danych chcą arkusza kalkulacyjnego. CSV łączy te dwa światy: każdy obiekt w tablicy staje się wierszem, a każdy klucz kolumną. Ponieważ obiekty w prawdziwych danych rzadko mają te same klucze, narzędzie zbiera wszystkie napotkane klucze w kolejności ich pierwszego wystąpienia i zostawia pustą komórkę tam, gdzie obiekt nie ma wartości dla danej kolumny.</p>
+<p>Arkusze są płaskie, więc zagnieżdżone dane trzeba jakoś upchnąć w kolumnach. Spłaszczanie zamienia <code>user.name</code> i <code>user.email</code> w osobne kolumny, co pasuje do większości raportów. Zachowanie zagnieżdżonych obiektów jako tekstu JSON ogranicza liczbę kolumn i pozwala później odtworzyć pierwotną strukturę.</p>
+<p>CSV podąża za zwykłymi regułami (RFC 4180): wartości są ujmowane w cudzysłów tylko w razie potrzeby, a cudzysłowy wewnątrz wartości są podwajane. Liczby zachowują dokładne cyfry z JSON zamiast być zaokrąglane, jak liczby JavaScriptu.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz odwrotnej konwersji? Użyj narzędzia <a href="/tools/csv-to-json/">CSV na JSON</a>.</li>
+  <li>Jeśli JSON nie chce się skonwertować, znajdź problem w narzędziu <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>.</li>
+  <li>Porównaj dwa eksporty wiersz po wierszu w narzędziu <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+</ul>

@@ -1,0 +1,73 @@
+<!--meta
+{
+  "title": "Tạo UUID: v4 và v7, kèm công cụ kiểm tra | Tanod Tools",
+  "description": "Tạo hàng loạt UUID ngẫu nhiên v4 hoặc UUID v7 sắp theo thời gian, sao chép hay tải xuống, và kiểm tra phiên bản, timestamp của UUID. Miễn phí, trong trình duyệt.",
+  "h1": "Tạo UUID",
+  "lede": "Tạo UUID phiên bản 4 (ngẫu nhiên) hoặc phiên bản 7 (sắp theo thời gian), và kiểm tra bất kỳ UUID nào bạn đang có.",
+  "blurb": "Tạo UUID v4 và v7, và kiểm tra một UUID.",
+  "keywords": "tạo uuid tạo guid uuid4 uuid7 mã định danh duy nhất kiểm tra uuid unique identifier validate",
+  "limits": "Từ 1 đến 1.000 UUID mỗi lần.",
+  "howto_title": "Cách tạo UUID",
+  "howto": [
+    "Chọn phiên bản 4 cho định danh hoàn toàn ngẫu nhiên, hoặc phiên bản 7 cho định danh sắp xếp theo thời gian tạo.",
+    "Đặt số lượng cần và các tùy chọn định dạng: chữ hoa, không có dấu gạch ngang, hoặc có ngoặc nhọn.",
+    "Sao chép danh sách hoặc tải xuống dưới dạng tệp văn bản. Dán một UUID vào phần kiểm tra để đọc phiên bản của nó."
+  ],
+  "faq": [
+    ["Tôi nên dùng phiên bản nào?", "Phiên bản 4 gồm 122 bit ngẫu nhiên và là mặc định thông dụng. Phiên bản 7 đặt timestamp Unix tính bằng mili giây lên đầu, nên các giá trị sắp xếp theo thứ tự tạo, giúp chỉ mục cơ sở dữ liệu gọn gàng. Hãy dùng v7 khi thứ tự quan trọng và bạn chấp nhận để thời gian tạo đọc được từ ID."],
+    ["UUID có được gửi đi đâu không?", "Không. Chúng được tạo trong trình duyệt của bạn từ bộ tạo số ngẫu nhiên an toàn của nó và không được gửi hay lưu trữ."],
+    ["Hai UUID có thể trùng nhau không?", "Với phiên bản 4, xác suất là không đáng kể: bạn sẽ phải tạo hàng tỷ UUID mỗi giây trong nhiều năm mới thấy rủi ro thực tế. Các giá trị phiên bản 7 được tạo trong cùng một mili giây được giữ khác nhau và tăng dần nhờ một bộ đếm nằm trong các bit ngẫu nhiên."],
+    ["GUID có giống UUID không?", "GUID là tên Microsoft dùng cho cùng định dạng 128 bit. Một số công cụ viết GUID bằng chữ hoa hoặc trong ngoặc nhọn, các tùy chọn ở đây có thể làm được điều đó."],
+    ["Công cụ kiểm tra đọc những gì?", "Nó chấp nhận UUID có hoặc không có dấu gạch ngang, ngoặc nhọn hay tiền tố <code>urn:uuid:</code>, và báo phiên bản, variant và, với phiên bản 7, timestamp được lưu trong 48 bit đầu. Nó không thể cho biết một ID có thực sự được cấp bởi thứ gì đó hay không."],
+    ["Bố cục phiên bản 7 có theo chuẩn không?", "Có. Nó theo RFC 9562: 48 bit Unix mili giây, phiên bản, bộ đếm 12 bit, variant và 62 bit ngẫu nhiên."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <span class="label" id="uu-ver-l">Phiên bản</span>
+    <div class="seg" role="radiogroup" aria-labelledby="uu-ver-l">
+      <label><input type="radio" name="ver" value="4" checked>Phiên bản 4</label>
+      <label><input type="radio" name="ver" value="7">Phiên bản 7</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="uu-count">Số lượng</label>
+    <input type="number" id="uu-count" min="1" max="1000" value="5">
+  </div>
+</div>
+<div class="util-checks">
+  <label class="check"><input type="checkbox" id="uu-upper">Chữ hoa</label>
+  <label class="check"><input type="checkbox" id="uu-nohy">Không có dấu gạch ngang</label>
+  <label class="check"><input type="checkbox" id="uu-brace">Đặt trong ngoặc nhọn</label>
+</div>
+<div class="actions">
+  <button class="btn btn--primary btn--lg" id="uu-gen" type="button">Tạo</button>
+  <button class="btn" id="uu-copy" type="button">Sao chép tất cả</button>
+  <button class="btn" id="uu-dl" type="button">Tải xuống .txt</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out" id="uu-out" tabindex="0" aria-label="Các UUID đã tạo"></pre>
+
+<h2 class="util-h">Kiểm tra UUID</h2>
+<div class="field">
+  <label for="uu-in">Dán một UUID</label>
+  <input type="text" id="uu-in" class="mono" autocomplete="off" spellcheck="false" placeholder="018f3c1e-2b4a-7c3d-8e5f-0123456789ab">
+</div>
+<div class="status" id="uu-check" role="status" hidden></div>
+<dl class="stats" id="uu-stats" hidden>
+  <div><dt>Phiên bản</dt><dd id="uu-v">-</dd></div>
+  <div><dt>Variant</dt><dd id="uu-var" class="util-small">-</dd></div>
+  <div id="uu-tsbox" hidden><dt>Timestamp (UTC)</dt><dd id="uu-ts" class="util-small">-</dd></div>
+</dl>
+<!--explain-->
+<h2>UUID là gì, và v4 so với v7</h2>
+<p>UUID là một định danh 128 bit được viết thành 32 chữ số hex trong năm nhóm. Vì không gian này rất lớn, các hệ thống có thể tạo ID độc lập, không cần bộ đếm trung tâm, mà vẫn kỳ vọng chúng là duy nhất.</p>
+<p>Trong UUID phiên bản 4, 122 trong 128 bit là ngẫu nhiên; phần còn lại chứa phiên bản (4) và variant. UUID phiên bản 7 bắt đầu bằng thời gian tạo tính theo Unix mili giây, theo sau là một bộ đếm và các bit ngẫu nhiên. Vì thời gian đứng đầu, các ID mới hơn sắp xếp sau các ID cũ hơn, thân thiện với chỉ mục cơ sở dữ liệu hơn so với khóa hoàn toàn ngẫu nhiên. Cái giá là thời gian tạo có thể đọc được từ ID.</p>
+<p>Công cụ này dùng bộ tạo số ngẫu nhiên an toàn của trình duyệt. Trong cùng một mili giây, các giá trị phiên bản 7 tăng dần qua một bộ đếm 12 bit, nên một lô UUID được sắp thứ tự chặt chẽ.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Cần mật khẩu chứ không phải ID? Hãy dùng <a href="/tools/password-generator/">Tạo mật khẩu</a>.</li>
+  <li>Biến một ID thành mã có thể quét bằng <a href="/tools/qr-code-generator/">Tạo mã QR</a>.</li>
+</ul>

@@ -1,6 +1,6 @@
 // Shared intake for single-PDF page tools (split, extract, remove, rotate, reorder).
-import { $, dropzone, UserError, readBytes, setStatus, clearNode, fmtBytes, announce, tick, tx, txn } from "./core.js?v=5";
-import { openForEdit, openForView, renderPage, pageGrid } from "./pdfcore.js?v=5";
+import { $, dropzone, UserError, readBytes, setStatus, clearNode, fmtBytes, announce, tick, tx, txn } from "./core.js?v=11";
+import { openForEdit, openForView, closeView, renderPage, pageGrid } from "./pdfcore.js?v=11";
 
 export const MAX_BYTES = 200 * 1024 * 1024;
 
@@ -89,7 +89,7 @@ export async function lazyThumbs(bytes, name, grid, { maxPx = 150, isCurrent = (
       }
     }
     busy = false;
-    if (!isCurrent()) view.destroy();
+    if (!isCurrent()) closeView(view);
   }
   const io = new IntersectionObserver((entries) => {
     for (const e of entries) {

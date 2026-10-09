@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Kompresuj obraz online: mniejsze JPG, PNG, WebP | Tanod Tools",
+  "description": "Zmniejsz rozmiar obrazów JPEG, PNG i WebP w przeglądarce. Ustaw jakość, opcjonalnie ogranicz kolory w PNG i zobacz zaoszczędzone miejsce. Nic nie jest przesyłane.",
+  "h1": "Kompresuj obraz",
+  "lede": "Zmniejszaj pliki JPEG, PNG i WebP i zobacz dokładnie, ile miejsca oszczędzasz, bez przesyłania czegokolwiek.",
+  "blurb": "Zmniejsz zdjęcia i grafiki w przeglądarce.",
+  "keywords": "kompresja obrazu zmniejszenie rozmiaru zdjęcia zmniejsz plik optymalizacja jpg jpeg png webp rozmiar pliku jakość kompresor zdjęć tinypng",
+  "limits": "Do 50 obrazów w partii, po 50 MB każdy, około 100 megapikseli każdy. PNG, JPEG, WebP, GIF, BMP i AVIF (tam, gdzie przeglądarka potrafi je otworzyć).",
+  "howto_title": "Jak skompresować obraz",
+  "howto": [
+    "Wybierz obrazy albo przeciągnij je na stronę.",
+    "Wybierz format wyjściowy i jakość. Dla PNG możesz też ograniczyć liczbę kolorów.",
+    "Naciśnij <strong>Kompresuj</strong>, sprawdź rozmiary, a potem pobierz pliki lub archiwum .zip."
+  ],
+  "faq": [
+    ["Czy moje obrazy są przesyłane?", "Nie. Kompresja odbywa się w przeglądarce: obraz jest dekodowany, rysowany od nowa i zapisywany ponownie na twoim urządzeniu. Nic nie jest wysyłane na serwer."],
+    ["Jaką jakość wybrać?", "Dla zdjęć 70–85 zwykle daje wyraźnie mniejszy plik, który przy normalnym rozmiarze wyświetlania wygląda tak samo. Niższe wartości oszczędzają więcej miejsca, ale pokazują blokowość wokół krawędzi i na gładkim niebie. Dla pojedynczego obrazu strona pokazuje obok siebie środek oryginału i wynik w skali 100%, więc możesz go ocenić."],
+    ["Co robi „Ogranicz kolory”?", "Zapisuje PNG z paletą 256, 128, 64 lub 32 kolorów zamiast milionów. Logo, zrzuty ekranu i płaskie ilustracje często bardzo się zmniejszają bez widocznej zmiany. Zdjęcia i gładkie gradienty mogą pokazywać pasma, więc sprawdź podgląd. To kompresja stratna, stosowana tylko wtedy, gdy wynikiem jest PNG."],
+    ["Dlaczego plik ma oznaczenie „już zoptymalizowany”?", "Jeśli ponownie zapisana wersja nie byłaby mniejsza od oryginału, narzędzie zostawia oryginalny plik nietknięty zamiast dawać coś większego."],
+    ["Czy metadane są zachowywane?", "Nie. Obraz jest kodowany od nowa, więc dane EXIF, takie jak informacje o aparacie i lokalizacja GPS, nie są przenoszone, a profil kolorów nie jest osadzany. Obraz jest zapisywany w orientacji, w jakiej się wyświetla. Aby usunąć metadane bez ponownego kodowania, użyj narzędzia <a href=\"/tools/remove-exif/\">Usuń dane EXIF</a>."],
+    ["Co się dzieje z plikami GIF, BMP i AVIF?", "Przy opcji „Zachowaj” są zapisywane jako PNG (GIF staje się swoją pierwszą klatką). Jeśli nie jest to mniejsze, zachowywany jest oryginał. Jako wynik możesz też wybrać JPEG lub WebP."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść obrazy tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Wybierz obrazy</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP lub AVIF. Lub przeciągnij je w dowolne miejsce na tej stronie.</p>
+</div>
+<ol class="files" id="files" aria-label="Obrazy do skompresowania" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Format wyjściowy</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Zachowaj</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Opcja Zachowaj zapisuje JPEG, WebP i PNG w ich własnym formacie; inne formaty stają się PNG.</p>
+    </fieldset>
+    <div class="field">
+      <label for="quality">Jakość: <span class="num" id="quality-out">80</span></label>
+      <input type="range" id="quality" min="10" max="100" value="80">
+      <p class="help">Dotyczy wyniku w JPEG i WebP. JPEG nie obsługuje przezroczystości, więc przezroczyste obszary stają się białe.</p>
+    </div>
+    <div class="field">
+      <label for="colours">Ogranicz kolory (wynik PNG)</label>
+      <select id="colours">
+        <option value="0" selected>Wyłączone: zachowaj wszystkie kolory</option>
+        <option value="256">256 kolorów</option>
+        <option value="128">128 kolorów</option>
+        <option value="64">64 kolory</option>
+        <option value="32">32 kolory</option>
+      </select>
+      <p class="help">Stratne. Najlepsze dla logo, zrzutów ekranu i płaskiej grafiki.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Kompresuj</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Wyczyść wszystko</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="compare" class="compare" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Jak tu działa kompresja obrazów</h2>
+<p>Większość rozmiaru pliku obrazu to dane pikseli. JPEG i WebP zmniejszają je, odrzucając szczegóły, których oko najmniej brakuje; ustawienie jakości decyduje, ile zostanie odrzucone. PNG jest bezstratny, więc jego rozmiar zależy od tego, jak przewidywalne są piksele. Ograniczenie PNG do palety najwyżej 256 kolorów znacznie upraszcza kompresję danych, kosztem dokładności kolorów.</p>
+<p>To narzędzie dekoduje każdy obraz w przeglądarce, rysuje go na płótnie i zapisuje ponownie, używając wbudowanych w przeglądarkę koderów JPEG i WebP. Dla PNG z paletą wybiera kolory za pomocą otwartoźródłowego kwantyzatora UPNG.js i samo zapisuje plik PNG. Jeśli wynik nie jest mniejszy od pliku, który podano, dostajesz z powrotem oryginał.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Duże zdjęcia zmniejszają się najbardziej, gdy zmniejszysz też ich wymiary: najpierw wypróbuj <a href="/tools/resize-image/">Zmień rozmiar obrazu</a>, potem kompresuj.</li>
+  <li>Potrzebujesz innego formatu? <a href="/tools/convert-image/">Konwertuj obraz</a> obsługuje PNG, JPEG i WebP.</li>
+  <li>Aby usunąć lokalizację i dane aparatu bez ponownej kompresji, użyj narzędzia <a href="/tools/remove-exif/">Usuń dane EXIF</a>.</li>
+</ul>

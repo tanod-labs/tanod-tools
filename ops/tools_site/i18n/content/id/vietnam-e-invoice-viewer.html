@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Penampil faktur Vietnam: buka XML hóa đơn điện tử | Tanod Tools",
+  "description": "Buka hóa đơn điện tử Vietnam (Dekret 123/2020, XML Surat Edaran 78/2021) dan baca sebagai faktur biasa. Cetak, simpan PDF, atau ekspor JSON. Gratis, tanpa unggah.",
+  "h1": "Penampil faktur elektronik Vietnam",
+  "lede": "Buka faktur elektronik Vietnam (hóa đơn điện tử) dan baca sebagai faktur biasa: simbol dan nomor faktur, penjual, pembeli, baris, PPN per tarif, dan kode dari otoritas pajak. XML dibaca di browser Anda dan tidak pernah diunggah.",
+  "blurb": "Baca hóa đơn điện tử Vietnam (XML Dekret 123/2020) sebagai faktur biasa.",
+  "keywords": "penampil faktur vietnam faktur elektronik vietnam hóa đơn điện tử buka xml faktur vietnam baca faktur xml vietnam xem hoá đơn điện tử mở file xml hóa đơn nghị định 123/2020 thông tư 78/2021 mã của cơ quan thuế mccqt đọc hóa đơn xml",
+  "limits": "Satu file sekali proses, hingga 25 MB; 5.000 baris item pertama ditampilkan. Membaca XML faktur menurut Dekret 123/2020 dan Surat Edaran 78/2021 (elemen akar HDon, juga bila dibungkus dalam pesan TDiep dari otoritas pajak), berkode maupun tidak berkode. Tanda tangan digital (DSCKS) tidak diverifikasi. Hanya penampil: tidak memvalidasi faktur dan tidak mencari apa pun ke otoritas pajak.",
+  "howto_title": "Cara membuka faktur elektronik Vietnam",
+  "howto": [
+    "Pilih XML faktur yang Anda simpan dari penyedia faktur elektronik Anda, portal otoritas pajak, atau perangkat lunak akuntansi Anda, atau seret ke halaman ini.",
+    "Baca fakturnya: simbol (KHHDon) dan nomor (SHDon), kode otoritas pajak (MCCQT) jika faktur memilikinya, penjual (NBan), pembeli (NMua), baris item, PPN per tarif, total, dan pembayaran.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong>, <strong>Unduh JSON</strong>, atau <strong>Tampilkan XML mentah</strong>."
+  ],
+  "faq": [
+    [
+      "Apakah faktur diunggah atau dikirim ke otoritas pajak?",
+      "Tidak. Halaman ini tidak terhubung ke otoritas pajak, penyedia Anda, maupun server mana pun. XML dibaca di browser Anda dan ditampilkan di halaman ini, dan semuanya terhapus begitu Anda menutup tab."
+    ],
+    [
+      "Apakah tanda tangan digital diverifikasi?",
+      "Tidak. Tanda tangan dalam elemen DSCKS (milik penjual dan, pada faktur berkode, milik otoritas pajak) tidak diverifikasi. File yang memilikinya ditandai dengan catatan, tetapi halaman ini tidak dapat memberi tahu Anda siapa yang menandatangani faktur atau apakah faktur diubah setelahnya. Gunakan alat dari penyedia Anda atau otoritas pajak jika Anda memerlukannya."
+    ],
+    [
+      "Apa itu simbol faktur dan MCCQT?",
+      "Simbol faktur terdiri dari nomor formulir (KHMSHDon) dan simbol (KHHDon, misalnya C24TAA), dan nomornya adalah SHDon. MCCQT adalah kode yang diberikan otoritas pajak kepada faktur berkode (hóa đơn có mã). Faktur tanpa kode tidak memiliki MCCQT. Semuanya ditampilkan sebagaimana diberikan file; halaman ini tidak dapat memeriksa apakah sebuah kode asli."
+    ],
+    [
+      "Bisakah halaman ini membuka pesan yang dikembalikan dari otoritas pajak?",
+      "Bisa. Jika XML berupa pesan TDiep dengan faktur di dalam DLieu, faktur diambil dan ditampilkan. Jenis pesan lain dan faktur dalam format yang lebih lama tidak dibaca."
+    ],
+    [
+      "Bagaimana tarif PPN ditampilkan?",
+      "Tarif seperti 10%, 8%, 5%, dan 0% ditampilkan sebagai tarif. KCT (tidak dikenai PPN) dan KKKNT (tidak dilaporkan dan tidak dibayar) ditampilkan sebagai kode yang diberikan file, di samping kategori PPN yang sesuai. Tarif yang ditulis sebagai KHAC:x% ditampilkan sebagai tarif x."
+    ],
+    [
+      "Di mana saya mendapatkan XML sebuah faktur?",
+      "Penyedia faktur elektronik Anda dan portal otoritas pajak memungkinkan Anda mengunduh faktur sebagai file XML, dan perangkat lunak akuntansi dapat mengekspornya. Halaman ini membaca file XML yang sudah Anda simpan, bukan PDF-nya."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Faktur elektronik Vietnam</h2>
+<p>Sejak Dekret 123/2020/ND-CP dan Surat Edaran 78/2021/TT-BTC, pelaku usaha di Vietnam menerbitkan hóa đơn điện tử, yaitu faktur elektronik, sebagai file XML dalam format yang ditetapkan otoritas pajak. Sebuah faktur membawa kode dari otoritas pajak (hóa đơn có mã, ditampilkan di elemen MCCQT) atau diterbitkan tanpa kode. XML itulah fakturnya; versi yang mudah dibaca hanyalah visualisasinya. Halaman ini membuat visualisasi tersebut di browser Anda dari XML yang Anda miliki.</p>
+<h2>Apa yang ditampilkan penampil</h2>
+<p>Anda melihat nama dan versi faktur, nomor formulir (KHMSHDon), simbol (KHHDon), nomor (SHDon), tanggal (NLap), kode otoritas pajak (MCCQT) bila ada, penjual (NBan) dan pembeli (NMua) beserta kode pajak (MST), alamat, dan kontaknya, setiap baris item dengan satuan, kuantitas, harga, diskon, dan tarif PPN, PPN per tarif (THTTLTSuat), total, jumlah dalam kata-kata, dan rincian pembayaran. Untuk faktur penyesuaian atau pengganti (TCHDon), faktur yang dirujuk ikut ditampilkan. Jumlah uang ditampilkan persis seperti di file.</p>
+<p>Halaman ini tidak memverifikasi tanda tangan digital (DSCKS), tidak memvalidasi faktur terhadap skema dan aturan otoritas pajak, dan tidak mencari faktur ke otoritas pajak. Faktur dalam format lain, seperti faktur lama menurut Surat Edaran 32/2011, tidak dibaca.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Unduh JSON memberi Anda faktur sebagai data biasa, dengan nama field berbahasa Vietnam dipetakan ke istilah bisnis EN 16931.</li>
+  <li>Format lain juga bisa dibuka di sini: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol, dan e-Fatura Turki. Halaman ini menyarankan penampil yang sesuai saat Anda membukanya.</li>
+  <li>Tampilkan XML mentah membantu bila Anda memerlukan elemen yang tidak ditampilkan pada faktur yang mudah dibaca.</li>
+</ul>

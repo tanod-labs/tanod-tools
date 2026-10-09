@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Creador de GIF: crea un GIF animado con imágenes | Tanod Tools",
+  "description": "Crea un GIF animado con varias imágenes en tu navegador: elige orden, retardo y tamaño, mira la vista previa y descárgalo. Gratis, sin registro, sin subir nada.",
+  "h1": "Creador de GIF",
+  "lede": "Convierte un puñado de imágenes en un GIF animado. Ponlas en orden, elige cuánto tiempo se muestra cada una y qué tamaño tiene el GIF, mira la vista previa y descárgalo.",
+  "blurb": "Crea un GIF animado a partir de varias imágenes.",
+  "keywords": "creador de gif crear gif hacer gif gif animado crear gif animado imagenes a gif fotos a gif convertir fotos en gif presentacion de fotos fotogramas retardo bucle animacion gif maker",
+  "limits": "De 2 a 60 imágenes, de 50 MB cada una. El GIF puede tener hasta 1200 píxeles de ancho, y todos los fotogramas tienen la forma de la primera imagen. Un fotograma GIF contiene como máximo 256 colores, por lo que las fotos muestran cierto efecto de bandas, y no hay transparencia: las zonas transparentes toman el color de fondo. De las imágenes animadas que agregues se usa el primer fotograma.",
+  "howto_title": "Cómo crear un GIF animado",
+  "howto": [
+    "Elige dos o más imágenes o arrástralas a la página. Usa los botones de subir y bajar para definir el orden.",
+    "Define el retardo entre fotogramas y el ancho, y elige cómo se ajustan las imágenes de formas distintas. Mira la vista previa.",
+    "Pulsa <strong>Crear GIF</strong>, revisa el resultado y descárgalo."
+  ],
+  "faq": [
+    ["¿Se suben mis imágenes?", "No. Las imágenes se dibujan y el GIF se escribe con código que se ejecuta en tu navegador, con el codificador de código abierto gifenc. No se envía nada a ningún servidor."],
+    ["¿Cómo hago que la animación vaya más rápida o más lenta?", "Cambia el retardo entre fotogramas, en milisegundos: 1000 es un segundo y 100 son diez fotogramas por segundo. El retardo más corto que se ofrece es de 20 ms, porque los navegadores reproducen los retardos más cortos a una velocidad mucho más lenta."],
+    ["¿Por qué mi GIF se ve granulado o con bandas?", "Un fotograma GIF puede usar como máximo 256 colores, así que las fotos y los degradados suaves muestran bandas. Esta herramienta elige los mejores 256 colores para cada fotograma por separado, lo que mantiene cada fotograma lo más parecido posible a su imagen dentro de lo que permite el formato. Los gráficos planos y las capturas de pantalla son los que mejor se ven."],
+    ["¿Por qué mi GIF pesa tanto?", "GIF comprime mal y guarda cada fotograma completo, así que el tamaño crece con el ancho, el alto y la cantidad de fotogramas. Para reducirlo, usa un ancho menor, menos imágenes o menos colores por fotograma."],
+    ["¿Qué pasa con las imágenes de distinto tamaño o forma?", "Todos los fotogramas tienen la forma de la primera imagen. <em>Ajustar dentro</em> muestra cada imagen completa y rellena el espacio sobrante con el color de fondo, <em>Rellenar y recortar</em> cubre todo el fotograma y recorta desde el centro lo que se sale, y <em>Estirar</em> deforma cada imagen para adaptarla al fotograma."],
+    ["¿Se conserva la transparencia?", "No. Un GIF solo puede marcar un color como transparente, así que la herramienta rellena las zonas transparentes con el color de fondo que elijas. De ese modo, cada fotograma se ve igual en todas partes."],
+    ["¿Qué hace reproducir hacia adelante y luego hacia atrás?", "Después del último fotograma, vuelve a agregar los fotogramas en orden inverso, sin repetir el primero ni el último, de modo que la animación va y viene con fluidez en lugar de saltar de nuevo al inicio."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Suelta dos o más imágenes aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Elegir imágenes</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP o AVIF. O arrástralas a cualquier parte de esta página.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Fotogramas, en orden" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Retardo entre fotogramas (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1000 ms es un segundo. El retardo más corto es de 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Ancho (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">El alto depende de la primera imagen: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Imágenes de otras formas</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Ajustar dentro</label>
+        <label><input type="radio" name="gm-fit" value="cover">Rellenar y recortar</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Estirar</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Color de fondo</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Repetir</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>Sin fin</label>
+        <label><input type="radio" name="gm-loop" value="once">Una vez</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Colores por fotograma</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (mejor calidad)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (archivo más pequeño)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Orden</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Reproducir hacia adelante y luego hacia atrás</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Vista previa</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Vista previa de la animación"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Crear GIF</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Borrar todo</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cómo se arma un GIF animado</h2>
+<p>Un GIF es una pila de imágenes normales que se muestran una tras otra. Cada fotograma lleva su propia tabla de colores, pequeña, de 256 colores como máximo, y un retardo, es decir, el tiempo (en centésimas de segundo) que pasa antes de que aparezca el siguiente fotograma. Un ajuste de repetición al principio le indica al visor si debe repetirse sin fin o detenerse tras una pasada. No hay compresión de video: cada fotograma se guarda completo, empaquetado con un método sencillo sin pérdida, y por eso los GIF crecen tan rápido.</p>
+<p>Para crear uno a partir de fotos hay que elegir los 256 colores que mejor representan cada imagen y luego reemplazar cada píxel por el más cercano de ellos. Esta herramienta lo hace con cada fotograma por separado, con el codificador de código abierto gifenc, después de dibujar todas las imágenes con el mismo tamaño para que los fotogramas coincidan. El tamaño sale del ancho que eliges y de las proporciones de la primera imagen, y las demás imágenes se ajustan dentro de él, se recortan para llenarlo o se estiran, según lo que elijas.</p>
+<p>Tus imágenes se leen de una en una mientras se escribe el GIF, así que una lista larga de fotos grandes no tiene que caber toda junta en la memoria. La vista previa que está sobre el botón reproduce los mismos fotogramas a menor tamaño para que puedas evaluar el orden, la velocidad y el ajuste antes de decidirte; se pausa con un solo botón y empieza en pausa si tu sistema pide reducir el movimiento.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Hazlo corto: unos segundos a 10 fotogramas por segundo son más que suficientes, y con menos fotogramas, y más pequeños, el archivo pesa mucho menos.</li>
+  <li>Primero deja las imágenes con la misma forma usando <a href="/tools/crop-image/">Recortar imagen</a>, o reduce las fotos grandes con <a href="/tools/resize-image/">Redimensionar imagen</a>.</li>
+  <li>¿Quieres una sola imagen en lugar de una animación? <a href="/tools/merge-images/">Unir imágenes</a> las junta una al lado de la otra o en cuadrícula.</li>
+</ul>

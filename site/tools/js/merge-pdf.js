@@ -1,5 +1,5 @@
-import { $, el, icon, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, UserError, announce, tx, txn } from "./core.js?v=5";
-import { loadPdfLib, openForEdit, saveDoc } from "./pdfcore.js?v=5";
+import { $, el, icon, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, UserError, announce, tx, txn } from "./core.js?v=11";
+import { loadPdfLib, openForEdit, saveDoc } from "./pdfcore.js?v=11";
 
 const MAX_FILES = 50;
 const MAX_BYTES = 200 * 1024 * 1024;

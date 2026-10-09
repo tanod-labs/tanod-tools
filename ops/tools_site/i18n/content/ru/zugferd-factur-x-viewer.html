@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Просмотр ZUGFeRD / Factur-X: XML из PDF | Tanod Tools",
+  "description": "Достаньте XML-счёт из PDF ZUGFeRD или Factur-X и прочитайте его как обычный счёт. Печать, JSON. Бесплатно, ничего не загружается.",
+  "h1": "Просмотр ZUGFeRD / Factur-X",
+  "lede": "Откройте PDF ZUGFeRD или Factur-X и увидьте данные счёта, спрятанные внутри. Вложенный XML извлекается из PDF в вашем браузере и показывается как счёт. Файл не покидает ваше устройство.",
+  "blurb": "Достаньте XML-счёт из PDF ZUGFeRD или Factur-X и прочитайте его.",
+  "keywords": "просмотр zugferd просмотр factur-x zugferd pdf открыть factur-x pdf xml из pdf извлечь xml из pdf электронный счёт pdf/a-3 xml вложенный в pdf гибридный счёт zugferd viewer factur-x viewer zugferd anzeigen lecteur factur-x",
+  "limits": "Один файл за раз, до 25 МБ. Нужен PDF/A-3 с вложенным файлом счёта (factur-x.xml, zugferd-invoice.xml или xrechnung.xml); в обычном PDF данных счёта нет, и страница сообщит об этом. Страницы PDF не показываются, только данные внутри. Только просмотр: без проверки, и ничего никуда не отправляется.",
+  "howto_title": "Как прочитать PDF ZUGFeRD или Factur-X",
+  "howto": [
+    "Выберите PDF ZUGFeRD или Factur-X либо перетащите его на страницу. XML-файл тоже подойдёт.",
+    "Страница находит в PDF вложенный XML и показывает его как счёт: стороны, позиции, НДС, итоги и платёжные реквизиты.",
+    "Нажмите <strong>Печать или сохранение в PDF</strong>, чтобы получить чистую копию, <strong>Скачать JSON</strong>, чтобы получить данные, или <strong>Скачать XML</strong>, чтобы сохранить файл, который был внутри PDF."
+  ],
+  "faq": [
+    [
+      "Загружается ли мой PDF?",
+      "Нет. PDF открывается в вашем браузере библиотекой pdf.js с открытым исходным кодом, вложенный XML читается там же, и ничего не отправляется на сервер. Когда вы закрываете вкладку, всё стирается."
+    ],
+    [
+      "Чем отличаются ZUGFeRD и Factur-X?",
+      "Это один и тот же стандарт. ZUGFeRD — немецкое название, Factur-X — французское; ZUGFeRD 2 и Factur-X 1 технически идентичны. Оба представляют собой документ PDF/A-3 с вложенным XML-счётом (UN/CEFACT CII). Профиль (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED или XRECHNUNG) определяет, сколько данных содержит XML."
+    ],
+    [
+      "Почему страница пишет, что в моём PDF нет данных счёта?",
+      "Обычный PDF — это лишь картинка счёта. Структурированные данные есть, только если программа, создавшая PDF, вложила в него XML. Поищите вложенный файл в программе для чтения PDF. Если его нет, этот PDF не является электронным счётом; чтобы вместо этого прочитать его текст, попробуйте инструмент «<a href=\"/tools/pdf-to-text/\">PDF в текст</a>»."
+    ],
+    [
+      "Какие профили поддерживаются?",
+      "Все профили, где используется XML CII. MINIMUM и BASIC WL содержат итоги, но не позиции, о чём страница сообщает; BASIC, EN 16931, EXTENDED и XRECHNUNG содержат позиции. Старый формат ZUGFeRD 1.0 не поддерживается."
+    ],
+    [
+      "Сравниваются ли страницы PDF с XML?",
+      "Нет. Страницы PDF не показываются, и ничего не сравнивается. В гибридных форматах данными счёта, как правило, считается именно XML, поэтому вы видите здесь его."
+    ],
+    [
+      "Открываются ли вложенные документы?",
+      "Нет. Документы, вложенные в XML (например, табель учёта времени), только перечисляются с кнопкой «Скачать». Имя файла очищается, а скачивание идёт с обобщённым типом файла; открывайте их, только если доверяете отправителю."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Перетащите сюда электронный счёт</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Выбрать файл</span></label>
+  <p class="drop__hint">XML, PDF со счётом внутри (ZUGFeRD, Factur-X) или подписанный файл .p7m. Или перетащите файл в любое место этой страницы.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Печать или сохранение в PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Скачать JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Скачать XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Показать исходный XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Исходный XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Здесь показано только начало длинного файла. Чтобы получить его целиком, скачайте XML.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>PDF, который одновременно является счётом</h2>
+<p>Файл ZUGFeRD или Factur-X выглядит как любой PDF-счёт, но содержит вторую копию счёта в виде XML, прикреплённую к PDF так же, как вложение прикрепляется к письму. Люди читают страницы, программы читают XML. С 1 января 2025 года каждая компания в Германии должна уметь принимать структурированные электронные счета, а Франция требует того же с 1 сентября 2026 года, поэтому такие гибридные PDF теперь встречаются часто. Это европейские форматы, не имеющие отношения к российскому ЭДО.</p>
+<p>Эта страница открывает PDF в вашем браузере, читает список вложенных файлов и пробует XML-файлы в таком порядке: <code>factur-x.xml</code>, <code>zugferd-invoice.xml</code>, <code>xrechnung.xml</code>, затем любой другой XML-файл. Показывается первый из них, который является поддерживаемым счётом. Страницы самого PDF не отображаются.</p>
+<h2>Профили</h2>
+<p>Профиль показывает, сколько данных содержит XML. В MINIMUM и BASIC WL есть только данные заголовка и итоги. BASIC добавляет позиции. EN 16931 (в старых версиях ZUGFeRD он назывался COMFORT) — это полный европейский стандарт. EXTENDED выходит за его рамки, а XRECHNUNG — немецкий профиль для государственного сектора. Страница показывает содержимое каждого файла и не проверяет его на соответствие правилам профиля.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Если у PDF-счёта нет вложения, попросите отправителя прислать XML или версию ZUGFeRD / Factur-X.</li>
+  <li>Обычный XML-файл того же стандарта тоже открывается здесь; XML XRechnung также читает «<a href="/tools/xrechnung-viewer/">Просмотр XRechnung</a>».</li>
+  <li>Кнопка «Скачать XML» позволяет сохранить структурированные данные, которые были внутри PDF.</li>
+</ul>

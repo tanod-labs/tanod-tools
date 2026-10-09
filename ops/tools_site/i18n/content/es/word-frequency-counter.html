@@ -1,0 +1,115 @@
+<!--meta
+{
+  "title": "Contador de frecuencia de palabras | Tanod Tools",
+  "description": "Encuentra las palabras y frases de dos o tres palabras más comunes de un texto, con cantidades y porcentajes. Omite palabras vacías y descarga CSV.",
+  "h1": "Contador de frecuencia de palabras",
+  "lede": "Pega un texto para ver qué palabras y frases aparecen con más frecuencia, con cantidades y porcentajes, y deja fuera las palabras vacías más comunes de tu idioma.",
+  "blurb": "Palabras y frases más comunes con cantidades y porcentajes.",
+  "keywords": "contador de frecuencia de palabras palabras más repetidas palabras más comunes frecuencia de frases contador de n-gramas densidad de palabras clave palabras vacías quitar palabras vacías csv análisis de texto",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Texto de hasta unos pocos millones de caracteres. Las palabras son secuencias de letras y dígitos, y se conservan los apóstrofos y guiones dentro de una palabra; las frases nunca cruzan el final de una oración ni un salto de línea. Las listas de palabras vacías son listas cortas de las palabras funcionales más comunes, no diccionarios completos, y existen para inglés, español, francés, alemán, portugués (Brasil), italiano, indonesio, turco, vietnamita, ruso, polaco e hindi.",
+  "howto_title": "Cómo contar la frecuencia de palabras",
+  "howto": [
+    "Pega tu texto.",
+    "Elige palabras sueltas, frases de dos palabras o frases de tres palabras, y un idioma de palabras vacías si quieres omitir palabras como the, and u of.",
+    "Lee la lista ordenada con cantidades y porcentajes, y luego cópiala o descárgala como CSV."
+  ],
+  "faq": [
+    [
+      "¿Qué cuenta como una palabra?",
+      "Una secuencia de letras o dígitos que puede contener un apóstrofo o un guion entre letras, así que don't y well-known son una palabra cada una. Las mayúsculas y las minúsculas se tratan como la misma palabra. Los signos de puntuación y los espacios separan las palabras."
+    ],
+    [
+      "¿Cómo se cuentan las frases?",
+      "Una frase de dos palabras es cada par de palabras que aparecen una junto a otra, y una frase de tres palabras es cada trío así. Las frases no cruzan un punto, un signo de interrogación, un punto y coma ni un salto de línea, de modo que la última palabra de una oración no se une con la primera de la siguiente."
+    ],
+    [
+      "¿Qué hacen las opciones de palabras vacías?",
+      "Las palabras vacías son palabras funcionales muy comunes como the, and, of, el, la, le, der o и. En las palabras sueltas se dejan fuera de la lista. En las frases se descarta toda frase que empiece o termine con una palabra vacía, así ves frases como search engine en lugar de of the search. Los porcentajes se calculan sobre lo que queda."
+    ],
+    [
+      "¿Cómo se calcula el porcentaje?",
+      "Es la cantidad del elemento dividida entre el total de palabras (o frases) contadas, después de dejar fuera las palabras vacías y los números si así lo elegiste."
+    ],
+    [
+      "¿Qué contiene el archivo CSV?",
+      "La lista ordenada completa, no solo la parte visible en pantalla, con las columnas posición, palabra, cantidad y porcentaje. El archivo es UTF-8 con marca de orden de bytes para que las hojas de cálculo muestren bien las letras con acento."
+    ],
+    [
+      "¿Se sube mi texto?",
+      "No. El texto se cuenta en tu navegador y nada sale de tu dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="wf">
+  <div class="field">
+    <label for="wf-in">Texto a analizar</label>
+    <textarea id="wf-in" rows="9" spellcheck="false" autocomplete="off" placeholder="Pega el texto aquí"></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="wf-n-l">Contar</span>
+      <div class="seg" role="radiogroup" aria-labelledby="wf-n-l">
+        <label><input type="radio" name="wf-n" value="1" checked>Palabras</label>
+        <label><input type="radio" name="wf-n" value="2">Frases de 2 palabras</label>
+        <label><input type="radio" name="wf-n" value="3">Frases de 3 palabras</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="wf-stop">Omitir palabras vacías</label>
+      <select id="wf-stop">
+        <option value="" selected>Ninguna</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wf-top">Mostrar</label>
+      <select id="wf-top">
+        <option value="10">Las 10 primeras</option>
+        <option value="25" selected>Las 25 primeras</option>
+        <option value="50">Las 50 primeras</option>
+        <option value="100">Las 100 primeras</option>
+        <option value="0">Todas</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="wf-num" checked>Incluir números</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="wf-example" type="button">Cargar un ejemplo</button>
+    <button class="btn btn--quiet" id="wf-clear" type="button" disabled>Borrar</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="wf-report" aria-live="polite">Pega un texto para empezar.</p>
+  <div class="util-stack" id="wf-res" hidden>
+    <dl class="stats">
+      <div><dt>Palabras en el texto</dt><dd id="wf-words">0</dd></div>
+      <div><dt>Contadas</dt><dd id="wf-total">0</dd></div>
+      <div><dt>Distintas</dt><dd id="wf-unique">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--primary" id="wf-copy" type="button">{{mark:i-copy}}Copiar lista</button>
+      <button class="btn" id="wf-csv" type="button">{{mark:i-download}}Descargar CSV</button>
+    </div>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tabla de frecuencias">
+      <table class="dv-table">
+        <thead><tr><th scope="col">N.º</th><th scope="col" id="wf-th">Palabra</th><th scope="col">Cantidad</th><th scope="col">Porcentaje</th></tr></thead>
+        <tbody id="wf-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Cómo se cuenta la frecuencia de palabras</h2>
+<p>El texto se divide en palabras, cada palabra se pasa a minúsculas y la herramienta cuenta cuántas veces aparece cada una. La lista ordenada pone primero las más frecuentes y desempata por orden alfabético. Contar cuánto se repiten las palabras es una forma rápida de ver de qué trata realmente un texto, de comprobar si una palabra clave se usa en exceso, de encontrar los términos de una entrevista o de un conjunto de respuestas de encuesta, o de detectar una manía como apoyarse siempre en la misma palabra en un ensayo.</p>
+<p>Sin ningún filtro, la parte superior de la lista suele estar llena de palabras funcionales como the, of y and. Al elegir un idioma de palabras vacías se quitan, y las palabras con contenido suben a los primeros puestos. Las listas abarcan los artículos, pronombres, preposiciones, conjunciones y verbos auxiliares más comunes del idioma y sirven para echar un vistazo rápido, no para trabajo lingüístico.</p>
+<p>Las frases se cuentan como grupos de dos o tres palabras seguidas, dentro de una misma oración. Las frases repetidas suelen decir más que las palabras sueltas: revelan nombres de productos, eslóganes y expresiones fijas de un texto. Con las palabras vacías activadas, se descartan las frases que empiezan o terminan con una palabra vacía, así que lo que queda es más significativo.</p>
+<p>El porcentaje de un elemento es su cantidad dividida entre el total contado. Ese total cambia con las opciones, porque las palabras vacías y los números que se dejan fuera no se cuentan. Descarga el CSV para conservar la lista completa o para hacer un gráfico en una hoja de cálculo.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Para los totales de palabras, caracteres, oraciones y tiempo de lectura, usa el <a href="/tools/word-counter/">contador de palabras</a>.</li>
+  <li>Para distinguir mayúsculas de minúsculas a tu manera, cambia antes el uso de mayúsculas con el <a href="/tools/case-converter/">conversor de mayúsculas y minúsculas</a>.</li>
+  <li>Limpia una lista de elementos repetidos con <a href="/tools/remove-duplicate-lines/">Eliminar líneas duplicadas</a>.</li>
+</ul>

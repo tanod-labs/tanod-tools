@@ -1,4 +1,4 @@
-import { $, $$, debounce, setStatus, announce, prefs, tx, EN, fmtNum } from "./core.js?v=5";
+import { $, $$, debounce, setStatus, announce, prefs, tx, EN, fmtNum } from "./core.js?v=11";
 import qrcode from "/tools/vendor/qrcode/qrcode.mjs";
 
 /* Whole numbers in text keep plain digits on English pages (no thousands separators), as before. */

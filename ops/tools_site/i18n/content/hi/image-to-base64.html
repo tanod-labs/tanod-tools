@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "इमेज से Base64 और डेटा URL कन्वर्टर | Tanod Tools",
+  "description": "PNG, JPG, WebP, GIF या SVG इमेज को Base64 में बदलें: डेटा URL, CSS बैकग्राउंड, HTML img टैग या Markdown, कॉपी के लिए तैयार। ब्राउज़र में चलता है, अपलोड नहीं।",
+  "h1": "इमेज से Base64",
+  "lede": "इमेज को Base64 डेटा URL में बदलें, जिसे आप सीधे HTML, CSS, Markdown या JSON में पेस्ट कर सकते हैं।",
+  "blurb": "HTML या CSS के लिए डेटा URL के रूप में इमेज।",
+  "keywords": "इमेज से base64 डेटा URI डेटा url png से base64 jpg से base64 svg css बैकग्राउंड इनलाइन एम्बेड image to base64 data uri data url png to base64 jpg to base64 svg css background inline embed",
+  "limits": "एक बार में एक इमेज, 10 MB तक। PNG, JPEG, WebP, GIF, BMP, AVIF और SVG।",
+  "howto_title": "इमेज को Base64 में कैसे बदलें",
+  "howto": [
+    "कोई इमेज चुनें, या उसे पेज पर खींचकर लाएं।",
+    "जो रूप चाहिए वह चुनें: डेटा URL, सादा Base64, CSS, HTML img टैग या Markdown।",
+    "<strong>कॉपी करें</strong> दबाएं, या टेक्स्ट को फ़ाइल के रूप में डाउनलोड करें।"
+  ],
+  "faq": [
+    ["डेटा URL क्या है?", "यह किसी फ़ाइल के बाइट्स को लिंक के अंदर रखने का तरीका है। यह <code>data:</code> से शुरू होता है, फिर फ़ाइल का प्रकार जैसे <code>image/png</code>, फिर <code>;base64,</code> और उसके बाद Base64 टेक्स्ट। ब्राउज़र इसे ठीक वैसे ही दिखाते हैं जैसे इमेज किसी अलग फ़ाइल से लोड हुई हो।"],
+    ["Base64 इमेज से बड़ा क्यों होता है?", "Base64 हर 3 बाइट को 4 टेक्स्ट वर्णों में लिखता है, इसलिए टेक्स्ट फ़ाइल से लगभग 33 प्रतिशत बड़ा होता है। टेक्स्ट को कंप्रेस करने वाले वेब सर्वर इसमें से कुछ वापस बचा लेते हैं, पर इनलाइन की गई इमेज फिर भी उसी इमेज से बड़ी रहती है जो अलग से परोसी जाए।"],
+    ["इमेज को इनलाइन कब करना चाहिए?", "छोटी चीज़ों के लिए: कुछ किलोबाइट से छोटे आइकन, छोटे बैकग्राउंड और प्लेसहोल्डर, या जब एक ही आत्म-निर्भर HTML फ़ाइल या ईमेल चाहिए हो। बड़ी इमेज अलग फ़ाइलों के रूप में बेहतर रहती हैं, क्योंकि डेटा URL अपने आप कैश नहीं हो सकता और जिस भी पेज या स्टाइलशीट में हो, उसके साथ हर बार दोबारा डाउनलोड होता है। 100 KB से ऊपर टूल आपको चेतावनी देता है।"],
+    ["फ़ाइल का प्रकार कैसे तय होता है?", "फ़ाइल के बाइट्स से, उसके नाम से नहीं, इसलिए .jpg एक्सटेंशन के साथ सेव की गई PNG को भी <code>image/png</code> ही मिलता है। SVG फ़ाइलें उनके टेक्स्ट से पहचानी जाती हैं और उन पर <code>image/svg+xml</code> लगता है।"],
+    ["क्या मेरी इमेज अपलोड होती है?", "नहीं। इमेज आपके डिवाइस पर, आपके ब्राउज़र में ही पढ़ी और एन्कोड की जाती है।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-base64 drop__mark}}
+  <p class="drop__title">इमेज यहाँ छोड़ें</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg">{{mark:i-plus}}<span data-pick-label>इमेज चुनें</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, AVIF या SVG। या इसे इस पेज पर कहीं भी खींचकर लाएं।</p>
+</div>
+<div id="work" class="b64i" hidden>
+  <div class="b64i__head">
+    <div class="preview b64i__preview"><canvas id="cv" role="img" aria-label="इमेज का प्रीव्यू"></canvas></div>
+    <dl class="stats b64i__stats">
+      <div><dt>प्रकार</dt><dd id="s-type">-</dd></div>
+      <div><dt>पिक्सल</dt><dd id="s-dims">-</dd></div>
+      <div><dt>फ़ाइल</dt><dd id="s-file">-</dd></div>
+      <div><dt>Base64</dt><dd id="s-b64">-</dd></div>
+    </dl>
+  </div>
+  <p class="note" id="big" hidden></p>
+  <fieldset class="field">
+    <legend>आउटपुट</legend>
+    <div class="seg b64i__seg">
+      <label><input type="radio" name="fmt" value="data" checked>डेटा URL</label>
+      <label><input type="radio" name="fmt" value="raw">Base64</label>
+      <label><input type="radio" name="fmt" value="css">CSS</label>
+      <label><input type="radio" name="fmt" value="html">HTML</label>
+      <label><input type="radio" name="fmt" value="md">Markdown</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="out">नतीजा</label>
+    <textarea id="out" class="mono b64i__out" rows="8" readonly spellcheck="false"></textarea>
+    <p class="help num" id="out-len"></p>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button">कॉपी करें</button>
+    <button class="btn" id="dl" type="button">.txt डाउनलोड करें</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">फिर से शुरू करें</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>इमेज को टेक्स्ट के रूप में एम्बेड करना</h2>
+<p>HTML, CSS, JSON, Markdown और ईमेल की बॉडी टेक्स्ट होती हैं, लेकिन इमेज बाइनरी होती हैं। Base64 दोनों के बीच पुल बनाता है: वह इमेज के बाइट्स को 64 सुरक्षित वर्णों में लिखता है, ताकि पूरी तस्वीर बिना अलग डाउनलोड के किसी स्टाइलशीट नियम, <code>img</code> टैग या कॉन्फ़िगरेशन फ़ाइल के अंदर रह सके।</p>
+<p>यह टूल फ़ाइल को आपके ब्राउज़र में पढ़ता है, शुरू के बाइट्स से उसका असली प्रकार जाँचता है, और आपके चुने हुए स्निपेट को एन्कोड किए गए टेक्स्ट के चारों ओर बनाता है। इमेज खुद नहीं बदलती: Base64 को डिकोड करने पर ठीक वही मूल फ़ाइल वापस मिलती है।</p>
+<h3>सुझाव</h3>
+<ul>
+  <li>पहले इमेज को <a href="/tools/compress-image/">इमेज कंप्रेस करें</a> या <a href="/tools/resize-image/">इमेज का साइज़ बदलें</a> से छोटा करें; जितना बाइट बचेगा, Base64 में उसका एक तिहाई और ज़्यादा बचेगा।</li>
+  <li>सरल आइकन के लिए SVG अक्सर किसी भी PNG से छोटा होता है, Base64 में भी।</li>
+  <li>Base64 को वापस फ़ाइल में डिकोड करने, या किसी दूसरी फ़ाइल को एन्कोड करने के लिए <a href="/tools/base64-encode-decode/">Base64 एन्कोड और डिकोड</a> इस्तेमाल करें।</li>
+</ul>

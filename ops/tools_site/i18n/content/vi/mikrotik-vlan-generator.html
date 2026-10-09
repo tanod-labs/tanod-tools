@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Tạo VLAN MikroTik: bridge VLAN filtering (v7) | Tanod Tools",
+  "description": "Tạo bridge VLAN filtering RouterOS v7: cổng access, trunk và hybrid, bảng bridge VLAN, VLAN interface và địa chỉ, bật filtering ở cuối để tránh mất kết nối.",
+  "h1": "Tạo VLAN MikroTik",
+  "lede": "Mô tả các VLAN và những cổng mang chúng, rồi nhận cấu hình bridge VLAN filtering RouterOS v7, sắp xếp sao cho filtering được bật ở bước cuối cùng.",
+  "blurb": "Bridge VLAN filtering với cổng access, trunk và hybrid.",
+  "keywords": "cấu hình vlan mikrotik, tạo vlan mikrotik, chia vlan, cổng trunk, cổng access, mikrotik vlan configuration routeros v7 bridge vlan filtering hybrid pvid tagged untagged frame-types ingress-filtering vlan interface crs switch",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không rời khỏi thiết bị của bạn",
+  "limits": "Tạo bridge VLAN filtering RouterOS v7 (phương pháp MikroTik khuyến nghị cho các thiết bị hiện nay) với một bridge. Các menu switch-chip cũ (/interface ethernet switch) không được dùng. Địa chỉ là IPv4. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với hay được MikroTik bảo trợ.",
+  "howto_title": "Cách cấu hình VLAN trên bridge MikroTik",
+  "howto": [
+    "Liệt kê các VLAN với ID, tên và, với những VLAN mà router cần định tuyến, địa chỉ của router trong VLAN đó.",
+    "Liệt kê các cổng: cổng access mang một VLAN không gắn tag, cổng trunk mang các VLAN có gắn tag, cổng hybrid làm cả hai.",
+    "Đọc lưu ý về nguy cơ mất kết nối, bật Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> trong terminal) rồi chạy tập lệnh; VLAN filtering được bật ở dòng cuối cùng."
+  ],
+  "faq": [
+    ["Vì sao bật vlan-filtering lại làm mất kết nối?", "Khi vlan-filtering chưa bật, bridge chuyển tiếp mọi thứ và các thiết lập VLAN không có tác dụng. Ngay khi bật, khung chỉ được chấp nhận ở nơi bảng VLAN cho phép. Nếu cổng bạn đang kết nối không thuộc một VLAN có địa chỉ router, phiên làm việc của bạn sẽ bị ngắt. Đó là lý do tập lệnh bật nó ở cuối, và vì sao Safe Mode quan trọng: nếu kết nối đứt, RouterOS sẽ hoàn tác thay đổi."],
+    ["Cổng access, trunk và hybrid khác nhau thế nào?", "Cổng access nối một thiết bị không biết gì về VLAN: khung không gắn tag đi vào được đưa vào PVID của cổng và đi ra cũng không gắn tag. Cổng trunk nối một switch khác hoặc một access point và mang nhiều VLAN bằng tag 802.1Q. Cổng hybrid làm cả hai, thường dùng cho điện thoại IP hoặc access point có một VLAN quản trị hay dữ liệu không gắn tag cùng các VLAN khác có gắn tag."],
+    ["Vì sao chính bridge lại được gắn tag trong một số VLAN?", "Interface bridge là cổng của chính router đi vào switch. Để router có địa chỉ trong một VLAN, thông qua VLAN interface trên bridge, bridge phải là thành viên có tag của VLAN đó. Các VLAN chỉ được chuyển mạch giữa các cổng thì không cần."],
+    ["Tôi có còn cần /interface vlan bên trên bridge VLAN filtering không?", "Chỉ với những VLAN mà router tham gia: VLAN interface là nơi gắn địa chỉ IP, DHCP server và rule tường lửa của nó. Các VLAN thuần layer 2 chỉ cần bảng bridge VLAN."],
+    ["Việc này có được offload bằng phần cứng không?", "Trên switch CRS3xx, và trên một số thiết bị khác với RouterOS v7 mới, bridge VLAN filtering chạy trong chip switch. Trên các thiết bị còn lại nó chạy bằng CPU, làm giảm thông lượng. Hãy kiểm tra cờ H trên các cổng trong /interface bridge port print sau khi áp dụng."],
+    ["Cấu hình của tôi có bị gửi đi đâu không?", "Không. Tập lệnh được tạo ngay trong trình duyệt của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="vl">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Bridge</legend>
+      <div class="field"><label for="vl-bridge">Tên bridge</label><input type="text" id="vl-bridge" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="vl-exists" checked>Bridge đã tồn tại</label>
+        <label class="check"><input type="checkbox" id="vl-inbridge" checked>Các cổng đã nằm trong bridge</label>
+        <label class="check"><input type="checkbox" id="vl-tagonly">Router chỉ nhận khung có tag từ bridge (chỉ quản trị qua VLAN)</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>VLAN</legend>
+      <ul class="ros-rows" id="vl-vlans"></ul>
+      <button class="btn btn--sm ros-add" id="vl-vadd" type="button">{{mark:i-plus}}Thêm một VLAN</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Cổng</legend>
+      <ul class="ros-rows" id="vl-ports"></ul>
+      <button class="btn btn--sm ros-add" id="vl-padd" type="button">{{mark:i-plus}}Thêm một cổng</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Nguy cơ mất kết nối.</strong> Bật VLAN filtering sẽ cắt mọi cổng không thuộc một VLAN có địa chỉ router. Hãy thử trong môi trường lab, hoặc bật Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> trong terminal) trước.</span></p>
+    <label for="vl-out" class="label">Tập lệnh RouterOS v7</label>
+    <textarea id="vl-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="vl-copy" type="button">Sao chép tập lệnh</button>
+      <button class="btn" id="vl-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="vl-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Bridge VLAN filtering theo cách của v7</h2>
+<p>Trên RouterOS hiện nay, cách chạy VLAN được khuyến nghị là dùng một bridge với <code>vlan-filtering=yes</code>. Mỗi <strong>cổng bridge</strong> có một <code>pvid</code>, là VLAN mà các khung không gắn tag đi vào cổng đó thuộc về, và <code>frame-types</code>, cho biết cổng nhận khung không tag, khung có tag hay cả hai. <strong>Bảng bridge VLAN</strong> trong <code>/interface bridge vlan</code> sau đó liệt kê, với mỗi VLAN ID, những cổng nào gửi nó có tag và cổng nào không tag. Với <code>ingress-filtering=yes</code>, cổng còn loại bỏ khung có tag của những VLAN mà nó không phải thành viên.</p>
+<p>Router tham gia một VLAN thông qua <strong>VLAN interface</strong> tạo trên bridge, với bridge được liệt kê là thành viên có tag của VLAN đó. Interface này nhận địa chỉ IP và trở thành gateway, DHCP server cùng ranh giới tường lửa của VLAN. Các hướng dẫn cũ cấu hình VLAN trong menu switch chip hoặc dùng một bridge riêng cho mỗi VLAN; trên các thiết bị offload được bridge VLAN filtering, phương pháp một bridge vừa đơn giản hơn vừa nhanh.</p>
+<h3>Áp dụng an toàn</h3>
+<ul>
+  <li>Dựng mọi thứ khi filtering còn tắt, rồi bật nó trong một bước ở cuối, như tập lệnh làm. Dùng Safe Mode hoặc serial console khi làm việc từ xa.</li>
+  <li>Cấp cho mỗi VLAN được định tuyến một DHCP server riêng bằng <a href="/tools/mikrotik-dhcp-server-generator/">Tạo DHCP server MikroTik</a>, và tách khách khỏi các VLAN khác bằng rule forward chain từ <a href="/tools/mikrotik-firewall-generator/">Tạo tường lửa MikroTik</a>.</li>
+  <li>So sánh cấu hình trước và sau bằng <a href="/tools/routeros-export-diff/">So sánh export RouterOS</a>.</li>
+</ul>

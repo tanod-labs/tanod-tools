@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Trình tạo Netwatch MikroTik: cảnh báo up/down | Tanod Tools",
+  "description": "Tạo script /tool netwatch của RouterOS giám sát các host và gửi cảnh báo qua ntfy, Telegram hoặc email khi host sập hay hoạt động lại. Ngay trong trình duyệt.",
+  "h1": "Trình tạo Netwatch MikroTik",
+  "lede": "Giám sát gateway của nhà mạng và các host khác ngay từ router: liệt kê host, chọn khoảng thời gian và cách thông báo, rồi nhận script Netwatch sẵn để dán, có cảnh báo down và up.",
+  "blurb": "Mục Netwatch kèm cảnh báo ntfy, Telegram hoặc email.",
+  "keywords": "mikrotik netwatch trình tạo routeros tool netwatch up-script down-script ntfy telegram bot email cảnh báo tool fetch ping giám sát gateway nhà mạng sập thông báo v7 v6",
+  "local_text": "Chạy trong trình duyệt của bạn; mọi thứ bạn nhập không rời khỏi thiết bị",
+  "limits": "Tạo các mục /tool netwatch của RouterOS để ping các host IPv4 (type=icmp trên v7, dạng cũ host= trên v6) và chạy một script mỗi khi trạng thái đổi. Ở đây không thể thử trên router của bạn, nên hãy xem lại từng dòng trước khi dùng. Token bot và cấu hình email nằm trên router dưới dạng văn bản thuần. Netwatch chạy trên router và không thể báo rằng chính router đã offline. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với và không được MikroTik xác nhận.",
+  "howto_title": "Cách thiết lập cảnh báo Netwatch trên MikroTik",
+  "howto": [
+    "Liệt kê các host cần giám sát, mỗi host một nhãn: gateway của nhà mạng trước, rồi các địa chỉ công khai đáng tin như 8.8.8.8 và 1.1.1.1.",
+    "Chọn khoảng thời gian và timeout, phiên bản RouterOS (v7 hoặc v6) và cách nhận thông báo: chủ đề ntfy, bot Telegram hoặc email.",
+    "Sao chép script hoặc tải tệp .rsc, dán vào terminal của router, rồi kiểm tra /tool netwatch print và /log print."
+  ],
+  "faq": [
+    [
+      "Netwatch làm gì?",
+      "Netwatch ping từng host theo khoảng thời gian bạn đặt. Khi một host không trả lời trong thời gian timeout, nó bị đánh dấu là down và down-script chạy một lần; khi trả lời lại, up-script chạy. Các script được tạo ghi một dòng vào log và, nếu bạn chọn một cách thông báo, gửi tin nhắn bằng /tool fetch hoặc /tool e-mail."
+    ],
+    [
+      "Vì sao Netwatch không thể báo chính router đã offline?",
+      "Netwatch là một phần của router. Nếu router mất điện, treo hoặc mất đường truyền lên, sẽ không còn gì để chạy script hay gửi tin. Để làm việc đó bạn cần một kiểm tra từ bên ngoài, biết khi nào router ngừng trả lời. Xem <a href=\"https://tanod.dev/learn/mikrotik-router-offline-alert.html\">hướng dẫn cảnh báo router offline</a> và <a href=\"https://tanod.dev/monitor/\">heartbeat bên ngoài</a> miễn phí."
+    ],
+    [
+      "Tôi có nhận được tin DOWN khi đường truyền internet hỏng không?",
+      "Thường là không vào đúng lúc đó. Tin nhắn đi qua chính router này, nên nếu host được giám sát là gateway của đường truyền duy nhất, down-script vẫn chạy nhưng tin chỉ gửi được khi đường truyền trở lại. Khi đó tin UP cho bạn biết đã phục hồi. Giám sát một đường truyền thứ hai hoặc một host trong LAN sẽ cho cảnh báo không phụ thuộc vào đường truyền bị hỏng."
+    ],
+    [
+      "Kết quả cho v7 và v6 khác nhau thế nào?",
+      "Trên RouterOS v7, các mục có type=icmp để chọn kiểu dò ping. RouterOS v6 không có tham số type nên các mục chỉ dùng host, interval và timeout. Nếu bản v7 của bạn cũ và từ chối type=icmp, hãy xóa nó khỏi từng dòng."
+    ],
+    [
+      "Dấu nháy, dấu gạch chéo ngược và ký hiệu đô la trong nhãn được xử lý ra sao?",
+      "Nhãn và tên router được escape cho chuỗi RouterOS: gạch chéo ngược, dấu nháy kép, ký hiệu đô la và dấu hỏi chấm đều được thêm một gạch chéo ngược. Script được lưu dưới dạng chuỗi bên trong mục Netwatch nên việc escape được áp dụng hai lần: một lần cho tin nhắn và một lần cho script đã lưu."
+    ],
+    [
+      "Cấu hình hoặc token bot của tôi có bị gửi đi đâu không?",
+      "Không. Mọi thứ được tạo trong trình duyệt của bạn. Sau khi dán script, chính router sẽ liên hệ ntfy hoặc Telegram khi một host đổi trạng thái."
+    ]
+  ]
+}
+-->
+<!--tool-->
+
+<div class="ros-gen" id="nw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Host cần giám sát</legend>
+      <ul class="ros-rows" id="nw-hosts"></ul>
+      <button class="btn btn--sm ros-add" id="nw-add" type="button">{{mark:i-plus}}Thêm host</button>
+      <span class="help">Hãy thay 203.0.113.1 bằng địa chỉ gateway của nhà mạng.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Thời gian và phiên bản</legend>
+      <div class="opts">
+        <div class="field"><label for="nw-interval">Khoảng thời gian</label><input type="text" id="nw-interval" class="mono" value="30s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-timeout">Timeout</label><input type="text" id="nw-timeout" class="mono" value="1s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-router">Tên router (hiện trong tin nhắn)</label><input type="text" id="nw-router" class="mono" value="MikroTik" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Phiên bản RouterOS">
+        <label><input type="radio" name="nw-ver" value="v7" checked>RouterOS v7</label>
+        <label><input type="radio" name="nw-ver" value="v6">RouterOS v6</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Thông báo</legend>
+      <div class="seg" role="radiogroup" aria-label="Cách thông báo">
+        <label><input type="radio" name="nw-notify" value="none">Không (chỉ ghi log)</label>
+        <label><input type="radio" name="nw-notify" value="ntfy" checked>ntfy</label>
+        <label><input type="radio" name="nw-notify" value="telegram">Telegram</label>
+        <label><input type="radio" name="nw-notify" value="email">Email</label>
+      </div>
+      <div class="field" id="nw-ntfy-f">
+        <label for="nw-ntfy">URL chủ đề ntfy</label>
+        <input type="text" id="nw-ntfy" class="mono" value="https://ntfy.sh/my-router-alerts" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="nw-telegram-f" hidden>
+        <div class="field"><label for="nw-tg-token">Token bot</label><input type="text" id="nw-tg-token" class="mono" value="" placeholder="123456789:ABC-DEF" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-tg-chat">ID cuộc trò chuyện</label><input type="text" id="nw-tg-chat" class="mono" value="" placeholder="-1001234567890" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="field" id="nw-email-f" hidden>
+        <label for="nw-mail-to">Gửi cảnh báo tới</label>
+        <input type="text" id="nw-mail-to" class="mono" value="" placeholder="ops@example.com" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="nw-out" class="label">Script RouterOS</label>
+    <textarea id="nw-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="nw-copy" type="button">Sao chép script</button>
+      <button class="btn" id="nw-dl" type="button">{{mark:i-download}}Tải .rsc</button>
+    </div>
+    <ul class="ros-notes" id="nw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Netwatch trên RouterOS</h2>
+<p>Netwatch, nằm trong <code>/tool netwatch</code>, dò một host theo từng <code>interval</code> và lưu trạng thái là up hoặc down. Host bị coi là down khi không trả lời trong <code>timeout</code>. Mỗi lần đổi trạng thái, RouterOS chạy <code>down-script</code> hoặc <code>up-script</code> của mục đó, và đây là nơi cảnh báo được gửi: <code>/tool fetch</code> đăng lên chủ đề ntfy hoặc gọi URL <code>sendMessage</code> của Telegram, còn <code>/tool e-mail send</code> dùng cấu hình email đã có sẵn trên router.</p>
+<p>Hãy giám sát nhiều hơn một host. Một địa chỉ công khai có thể lỗi vì những lý do chẳng liên quan đến đường truyền của bạn, nên kết hợp gateway nhà mạng với hai địa chỉ công khai độc lập sẽ cho biết sự cố nằm ở đoạn cuối hay ở internet nói chung. Giữ timeout ngắn hơn khoảng thời gian và tránh khoảng thời gian quá ngắn khi có nhiều host.</p>
+<h3>Những điều Netwatch không thể báo cho bạn</h3>
+<p>Netwatch chạy trên router nên không thể báo rằng chính router đã offline: mất điện, treo máy hay đường truyền lên chết đều không để lại gì để chạy script. Để làm việc đó bạn cần một kiểm tra từ bên ngoài, biết khi nào router ngừng trả lời. Đọc <a href="https://tanod.dev/learn/mikrotik-router-offline-alert.html">cách nhận cảnh báo khi router MikroTik offline</a> và dùng <a href="https://tanod.dev/monitor/">heartbeat bên ngoài</a> miễn phí. Nếu bạn cũng quản lý lưu lượng trên chính các đường truyền đó, hãy so sánh với <a href="/tools/mikrotik-load-balancing/">trình tạo cân bằng tải</a>, có failover dùng các host kiểm tra riêng.</p>

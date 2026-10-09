@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Kalkulator wiatru bocznego i czołowego | Tanod Tools",
+  "description": "Podaj pas i wiatr, aby uzyskać składową wiatru czołowego lub tylnego oraz bocznego, także dla porywów, dla obu końców pasa. Węzły, km/h, mph lub m/s.",
+  "h1": "Kalkulator wiatru bocznego i czołowego",
+  "lede": "Podaj pas startowy i wiatr, aby zobaczyć składowe wiatru czołowego (lub tylnego) i bocznego dla obu końców pasa, przy wietrze stałym i w porywach.",
+  "blurb": "Składowe wiatru czołowego, tylnego i bocznego dla pasa startowego.",
+  "keywords": "kalkulator wiatr boczny czołowy tylny składowa pas startowy kierunek wiatru porywy węzły pilot lądowanie start kąt sinus cosinus",
+  "limits": "Prosta trygonometria na podanym wietrze. Nie do planowania lotu ani nawigacji: stosuj udowodniony limit wiatru bocznego dla danego statku powietrznego i oficjalny komunikat o wietrze, pamiętając, że numery pasów i wiatr z wieży są magnetyczne, a wiatr w METAR jest prawdziwy.",
+  "howto_title": "Jak wyznaczyć składową wiatru bocznego",
+  "howto": [
+    "Wpisz numer pasa (np. 27 lub 09L) albo jego kierunek w stopniach (np. 275).",
+    "Wpisz kierunek, z którego wieje wiatr, jego prędkość oraz, jeśli podano, prędkość porywów. Wybierz jednostkę prędkości.",
+    "Odczytaj wiatr czołowy lub tylny i boczny dla każdego końca pasa. Sprawdź, który koniec daje wiatr czołowy."
+  ],
+  "faq": [
+    ["Jak obliczany jest wiatr boczny?", "Weź kąt między kierunkiem wiatru a kierunkiem pasa. Wiatr boczny to prędkość wiatru razy sinus tego kąta, a wiatr czołowy to prędkość wiatru razy jego cosinus. Wiatr o prędkości 20 węzłów, odchylony o 30 stopni od pasa, daje wiatr boczny 10 węzłów i wiatr czołowy ok. 17 węzłów."],
+    ["Czy powinienem używać prędkości porywów?", "Tak, piloci zwykle sprawdzają obie. Kolumna porywów pokazuje składowe dla szczytowego porywu, czyli najgorszego przypadku, jaki możesz spotkać podczas wyrównania lub dobiegu."],
+    ["Co oznaczają lewy i prawy?", "Prawy oznacza, że wiatr wieje z prawej strony, gdy patrzysz wzdłuż pasa w kierunku lądowania lub startu. Lewy oznacza z lewej. Ujemny wiatr czołowy to wiatr tylny."],
+    ["Czy numer pasa oznacza stopnie?", "Numer pasa to kierunek magnetyczny podzielony przez dziesięć i zaokrąglony: pas 27 wskazuje ok. 270 stopni, pas 09 ok. 090. Przeciwny koniec jest oddalony o 180 stopni (09 i 27 albo 36 i 18). Wpisanie liczby trzycyfrowej traktuje ją jako dokładny kierunek."],
+    ["Czy wiatr i pas są w tym samym układzie odniesienia?", "Powinny być. Wiatr z wieży i ATIS podawany jest w stopniach magnetycznych, a wiatr w METAR i TAF w stopniach prawdziwych. Różnica to lokalna deklinacja magnetyczna, która może wynosić kilka stopni lub ponad dziesięć. Użyj tego samego odniesienia dla obu danych."],
+    ["Jaki wiatr boczny jest bezpieczny?", "Zależy to od statku powietrznego, pasa i pilota. Podręcznik statku powietrznego podaje maksymalny wykazany wiatr boczny, który nie jest limitem prawnym, ale dobrą wskazówką. Ten kalkulator nie podaje limitów."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="cw-rwy">Numer pasa lub kierunek</label>
+    <input type="text" id="cw-rwy" autocomplete="off" spellcheck="false" value="27" placeholder="27 lub 275" aria-describedby="cw-msg">
+    <span class="help">Jedna lub dwie cyfry to numer pasa, trzy cyfry to kierunek w stopniach.</span>
+  </div>
+  <div class="field">
+    <label for="cw-dir">Kierunek wiatru, skąd (stopnie)</label>
+    <input type="text" id="cw-dir" inputmode="decimal" autocomplete="off" value="320" placeholder="320" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-spd">Prędkość wiatru</label>
+    <input type="text" id="cw-spd" inputmode="decimal" autocomplete="off" value="18" placeholder="18" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-gust">Prędkość porywów (opcjonalnie)</label>
+    <input type="text" id="cw-gust" inputmode="decimal" autocomplete="off" value="26" placeholder="26" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-unit">Jednostka prędkości</label>
+    <select id="cw-unit">
+      <option value="kt" selected>węzły</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+      <option value="ms">m/s</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="cw-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="cw-res" hidden>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Składowe wiatru dla każdego końca pasa</caption>
+      <thead><tr><th scope="col">Koniec pasa</th><th scope="col">Wiatr</th><th scope="col">Wiatr czołowy lub tylny</th><th scope="col">Wiatr boczny</th></tr></thead>
+      <tbody id="cw-rows"></tbody>
+    </table>
+  </div>
+  <p class="help" id="cw-info"></p>
+</div>
+<!--explain-->
+<h2>Wzór</h2>
+<p>Niech θ będzie kątem od kierunku pasa do kierunku, z którego wieje wiatr, a V prędkością wiatru. Składowa wzdłuż pasa to wiatr czołowy = V · cos θ (wartość ujemna oznacza wiatr tylny), a składowa w poprzek to wiatr boczny = V · sin θ, dodatnia z prawej i ujemna z lewej. To standardowy rozkład trójkąta wiatrów stosowany w szkoleniu pilotów, na przykład w FAA Pilot's Handbook of Aeronautical Knowledge (FAA-H-8083-25, rozdział o osiągach statku powietrznego) i Airplane Flying Handbook (FAA-H-8083-3).</p>
+<p>Przeciwny koniec pasa ma kierunek odległy o 180 stopni, więc jego wiatr czołowy jest przeciwny do pierwszego, a wiatr boczny zmienia stronę. Numer pasa to kierunek magnetyczny w dziesiątkach stopni, zaokrąglony do najbliższej dziesiątki. Prędkości są przeliczane dokładnie (1 węzeł = 1,852 km/h, 1 mph = 1,609344 km/h, 1 m/s = 3,6 km/h).</p>
+<p>Obliczenie pomija uskok wiatru, fronty porywów i wpływ terenu oraz używa jednej wartości wiatru. <strong>Nie do planowania lotu ani nawigacji.</strong></p>

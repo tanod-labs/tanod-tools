@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Chuyển JSON sang CSV trực tuyến, miễn phí | Tanod Tools",
+  "description": "Chuyển mảng JSON sang CSV trong trình duyệt. Đối tượng lồng nhau thành các cột dạng dot.path, tự xử lý dấu ngoặc kép, có tùy chọn cho Excel. Không tải lên.",
+  "h1": "Chuyển JSON sang CSV",
+  "lede": "Dán mảng JSON hoặc mở một tệp .json và nhận CSV để mở trong Excel, Google Sheets hoặc Numbers.",
+  "blurb": "Biến mảng JSON thành CSV cho bảng tính.",
+  "keywords": "json sang csv chuyển đổi json thành csv excel bảng tính xuất dữ liệu làm phẳng đối tượng lồng nhau mảng đối tượng json csv convert spreadsheet export flatten nested",
+  "limits": "Đầu vào tối đa khoảng 10 MB, dán vào hoặc từ một tệp .json. Kết quả được cập nhật khi bạn nhập.",
+  "howto_title": "Cách chuyển JSON sang CSV",
+  "howto": [
+    "Dán JSON vào ô, hoặc mở một tệp .json. Một mảng đối tượng cho ra mỗi đối tượng một hàng.",
+    "Chọn dấu phân cách và cách ghi các đối tượng lồng nhau. Bật tùy chọn Excel nếu tệp sẽ được mở bằng Excel.",
+    "Sao chép CSV hoặc tải xuống dưới dạng tệp .csv."
+  ],
+  "faq": [
+    ["JSON của tôi có bị tải lên không?", "Không. Nó được phân tích và chuyển đổi trong trình duyệt của bạn, và không có gì được gửi đi hay lưu lại."],
+    ["Những dạng JSON nào dùng được?", "Mảng đối tượng (mỗi đối tượng một hàng, mỗi khóa một cột), mảng của các mảng (mỗi mảng bên trong là một hàng), mảng các giá trị đơn (một cột), hoặc một đối tượng đơn (một hàng). Các cột xuất hiện theo thứ tự khóa được gặp lần đầu, nên một đối tượng có khóa mà các đối tượng khác không có sẽ thêm một cột, và các hàng thiếu khóa đó có ô trống."],
+    ["Đối tượng và mảng lồng nhau được xử lý ra sao?", "Với <em>Làm phẳng thành đường dẫn dạng dấu chấm</em>, một đối tượng lồng nhau như <code>{\"address\": {\"city\": \"Lyon\"}}</code> trở thành cột có tên <code>address.city</code>. Với <em>Giữ dưới dạng văn bản JSON</em>, cả đối tượng lồng nhau được đặt vào một ô dưới dạng JSON. Mảng luôn được ghi dưới dạng văn bản JSON trong một ô, vì không có một cách đúng duy nhất để trải một danh sách ra nhiều cột."],
+    ["Vì sao chữ có dấu bị lỗi khi mở tệp trong Excel?", "Excel trên Windows thường giả định một bảng mã vùng cũ trừ khi tệp bắt đầu bằng dấu thứ tự byte (BOM). Hãy bật <em>Thêm dấu thứ tự byte cho Excel</em> trước khi tải xuống và Excel sẽ đọc tệp dưới dạng UTF-8. Google Sheets và Numbers đọc UTF-8 trong cả hai trường hợp. Nếu Excel của bạn mong đợi dấu chấm phẩy, hãy chọn cả dấu phân cách chấm phẩy."],
+    ["Khi nào giá trị được đặt trong dấu ngoặc kép?", "Chỉ khi cần: giá trị chứa dấu phân cách, dấu ngoặc kép, ký tự xuống dòng, hoặc bắt đầu hay kết thúc bằng dấu cách sẽ được bao trong dấu ngoặc kép, và mọi dấu ngoặc kép bên trong được nhân đôi. Số được ghi đúng như trong JSON, nên các ID dài không bị làm tròn. <code>null</code> trở thành ô trống."],
+    ["Vì sao công cụ báo JSON của tôi không hợp lệ?", "Thông báo cho biết dòng và cột nơi việc đọc dừng lại. Nguyên nhân thường gặp là dấu phẩy thừa ở cuối, nháy đơn thay vì nháy kép, hoặc thiếu dấu ngoặc. <a href=\"/tools/json-formatter/\">Định dạng và kiểm tra JSON</a> chỉ ra đúng vị trí bằng dấu mũ."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Dấu phân cách</label>
+      <select id="delim">
+        <option value="," selected>Dấu phẩy ( , )</option>
+        <option value=";">Dấu chấm phẩy ( ; )</option>
+        <option value="&#9;">Tab</option>
+        <option value="|">Dấu gạch đứng ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Đối tượng lồng nhau</label>
+      <select id="nested">
+        <option value="flatten" selected>Làm phẳng thành đường dẫn dạng dấu chấm (address.city)</option>
+        <option value="json">Giữ dưới dạng văn bản JSON trong một ô</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Có hàng tiêu đề</label>
+    <label class="check"><input type="checkbox" id="crlf">Ngắt dòng kiểu Windows (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Thêm dấu thứ tự byte cho Excel (chỉ khi tải xuống)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Dán JSON để bắt đầu.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Sao chép CSV</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Tải xuống .csv</button>
+    <button class="btn btn--quiet" id="clear" type="button">Xóa</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Mở tệp .json</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Biến JSON thành bảng tính</h2>
+<p>API và các bản xuất dữ liệu thường đưa cho bạn JSON, trong khi những người cần dữ liệu lại muốn một bảng tính. CSV bắc cầu giữa hai bên: mỗi đối tượng trong mảng trở thành một hàng và mỗi khóa trở thành một cột. Vì các đối tượng trong dữ liệu thật hiếm khi có cùng một bộ khóa, công cụ thu thập mọi khóa nó gặp, theo thứ tự gặp lần đầu, và để trống ô nếu một đối tượng không có giá trị cho cột đó.</p>
+<p>Bảng tính là phẳng, nên dữ liệu lồng nhau phải được ép vào các cột bằng cách nào đó. Làm phẳng biến <code>user.name</code> và <code>user.email</code> thành các cột riêng, phù hợp với hầu hết báo cáo. Giữ đối tượng lồng nhau dưới dạng văn bản JSON giúp số cột ít đi và cho phép bạn dựng lại cấu trúc ban đầu sau này.</p>
+<p>CSV tuân theo các quy tắc thông thường (RFC 4180): giá trị chỉ được đặt trong ngoặc kép khi cần và dấu ngoặc kép bên trong giá trị được nhân đôi. Số giữ nguyên các chữ số từ JSON của bạn thay vì bị làm tròn như số trong JavaScript.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Muốn đi theo chiều ngược lại? Hãy dùng <a href="/tools/csv-to-json/">CSV sang JSON</a>.</li>
+  <li>Nếu JSON không chuyển đổi được, hãy tìm lỗi bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+  <li>So sánh hai bản xuất theo từng dòng bằng <a href="/tools/text-diff/">So sánh văn bản</a>.</li>
+</ul>

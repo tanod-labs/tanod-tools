@@ -1,0 +1,84 @@
+<!--meta
+{
+  "title": "Losowanie imion: koło fortuny i podział na drużyny | Tanod Tools",
+  "description": "Wklej listę imion i wylosuj jednego lub kilku zwycięzców na kole fortuny albo podziel wszystkich na wyrównane, losowe drużyny. Uczciwe losowanie, nic nie jest przesyłane.",
+  "h1": "Losowanie imion",
+  "lede": "Wklej imiona, po jednym w wierszu, a potem zakręć kołem, by wybrać zwycięzcę, albo rozdziel wszystkich na drużyny.",
+  "blurb": "Zakręć kołem, by wylosować zwycięzców, albo podziel imiona na drużyny.",
+  "keywords": "losowanie imion, koło fortuny, losowanie osób, losowanie zwycięzcy, podział na drużyny, generator drużyn, losowy podział na grupy, konkurs, loteria, wheel spinner, raffle, giveaway, team generator, random picker",
+  "limits": "Koło drukuje etykiety dla maksymalnie 100 imion; przy większej liczbie nadal losuje uczciwie, ale pokazuje wycinki bez etykiet. Lista istnieje tylko na tej stronie i znika po jej zamknięciu lub przeładowaniu.",
+  "howto_title": "Jak wylosować imię",
+  "howto": [
+    "Wpisz lub wklej imiona w pole, <strong>po jednym w wierszu</strong>. Puste wiersze są ignorowane.",
+    "Wybierz <em>Losuj zwycięzców</em> i ich liczbę albo <em>Podziel na drużyny</em> i liczbę drużyn.",
+    "Naciśnij przycisk. Zaznacz <em>Usuwaj wylosowane imiona</em>, jeśli ta sama osoba nie powinna wygrać dwa razy."
+  ],
+  "faq": [
+    ["Czy losowanie jest uczciwe?", "Tak. Zwycięzca jest wybierany najpierw, nieobciążonym losowaniem z bezpiecznego źródła losowości przeglądarki, a dopiero potem koło obraca się tak, by zatrzymać się na tym imieniu. Animacja to dekoracja, więc długi wycinek czy szczęśliwy obrót nie zmieniają niczyich szans. Każdy wiersz ma takie same szanse."],
+    ["Co się stanie, jeśli imię jest na liście dwa razy?", "Każdy wiersz to osobny wpis, więc imię wpisane dwa razy ma dwie szanse, a strona informuje, które imiona się powtarzają. Jeśli to pomyłka, usuń dodatkowy wiersz; jeśli celowo, na przykład dwa losy na loterii, zostaw go."],
+    ["Jak wylosować kilku zwycięzców po kolei?", "Zaznacz <em>Usuwaj wylosowane imiona z listy</em>, a potem naciskaj przycisk przy każdym losowaniu. Albo ustaw liczbę zwycięzców na 3 i otrzymaj trzy różne wpisy naraz. Zwycięzcy w jednym losowaniu to zawsze różne wpisy."],
+    ["Jak powstają drużyny?", "Lista jest tasowana nieobciążonym algorytmem Fishera-Yatesa, a potem rozdawana po jednym imieniu, jak karty. Dzięki temu rozmiary drużyn różnią się co najwyżej o jeden: 10 imion w 3 drużynach daje 4, 3 i 3."],
+    ["Czy mogę wyłączyć kręcenie?", "Jeśli urządzenie ma ustawione ograniczanie ruchu, koło przeskakuje od razu do wyniku bez animacji, a wynik jest w obu przypadkach ogłaszany czytnikom ekranu. Wyniki są też wypisane tekstem pod kołem."],
+    ["Czy moja lista jest dokądś wysyłana?", "Nie. Imiona czyta tylko strona w Twojej przeglądarce i nic nie jest zapisywane, więc zamknięcie karty je usuwa. Skopiuj historię, jeśli potrzebujesz zapisu, kto został wylosowany."]
+  ]
+}
+-->
+<!--tool-->
+<div class="rp">
+  <div class="rp__in util-stack">
+    <div class="field">
+      <label for="rp-names">Imiona, po jednym w wierszu</label>
+      <textarea id="rp-names" class="rp-names" rows="8" spellcheck="false" autocomplete="off" aria-describedby="rp-info" aria-invalid="false" placeholder="Amara&#10;Bruno&#10;Chen"></textarea>
+      <p class="help" id="rp-info">Brak imion</p>
+    </div>
+    <fieldset class="field">
+      <legend>Co zrobić</legend>
+      <div class="seg">
+        <label><input type="radio" name="rp-mode" value="pick" checked>Losuj zwycięzców</label>
+        <label><input type="radio" name="rp-mode" value="teams">Podziel na drużyny</label>
+      </div>
+    </fieldset>
+    <div class="opts">
+      <div class="field" id="rp-win-box">
+        <label for="rp-winners">Ilu zwycięzców</label>
+        <input type="number" id="rp-winners" min="1" value="1" aria-invalid="false">
+      </div>
+      <div class="field" id="rp-team-box" hidden>
+        <label for="rp-teams">Ile drużyn</label>
+        <input type="number" id="rp-teams" min="1" value="2" aria-invalid="false">
+      </div>
+    </div>
+    <div class="util-checks" id="rp-remove-box">
+      <label class="check"><input type="checkbox" id="rp-remove">Usuwaj wylosowane imiona z listy</label>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="rp-go" type="button">Losuj</button>
+      <button class="btn" id="rp-sample" type="button">Użyj przykładowych imion</button>
+    </div>
+    <div class="status" id="status" role="status" hidden></div>
+  </div>
+  <div class="rp__wheel">
+    <canvas id="rp-wheel" class="rp-wheel" width="800" height="800" role="img" aria-label="Puste koło: dodaj imiona, aby je wypełnić"></canvas>
+  </div>
+  <div class="rp__out util-stack">
+    <div class="rp-result" id="rp-result" aria-live="polite" data-state="empty"></div>
+    <div id="rp-hist-box" hidden>
+      <div class="rp-hist-head">
+        <h2 class="util-h">Historia</h2>
+        <button class="btn btn--quiet btn--sm" id="rp-clear-hist" type="button">Wyczyść historię</button>
+      </div>
+      <ol class="rp-hist" id="rp-history" reversed></ol>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Uczciwe losowanie i dlaczego koło służy tylko do pokazu</h2>
+<p>Uczciwe losowanie daje każdemu wpisowi takie same szanse. Typowa pułapka to puszczenie animacji, odczytanie, gdzie się zatrzyma, i uznanie tego za wynik: fizyka narysowanego koła, wolna klatka czy błąd zaokrąglenia mogą wtedy faworyzować niektóre wycinki. Tutaj kolejność jest odwrócona. Zwycięski wpis jest wybierany najpierw przez wylosowanie losowego indeksu metodą odrzucania, która pozbywa się nierównej reszty, jaką zostawiłoby zwykłe modulo, a dopiero potem koło jest obracane tak, by skończyć na tym wycinku.</p>
+<p>Wybieranie kilku zwycięzców działa tak samo, bez zwracania. Strona wykonuje częściowe tasowanie Fishera-Yatesa po pozycjach z listy i bierze kilka pierwszych, więc pozycja nie może zostać wybrana dwa razy w jednym losowaniu. Drużyny używają pełnego tasowania, a potem imiona są rozdawane po kolei kolejnym drużynom. Gwarantuje to, że rozmiary różnią się najwyżej o jeden, podczas gdy to, kto trafi razem, pozostaje losowe.</p>
+<p>W sprawach, w których coś jest stawką, jak konkurs z nagrodami, trzymaj listę widoczną podczas losowania i powiedz, jak je przeprowadzono. Odczytanie historii na głos lub opublikowanie jej później to lepszy ślad kontrolny niż zrzut ekranu koła.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Najpierw uporządkuj wklejoną listę: <a href="/tools/remove-duplicate-lines/">Usuń zduplikowane wiersze</a>, jeśli każda osoba ma mieć tylko jeden wpis.</li>
+  <li>Potrzebujesz liczb, a nie imion, na przykład losu od 1 do 500? Użyj narzędzia <a href="/tools/random-number-generator/">Generator liczb losowych</a>.</li>
+  <li>Prowadzisz rundę quizu lub prelekcję? Ogranicz każdą turę za pomocą narzędzia <a href="/tools/countdown-timer/">Minutnik z odliczaniem</a>.</li>
+</ul>

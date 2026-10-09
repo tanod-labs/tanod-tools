@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Vérificateur de contraste des couleurs : WCAG AA et AAA | Tanod Tools",
+  "description": "Vérifiez le rapport de contraste WCAG d'un texte sur un fond (HEX, RGB, HSL, nom CSS), avec résultats AA et AAA. Gratuit, dans le navigateur.",
+  "h1": "Vérificateur de contraste des couleurs",
+  "lede": "Saisissez une couleur de texte et une couleur d'arrière-plan pour obtenir le rapport de contraste WCAG et un résultat réussi ou échoué pour AA et AAA, pour le texte normal et le grand texte, avec un aperçu en direct.",
+  "blurb": "Rapport de contraste WCAG avec résultats AA et AAA et aperçu en direct.",
+  "keywords": "vérificateur contraste couleurs wcag rapport de contraste accessibilité aa aaa texte normal grand texte couleur de texte arrière-plan hex rgb hsl noms de couleurs css luminance relative",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Utilise le rapport de contraste WCAG 2.x, qui ne mesure que le contraste de luminance. Il ne peut pas juger les paires problématiques pour les daltoniens, comme du rouge sur du vert, les polices fines ou petites, ni le texte sur des images et des dégradés. Il lit HEX (3, 4, 6 ou 8 chiffres), rgb(), hsl() et les noms de couleurs CSS ; les autres syntaxes de couleur CSS sont lues par votre navigateur lorsqu'il le peut.",
+  "howto_title": "Comment vérifier le contraste des couleurs",
+  "howto": [
+    "Saisissez ou collez la couleur du texte et la couleur d'arrière-plan en HEX, <code>rgb()</code>, <code>hsl()</code> ou sous la forme d'un nom de couleur CSS comme <code>navy</code>, ou choisissez chacune avec le sélecteur de couleur.",
+    "Lisez le rapport de contraste, de 1:1 pour l'absence de contraste à 21:1 pour du noir sur du blanc.",
+    "Consultez le tableau : le texte normal exige 4,5:1 pour AA et 7:1 pour AAA, et le grand texte exige 3:1 pour AA et 4,5:1 pour AAA. L'aperçu montre le rendu du texte."
+  ],
+  "faq": [
+    ["Comment le rapport de contraste est-il calculé ?", "Avec la formule WCAG 2.x : la luminance relative de chaque couleur est calculée à partir de ses valeurs sRGB, et le rapport vaut (plus claire + 0,05) divisé par (plus foncée + 0,05). Il va de 1:1 (aucun contraste) à 21:1 (noir sur blanc). Le rapport est affiché avec deux décimales, et la valeur non arrondie est indiquée à côté."],
+    ["Quels rapports AA et AAA exigent-ils ?", "Le texte normal exige 4,5:1 pour AA et 7:1 pour AAA. Le grand texte, c'est-à-dire d'au moins 24 px en graisse normale ou environ 18,7 px en gras, exige 3:1 pour AA et 4,5:1 pour AAA. Un rapport n'est pas arrondi au-dessus d'un seuil : 4,499:1 s'affiche 4,49 et échoue à AA pour le texte normal."],
+    ["Pourquoi #777777 sur blanc échoue-t-il à AA ?", "Son contraste est de 4,48:1, juste en dessous des 4,5:1 qu'AA demande pour le texte normal : il échoue donc pour le texte courant mais réussit pour le grand texte, qui n'exige que 3:1. Un gris légèrement plus foncé, comme #767676, atteint 4,54:1 et réussit."],
+    ["Que se passe-t-il avec les couleurs transparentes ?", "Une couleur de texte partiellement transparente est d'abord mélangée avec l'arrière-plan, comme un écran l'affiche, et c'est la couleur obtenue qui est mesurée. Un arrière-plan partiellement transparent est supposé posé sur du blanc. Les canaux sont arrondis à des nombres entiers après le mélange."],
+    ["Un rapport suffisant signifie-t-il que le texte est accessible ?", "Pas à lui seul. Le rapport ne mesure que le contraste de luminosité. Il ne dit rien des paires problématiques pour les daltoniens, des polices très fines, du texte sur des photos ou des dégradés, ni de savoir si la couleur est le seul moyen de transmettre un sens. Considérez-le comme un minimum, pas comme une garantie."],
+    ["Quelque chose est-il envoyé à un serveur ?", "Non. Les couleurs sont lues et mesurées dans votre navigateur, et rien de ce que vous saisissez ne quitte votre appareil."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="cc">
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="cc-fg">Couleur du texte</label>
+        <input type="text" id="cc-fg" class="mono" value="#777777" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="cc-fg-pick">Sélecteur</label>
+        <input type="color" id="cc-fg-pick" value="#777777">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="cc-bg">Couleur d'arrière-plan</label>
+        <input type="text" id="cc-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="cc-bg-pick">Sélecteur</label>
+        <input type="color" id="cc-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="cc-swap" type="button">Inverser les couleurs</button>
+  </div>
+  <p class="tt__report" id="cc-info" aria-live="polite"></p>
+  <div class="col-sample" id="cc-sample" aria-hidden="true">
+    <span class="col-sample__big">Grand texte, 24 px</span>
+    <span class="col-sample__small">Texte courant normal en 15 px, la taille de la plupart des paragraphes.</span>
+  </div>
+  <p>Rapport de contraste <span class="col-ratio" id="cc-ratio" aria-live="polite">–</span> <small class="help" id="cc-raw"></small></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Usage</th><th scope="col">Exigence</th><th scope="col">Résultat</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Texte normal, AA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Texte normal, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Grand texte, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Grand texte, AAA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="cc-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Ce que signifie le rapport de contraste</h2>
+<p>Le rapport de contraste WCAG compare la luminosité de deux couleurs. Chaque couleur est convertie en luminance relative entre 0 (noir) et 1 (blanc), à partir des valeurs sRGB dont on a retiré la courbe gamma, les trois canaux étant pondérés selon la luminosité que l'œil leur perçoit : le vert le plus, puis le rouge, puis le bleu. Le rapport est la luminance de la plus claire plus 0,05 divisée par la luminance de la plus foncée plus 0,05 ; il va donc de 1:1 pour des couleurs identiques à 21:1 pour du noir sur du blanc.</p>
+<p>WCAG 2 fixe des minimums selon la taille du texte. Le texte normal exige 4,5:1 pour le niveau AA et 7:1 pour le niveau AAA, plus strict. Le grand texte, plus facile à lire, exige 3:1 pour AA et 4,5:1 pour AAA. Grand signifie au moins 24 px, ou environ 18,7 px en gras.</p>
+<p>Le rapport ne regarde que la luminosité. Deux couleurs peuvent réussir et rester difficiles à distinguer pour les personnes daltoniennes, et les polices fines ou le texte sur une photo peuvent demander plus de contraste que le minimum. Considérez ce chiffre comme un plancher et regardez l'aperçu.</p>
+<h3>Pour les développeurs et les agents IA</h3>
+<p>Besoin de vérifier le contraste dans du code, dans une étape de build ou depuis un agent IA ? Il existe une API pour cela : consultez le <a href="https://tanod.dev/learn/color-contrast-checker-api.html">guide de l'API du vérificateur de contraste des couleurs</a>.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Besoin d'abord de convertir une couleur entre HEX, RGB, HSL et CMJN ? Utilisez le <a href="/tools/color-converter/">Convertisseur de couleurs</a>.</li>
+  <li>Vous composez un ensemble de couleurs assorties ? Le <a href="/tools/color-palette-generator/">Générateur de palette de couleurs</a> affiche le contraste avec le blanc et le noir pour chaque nuance.</li>
+  <li>Besoin de la couleur d'un pixel dans une capture d'écran ? Utilisez la <a href="/tools/image-color-picker/">Pipette de couleur pour image</a>.</li>
+</ul>

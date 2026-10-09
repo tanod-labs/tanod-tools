@@ -1,7 +1,7 @@
 // Image to Base64: reads the file in the browser, labels it with the type found in its bytes and wraps the
 // Base64 in the snippet the visitor picks. Nothing is uploaded.
-import { $, fmtBytes, fmtNum, dropzone, setStatus, announce, friendlyError, UserError, copyText, textBlob, baseName, tx, txn } from "./core.js?v=5";
-import { sniffType, previewInto, dims } from "./imgcore.js?v=5";
+import { $, fmtBytes, fmtNum, dropzone, setStatus, announce, friendlyError, UserError, copyText, textBlob, baseName, tx, txn } from "./core.js?v=11";
+import { sniffType, previewInto, dims } from "./imgcore.js?v=11";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const BIG = 100 * 1024;

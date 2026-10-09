@@ -1,4 +1,4 @@
-import { $, live, openTextFile, wireCopy, downloadButton, setStatus, announce, fmtInt, normalizeNewlines, tx, txn, EN, LOCALE } from "./textcore.js?v=5";
+import { $, live, openTextFile, wireCopy, downloadButton, setStatus, announce, fmtInt, normalizeNewlines, tx, txn, EN, LOCALE } from "./textcore.js?v=11";
 
 const area = $("#text");
 const out = $("#out");

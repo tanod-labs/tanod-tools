@@ -1,6 +1,6 @@
-import { $, live, wireCopy, setStatus, announce, fmtInt, tx, txn } from "./textcore.js?v=5";
-import { dropzone, fmtBytes, baseName } from "./core.js?v=5";
-import { saveText } from "./csvcore.js?v=5";
+import { $, live, wireCopy, setStatus, announce, fmtInt, tx, txn } from "./textcore.js?v=11";
+import { dropzone, fmtBytes, baseName } from "./core.js?v=11";
+import { saveText } from "./csvcore.js?v=11";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const area = $("#html");

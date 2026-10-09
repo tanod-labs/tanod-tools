@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "JPG'den PDF'ye dönüştürücü, çevrimiçi ve ücretsiz | Tanod Tools",
+  "description": "JPG, PNG, WebP, GIF veya BMP resimleri tarayıcınızda tek bir PDF'e çevirin. Sayfaları sıralayın, boyut ve kenar boşluğu seçin. Ücretsiz, kayıtsız, yüklemesiz.",
+  "h1": "JPG'den PDF'ye",
+  "lede": "Bir veya daha fazla resmi, sayfa başına bir resim olacak şekilde, seçtiğiniz sırayla tek bir PDF'te birleştirin.",
+  "blurb": "JPG, PNG, WebP, GIF veya BMP resimlerden PDF oluşturun.",
+  "keywords": "jpg pdf yapma resimden pdf fotoğraftan pdf png pdf tarama resimleri pdf'e çevirme image to pdf photo to pdf png to pdf scan pictures",
+  "limits": "200 resme kadar, her biri en fazla 50 MB. JPG, PNG, WebP, GIF ve BMP. Hareketli GIF'ler ilk karelerini kullanır.",
+  "howto_title": "Resimler PDF'e nasıl çevrilir",
+  "howto": [
+    "Resimlerinizi seçin veya sayfaya sürükleyin. Oklarla sıraya koyun, istemediklerinizi kaldırın.",
+    "Bir sayfa boyutu (resme sığdır, A4 veya US Letter), yön ve kenar boşluğu seçin.",
+    "<strong>PDF oluştur</strong> düğmesine basın, ardından dosyayı indirin."
+  ],
+  "faq": [
+    ["Resimlerim yükleniyor mu?", "Hayır. PDF, açık kaynaklı pdf-lib kitaplığıyla tarayıcınızda oluşturulur. Resimleriniz cihazınızdan okunur ve PDF cihazınızda yapılır."],
+    ["JPG resimler yeniden sıkıştırılıyor mu?", "Hayır. Bir JPG, PDF'e olduğu gibi yerleştirilir; bu yüzden ek kalite kaybı olmaz ve dosya küçük kalır. İstisna, birçok telefon fotoğrafı gibi EXIF döndürme bayrağı olan bir JPG'dir: doğru yönde görünmesi için dik çevrilir ve yüksek kaliteli (kalite 92) bir JPG olarak yeniden kaydedilir."],
+    ["Sayfa boyutu seçenekleri ne yapar?", "<em>Resme sığdır</em>, her sayfayı, nokta başına bir piksel ve varsa kenar boşluğu eklenerek resmin boyutunda yapar. A4 ve US Letter sabit bir sayfa kullanır ve her resmi, oranlarını koruyarak ve ortalayarak kenar boşluklarının içine sığacak şekilde ölçekler. <em>Otomatik</em> yönde her sayfa, resmine uyacak şekilde dikey veya yatay olur."],
+    ["Saydam PNG resimlere ne olur?", "Saydamlık korunur: PNG resimler alfa kanallarıyla gömülür; böylece sayfa rengi görünür. WebP, GIF ve BMP resimler önce tarayıcınız tarafından PNG'ye çevrilir."],
+    ["Sınırlar var mı?", "Her biri 50 MB'a kadar 200 resim ekleyebilirsiniz. Çok büyük toplu işlemler cihazınızın belleğiyle sınırlıdır."],
+    ["Sırayı sonradan değiştirebilir miyim?", "Evet, PDF'i oluşturmadan önce. Her resmin yanındaki yukarı ve aşağı oklarını kullanın. Önceden oluşturduğunuz bir PDF'i yeniden düzenlemek için <a href=\"/tools/reorder-pdf-pages/\">PDF sayfalarını yeniden sırala</a> aracını kullanın."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Resimleri buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,.jpg,.jpeg,.png,.webp,.gif,.bmp" multiple>{{mark:i-plus}}<span data-pick-label>Resimleri seçin</span></label>
+  <p class="drop__hint">JPG, PNG, WebP, GIF veya BMP. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<ol class="files files--img" id="files" aria-label="Resimler, sayfa sırasıyla" hidden></ol>
+<div id="work" hidden>
+  <div class="opts">
+    <div class="field">
+      <label for="pagesize">Sayfa boyutu</label>
+      <select id="pagesize">
+        <option value="fit" selected>Resme sığdır</option>
+        <option value="a4">A4</option>
+        <option value="letter">US Letter</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="orient">Yön</label>
+      <select id="orient">
+        <option value="auto" selected>Otomatik (resme uysun)</option>
+        <option value="portrait">Dikey</option>
+        <option value="landscape">Yatay</option>
+      </select>
+      <span class="help" id="orient-help"></span>
+    </div>
+    <div class="field">
+      <label for="margin">Kenar boşluğu</label>
+      <select id="margin">
+        <option value="0" selected>Yok</option>
+        <option value="18">Küçük</option>
+        <option value="36">Büyük</option>
+      </select>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">PDF oluştur</button>
+    <span class="help" id="summary"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Tümünü temizle</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Resimleri yüklemeden PDF yapma</h2>
+<p>Bir PDF, bir JPG'yi tıpkı olduğu gibi barındırabilir; bu yüzden bir fotoğrafı PDF'e çevirmek kalite kaybı gerektirmez. Tarayıcınız belgeyi pdf-lib ile oluşturur: her resim bir sayfa olur ve JPG verisi çözülmeden ya da yeniden sıkıştırılmadan içeri kopyalanır.</p>
+<p>Telefon fotoğrafları çoğu zaman dik kaydedilmek yerine bir EXIF yön bayrağı taşır. PDF görüntüleyicileri bu bayrağı yok sayar; bu yüzden bu tür resimler önce dik çevrilir ve yeniden JPG olarak kaydedilir. Diğer biçimlerdeki resimler, PDF'in tam kalite ve saydamlıkla desteklediği PNG'ye tarayıcınız tarafından çevrilir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Kendi oranlarında kalmasını istediğiniz fotoğraflar ve taramalar için <em>Resme sığdır</em>'ı, PDF yazdırılacaksa A4 veya US Letter'ı seçin.</li>
+  <li>Ters yönde dönüştürmek için <a href="/tools/pdf-to-jpg/">PDF'den JPG'ye</a> aracını kullanın.</li>
+  <li>Bu PDF'i diğerlerine eklemek için <a href="/tools/merge-pdf/">PDF birleştir</a> aracını kullanın.</li>
+  <li>Çoğunlukla ekran görüntüsü mü? <a href="/tools/png-to-pdf/">PNG'den PDF'ye</a> sayfası, saydamlığın ve keskin metnin nasıl korunduğunu anlatır.</li>
+</ul>

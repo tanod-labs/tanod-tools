@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "Wysokość gęstościowa i ciśnieniowa (ISA) | Tanod Tools",
+  "description": "Oblicz wysokość ciśnieniową i gęstościową z wysokości lotniska, nastawy wysokościomierza i temperatury, według atmosfery wzorcowej ISA.",
+  "h1": "Kalkulator wysokości gęstościowej i ciśnieniowej",
+  "lede": "Podaj wysokość lotniska, nastawę wysokościomierza i temperaturę powietrza, aby uzyskać wysokość ciśnieniową, wysokość gęstościową i odchylenie od ISA.",
+  "blurb": "Wysokość ciśnieniowa i gęstościowa według atmosfery wzorcowej ISA.",
+  "keywords": "wysokość gęstościowa wysokość ciśnieniowa kalkulator isa atmosfera wzorcowa nastawa wysokościomierza qnh inhg hpa odchylenie temperatury osiągi start gorąco wysoko",
+  "limits": "Obliczenie ISA dla suchego powietrza; wilgotność jest pomijana, przez co w wilgotne dni wysokość gęstościowa wychodzi nieco za niska. Nie do planowania lotu ani nawigacji: korzystaj z wykresów osiągów statku powietrznego i oficjalnych danych.",
+  "howto_title": "Jak obliczyć wysokość gęstościową",
+  "howto": [
+    "Wpisz wysokość lotniska i wybierz stopy lub metry.",
+    "Wpisz nastawę wysokościomierza (QNH) w hPa lub inHg oraz temperaturę powietrza w °C lub °F.",
+    "Odczytaj wysokość ciśnieniową i gęstościową oraz zobacz, jak bardzo temperatura odbiega od wzorcowej."
+  ],
+  "faq": [
+    ["Czym jest wysokość gęstościowa?", "To wysokość w atmosferze wzorcowej, na której powietrze ma taką samą gęstość jak powietrze, w którym się znajdujesz. Gorące, rozrzedzone lub wilgotne powietrze jest cieńsze, więc wysokość gęstościowa może być znacznie wyższa niż rzeczywista wysokość. Zmniejsza to moc silnika, ciąg śmigła i siłę nośną skrzydeł, co wydłuża rozbieg i zmniejsza prędkość wznoszenia."],
+    ["Czym jest wysokość ciśnieniowa?", "To wysokość wskazywana przez wysokościomierz ustawiony na wzorcowe 1013,25 hPa (29,92 inHg). Jest to wysokość w ISA, na której ciśnienie równa się rzeczywistemu ciśnieniu, i stanowi podstawę wykresów osiągów oraz poziomów lotu."],
+    ["Jak wyznaczana jest temperatura ISA?", "Atmosfera wzorcowa ma 15 °C na poziomie morza i ochładza się o 6,5 °C na 1000 m (1,98 °C na 1000 ft) do wysokości 11 km. Odchylenie od ISA to rzeczywista temperatura minus temperatura ISA na wysokości ciśnieniowej; każdy stopień powyżej wzorca podnosi wysokość gęstościową o ok. 120 ft."],
+    ["Dlaczego mój wynik różni się od reguły kciuka lub wykresu?", "Wykresy i reguła DA = PA + 120 × (OAT − temperatura ISA) to przybliżenia liniowe. To narzędzie bezpośrednio odwraca profil gęstości ISA, więc w gorące dni różni się o kilkaset stóp. Dokładna wartość jest pokazana obok wartości z reguły kciuka."],
+    ["Czy wilgotność ma znaczenie?", "Tak, niewielkie. Para wodna jest lżejsza od suchego powietrza, więc wilgotne powietrze jest cieńsze. Ten kalkulator zakłada suche powietrze, więc w gorący, wilgotny dzień prawdziwa wysokość gęstościowa jest nieco wyższa."],
+    ["Skąd wziąć nastawę wysokościomierza?", "Z METAR lub ATIS: Q1013 to hPa, a A2992 to inHg w setnych częściach. Dekoder METAR na tej stronie przelicza oba. Jeśli masz tylko ciśnienie na stacji, użyj bezpośrednio wysokości ciśnieniowej."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="da-elev">Wysokość lotniska</label>
+    <input type="text" id="da-elev" inputmode="decimal" autocomplete="off" value="5434" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-elev-u">Jednostka wysokości</label>
+    <select id="da-elev-u"><option value="ft" selected>stopy</option><option value="m">metry</option></select>
+  </div>
+  <div class="field">
+    <label for="da-qnh">Nastawa wysokościomierza (QNH)</label>
+    <input type="text" id="da-qnh" inputmode="decimal" autocomplete="off" value="1013.25" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-qnh-u">Jednostka ciśnienia</label>
+    <select id="da-qnh-u"><option value="hpa" selected>hPa</option><option value="inhg">inHg</option></select>
+  </div>
+  <div class="field">
+    <label for="da-oat">Temperatura powietrza zewnętrznego</label>
+    <input type="text" id="da-oat" inputmode="decimal" autocomplete="off" value="30" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-oat-u">Jednostka temperatury</label>
+    <select id="da-oat-u"><option value="c" selected>°C</option><option value="f">°F</option></select>
+  </div>
+</div>
+<p class="note" id="da-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="da-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Wysokość gęstościowa</span> <span class="calc-main__val num" id="da-main"></span></p>
+  <dl class="stats" id="da-stats"></dl>
+  <p class="help" id="da-info"></p>
+</div>
+<!--explain-->
+<h2>Wzory</h2>
+<p>Obliczenie opiera się na Międzynarodowej Atmosferze Wzorcowej (ICAO Doc 7488, ISO 2533): temperatura na poziomie morza T0 = 288,15 K, ciśnienie P0 = 1013,25 hPa, gęstość 1,225 kg/m³, gradient L = 0,0065 K/m do 11 000 m, a powyżej stałe 216,65 K. Ciśnienie na wysokości h w troposferze to P = P0 · (1 − L·h/T0)^(g/(R·L)), gdzie g = 9,80665 m/s², R = 287,05287 J/(kg·K), a wykładnik wynosi 5,25588.</p>
+<p>Ciśnienie na stacji wyznacza się z nastawy wysokościomierza jako P_station = QNH · (1 − L·elevation/T0)^5,25588. Wysokość ciśnieniowa to wysokość ISA o tym ciśnieniu: h = (T0/L) · (1 − (P_station/P0)^(1/5,25588)). Gęstość powietrza to ρ = P_station / (R · T) z równania gazu doskonałego, przy temperaturze powietrza w kelwinach, a wysokość gęstościowa to wysokość ISA o tej gęstości: h = (T0/L) · (1 − (ρ/ρ0)^(1/4,25588)). Powyżej 11 km stosuje się zamiast tego warstwę izotermiczną. Odchylenie temperatury to OAT minus temperatura ISA na wysokości ciśnieniowej.</p>
+<p>Przeliczniki są dokładne (1 ft = 0,3048 m, 1 inHg = 3386,38864 Pa). <strong>Nie do planowania lotu ani nawigacji.</strong></p>

@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Hỗ trợ chuyển RouterOS v6 sang v7 cho OSPF và BGP | Tanod Tools",
+  "description": "Dán bản export RouterOS v6 để chuyển routing mark, filter, OSPF và BGP sang cú pháp v7; dòng nào chưa chắc chắn đều được đánh dấu để xem lại. Chạy trong trình duyệt.",
+  "h1": "Hỗ trợ chuyển RouterOS v6 sang v7",
+  "lede": "Dán bản export v6 và xem nó được viết lại cho RouterOS v7: routing table, rule routing filter, template OSPF và connection BGP, kèm danh sách cần xem lại cho mọi thứ không thể chuyển đổi tự động.",
+  "blurb": "Chuyển routing mark, filter, OSPF và BGP của v6 sang v7.",
+  "keywords": "chuyển routeros v6 sang v7 nâng cấp mikrotik v7 routing filter rule ospf interface-template bgp connection routing-mark routing-table fib chuyển đổi export cú pháp v7 routeros v6 to v7 migration mikrotik upgrade convert export v7 syntax",
+  "local_text": "Bản export của bạn được chuyển đổi ngay trong trình duyệt và không bao giờ rời khỏi thiết bị của bạn",
+  "limits": "Chuyển đổi route và route rule, routing mark, routing filter, OSPFv2, BGP peer và network, cùng NTP client; đánh dấu để xem lại mọi thứ khác đã thay đổi trong v7 và giữ nguyên phần còn lại. Hãy thận trọng: kiểm thử kết quả trên một router thử nghiệm trước khi dùng. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách chuyển cấu hình RouterOS v6 sang v7",
+  "howto": [
+    "Chạy <code>/export hide-sensitive</code> trên router v6 (hoặc <code>/export file=v6</code> rồi tải tệp xuống), sau đó dán văn bản hoặc mở tệp .rsc tại đây.",
+    "Đọc script đã chuyển đổi ở bên phải: mỗi dòng đã chuyển nằm sau dòng gốc của nó, hiển thị dưới dạng <code># v6:</code>, còn các dòng chưa chắc chắn được chú thích lại kèm ghi chú <code># REVIEW</code>.",
+    "Xử lý lần lượt danh sách cần xem lại, rồi áp dụng kết quả lên router v7 thử nghiệm trước khi đưa vào môi trường thật."
+  ],
+  "faq": [
+    ["Tôi có cần công cụ này để nâng cấp router từ v6 lên v7 không?", "Thường là không: nâng cấp tại chỗ sẽ tự động chuyển đổi cấu hình, và MikroTik khuyên dùng cách này. Công cụ này dùng để xem trước những gì sẽ thay đổi trước khi nâng cấp, để kiểm tra việc chuyển đổi tự động đã làm gì, và để dựng lại cấu hình cũ trên một router mới có sẵn v7."],
+    ["Công cụ chuyển đổi những gì?", "Route có routing-mark trở thành route có routing-table, và mỗi mark được route, rule hoặc mangle dùng sẽ có một mục /routing table với fib. /ip route rule chuyển sang /routing rule. Route nhiều gateway được tách ra cho ECMP của v7. Routing filter khớp theo prefix và prefix-length rồi đặt distance, local-pref, MED hoặc AS-path prepend trở thành các mục /routing filter rule. Instance, area, network và thiết lập theo từng interface của OSPF trở thành instance, area và interface template. Thiết lập instance và peer của BGP trở thành connection, còn network BGP trở thành một address list. Các server của NTP client chuyển sang menu servers."],
+    ["Công cụ không chuyển đổi những gì?", "Mọi thứ không thể chuyển đổi với độ tin cậy cao đều được chú thích lại và liệt kê để xem lại: các bộ khớp của routing filter như BGP community và AS path, invert-match, virtual link và neighbour NBMA của OSPF, OSPFv3, RIP, PIM, chi tiết MPLS, VRF, họ VPN của BGP và các tùy chọn peer ít gặp, User Manager, và script dùng các lệnh đã thay đổi. Công cụ cũng ghi chú các thay đổi về hành vi, chẳng hạn v7 từ chối route ở cuối một filter chain."],
+    ["Tại sao một số rule trông hợp lệ lại bị chú thích lại?", "Một routing filter bị mất một điều kiện khi chuyển đổi sẽ khớp nhiều route hơn trước và có thể chấp nhận hoặc loại bỏ nhầm prefix. Khi bất kỳ phần nào của rule không thể chuyển đổi, cả rule được giữ dưới dạng chú thích cùng bản dịch gần nhất, để không có gì được chuyển đổi dở dang mà đang có hiệu lực."],
+    ["Mật khẩu và khóa của tôi có an toàn không?", "Bản export được chuyển đổi bằng JavaScript ngay trong trang này và không được gửi đi đâu cả. Dùng hide-sensitive cũng giúp khóa OSPF và BGP không nằm trong văn bản; hãy đặt lại chúng trên router v7 sau đó."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen ros-gen--paste" id="mg">
+  <div class="ros-gen__form ros-paste" id="mg-form">
+    <div class="field">
+      <label for="mg-in">Bản export RouterOS v6</label>
+      <textarea id="mg-in" class="mono" rows="18" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="# jan/02/2024 10:15:22 by RouterOS 6.49.10&#10;/ip route&#10;add gateway=10.0.0.1 routing-mark=to-isp2&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}Mở tệp .rsc<input type="file" id="mg-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="mg-sample" type="button">Thử với bản export v6 mẫu</button>
+    </div>
+    <div class="ros-results" id="mg-res" aria-live="polite" hidden></div>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Hãy xem lại trước khi dùng.</strong> Các dòng đánh dấu <code># REVIEW</code> cần người kiểm tra. Hãy kiểm thử kết quả trên router thử nghiệm và bật Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd>) khi áp dụng từ xa.</span></p>
+    <label for="mg-out" class="label">Script RouterOS v7</label>
+    <textarea id="mg-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="mg-copy" type="button">Sao chép script</button>
+      <button class="btn" id="mg-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Điều gì đã thay đổi giữa RouterOS v6 và v7</h2>
+<p>Phần lớn cấu hình RouterOS đọc giống nhau ở cả hai phiên bản: interface, địa chỉ, rule firewall, DHCP, PPP và queue giữ nguyên menu và thuộc tính. Thay đổi lớn nhất nằm ở định tuyến. v7 thay thế bộ máy định tuyến, kéo theo cách cấu hình routing mark, routing filter, OSPF và BGP. Routing mark giờ là các routing table thật, phải được tạo trong <code>/routing table</code> với <code>fib</code> thì route, rule hoặc mangle mới dùng được, và route dùng <code>routing-table=</code> thay cho <code>routing-mark=</code>.</p>
+<p>Routing filter chuyển từ mỗi rule một dòng khớp-và-hành-động sang các script nhỏ: <code>/routing filter rule add chain=ospf-in rule="if (dst in 10.0.0.0/8 &amp;&amp; dst-len in 8-24) { accept }"</code>. Network OSPF trở thành <strong>interface template</strong> khớp interface theo network, theo tên hoặc cả hai, với thiết lập từng interface nằm ngay trên template. Peer BGP trở thành <strong>connection</strong> với <code>local.role</code> rõ ràng, và các network được quảng bá giờ lấy từ một address list được chỉ định trong <code>output.network</code>.</p>
+<h3>Cách công cụ hỗ trợ này hoạt động</h3>
+<ul>
+  <li>Công cụ chỉ viết lại những gì thay đổi có tính máy móc, hiện từng dòng gốc phía trên dòng thay thế và giữ nguyên mọi thứ khác.</li>
+  <li>Khi một dòng không thể chuyển đổi với độ tin cậy cao, nó được chú thích lại và giải thích, không bao giờ đoán bừa; danh sách bên cạnh ô nhập gom tất cả kèm số dòng.</li>
+  <li>Hãy so sánh kết quả với bản export lấy từ router đã nâng cấp bằng <a href="/tools/routeros-export-diff/">So sánh export RouterOS</a>, và kiểm tra firewall bằng <a href="/tools/mikrotik-firewall-auditor/">Kiểm tra tường lửa MikroTik</a>.</li>
+</ul>

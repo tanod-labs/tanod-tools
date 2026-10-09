@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "RouterOS v6'dan v7'ye geçiş yardımcısı: OSPF ve BGP | Tanod Tools",
+  "description": "RouterOS v6 export'unu yapıştırın; routing mark, filter, OSPF ve BGP ayarları v7 sözdizimine dönüşsün, emin olunamayanlar incelemeye işaretlensin.",
+  "h1": "RouterOS v6'dan v7'ye geçiş yardımcısı",
+  "lede": "Bir v6 export'unu yapıştırın ve RouterOS v7 için yeniden yazılmış halini görün: routing tablolar, routing filter kuralları, OSPF şablonları ve BGP bağlantıları; mekanik olarak dönüştürülemeyenler için bir inceleme listesiyle birlikte.",
+  "blurb": "v6 routing mark, filter, OSPF ve BGP ayarlarını v7'ye dönüştürün.",
+  "keywords": "routeros v6 v7 geçiş mikrotik yükseltme v7 routing filter kuralı ospf interface-template bgp bağlantısı routing-mark routing-table fib export dönüştür v7 sözdizimi routeros v6 to v7 migration upgrade convert export",
+  "local_text": "Export'unuz tarayıcınızda dönüştürülür ve cihazınızdan asla çıkmaz",
+  "limits": "Rotaları ve rota kurallarını, routing mark'ları, routing filter'ları, OSPFv2'yi, BGP eşlerini ve ağlarını ile NTP istemcisini dönüştürür; v7'de değişen diğer her şeyi inceleme için işaretler, geri kalanını olduğu gibi aktarır. Temkinli olun: sonucu kullanmadan önce bir laboratuvar yönlendiricisinde deneyin. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "RouterOS v6 yapılandırması v7'ye nasıl dönüştürülür",
+  "howto": [
+    "v6 yönlendiricide <code>/export hide-sensitive</code> komutunu çalıştırın (ya da <code>/export file=v6</code> ile dosyayı indirin), ardından metni buraya yapıştırın veya .rsc dosyasını açın.",
+    "Sağdaki dönüştürülmüş betiği okuyun: her dönüştürülen satır, <code># v6:</code> olarak gösterilen özgün satırını izler; emin olunamayan satırlar <code># REVIEW</code> notuyla yorum satırına çevrilir.",
+    "İnceleme listesini gözden geçirin, sonra sonucu üretime geçmeden önce bir v7 laboratuvar yönlendiricisine uygulayın."
+  ],
+  "faq": [
+    ["Bir yönlendiriciyi v6'dan v7'ye yükseltmek için buna ihtiyacım var mı?", "Genellikle hayır: yerinde yükseltme yapılandırmayı otomatik dönüştürür ve MikroTik bu yolu önerir. Bu yardımcı, yükseltmeden önce nelerin değişeceğini görmek, otomatik dönüştürmenin ne yaptığını denetlemek ve eski bir yapılandırmayı v7 ile gelen yeni bir yönlendiricide yeniden kurmak içindir."],
+    ["Neleri dönüştürür?", "routing-mark içeren rotalar routing-table içeren rotalara dönüşür ve rotalarda, kurallarda veya mangle'da kullanılan her mark için fib ile bir /routing table girdisi oluşturulur. /ip route rule, /routing rule altına taşınır. Çok geçitli rotalar v7 ECMP için bölünür. prefix ve prefix-length üzerinden eşleşen ve distance, local-pref, MED veya AS-path prepend ayarlayan routing filter'lar /routing filter rule girdilerine dönüşür. OSPF instance, area, network ve arayüz başına ayarlar instance, area ve interface template olur. BGP instance ve peer ayarları connection olur, BGP network'leri ise bir address list'e dönüşür. NTP istemcisinin sunucuları servers menüsüne taşınır."],
+    ["Neleri dönüştürmez?", "Güvenle dönüştüremediği her şey yorum satırına alınır ve inceleme için listelenir: BGP community ve AS path gibi routing filter eşleştiricileri, invert-match, OSPF virtual link ve NBMA komşuları, OSPFv3, RIP, PIM, MPLS ayrıntıları, VRF'ler, BGP VPN aileleri ve nadir kullanılan peer seçenekleri, User Manager ile değişen komutları kullanan betikler. Ayrıca v7'nin bir filter zincirinin sonunda rotaları reddetmesi gibi davranış değişikliklerini de not eder."],
+    ["Geçerli görünen bazı kurallar neden yorum satırına alınmış?", "Çeviride koşullarından birini kaybeden bir routing filter, eskisinden daha fazla rotayı eşleştirir ve yanlış prefix'leri kabul edebilir ya da düşürebilir. Bir kuralın herhangi bir kısmı dönüştürülemediğinde kuralın tamamı, en yakın çeviriyle birlikte yorum olarak bırakılır; böylece yarım dönüştürülmüş hiçbir şey etkin olmaz."],
+    ["Parolalarım ve anahtarlarım güvende mi?", "Export, bu sayfadaki JavaScript ile dönüştürülür ve hiçbir yere gönderilmez. hide-sensitive kullanmak OSPF ve BGP anahtarlarını da metnin dışında tutar; bunları sonradan v7 yönlendiricide yeniden girin."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen ros-gen--paste" id="mg">
+  <div class="ros-gen__form ros-paste" id="mg-form">
+    <div class="field">
+      <label for="mg-in">RouterOS v6 export'u</label>
+      <textarea id="mg-in" class="mono" rows="18" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="# jan/02/2024 10:15:22 by RouterOS 6.49.10&#10;/ip route&#10;add gateway=10.0.0.1 routing-mark=to-isp2&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}.rsc dosyası aç<input type="file" id="mg-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="mg-sample" type="button">Örnek v6 export'u dene</button>
+    </div>
+    <div class="ros-results" id="mg-res" aria-live="polite" hidden></div>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Kullanmadan önce inceleyin.</strong> <code># REVIEW</code> ile işaretli satırlar bir insanın bakmasını gerektirir. Sonucu bir laboratuvar yönlendiricisinde deneyin ve uzaktan uygularken Safe Mode'u açık tutun (<kbd>Ctrl</kbd>+<kbd>X</kbd>).</span></p>
+    <label for="mg-out" class="label">RouterOS v7 betiği</label>
+    <textarea id="mg-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="mg-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="mg-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS v6 ile v7 arasında ne değişti</h2>
+<p>Bir RouterOS yapılandırmasının büyük bölümü iki sürümde de aynı okunur: arayüzler, adresler, firewall kuralları, DHCP, PPP ve queue'lar menülerini ve özelliklerini korur. Büyük değişiklik yönlendirmededir. v7 yönlendirme motorunu değiştirdi ve bununla birlikte routing mark, routing filter, OSPF ve BGP'nin yapılandırılma biçimi de değişti. Routing mark'lar artık, rotalar, kurallar veya mangle tarafından kullanılabilmeleri için <code>/routing table</code> altında <code>fib</code> ile oluşturulması gereken gerçek routing tablolardır; rotalarda ise <code>routing-mark=</code> yerine <code>routing-table=</code> yazılır.</p>
+<p>Routing filter'lar, her satırı bir eşleşme ve eylemden oluşan kurallar olmaktan çıkıp küçük betiklere dönüştü: <code>/routing filter rule add chain=ospf-in rule="if (dst in 10.0.0.0/8 &amp;&amp; dst-len in 8-24) { accept }"</code>. OSPF network'leri, arayüzleri ağa, ada ya da her ikisine göre eşleştiren ve arayüz başına ayarları şablonun üzerinde tutan <strong>interface template</strong>'lere dönüştü. BGP peer'ları açık <code>local.role</code> değeri olan <strong>connection</strong>'lar oldu ve duyurulan ağlar artık <code>output.network</code> içinde adı verilen bir address list'ten gelir.</p>
+<h3>Bu yardımcı nasıl çalışır</h3>
+<ul>
+  <li>Yalnızca mekanik olarak değişenleri yeniden yazar, her özgün satırı yerine geçen satırın üstünde gösterir ve geri kalan her şeye dokunmaz.</li>
+  <li>Bir satır güvenle dönüştürülemediğinde tahmin edilmez; yorum satırına alınır ve açıklanır, girdinin yanındaki liste ise hepsini satır numaralarıyla toplar.</li>
+  <li>Sonucu, yükseltilmiş yönlendiriciden alınan bir export ile <a href="/tools/routeros-export-diff/">RouterOS export karşılaştırma</a> aracıyla karşılaştırın ve firewall'u <a href="/tools/mikrotik-firewall-auditor/">güvenlik duvarı denetleyici</a> ile kontrol edin.</li>
+</ul>

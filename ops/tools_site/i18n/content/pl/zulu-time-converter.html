@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Czas Zulu: czas lokalny na UTC i z powrotem | Tanod Tools",
+  "description": "Przeliczaj czas lokalny na Zulu (UTC) i z powrotem dla dowolnej strefy czasowej, z grupami czasu w stylu METAR DDHHMMZ. Korzysta z bazy stref czasowych przeglądarki.",
+  "h1": "Konwerter czasu Zulu (UTC)",
+  "lede": "Przeliczaj czas lokalny na Zulu (UTC) lub odwrotnie dla dowolnej strefy czasowej i odczytuj grupy czasu w stylu METAR DDHHMMZ.",
+  "blurb": "Czas lokalny na Zulu (UTC) i grupy METAR DDHHMMZ.",
+  "keywords": "czas zulu konwerter utc gmt czas lokalny lotnictwo godzina z grupa czasu ddhhmmz metar strefa czasowa czas wojskowy 24 godziny czas letni zimowy",
+  "limits": "Korzysta z danych stref czasowych wbudowanych w przeglądarkę, w tym z zasad czasu letniego. Nie do planowania lotu ani nawigacji: oficjalny czas i ważność NOTAM sprawdzaj samodzielnie.",
+  "howto_title": "Jak przeliczyć czas lokalny na Zulu",
+  "howto": [
+    "Wybierz datę, godzinę zegarową i strefę czasową, w której ona obowiązuje. Pierwsze pole zaczyna od Twojej strefy czasowej.",
+    "Wybierz strefę, w której chcesz ją zobaczyć: domyślnie UTC, zwane też czasem Zulu lub Z.",
+    "Odczytaj przeliczony czas i grupę DDHHMMZ. Aby odczytać grupę czasu z METAR lub TAF, wpisz ją w drugiej sekcji."
+  ],
+  "faq": [
+    ["Czym jest czas Zulu?", "Czas Zulu to uniwersalny czas koordynowany (UTC), zapisywany literą Z, czyli fonetyczną nazwą NATO wojskowej strefy czasowej bez przesunięcia. Lotnictwo, meteorologia i wojsko używają go, aby wszyscy mieli jeden zegar, bez zmian czasu letniego."],
+    ["Jak czytać grupę czasu, taką jak 081405Z?", "Pierwsze dwie cyfry to dzień miesiąca (08), następne dwie to godzina (14), a ostatnie dwie to minuty (05), zawsze w UTC, więc 081405Z to 8. dzień o 14:05 UTC. Ta forma jest używana w METAR, TAF i NOTAM. Miesiąc i rok nie są podane, więc narzędzie wybiera ten najbliższy dacie odniesienia."],
+    ["Czy UTC to to samo co GMT?", "W codziennym użyciu tak: zegary pokazują ten sam czas. Ściśle rzecz biorąc, GMT to strefa czasowa oparta na obrocie Ziemi, a UTC to atomowa skala czasu utrzymywana w granicach 0,9 sekundy od niej za pomocą sekund przestępnych. Lotnictwo używa UTC."],
+    ["Czy czas Zulu ma czas letni?", "Nie. UTC nigdy się nie zmienia. Przesunięcie lokalnej strefy czasowej względem UTC zmienia się, gdy zaczyna się lub kończy czas letni, dlatego rozkład lotów łatwiej czytać w UTC."],
+    ["Co dzieje się przy zmianie czasu?", "Gdy zegary przeskakują do przodu, jedna godzina czasu lokalnego nie istnieje, a narzędzie przechodzi do najbliższego prawidłowego czasu. Gdy zegary cofają się, jedna godzina zdarza się dwa razy, a narzędzie używa pierwszej i informuje o tym."],
+    ["Skąd narzędzie bierze zasady stref czasowych?", "Z wbudowanej w przeglądarkę bazy stref czasowych IANA (API Intl), więc nic nie jest pobierane. Stara przeglądarka może mieć nieaktualne zasady dla niektórych krajów."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="zt-date">Data</label>
+    <input type="date" id="zt-date">
+  </div>
+  <div class="field">
+    <label for="zt-time">Godzina</label>
+    <input type="time" id="zt-time">
+  </div>
+  <div class="field">
+    <label for="zt-from">Strefa czasowa tej godziny</label>
+    <select id="zt-from"></select>
+  </div>
+  <div class="field">
+    <label for="zt-to">Pokaż w strefie</label>
+    <select id="zt-to"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="zt-now" type="button">Użyj aktualnego czasu</button>
+  <button class="btn btn--quiet" id="zt-swap" type="button">Zamień strefy</button>
+</div>
+<p class="note" id="zt-note" role="status" aria-live="polite" hidden></p>
+<dl class="stats" id="zt-stats"></dl>
+<h2 class="util-h" id="zt-grp-h">Odczytaj grupę czasu z METAR lub TAF</h2>
+<div class="opts">
+  <div class="field">
+    <label for="zt-grp">Grupa czasu (DDHHMMZ)</label>
+    <input type="text" id="zt-grp" class="mono" autocomplete="off" spellcheck="false" value="081405Z" placeholder="081405Z" aria-describedby="zt-grp-msg">
+  </div>
+  <div class="field">
+    <label for="zt-ref">Najbliższa tej daty UTC</label>
+    <input type="date" id="zt-ref">
+  </div>
+</div>
+<p class="note" id="zt-grp-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="zt-grp-stats"></dl>
+<!--explain-->
+<h2>Jak działa przeliczanie</h2>
+<p>UTC (uniwersalny czas koordynowany) to międzynarodowy cywilny wzorzec czasu utrzymywany przez BIPM i zdefiniowany w Zaleceniu ITU-R TF.460. W lotnictwie zapisuje się go z przyrostkiem Z, od litery wojskowej strefy czasowej Zulu, oraz w formacie grupy czasu ICAO DDHHMMZ, używanym w komunikatach METAR, TAF i SIGMET (Załącznik 3 ICAO, WMO nr 306). Czas lokalny to UTC plus przesunięcie strefy, które zależy od daty z powodu zasad czasu letniego.</p>
+<p>Strona zamienia wpisaną datę i godzinę na moment w czasie, używając przesunięcia, jakie strefa miała w tej chwili, a następnie pokazuje ten moment w drugiej strefie. Korzysta z bazy stref czasowych IANA przez API Intl Twojej przeglądarki, czyli z tych samych danych, których używają systemy operacyjne. Nieprawidłowy czas lokalny w godzinie pominiętej na początku czasu letniego jest przesuwany do przodu o długość luki, a niejednoznaczny czas w powtórzonej godzinie używa pierwszego wystąpienia.</p>
+<p>Grupa czasu nie zawiera miesiąca ani roku, więc narzędzie sprawdza poprzedni, ten sam i następny miesiąc i zachowuje datę najbliższą podanej dacie odniesienia (domyślnie dzisiaj, UTC), tak jak zwykle dopasowuje się komunikat pogodowy do kalendarza. <strong>Nie do planowania lotu ani nawigacji.</strong></p>

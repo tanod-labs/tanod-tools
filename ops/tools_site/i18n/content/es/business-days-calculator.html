@@ -1,0 +1,120 @@
+<!--meta
+{
+  "title": "Calculadora de días hábiles: cuenta o suma días | Tanod Tools",
+  "description": "Cuenta los días hábiles entre dos fechas o suma y resta días laborables. Elige tu fin de semana y añade festivos. Gratis, en tu navegador.",
+  "h1": "Calculadora de días hábiles",
+  "lede": "Cuenta los días laborables entre dos fechas, o suma y resta días hábiles a una fecha, con el fin de semana que uses y tu propia lista de festivos.",
+  "blurb": "Días laborables entre fechas, o suma días a una fecha, con festivos.",
+  "keywords": "calculadora de dias habiles dias laborables entre dos fechas networkdays workday sumar dias habiles restar dias laborables fin de semana viernes sabado festivos sin fines de semana",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Fechas del año 1 al 9999 en el calendario gregoriano. Esta herramienta no tiene datos de festivos: solo omite las fechas que tú mismo indiques, y un festivo que cae en fin de semana no se cuenta dos veces. El cómputo sigue las mismas reglas que las funciones de hoja de cálculo NETWORKDAYS y WORKDAY.",
+  "howto_title": "Cómo contar los días hábiles",
+  "howto": [
+    "Elige <em>Contar días hábiles</em> e introduce las fechas de inicio y final, o elige <em>Sumar o restar días hábiles</em> e introduce una fecha de inicio y un número de días.",
+    "Elige tu fin de semana (sábado y domingo, viernes y sábado, solo domingo, o los días que quieras) y pega los festivos como <code>YYYY-MM-DD</code>, uno por línea.",
+    "Lee los días hábiles, o la fecha resultante, junto con los días naturales, los días de fin de semana y los festivos que se omitieron."
+  ],
+  "faq": [
+    ["¿Cuenta la fecha de inicio y la fecha final?", "De forma predeterminada cuenta ambas, igual que la función NETWORKDAYS de las hojas de cálculo: de lunes a viernes de una misma semana son 5 días hábiles. Desmarca <em>Contar la fecha de inicio</em> o <em>Contar la fecha final</em> para dejar fuera cualquiera de las dos. Al sumar días hábiles, la fecha de inicio nunca se cuenta, como en WORKDAY: un día hábil después de un viernes es el lunes siguiente."],
+    ["¿Cómo uso un fin de semana distinto de sábado y domingo?", "Elige <em>Viernes y sábado</em> para el fin de semana que se usa en muchos países de Oriente Medio, <em>Solo domingo</em> para una semana de seis días, o <em>Personalizado</em> para marcar cualquier combinación de días de la semana. Al menos un día de la semana debe seguir siendo laborable."],
+    ["¿Cómo introduzco los festivos?", "Escribe o pega una fecha por línea con la forma <code>YYYY-MM-DD</code>, por ejemplo <code>2026-12-25</code>. El texto que siga a la fecha en la misma línea, como el nombre del festivo, se ignora. Un festivo que cae en fin de semana no cambia el resultado, porque ese día ya se omite."],
+    ["¿Por qué no hay festivos incluidos?", "Los festivos cambian según el país, la región y el año, y algunos se fijan por decreto, así que la herramienta no adivina. Todo se calcula en tu navegador a partir de las fechas que le des. Si necesitas que se añadan los festivos de un país, consulta la API de días hábiles que se enlaza más abajo."],
+    ["¿Qué pasa si la fecha final es anterior a la de inicio?", "La herramienta intercambia las dos fechas, cuenta los días entre ellas y te avisa de que lo hizo, de modo que el resultado siempre es un número positivo. Las opciones de inicio y final se intercambian junto con las fechas."],
+    ["¿Cómo se tratan las opciones de inicio y final cuando las fechas son iguales?", "Con las dos opciones marcadas, una sola fecha cuenta como un día, que es hábil salvo que sea fin de semana o un festivo indicado. Con cualquiera de las dos desmarcada, el intervalo queda vacío y el resultado es 0."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">¿Qué quieres hacer?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Contar días hábiles</label>
+      <label><input type="radio" name="bd-mode" value="add">Sumar o restar días hábiles</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Fecha de inicio</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">Fecha final</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Contar la fecha de inicio</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Contar la fecha final</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Fecha de inicio</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Operación</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Sumar</label>
+          <label><input type="radio" name="bd-op" value="sub">Restar</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Días hábiles</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Fin de semana</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Sábado y domingo</option>
+        <option value="fri-sat">Viernes y sábado</option>
+        <option value="sun">Solo domingo</option>
+        <option value="custom">Personalizado</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Días de fin de semana</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Festivos (opcional)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">Una fecha por línea como YYYY-MM-DD. No hay una lista de festivos incluida.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Días hábiles</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Días naturales</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Días de fin de semana omitidos</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Festivos omitidos</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Cómo se cuentan los días hábiles</h2>
+<p>Un día hábil, o día laborable, es cualquier día que no es de fin de semana ni festivo. Para contarlos entre dos fechas, la calculadora toma todos los días naturales del intervalo, quita los días de fin de semana que elegiste y después quita los festivos indicados que caen en los días restantes. Lo que queda es el número de días hábiles. Las tres cifras bajo el resultado muestran cuántos días naturales se examinaron y cuántos de ellos se omitieron por ser fin de semana o festivo.</p>
+<p>Importa si el primer y el último día forman parte del intervalo. Contar de lunes a viernes de una semana con ambos extremos incluidos da 5, y sin la fecha de inicio da 4. Los valores predeterminados coinciden con la función de hoja de cálculo <code>NETWORKDAYS</code>, que cuenta ambos extremos.</p>
+<p>Sumar días hábiles funciona al revés, como <code>WORKDAY</code>. La herramienta empieza el día siguiente a la fecha de inicio y avanza, o retrocede cuando restas, contando solo los días que no son de fin de semana ni festivos, hasta llegar al número que pediste. La fecha de inicio nunca se cuenta, así que sumar 0 días devuelve la fecha de inicio, aunque sea fin de semana.</p>
+<p>El fin de semana es un ajuste porque no es igual en todas partes. Muchos países usan sábado y domingo, varios de Oriente Medio usan viernes y sábado, y algunos lugares de trabajo laboran seis días. Los festivos los pones tú. Los festivos trasladados o sustitutos no se añaden automáticamente, así que indica el día que realmente se celebra.</p>
+<h3>Para desarrolladores y agentes de IA</h3>
+<p>¿Necesitas esto en código, o para un agente de IA? La API de días hábiles hace el mismo cómputo y añade automáticamente los festivos de un país, así que no tienes que mantener una lista de festivos. Consulta la <a href="https://tanod.dev/learn/business-days-api.html">guía de la API de días hábiles</a>.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Necesitas días naturales, semanas o meses entre dos fechas? Usa la <a href="/tools/date-difference-calculator/">calculadora de días entre fechas</a>.</li>
+  <li>¿Vas a sumar meses o años a una fecha? La <a href="/tools/date-calculator/">calculadora de fechas</a> maneja las fechas de fin de mes.</li>
+  <li>¿Trabajas con varios países? Compara los horarios de oficina con el <a href="/tools/time-zone-converter/">conversor de zonas horarias</a>.</li>
+</ul>

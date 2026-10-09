@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "chmod hesaplayıcı: sekizli, sembolik ve komutlar | Tanod Tools",
+  "description": "Okuma, yazma ve çalıştırma kutularını işaretleyin; chmod sekizli sayısını, rwxr-xr-x biçimini ve hazır komutları alın. setuid ve sticky dahil.",
+  "h1": "chmod hesaplayıcı",
+  "lede": "Unix dosya izinlerini onay kutuları, 755 gibi bir sekizli sayı veya rwxr-xr-x metniyle ayarlayın ve eşleşen chmod komutlarını alın.",
+  "blurb": "Onay kutuları, sekizli, rwx metni ve chmod komutları olarak Unix izinleri.",
+  "keywords": "chmod hesaplayıcı chmod hesaplama unix izinleri linux dosya izinleri sekizli rwx 755 644 setuid setgid sticky bit umask chmod generator chmod calculator permissions",
+  "limits": "POSIX chmod'daki gibi dokuz izin bitiyle birlikte setuid, setgid ve sticky üzerinde çalışır. Gerçek dosyaları okumaz, sahiplik göstermez; ACL'leri, dosya niteliklerini ve umask'i kapsamaz. Sekizli modlar 3 veya 4 basamaklı olmalıdır.",
+  "howto_title": "chmod modu nasıl hesaplanır?",
+  "howto": [
+    "Sahip, grup ve diğerleri için kutuları işaretleyin ya da 644 veya 755 gibi yaygın bir hazır ayar seçin. Bir sekizli sayı veya dokuz harflik metni de yazabilirsiniz; kutular buna uyar.",
+    "Her sınıfın bir dosya ve bir dizin üzerinde neler yapabileceğinin sade özetini inceleyin ve gösterilen uyarıları okuyun.",
+    "Sayısal veya sembolik <code>chmod</code> komutunu kopyalayın. Komutun yapıştırmaya hazır olmasını istiyorsanız önce dosya adını değiştirin."
+  ],
+  "faq": [
+    ["Sekizli sayı nasıl çalışır?", "Her basamak, sahip, grup, diğerleri sırasıyla bir sınıf için okuma (4), yazma (2) ve çalıştırma (1) değerlerini toplar. Yani 7 okuma, yazma ve çalıştırma; 5 okuma ve çalıştırma; 4 yalnızca okumadır. 755, sahibe her şeyi, diğer herkese okuma ve çalıştırma izni verir. Öne eklenen isteğe bağlı dördüncü basamak setuid (4), setgid (2) ve sticky (1) değerlerini tutar."],
+    ["s, S, t ve T harfleri ne anlama gelir?", "Sahip, grup veya diğerleri konumundaki x'in yerini alırlar. Küçük harf, özel bitin ayarlı olduğu ve çalıştırmanın da açık olduğu anlamına gelir; büyük harf ise özel bitin ayarlı, çalıştırmanın kapalı olduğunu gösterir ve bu genellikle bir hatadır. Yani 4755 <code>rwsr-xr-x</code>, 4644 ise <code>rwSr--r--</code> olur."],
+    ["644 ile 755 arasındaki fark nedir?", "644, sıradan dosyalar için olağan moddur: sahip okuyup yazabilir, diğer herkes yalnızca okuyabilir. 755 herkes için çalıştırma iznini ekler; programların, betiklerin ve dizinlerin buna ihtiyacı vardır. Dizinlere girebilmek için çalıştırma bitine gerek vardır."],
+    ["777 neden tehlikeli sayılır?", "Makinedeki her kullanıcının ve onlar adına çalışan her programın dosyayı değiştirmesine ya da yerine yenisini koymasına izin verir. Bir yere yazması istenen bir web sunucusunun buna ihtiyacı yoktur: doğru kullanıcıya veya gruba sahiplik verip 775 ya da 770 kullanmak, dosyayı herkese açmadan çoğu izin hatasını çözer."],
+    ["Sticky bit ne yapar?", "Bir dizinde, kullanıcıların dizine yazabilseler bile sahibi olmadıkları dosyaları silmesini veya yeniden adlandırmasını engeller. <code>/tmp</code> gibi paylaşılan klasörlerin modu bu yüzden 1777'dir. Modern Linux'ta sıradan dosyalar üzerinde etkisi yoktur."],
+    ["Bu, bilgisayarımda bir şeyi değiştirir mi?", "Hayır. Yalnızca sayıyı ve komutları hesaplar. Girdiğiniz hiçbir şey bir yere gönderilmez ve komutları bir terminalde kendiniz çalıştırırsınız."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>İzinler</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Sahip</th><th scope="col">Grup</th><th scope="col">Diğerleri</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Okuma <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Sahip okuma"></td><td><input type="checkbox" id="m-g-r" aria-label="Grup okuma"></td><td><input type="checkbox" id="m-o-r" aria-label="Diğerleri okuma"></td></tr>
+          <tr><th scope="row">Yazma <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Sahip yazma"></td><td><input type="checkbox" id="m-g-w" aria-label="Grup yazma"></td><td><input type="checkbox" id="m-o-w" aria-label="Diğerleri yazma"></td></tr>
+          <tr><th scope="row">Çalıştırma <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Sahip çalıştırma"></td><td><input type="checkbox" id="m-g-x" aria-label="Grup çalıştırma"></td><td><input type="checkbox" id="m-o-x" aria-label="Diğerleri çalıştırma"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Kullanıcı kimliğini ayarla (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Grup kimliğini ayarla (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Sticky bit <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Sekizli</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Sembolik</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Yaygın modlar">
+    <button class="btn btn--sm" type="button" data-mode="644">644 dosya</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 program veya dizin</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 özel dosya</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 özel dizin</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 paylaşılan grup</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 herkes</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Komutlarda kullanılacak dosya veya dizin adı</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Komutlar">
+    <div><dt>Sayısal</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Sayısal komutu kopyala">Kopyala</button></div>
+    <div><dt>Sembolik</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Sembolik komutu kopyala">Kopyala</button></div>
+  </dl>
+  <h2 class="util-h">Bu modun izin verdikleri</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Kim</th><th scope="col">Dosyada</th><th scope="col">Dizinde</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Unix dosya izinleri nasıl saklanır?</h2>
+<p>Unix benzeri bir sistemdeki her dosya ve dizin kısa bir mod taşır: üç sınıfın (sahip kullanıcı, sahip grup, diğer herkes) her biri için üç izin biti (okuma, yazma, çalıştırma) ve ayrıca üç özel bit. Toplam on iki bit eder; sekizli sayı ise bu bitlerin üçer üçer yazılmasından ibarettir, basamakların en fazla 7'ye çıkmasının nedeni budur. <code>ls -l</code> çıktısındaki dokuz harflik biçim aynı bitleri harflerle gösterir.</p>
+<p>Okuma, yazma ve çalıştırma bir dizinde farklı anlamlara gelir. Okuma, içindeki adları listelemenizi; yazma, girdi eklemenizi, yeniden adlandırmanızı ve kaldırmanızı; çalıştırma ise dizine girmenizi ve öğelere adlarıyla ulaşmanızı sağlar. Okuma izni olan ama çalıştırma izni olmayan bir dizin adlarını gösterir, ancak içindeki her şeye erişimi reddeder; bu, kafa karıştırıcı izin hatalarının yaygın bir kaynağıdır.</p>
+<p>Özel bitler bir modun davranışını değiştirir. Setuid ve setgid, bir programı çağıranın değil dosya sahibinin ya da grubunun yetkileriyle çalıştırır; bu güçlü bir özelliktir ve bu yüzden çoğu sistemde kabuk betikleri için yok sayılır. Bir dizindeki setgid, yeni dosyaların onun grubunu devralmasını sağlar; bir dizindeki sticky bit ise kullanıcıların birbirlerinin dosyalarını silmesini engeller. Bir dosyanın hangi moda ihtiyaç duyduğundan emin değilseniz kısıtlayıcı başlayın ve yalnızca bir hata iletisinin istediğini ekleyin.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>İkili ve sekizli aynı bitlerin farklı yazılışıdır; <a href="/tools/number-base-converter/">Sayı tabanı dönüştürücü</a> 755'i 111 101 101 olarak gösterir.</li>
+  <li>Yeni çalıştırılabilir yaptığınız bir betiği çalıştıracak bir cron işi mi planlıyorsunuz? Zamanlamayı <a href="/tools/cron-expression-generator/">Cron ifadesi oluşturucu</a> ile oluşturun.</li>
+  <li>Sırada ağ aralıkları mı var? <a href="/tools/subnet-calculator/">Alt ağ hesaplayıcı</a> aracını deneyin.</li>
+</ul>

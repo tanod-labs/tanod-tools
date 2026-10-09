@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "Mexico CFDI viewer",
+  "icon": "cfdi-viewer",
+  "module": "einvoice-viewer",
+  "title": "Mexico CFDI viewer: open CFDI 4.0 and 3.3 XML | Tanod Tools",
+  "description": "Open a Mexican CFDI (XML) and read it as a normal invoice, with the UUID and a Verify with SAT link. Print, save as PDF or export JSON. Free, nothing is uploaded.",
+  "h1": "Mexico CFDI viewer",
+  "lede": "Open a Mexican electronic invoice (CFDI 4.0 or 3.3) and read it as an ordinary invoice: UUID, series and folio, issuer and receiver with their RFC, lines, IVA by rate, withheld taxes and the stamp. The XML is read in your browser and never uploaded.",
+  "blurb": "Read a Mexican CFDI 4.0 or 3.3 XML as a normal invoice, with the UUID and a link to verify it with the SAT.",
+  "keywords": "cfdi viewer mexico cfdi 4.0 viewer open cfdi xml factura electrónica xml visor cfdi leer xml cfdi uuid folio fiscal verificar cfdi sat timbre fiscal digital comprobante fiscal digital por internet rfc emisor receptor cfdi 3.3",
+  "limits": "One file at a time, up to 25 MB; the first 5,000 line items are shown. Reads CFDI 4.0 and 3.3 invoices (the cfdi:Comprobante element in the SAT namespace), including the invoice types ingreso (income) and egreso (credit note). Complements such as Pagos and Nómina are not drawn. The seal (Sello) and the SAT stamp are not verified. Viewer only: it does not validate the CFDI and does not contact the SAT; the Verify with SAT link is a plain link you click yourself.",
+  "howto_title": "How to open a CFDI",
+  "howto": [
+    "Choose the CFDI XML you downloaded from the SAT portal, your certified provider (PAC) or your accounting software, or drag it onto the page.",
+    "Read the invoice: UUID (folio fiscal), series and folio, date, issuer and receiver with their RFC, lines, IVA by rate, retained taxes, totals and payment.",
+    "Press <strong>Verify with SAT</strong> to open the SAT's own check page, <strong>Print or save as PDF</strong>, <strong>Download JSON</strong>, or <strong>Show raw XML</strong>."
+  ],
+  "faq": [
+    [
+      "Is the CFDI uploaded or sent to the SAT?",
+      "No. This page does not connect to the SAT, to your provider or to any server. The XML is read in your browser and shown on this page, and closing the tab clears everything."
+    ],
+    [
+      "What does the Verify with SAT link do?",
+      "It is an ordinary link to the SAT's public verification page, built from the documented address pattern with the UUID, both RFCs, the total and the last 8 characters of the Sello. Nothing is sent when you open this page; the details go to the SAT only if you click the link, and the SAT then shows its own answer."
+    ],
+    [
+      "Are the seal and the SAT stamp checked?",
+      "No. The Sello and the TimbreFiscalDigital are not verified here, and a file that carries them is flagged with a note. This page cannot tell you whether a CFDI is valid or was changed afterwards. Use the SAT link for that."
+    ],
+    [
+      "Which CFDI versions and types can it open?",
+      "CFDI 4.0 and 3.3. Ingreso invoices and egreso credit notes are drawn in full; traslado, pago and nómina vouchers open with their header, parties and totals, but their complements are not drawn. Older versions such as CFDI 3.2 are not read."
+    ],
+    [
+      "How are the taxes shown?",
+      "IVA is shown by rate (16%, 8%, 0% and exempt), other transferred taxes such as IEPS are listed under additional information, and retained taxes (ISR, IVA) are listed and subtracted in the totals. The amount due is the Total the file states."
+    ],
+    [
+      "Where do I get the XML of a CFDI?",
+      "Download it from the SAT portal (Mis comprobantes), from the certified provider (PAC) that stamped it, or export it from your accounting software. This page reads the XML, not the PDF printed version."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "zugferd-factur-x-viewer",
+    "fatturapa-viewer",
+    "ksef-viewer",
+    "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "vietnam-e-invoice-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Mexico's CFDI</h2>
+<p>Businesses in Mexico issue their invoices as a CFDI (Comprobante Fiscal Digital por Internet): an XML file that a certified provider (PAC) stamps and registers with the SAT, the tax authority. Version 4.0 replaced version 3.3. The stamp adds the UUID, the folio fiscal that identifies the invoice. The XML is the invoice; the printed version is a drawing of it. This page makes that drawing in your browser from the XML you have.</p>
+<h2>What the viewer shows</h2>
+<p>You see the UUID in large type, the series and folio, the date, the stamping time and the certified provider, the issuer (Emisor) and the receiver (Receptor) with their RFC, name, tax regime and fiscal postal code, the payment form (FormaPago) and method (MetodoPago), every line with unit, quantity, price, discount and IVA, IVA by rate, retained taxes, the totals, the exchange rate for foreign currency and the related CFDI of a credit note. Amounts are shown exactly as in the file.</p>
+<p>The Verify with SAT link opens the SAT's own check page in a new tab; this page itself sends nothing. It does not verify the seal or the stamp, does not validate the CFDI against the SAT's catalogues and rules, and does not draw complements such as Pagos or Nómina.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Download JSON gives you the invoice as plain data, with the CFDI fields mapped to the EN 16931 business terms.</li>
+  <li>Other formats open here too: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol, the Turkish e-Fatura and the Vietnamese hóa đơn. The page suggests the matching viewer when you open one.</li>
+  <li>Show raw XML helps when you need an attribute that the readable invoice does not show.</li>
+</ul>

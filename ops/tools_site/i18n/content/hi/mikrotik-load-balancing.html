@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "MikroTik PCC लोड बैलेंसिंग और फ़ेलओवर जनरेटर | Tanod Tools",
+  "description": "2 से 8 WAN पर रिकर्सिव फ़ेलओवर, चेक होस्ट, रूटिंग टेबल और masquerade के साथ RouterOS v7 PCC लोड बैलेंसिंग बनाएं। कमेंट सहित, ब्राउज़र में।",
+  "h1": "MikroTik लोड बैलेंसिंग और फ़ेलओवर जनरेटर",
+  "lede": "अपने WAN लिंक भरें और रिकर्सिव-रूट फ़ेलओवर के साथ RouterOS v7 PCC लोड बैलेंसिंग पाएं, या सिर्फ़ फ़ेलओवर, हर ब्लॉक की व्याख्या के साथ।",
+  "blurb": "रिकर्सिव-रूट फ़ेलओवर के साथ कई WAN पर PCC।",
+  "keywords": "मिक्रोटिक लोड बैलेंसिंग pcc डुअल wan फ़ेलओवर रिकर्सिव रूटिंग check-gateway पिंग routeros v7 रूटिंग टेबल मल्टी wan दो isp mikrotik load balancing pcc per connection classifier dual wan failover recursive routing check-gateway ping routeros v7 routing table mark-routing multi wan two isp",
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो टाइप करते हैं वह आपके डिवाइस से बाहर नहीं जाता",
+  "limits": "RouterOS v7 सिंटैक्स बनाता है (fib वाली रूटिंग टेबल, रूट पर routing-table)। सिर्फ़ IPv4। जिन WAN का गेटवे DHCP से बदलता है, उनका गेटवे हाथ से या DHCP क्लाइंट स्क्रिप्ट से अपडेट करना होगा। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर PCC लोड बैलेंसिंग कैसे सेट करें",
+  "howto": [
+    "फ़ेलओवर के साथ PCC लोड बैलेंसिंग चुनें, या सिर्फ़ फ़ेलओवर।",
+    "हर WAN को उसके इंटरफ़ेस, गेटवे (PPPoE और LTE के लिए इंटरफ़ेस का नाम), पिंग का जवाब देने वाले सार्वजनिक चेक होस्ट और कनेक्शन में उसके हिस्से के वज़न के साथ जोड़ें।",
+    "लोकल नेटवर्क और LAN इंटरफ़ेस लिस्ट लिखें, WAN क्लाइंट पर add-default-route बंद करें, और स्क्रिप्ट को Safe Mode चालू रखकर लागू करें।"
+  ],
+  "faq": [
+    ["PCC ट्रैफ़िक को कैसे बाँटता है?", "per-connection-classifier हर नए कनेक्शन के फ़ील्ड (दोनों एड्रेस, या एड्रेस और पोर्ट) को N बकेट में हैश करता है, और हर WAN कुछ बकेट लेता है। कनेक्शन अपना मार्क रखता है, इसलिए उसके सारे पैकेट उसी WAN का इस्तेमाल करते हैं। वज़न 2 एक WAN को दो बकेट देता है, यानी वज़न 1 वाले WAN से दोगुना हिस्सा। बँटवारा कनेक्शन के हिसाब से है, बाइट के हिसाब से नहीं, इसलिए एक बड़ा डाउनलोड फिर भी एक ही लिंक इस्तेमाल करता है।"],
+    ["रिकर्सिव फ़ेलओवर क्या है और इसे क्यों इस्तेमाल करें?", "सामान्य डिफ़ॉल्ट रूट पर check-gateway=ping सिर्फ़ ISP का पहला हॉप परखता है, जो अक्सर चालू रहता है जबकि उसके पीछे ISP का नेटवर्क खराब होता है। यहाँ हर WAN को एक सार्वजनिक चेक होस्ट का होस्ट रूट मिलता है, और डिफ़ॉल्ट रूट गेटवे की जगह उसी होस्ट की ओर इशारा करते हैं। जब वह होस्ट उस WAN पर जवाब देना बंद करता है, RouterOS उसके ज़रिये वाले रूट निष्क्रिय कर देता है और ट्रैफ़िक अगले WAN पर चला जाता है।"],
+    ["चेक होस्ट के लिए output ड्रॉप नियम क्यों हैं?", "अगर किसी WAN का लिंक गिर जाए, तो उसका होस्ट रूट गायब हो जाता है और राउटर चेक होस्ट तक किसी दूसरे WAN से पहुँच जाएगा, इसलिए मरा हुआ WAN स्वस्थ दिखेगा। ड्रॉप नियम हर चेक होस्ट की पिंग को उसके अपने WAN के अलावा किसी भी इंटरफ़ेस से निकलने से रोकते हैं।"],
+    ["क्या मुझे FastTrack बंद करना होगा?", "PCC के लिए हाँ। रूटिंग मार्क mangle से हर पैकेट पर लगते हैं, और fasttrack हुए पैकेट mangle को छोड़ देते हैं, इसलिए वे अपने WAN की जगह मुख्य टेबल का पीछा करेंगे। सादा फ़ेलओवर FastTrack चालू रखकर चलता है।"],
+    ["RouterOS v6 PCC गाइड से क्या बदला?", "v6 के रूट routing-mark= इस्तेमाल करते थे, और मार्क अपने आप बन जाते थे। v7 में हर मार्क fib के साथ /routing table के तहत बनी रूटिंग टेबल होना चाहिए, और रूट उसे routing-table= से चुनते हैं। Mangle अब भी new-routing-mark इस्तेमाल करता है। v6 से v7 माइग्रेशन सहायक पुराने रूट बदलता है और टेबल जोड़ता है।"],
+    ["क्या मैं जो टाइप करता हूँ वह कहीं भेजा जाता है?", "नहीं। स्क्रिप्ट आपके ब्राउज़र में बनती है।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="lb">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>मोड</legend>
+      <div class="seg" role="radiogroup" aria-label="मोड">
+        <label><input type="radio" name="lb-mode" value="pcc" checked>PCC लोड बैलेंसिंग + फ़ेलओवर</label>
+        <label><input type="radio" name="lb-mode" value="failover">सिर्फ़ फ़ेलओवर</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>WAN लिंक</legend>
+      <ul class="ros-rows" id="lb-wans"></ul>
+      <button class="btn btn--sm ros-add" id="lb-add" type="button">{{mark:i-plus}}WAN जोड़ें</button>
+      <span class="help">फ़ेलओवर और राउटर के अपने ट्रैफ़िक के लिए पसंद के क्रम में सूचीबद्ध।</span>
+    </fieldset>
+    <fieldset class="gen-fs" id="lb-pcc-f">
+      <legend>बैलेंसिंग</legend>
+      <div class="opts">
+        <div class="field"><label for="lb-lan">LAN इंटरफ़ेस लिस्ट</label><input type="text" id="lb-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="lb-local">लोकल नेटवर्क</label><input type="text" id="lb-local" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field">
+          <label for="lb-class">क्लासिफ़ायर</label>
+          <select id="lb-class">
+            <option value="both-addresses" selected>both-addresses (हर क्लाइंट और सर्वर के लिए स्थिर)</option>
+            <option value="both-addresses-and-ports">both-addresses-and-ports (ज़्यादा बारीक बँटवारा)</option>
+            <option value="src-address">src-address (हर क्लाइंट के लिए एक WAN)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>विकल्प</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="lb-fast" checked>FastTrack बंद करें (PCC के लिए ज़रूरी)</label>
+        <label class="check"><input type="checkbox" id="lb-nat" checked>हर WAN पर Masquerade</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>लॉक-आउट का जोखिम।</strong> दूर के राउटर पर रूट बदलने से आपका कनेक्शन कट सकता है। लैब में परखें, या पहले Safe Mode चालू करें (टर्मिनल में <kbd>Ctrl</kbd>+<kbd>X</kbd>)।</span></p>
+    <label for="lb-out" class="label">RouterOS v7 स्क्रिप्ट</label>
+    <textarea id="lb-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="lb-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="lb-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="lb-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>बनाया गया सेटअप कैसे काम करता है</h2>
+<p>PCC लोड बैलेंसिंग के तीन चलते हिस्से हैं। <strong>Mangle</strong> LAN से आने वाले हर नए कनेक्शन पर per-connection classifier के चुने कनेक्शन मार्क को लगाता है, और जो कनेक्शन किसी WAN पर आते हैं उन्हें उस WAN के मार्क से चिह्नित करता है, ताकि पोर्ट फ़ॉरवर्ड के जवाब उसी रास्ते से जाएं जिससे आए थे। mangle नियमों का दूसरा सेट हर कनेक्शन मार्क को हर पैकेट पर <strong>रूटिंग मार्क</strong> में बदलता है। फिर <strong>रूटिंग टेबल</strong>, हर WAN की एक, उस WAN से होकर डिफ़ॉल्ट रूट रखती है, और बाकी WAN ज़्यादा डिस्टेंस पर बैकअप के रूप में होते हैं।</p>
+<p>फ़ेलओवर <strong>रिकर्सिव रूट</strong> इस्तेमाल करता है। एक होस्ट रूट एक सार्वजनिक चेक होस्ट को सिर्फ़ हर WAN से भेजता है। डिफ़ॉल्ट रूट चेक होस्ट को <code>target-scope=11</code> के साथ अपना गेटवे बनाते हैं, इसलिए RouterOS उसे उस होस्ट रूट से हल करता है, और <code>check-gateway=ping</code> हर दस सेकंड में चेक होस्ट को पिंग करता है। दो जवाब छूटने पर रूट गिर जाता है और अगला डिस्टेंस उसकी जगह ले लेता है; होस्ट के फिर से जवाब देने पर रूट लौट आता है।</p>
+<h3>लागू करने से पहले</h3>
+<ul>
+  <li>WAN DHCP या PPPoE क्लाइंट पर <code>add-default-route=no</code> सेट करें, वरना उनके अपने डिफ़ॉल्ट रूट जीत जाएंगे।</li>
+  <li>पुराने v6 PCC सेटअप को अपग्रेड कर रहे हैं? उसका एक्सपोर्ट <a href="/tools/routeros-v7-migration-helper/">RouterOS v6 से v7 माइग्रेशन सहायक</a> में डालें और देखें कि क्या बदलता है।</li>
+  <li>फ़ायरवॉल की input और forward चेन बनी रहने दें; <a href="/tools/mikrotik-firewall-generator/">MikroTik फ़ायरवॉल जनरेटर</a> इंटरफ़ेस लिस्ट इस्तेमाल करता है, इसलिए हर WAN को WAN लिस्ट में जोड़ें।</li>
+</ul>

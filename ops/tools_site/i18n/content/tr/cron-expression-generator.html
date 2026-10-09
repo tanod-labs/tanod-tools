@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Cron ifadesi oluşturucu ve sonraki çalışmalar | Tanod Tools",
+  "description": "Hazır ayarlar ve denetimlerle beş alanlı cron zamanlaması oluşturun, sade Türkçe açıklamasını görün ve kullanmadan önce sonraki çalışma zamanlarını denetleyin.",
+  "h1": "Cron ifadesi oluşturucu",
+  "lede": "Basit seçimlerle bir crontab zamanlaması oluşturun, ardından Türkçe ne dediğini ve bir sonraki ne zaman çalışacağını denetleyin.",
+  "blurb": "Denetimlerle cron zamanlaması oluşturun, sonraki çalışmaları görün.",
+  "keywords": "cron ifadesi oluşturucu cron oluşturma cron yapıcı crontab oluşturucu cron zamanlaması cron işi her 5 dakikada cron söz dizimi hafta içi sabah 9 cron expression generator cron builder",
+  "limits": "Vixie cron ve cronie'nin kullandığı standart beş alanlı cron: dakika, saat, ayın günü, ay ve haftanın günü. Quartz ve saniye alanlı diğer biçimler üretilmez; denetimlerin gösteremediği yapıştırılmış ifadeler yazıldığı gibi tutulur.",
+  "howto_title": "Cron ifadesi nasıl oluşturulur?",
+  "howto": [
+    "Hazır bir ayardan başlayın ya da her alanı her seferinde, bir başlangıçtan itibaren her N birimde, belirli değerlerde veya iki değer arasında çalışacak şekilde ayarlayın.",
+    "İfadeyi, sade Türkçe açıklamasını ve sunucunuzun kullandığı saat diliminde sonraki çalışma zamanlarını denetleyin.",
+    "İfadeyi crontab'ınıza, CI zamanlamanıza veya zamanlayıcınıza kopyalayın. Mevcut bir ifadeyi denetimlere yüklemek için yapıştırabilirsiniz de."
+  ],
+  "faq": [
+    ["Bir işi her 15 dakikada bir nasıl çalıştırırım?", "Dakika'yı <em>0'dan başlayarak her 15 dakikada</em> olarak ayarlayın; bu <code>*/15 * * * *</code> yazar. İş her saatin 0., 15., 30. ve 45. dakikalarında çalışır."],
+    ["0 dışındaki bir başlangıç nasıl yazılır?", "5. dakikadan 10 adımla başlayan bir başlangıç <code>5-59/10</code> olarak yazılır ve 5, 15, 25, 35, 45 ve 55'te çalışır. Daha kısa olan <code>5/10</code> bazı cron sürümlerinde çalışır ama diğerleri tarafından reddedilir; bu yüzden uzun biçim taşınabilir olandır."],
+    ["Bazı günler neden aralıkla, bazıları listeyle seçiliyor?", "Üç veya daha fazla ardışık değer aralık olarak yazılır; yani Pazartesi'den Cuma'ya <code>1-5</code>, Pazartesi, Çarşamba ve Cuma ise <code>1,3,5</code> olur. İkisi de işaretlediğiniz değerleri tam olarak ifade eder."],
+    ["Hem ayın gününü hem haftanın gününü ayarlarsam ne olur?", "Standart cron işi, ikisine birden değil, birine uyduğunda çalıştırır. <code>0 9 1 * 1</code> ayın 1'inde ve her Pazartesi çalışır. Seçimleriniz bu duruma düştüğünde araç bir not ekler."],
+    ["Sonraki çalışmalar hangi saat dilimini kullanıyor?", "İfadenin altında seçtiğinizi. Cron'un kendisi, crontab <code>CRON_TZ</code> ayarlamıyorsa onu çalıştıran makinenin veya kapsayıcının saat dilimini kullanır. Birçok sunucu UTC kullanır; bir zamana güvenmeden önce denetleyin."],
+    ["Saniye, @daily veya Quartz söz dizimini destekliyor mu?", "Yalnızca beş alanlı ifadeler oluşturur. <code>@daily</code> veya başka bir kısayolu yapıştırmak çalışır ve beş alanına dönüştürülür. Altı alanlı ve Quartz tarzı ifadeler, ilk alanları saniye olduğu için reddedilir. <a href=\"/tools/cron-expression-explainer/\">Cron ifadesi açıklayıcı</a> bunu ayrıntılı olarak söyler."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Cron ifadesi</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Kopyala</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Hazır ayarlar">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Her dakika</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Her 5 dakikada</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Her 15 dakikada</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Her saat</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Her gün gece yarısı</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">Hafta içi 09:30'da</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Her Pazar</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">1'i ve 15'i</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Ayın birinde</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Her yıl</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Mevcut bir ifadeyi yükleyin</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Yükle</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Beş alanlı bir ifade veya @daily gibi bir kısayol yapıştırın.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Sonraki çalışmalar</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Saat dilimi</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">Şu andan başlayarak</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Şu andan başlamak için boş bırakın.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Kaç tane</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Sonraki çalışma zamanları"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Zaten bir ifadeniz var ve yalnızca açıklanmasını mı istiyorsunuz? <a href="/tools/cron-expression-explainer/">Cron ifadesi açıklayıcı</a> aracını kullanın.</p>
+</div>
+<!--explain-->
+<h2>Cron zamanlaması oluşturmak</h2>
+<p>Cron ifadesi, boşlukla ayrılmış beş alandır: dakika, saat, ayın günü, ay ve haftanın günü. Her alan işin ne zaman çalışması gerektiğiyle ilgili tek bir soruyu yanıtlar ve iş, hepsi eşleştiğinde çalışır. Bir alanı <code>*</code> olarak bırakmak her değer demektir; <code>0 * * * *</code>'ın her saatin başında, <code>0 0 * * *</code>'ın ise günde bir kez gece yarısı çalışmasının nedeni budur.</p>
+<p>Oluşturucu, her alan için ne istediğinizi söylemenin dört yolunu sunar. <code>*/15</code> gibi bir adım her 15. değer anlamına gelir, <code>1,15</code> gibi bir liste tam değerleri seçer, <code>9-17</code> gibi bir aralık iki değer arasındaki her şeyi kapsar ve <code>*</code> her değer demektir. Değerleri işaretlediğinizde art arda üç veya daha fazlası aralık olarak yazılır; yani Pazartesi'den Cuma'ya <code>1,2,3,4,5</code> yerine <code>1-5</code> olur.</p>
+<p>İki tuzak çoğu kişiyi yakalar. Cron, çalıştığı makinenin saatini kullanır; bu yüzden 09:00 için ayarlanmış bir iş sunucu saatiyle 09:00'da çalışır ve bu sizin saatiniz olmayabilir; sonraki çalışmalar listesi birkaç dilimde denetlemenize izin verir. Ayrıca hem ayın günü hem haftanın günü alanları kısıtlandığında, bir iş birine uyduğunda çalışır; bu da beklediğinizden çok daha fazla çalışma anlamına gelebilir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Başkasının yazdığı bir ifadeyi okumak için onu <a href="/tools/cron-expression-explainer/">Cron ifadesi açıklayıcı</a> aracına yapıştırın.</li>
+  <li>Bir günlükteki çalışma zamanını Unix zaman damgasına ve tersine <a href="/tools/unix-timestamp-converter/">Unix zaman damgası çevirici</a> ile dönüştürün.</li>
+  <li>Zamanlanmış betiklerin çalıştırma bitinin ayarlı olması gerekir; doğru modu <a href="/tools/chmod-calculator/">chmod hesaplayıcı</a> ile bulun.</li>
+</ul>

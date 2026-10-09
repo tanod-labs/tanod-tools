@@ -1,0 +1,55 @@
+<!--meta
+{
+  "title": "Resimden yazı çıkar: fotoğraftaki metni kopyalayın | Tanod Tools",
+  "description": "OCR ile fotoğraftaki, taramadaki veya ekran görüntüsündeki metni kopyalayın. JPG, PNG ve WebP ile çalışır. Ücretsiz, kayıt gerekmez; resim hemen silinir.",
+  "h1": "Resimden yazı çıkar (OCR)",
+  "lede": "Bir fotoğraftaki, taranmış bir sayfadaki veya ekran görüntüsündeki yazıyı çıkarın; kopyalamaya, düzenlemeye ya da kaydetmeye hazır olsun.",
+  "blurb": "OCR ile fotoğraftan veya ekran görüntüsünden metin çıkarın.",
+  "keywords": "ocr resimden yazı çıkarma resimden metin fotoğraftan metin çıkarma görüntüden yazıya ekran görüntüsünden metin jpg metin png metin resimden metin kopyalama ocr image to text extract text from image screenshot to text",
+  "limits": "Aynı anda bir resim: JPG, PNG, WebP ve tarayıcınızın açtığı diğer biçimler; başlangıçta 40 MB'a kadar (cihazınızda hazırlanır, sonra en fazla 10 MB olarak gönderilir). İngilizce metin. Sunucumuzda işlenir, ardından silinir. Kişi başına günde 10 ücretsiz sunucu işlemi; tüm sunucu araçları arasında ortaktır. Daha fazlası için: <a href=\"/learn/ocr-image-api.html\">OCR API</a> (İngilizce, çağrı başına ücretli).",
+  "howto_title": "Resimden metin nasıl alınır",
+  "howto": [
+    "Bir resim seçin, sayfaya sürükleyin veya Ctrl+V ile (Mac'te Cmd+V) bir ekran görüntüsü yapıştırın.",
+    "Önizlemeyi kontrol edin: yazı doğru yönde olmalı.",
+    "<strong>Metni çıkar</strong> düğmesine basın, ardından metni kopyalayın veya .txt dosyası olarak kaydedin."
+  ],
+  "faq": [
+    ["Resmim yükleniyor mu?", "Evet. Bu sitedeki çoğu aracın aksine bu araç sunucumuzda çalışır. Tarayıcınız önce resmin bir kopyasını hazırlar (dik çevrilir ve okumaya uygun boyuta getirilir), ardından bu kopyayı HTTPS üzerinden gönderir. Sunucu metni okur ve hemen geri gönderir. Resim sunucuda yalnızca işlem sürerken, bellekte ve işlem biter bitmez silinen özel bir geçici klasörde bulunur. Resmi veya metni saklamayız ve dosya içeriklerini asla kaydetmeyiz."],
+    ["Metni nasıl okuyor?", "Açık kaynaklı Tesseract OCR motoruyla. Tarayıcınız resmi, harfler Tesseract'ın iyi okuduğu bir boyutta olacak şekilde ölçekler (en uzun kenar 1.600 ile 3.200 piksel arasında); sunucumuz onu okur ve sözcükleri okuma sırasıyla, satır satır döndürür."],
+    ["Hangi diller çalışır?", "İngilizce ve aksansız aynı Latin harfleriyle yazılan diğer diller, daha düşük doğrulukla. Aksanlı harfler, diğer yazı sistemleri ve el yazısı henüz güvenilir biçimde tanınmaz."],
+    ["Bazı sözcükler neden yanlış?", "OCR en iyi net, düz ve iyi aydınlatılmış metinde çalışır. Bulanık fotoğraflar, eğik duran metin, süslü yazı tipleri, düşük kontrast ve resim üzerindeki metin hataya yol açar. Sonuç, kopyalamadan önce düzenlenebilir; bir iki sözcüğü düzeltebilirsiniz."],
+    ["Ekran görüntüsü yapıştırabilir miyim?", "Evet. Bir ekran görüntüsünü panoya kopyalayın ve bu sayfada herhangi bir yerde Ctrl+V'ye (Mac'te Cmd+V) basın."],
+    ["Bir sınır var mı?", "İşlem başına bir resim; kişi başına günde 10 ücretsiz sunucu işlemi, tüm sunucu araçlarımız arasında ortaktır. Yalnızca başarılı olan işlemler sayılır ve sayaç UTC gece yarısı sıfırlanır. Daha fazlası için <a href=\"/learn/ocr-image-api.html\">OCR API</a> çağrı başına ücretlidir."],
+    ["İnsan doğrulaması nedir?", "Bir işlem başlamadan önce Cloudflare Turnstile, aracı bir botun değil bir insanın kullandığını denetler. Genellikle görünmezdir; bazen bir kutuyu işaretlemenizi ister."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-text drop__mark}}
+  <p class="drop__title">Bir resmi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/*">{{mark:i-plus}}<span data-pick-label>Resim seçin</span></label>
+  <p class="drop__hint">JPG, PNG veya WebP. Ya da buraya sürükleyin ya da bir ekran görüntüsü yapıştırın (<kbd>Ctrl</kbd>+<kbd>V</kbd>).</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="preview ocr-preview" id="preview" aria-label="Resim önizlemesi"></div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Metni çıkar</button>
+    <span class="help">Dil: İngilizce.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Resimden metne</h2>
+<p>Bir bilgisayar için bir sayfa fotoğrafı yalnızca renkli noktalardır. OCR, yani optik karakter tanıma, bu noktalardaki harf biçimlerini bulur ve onları arayabileceğiniz, düzenleyebileceğiniz ve yapıştırabileceğiniz metne çevirir. Bu araç, resminizin hazırlanmış tek bir kopyasını sunucumuza gönderir; Tesseract motoru orada okur ve sözcükleri size saniyeler içinde gösterir.</p>
+<h3>Daha iyi sonuç için ipuçları</h3>
+<ul>
+  <li>Telefonu sayfanın tam üzerinde düz tutun, iyi bir ışıkta çekin ve kareyi yazıyla doldurun.</li>
+  <li>Yazı olmayan her şeyi <a href="/tools/crop-image/">Resim kırp</a> ile kırpın ve yan çekilmiş fotoğrafları <a href="/tools/rotate-image/">Resim döndür</a> ile çevirin. İkisi de tarayıcınızda çalışır.</li>
+  <li>Taranmış bütün bir belgeniz mi var? <a href="/tools/ocr-pdf/">PDF OCR</a>, PDF'in kendisini aranabilir yapar.</li>
+</ul>

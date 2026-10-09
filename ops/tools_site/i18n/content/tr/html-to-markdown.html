@@ -1,0 +1,93 @@
+<!--meta
+{
+  "title": "HTML'den Markdown'a dönüştürücü, çevrimiçi | Tanod Tools",
+  "description": "HTML'i tarayıcınızda temiz Markdown'a çevirin: başlıklar, listeler, bağlantılar, kod blokları ve tablolar. Markdown stilini seçin. Ücretsiz, hiçbir şey yüklenmez.",
+  "h1": "HTML'den Markdown'a dönüştürücü",
+  "lede": "HTML yapıştırın veya bir .html dosyası açın; README, wiki ya da not uygulaması için derli toplu Markdown alın.",
+  "blurb": "HTML'i temiz Markdown'a dönüştürün.",
+  "keywords": "html markdown dönüştürme md web sayfası readme wiki notlar tablo html to markdown convert gfm table",
+  "limits": "Yapıştırılan ya da .html dosyasından alınan en fazla yaklaşık 5 MB HTML. Sonuç siz yazdıkça güncellenir.",
+  "howto_title": "HTML nasıl Markdown'a dönüştürülür",
+  "howto": [
+    "HTML'inizi kutuya yapıştırın veya bir .html dosyası açın.",
+    "İstediğiniz başlık, liste ve kod bloğu stilini seçin. Kapatmadığınız sürece tablolar Markdown tablolarına çevrilir.",
+    "Markdown'ı kopyalayın veya .md dosyası olarak indirin."
+  ],
+  "faq": [
+    ["HTML'im yükleniyor mu?", "Hayır. Açık kaynaklı Turndown kitaplığıyla tarayıcınızda dönüştürülür; hiçbir şey bir yere gönderilmez veya saklanmaz."],
+    ["HTML'deki resimleri yükler ya da script'leri çalıştırır mı?", "Hayır. HTML, tarayıcının hiç görüntülemediği ayrı bir belgeye okunur; bu yüzden script'ler çalışmaz, resimler, yazı tipleri ve stil sayfaları getirilmez. Script ve style blokları sonuçtan çıkarılır."],
+    ["Tablolar nasıl dönüştürülür?", "Basit tablolar, ilk satır başlık olacak şekilde GitHub tarzı Markdown tablolarına dönüşür; HTML'de belirtilmişse sola, ortaya veya sağa hizalama korunur. Birleştirilmiş hücreli (rowspan veya colspan) ya da iç içe tablolar Markdown tablosu olarak yazılamaz; bu yüzden HTML olarak bırakılır ve çoğu Markdown oluşturucu bunları olduğu gibi gösterir. Tüm tabloları HTML olarak tutmak için tablo dönüştürmeyi kapatabilirsiniz."],
+    ["Başlık ve kod stilleri arasındaki fark nedir?", "ATX başlıkları # işaretleriyle başlar (<code># Başlık</code>) ve her düzeyde çalışır; Setext başlıkları metnin altını = veya - ile çizer ve yalnızca 1. ile 2. düzeyler için vardır, daha derin başlıklar yine # kullanır. Çitli (fenced) kod blokları kodu üçlü ters kesme işaretiyle sarar ve dil adını bir <code>language-</code> sınıfından korur; girintili bloklar daha eski bir stil olan dört boşluğu kullanır."],
+    ["Dönüştürmede neler kaybolur?", "Markdown renkleri, yazı tiplerini, sınıfları, yerleşimi veya form denetimlerini ifade edemez; bu yüzden bunlar atılır ve yalnızca metin ile yapısı kalır. Üstü çizili metin <code>~~metin~~</code> olur, liste öğelerindeki onay kutuları ise görev listesi işaretçilerine dönüşür. Başta # veya * gibi Markdown olarak okunabilecek karakterlerin önüne ters eğik çizgi konur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="html">HTML</label>
+      <textarea id="html" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder="&lt;h1&gt;Başlık&lt;/h1&gt;&#10;&lt;p&gt;Biraz &lt;strong&gt;kalın&lt;/strong&gt; metin.&lt;/p&gt;"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Markdown</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="heading">Başlıklar</label>
+      <select id="heading">
+        <option value="atx" selected># ATX</option>
+        <option value="setext">Altı çizili (Setext)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bullet">Liste işaretçisi</label>
+      <select id="bullet">
+        <option value="-" selected>- tire</option>
+        <option value="*">* yıldız</option>
+        <option value="+">+ artı</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="code">Kod blokları</label>
+      <select id="code">
+        <option value="fenced" selected>Çitli (```)</option>
+        <option value="indented">Girintili (4 boşluk)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="em">İtalik</label>
+      <select id="em">
+        <option value="_" selected>_alt çizgi_</option>
+        <option value="*">*yıldız*</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="tables" checked>Tabloları Markdown tablolarına çevir</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Başlamak için HTML yapıştırın.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Markdown'ı kopyala</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.md indir</button>
+    <button class="btn btn--quiet" id="clear" type="button">Temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/html,.html,.htm,text/plain,.txt">{{mark:i-upload}}<span>.html dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Web sayfalarını Markdown'a çevirme</h2>
+<p>İçeriği bir web sayfasından, eski bir içerik yönetim sisteminden veya zengin metin düzenleyicisinden alıp bir README'ye, statik siteye ya da not uygulamasına taşımak genellikle HTML'i Markdown'a çevirmek demektir. Dönüştürücü HTML yapısını dolaşır ve her öğeyi Markdown karşılığıyla yazar: başlıklar # satırlarına, listeler tirelere, bağlantılar <code>[metin](url)</code> biçimine, <code>&lt;pre&gt;&lt;code&gt;</code> ise bir kod bloğuna dönüşür.</p>
+<p>Markdown yalnızca yapıyı tanımlar, bu yüzden biçimlendirme geride kalır. Satır içi stiller, sınıflar, renkler ve yerleşim kapsayıcıları kaybolur; sözcükler, vurgu, bağlantılar, resimler ve listeler ise kalır. Tablolar, bu biçime sığacak kadar basitse GitHub Flavored Markdown tabloları olarak yazılır.</p>
+<p>Farklı projeler farklı Markdown alışkanlıklarını tercih eder; başlık, liste işaretçisi, kod bloğu ve italik stillerinin değiştirilebilmesinin nedeni budur. Çoğu oluşturucu bunların hepsini kabul eder.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Markdown'ın nasıl göründüğünü, önizlemesi olan <a href="/tools/markdown-to-html/">Markdown'dan HTML'ye</a> aracıyla kontrol edin.</li>
+  <li>Artakalan boşlukları veya ifadeleri <a href="/tools/find-and-replace/">Bul ve değiştir</a> ile düzeltin.</li>
+  <li>Sonuçtaki sözcükleri <a href="/tools/word-counter/">Kelime sayacı</a> ile sayın.</li>
+</ul>

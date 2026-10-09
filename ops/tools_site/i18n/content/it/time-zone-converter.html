@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "Convertitore di fusi orari e pianificatore riunioni | Tanod Tools",
+  "description": "Converti data e ora in molti fusi orari insieme, con scarto UTC, cambi di giorno, salti e sovrapposizioni dell'ora legale e un pianificatore orario per le riunioni.",
+  "h1": "Convertitore di fusi orari",
+  "lede": "Scegli una data, un'ora e il fuso in cui si trova, poi guarda lo stesso momento in ogni città della tua lista, con un pianificatore per trovare orari di lavoro in comune.",
+  "blurb": "Converti un'ora in più fusi e pianifica le riunioni tra di essi.",
+  "keywords": "convertitore fusi orari fuso orario orologio mondiale pianificatore riunioni convertire ora tra città differenza utc ora legale cet cest est pst gmt ist jst sovrapposizione orari time zone converter",
+  "limits": "Usa i dati dei fusi orari integrati nel tuo browser, quindi scarti e regole dell'ora legale seguono ciò che il tuo browser conosce, incluse date passate e future. Le sigle sono mostrate solo dove il browser ne ha una. Nulla lascia il tuo dispositivo.",
+  "howto_title": "Come convertire un'ora tra fusi orari",
+  "howto": [
+    "Scegli la data, l'ora e il fuso orario di quell'ora. Premi <strong>Adesso</strong> per partire dal momento attuale.",
+    "Aggiungi le città che ti servono con <em>Aggiungi un luogo</em>. Ogni riga mostra l'ora locale, il giorno (stesso, successivo o precedente) e lo scarto UTC. La tua lista viene ricordata su questo dispositivo.",
+    "Usa il pianificatore di riunioni sotto la lista per trovare le ore in cui tutti sono tra le 09:00 e le 17:00 ora locale. Le celle tratteggiate sono orario di lavoro."
+  ],
+  "faq": [
+    ["Cosa succede se scelgo un'ora che non esiste?", "Quando gli orologi vanno avanti, un'ora locale viene saltata: a New York l'8 marzo 2026 l'orologio passa direttamente da 01:59 a 03:00, quindi le 02:30 non esistono. Il convertitore lo segnala e usa la convenzione abituale, spostando l'ora in avanti della lunghezza del salto (le 02:30 diventano le 03:30), poi converte quel momento."],
+    ["E un'ora che si verifica due volte?", "Quando gli orologi tornano indietro, un'ora si ripete. Il 1° novembre 2026 a New York, le 01:30 si verificano prima come 01:30 EDT (UTC-04:00) e di nuovo un'ora dopo come 01:30 EST (UTC-05:00). Il convertitore mostra entrambe le possibilità e ti lascia scegliere; parte da quella precedente."],
+    ["Perché alcuni scarti non sono ore intere?", "Diversi luoghi usano scarti di mezz'ora o di 45 minuti: l'India è UTC+05:30, il Nepal è UTC+05:45, e Lord Howe Island, in Australia, è UTC+10:30 in inverno e UTC+11:00 in estate, con un cambio di ora legale di soli 30 minuti. Lo strumento usa lo scarto esatto in vigore alla data che scegli."],
+    ["Si vede il cambio di giorno?", "Sì. Ogni riga indica Stesso giorno, Giorno successivo o Giorno precedente, rispetto alla data che hai scelto nel fuso di origine. Kiritimati, nel Kiribati, è UTC+14, il fuso più anticipato del mondo, quindi un orario di metà giornata a Londra lì è già il giorno dopo."],
+    ["Come funziona il pianificatore di riunioni?", "Dispone 24 celle orarie per ogni luogo, allineate sullo stesso istante, a partire dalla mezzanotte della data scelta nel fuso di origine. Le celle comprese tra le 09:00 e le 17:00 ora locale sono tratteggiate e si leggono come orario di lavoro, e la riga in basso segna le ore che vanno bene per tutti. Una colonna con contorno spesso è l'ora che hai inserito."],
+    ["Quali nomi di fuso posso usare?", "Qualsiasi fuso IANA elencato dal tuo browser, come Europe/London o Asia/Tokyo, più UTC e il tuo fuso. I nomi delle città sono mostrati in forma leggibile con l'identificativo completo del fuso sotto. Per convertire un timestamp Unix invece di un'ora da orologio, usa il <a href=\"/tools/unix-timestamp-converter/\">Convertitore di timestamp Unix</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tzc">
+  <div class="opts">
+    <div class="field">
+      <label for="tzc-date">Data</label>
+      <input type="date" id="tzc-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="tzc-time">Ora</label>
+      <div class="calc-pair">
+        <input type="time" id="tzc-time" step="60">
+        <button type="button" class="btn calc-today" id="tzc-now">Adesso</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tzc-from">Fuso orario di quell'ora</label>
+      <select id="tzc-from"></select>
+    </div>
+  </div>
+  <fieldset class="tzc__amb" id="tzc-amb" hidden>
+    <legend>Quest'ora si verifica due volte. Quale?</legend>
+    <div class="seg" id="tzc-amb-opts"></div>
+  </fieldset>
+  <p class="note tzc__note" id="tzc-note" role="status" aria-live="polite" hidden><span id="tzc-note-t"></span></p>
+  <div class="tzc__bar">
+    <div class="field tzc__add">
+      <label for="tzc-add">Aggiungi un luogo</label>
+      <div class="calc-pair">
+        <select id="tzc-add"></select>
+        <button type="button" class="btn" id="tzc-addbtn">Aggiungi</button>
+      </div>
+    </div>
+    <fieldset class="tzc__fmt">
+      <legend>Orologio</legend>
+      <div class="seg">
+        <label><input type="radio" name="tzc-fmt" value="24" checked>24 ore</label>
+        <label><input type="radio" name="tzc-fmt" value="12">12 ore</label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="help" id="tzc-msg" role="status" aria-live="polite"></p>
+  <ul class="tzc__rows" id="tzc-rows" aria-label="Orari convertiti"></ul>
+
+  <div id="tzc-plan-wrap" hidden>
+    <h2 class="util-h" id="tzc-plan-h">Pianificatore di riunioni</h2>
+    <p class="help" id="tzc-plan-sum"></p>
+    <ul class="tzc__legend" aria-label="Legenda del pianificatore">
+      <li><span class="tzc__sw tzc__sw--work" aria-hidden="true"></span>Orario di lavoro, dalle 09:00 alle 17:00 locali (tratteggiato)</li>
+      <li><span class="tzc__sw tzc__sw--sel" aria-hidden="true"></span>L'ora che hai inserito (contorno spesso)</li>
+      <li><span class="tzc__sw tzc__sw--all" aria-hidden="true">✓</span>Tutti sono in orario di lavoro</li>
+    </ul>
+    <div class="tzc__strip" tabindex="0" role="region" aria-labelledby="tzc-plan-h">
+      <table class="tzc__plan" id="tzc-plan"></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Perché le conversioni tra fusi orari vanno storte</h2>
+<p>Un fuso orario non è solo uno scarto rispetto a UTC. È un insieme di regole, conservate nel database dei fusi orari IANA, che dice quale era e quale sarà lo scarto a ogni data. Per questo la stessa città è UTC-5 d'inverno e UTC-4 d'estate, per questo due città che oggi condividono uno scarto possono separarsi il mese prossimo, e per questo una riunione fissata alle 9:00 a Londra si sposta rispetto a New York per qualche settimana ogni primavera e autunno, quando i due paesi cambiano l'ora in date diverse.</p>
+<p>I passaggi all'ora legale creano due casi scomodi. In primavera un tratto di ora locale viene saltato, quindi un'ora al suo interno non esiste. In autunno un tratto si ripete, quindi un'ora al suo interno è ambigua e serve lo scarto per stabilire a quale occorrenza ci si riferisce. Molti programmi scelgono una risposta in silenzio; questo convertitore ti segnala il salto o la sovrapposizione e, per la sovrapposizione, ti lascia scegliere.</p>
+<p>Per pianificare, confrontare le letture degli orologi è solo metà del lavoro. L'equità dipende da in quale orario di lavoro cade la riunione per ciascuno. Il pianificatore orario allinea ogni luogo sugli stessi istanti, così vedi a colpo d'occhio dove le 09:00-17:00 si sovrappongono e dove qualcuno si collegherebbe nel cuore della notte. Anche con un'ottima sovrapposizione, indica esplicitamente il fuso nell'invito, preferibilmente con lo scarto UTC, così nessuno deve indovinare.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Stai leggendo un timestamp da un log o da un'API? Il <a href="/tools/unix-timestamp-converter/">Convertitore di timestamp Unix</a> lo mostra in qualsiasi fuso.</li>
+  <li>Per trovare la data in cui cade una scadenza dopo aver aggiunto giorni o giorni lavorativi, usa il <a href="/tools/date-calculator/">Calcolatore di date</a>.</li>
+  <li>Vuoi sapere quanto dura un progetto o un viaggio? Lo conta il <a href="/tools/date-difference-calculator/">Calcola la differenza tra due date</a>.</li>
+</ul>

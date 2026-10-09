@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "MikroTik PCQ oluşturucu: kullanıcı başına eşit bant | Tanod Tools",
+  "description": "RouterOS PCQ queue type'larını simple queue veya mangle işaretli queue tree ile oluşturun; her istemci hattan adil ve sınırlı pay alsın. Tarayıcınızda çalışır.",
+  "h1": "MikroTik PCQ oluşturucu",
+  "lede": "Tek bir Per Connection Queue ile hattı tüm istemciler arasında adil paylaştırın: kullanıcı başına hızı ve toplamı seçin, queue type'ları ile simple queue veya queue tree'yi alın.",
+  "blurb": "Simple queue veya queue tree ile PCQ queue type'ları.",
+  "keywords": "mikrotik pcq oluşturucu per connection queue routeros pcq-rate pcq-classifier dst-address src-address queue tree mangle packet mark kullanıcı başına eşit bant genişliği adil paylaşım wisp bant genişliği paylaştırma mikrotik pcq generator equal bandwidth fair share",
+  "limits": "IPv4 için RouterOS v7 sözdizimi üretir (v6'da da geçerlidir). Queue tree yöntemi LAN istemcilerinin WAN'a doğru açtığı bağlantıları işaretler; diğerleri sınırlandırılmadan geçer. pcq-limit ve pcq-total-limit varsayılan değerlerinde kalır. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te PCQ nasıl kurulur",
+  "howto": [
+    "Yöntemi seçin: LAN alt ağı için tek bir simple queue (en basiti) ya da mangle işaretleriyle beslenen bir queue tree (daha fazla denetim).",
+    "İstemci başına hızı girin (toplamı eşit paylaştırmak için 0 yazın), ardından toplam yükleme ve indirme hızlarını gerçek hat hızınızın hemen altında girin.",
+    "Betiği kopyalayın veya .rsc dosyasını indirin; sınırlandırılacak trafik için FastTrack'in kapalı olduğundan emin olun."
+  ],
+  "faq": [
+    [
+      "PCQ ne yapar?",
+      "PCQ queue type'ı paketleri bir sınıflandırıcıya, genellikle istemcinin adresine göre alt kuyruklara ayırır ve alt kuyruklara sırayla hizmet verir. pcq-rate ayarlıysa her alt kuyruk bu hızla sınırlanır; pcq-rate 0 ise üst kuyruğun sınırı o anda etkin olan istemciler arasında eşit bölüşülür. Böylece tek bir kuyruk yüzlerce istemciye adil pay verir; aksi hâlde yüzlerce simple queue gerekirdi."
+    ],
+    [
+      "İndirme neden dst-address, yükleme neden src-address ile sınıflandırılıyor?",
+      "İndirme paketleri istemciye gider, yani istemcinin adresi hedeftir; yükleme paketleri ondan çıkar, yani kaynaktır. Bunları ters çevirirseniz tüm istemciler, uzak sunucuların adreslerine göre anahtarlanan tek bir alt kuyruğa düşer."
+    ],
+    [
+      "Queue tree neden parent=global ve forward chain kullanıyor?",
+      "Yükleme paketleri, source NAT istemcinin adresini WAN adresiyle değiştirmeden önce sınıflandırılmalıdır ve global kuyruk source NAT'tan önce çalışır. Forward chain'de işaretleme ise indirme paketlerini destination NAT istemcinin adresini geri getirdikten sonra görür. Bunun yerine WAN arayüzünde işaretlerseniz tüm yüklemeler tek bir alt kuyruğa düşer."
+    ],
+    [
+      "Adres maskesi ne işe yarar?",
+      "/32 ile her adres kendi alt kuyruğunu oluşturur. Her müşteriye /29 gibi küçük bir alt ağ veren bir WISP maskeyi 29 yaparsa alt ağın tamamı tek bir alt kuyruğu ve tek bir hızı paylaşır."
+    ],
+    [
+      "PCQ'nun etkisi yok. Neyi kontrol etmeliyim?",
+      "Önce FastTrack: fasttrack'lenen paketler mangle'ı ve tüm kuyrukları atlar. Sonra toplamlar: max-limit hattın gerçekte sağladığından yüksekse kuyruk hiç dolmaz ve kuyruğu yönlendiriciniz değil ISS'nin cihazları oluşturur."
+    ],
+    [
+      "Yapılandırmam bir yere gönderiliyor mu?",
+      "Hayır. Her şey tarayıcınızda üretilir."
+    ]
+  ],
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pcq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Yöntem</legend>
+      <div class="seg" role="radiogroup" aria-label="Yöntem">
+        <label><input type="radio" name="pcq-method" value="simple" checked>Simple queue</label>
+        <label><input type="radio" name="pcq-method" value="tree">Queue tree + mangle</label>
+      </div>
+      <div class="field" id="pcq-simple-f">
+        <label for="pcq-target">LAN alt ağları (target)</label>
+        <input type="text" id="pcq-target" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="pcq-tree-f" hidden>
+        <div class="field"><label for="pcq-lan">LAN arayüz listesi</label><input type="text" id="pcq-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-wan">WAN arayüz listesi</label><input type="text" id="pcq-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Hızlar</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-down-rate">İstemci başına indirme (pcq-rate)</label><input type="text" id="pcq-down-rate" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-rate">İstemci başına yükleme (pcq-rate)</label><input type="text" id="pcq-up-rate" class="mono" value="2M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-down-max">Toplam indirme</label><input type="text" id="pcq-down-max" class="mono" value="95M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-max">Toplam yükleme</label><input type="text" id="pcq-up-max" class="mono" value="45M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <span class="help">İstemci başına değer 0 veya boşsa toplamdan eşit pay verilir.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Seçenekler</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-mask">Adres maskesi (her biri için bir alt kuyruk)</label><input type="text" id="pcq-mask" class="mono" value="32" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="pcq-name">Ad öneki</label><input type="text" id="pcq-name" class="mono" value="pcq" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pcq-out" class="label">RouterOS betiği</label>
+    <textarea id="pcq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pcq-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="pcq-dl" type="button">{{mark:i-download}}İndir .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pcq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Uygulamada Per Connection Queue</h2>
+<p>PCQ, <code>/queue type</code> altında <code>kind=pcq</code> ile tanımlanan ve ardından bir simple queue veya queue tree tarafından kullanılan bir queue type'ıdır. <code>pcq-classifier</code> neyin tek bir akış sayılacağını belirler: indirmede <code>dst-address</code>, yani her istemcinin indirmesi bir akıştır; yüklemede ise <code>src-address</code>. RouterOS alt akışları anında oluşturur ve sessizleştiklerinde kaldırır; dolayısıyla istemciler gelip gittikçe bakımını yapmanız gereken hiçbir şey olmaz.</p>
+<p>Sonucu iki ayar şekillendirir. <code>pcq-rate</code> her akışı sınırlar; 0 bırakırsanız akışlar, kuyruğun <code>max-limit</code> değerinin izin verdiği her şeyi eşit olarak paylaşır. PCQ kullanan kuyruğun max-limit değeri hattın gerçek kapasitesinin biraz altında olmalıdır: PCQ bant genişliğini yalnızca paketler yukarıdaki modemde değil yönlendiricide kuyruğa girdiğinde adil paylaştırabilir.</p>
+<h3>Simple queue mu, queue tree mi?</h3>
+<p>Simple queue yöntemi işaretleme gerektirmez: hedefi LAN alt ağı olan ve <code>queue=upload-type/download-type</code> kullanan tek bir kuyruk yeterlidir. Queue tree yöntemi LAN'dan WAN'a giden bağlantıları mangle ile işaretler ve <code>parent=global</code> altında iki kuyruk kullanır; yerel ağlar arasındaki trafiği sınırlamadan bırakır ve öncelik sınıfları için çıkış noktasıdır. Hangisini seçerseniz seçin, istemci başına burst ayarları simple queue'larda yapılır; bunları <a href="/tools/mikrotik-simple-queue-generator/">MikroTik simple queue oluşturucu</a> ve <a href="/tools/mikrotik-burst-calculator/">MikroTik burst hesaplayıcı</a> ile karşılaştırabilirsiniz.</p>

@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Tính chmod: hệ bát phân, ký hiệu và lệnh | Tanod Tools",
+  "description": "Chọn ô đọc, ghi, thực thi để nhận số bát phân chmod, dạng rwxr-xr-x và các lệnh có sẵn, hoặc nhập một mode để xem các ô. Hỗ trợ setuid và sticky.",
+  "h1": "Tính chmod",
+  "lede": "Đặt quyền tệp Unix bằng các ô đánh dấu, một số bát phân như 755, hoặc chuỗi rwxr-xr-x, và nhận các lệnh chmod tương ứng.",
+  "blurb": "Quyền Unix dưới dạng ô đánh dấu, bát phân, chuỗi rwx và lệnh chmod.",
+  "keywords": "tính chmod chmod calculator phân quyền linux quyền tệp unix quyền truy cập tệp bát phân rwx 755 644 setuid setgid sticky bit umask tạo lệnh chmod",
+  "limits": "Hoạt động trên chín bit quyền cùng setuid, setgid và sticky, như chmod POSIX. Công cụ không đọc tệp thật, không hiển thị quyền sở hữu, và không bao gồm ACL, thuộc tính tệp hay umask. Mode bát phân cần 3 hoặc 4 chữ số.",
+  "howto_title": "Cách tính mode chmod",
+  "howto": [
+    "Đánh dấu các ô cho chủ sở hữu, nhóm và những người khác, hoặc chọn một mẫu phổ biến như 644 hoặc 755. Bạn cũng có thể nhập số bát phân hoặc chuỗi chín ký tự và các ô sẽ thay đổi theo.",
+    "Xem phần tóm tắt bằng lời về những gì mỗi lớp được phép làm với một tệp và với một thư mục, và đọc cảnh báo nếu có.",
+    "Sao chép lệnh <code>chmod</code> dạng số hoặc dạng ký hiệu. Hãy đổi tên tệp trước nếu muốn có lệnh sẵn sàng để dán."
+  ],
+  "faq": [
+    ["Số bát phân hoạt động như thế nào?", "Mỗi chữ số cộng các quyền đọc (4), ghi (2) và thực thi (1) cho một lớp, theo thứ tự chủ sở hữu, nhóm, những người khác. Vì vậy 7 là đọc, ghi và thực thi, 5 là đọc và thực thi, còn 4 chỉ đọc. 755 cho chủ sở hữu mọi quyền và những người còn lại quyền đọc và thực thi. Chữ số thứ tư tùy chọn ở phía trước chứa setuid (4), setgid (2) và sticky (1)."],
+    ["Các chữ s, S, t và T có nghĩa là gì?", "Chúng thay thế chữ x ở vị trí của chủ sở hữu, nhóm hoặc những người khác. Chữ thường nghĩa là bit đặc biệt được bật và quyền thực thi cũng bật; chữ hoa nghĩa là bit đặc biệt được bật nhưng quyền thực thi tắt, thường là một sai sót. Vì vậy 4755 là <code>rwsr-xr-x</code> và 4644 là <code>rwSr--r--</code>."],
+    ["Khác nhau giữa 644 và 755 là gì?", "644 là mode thường dùng cho tệp thông thường: chủ sở hữu đọc và ghi được, mọi người khác chỉ đọc. 755 thêm quyền thực thi cho tất cả, thứ mà chương trình, script và thư mục cần. Thư mục cần bit thực thi để bất kỳ ai vào được."],
+    ["Vì sao 777 bị coi là nguy hiểm?", "Nó cho phép mọi người dùng trên máy, và bất kỳ chương trình nào chạy dưới quyền họ, thay đổi hoặc thay thế tệp. Máy chủ web được yêu cầu ghi vào đâu đó không cần điều đó: cấp quyền sở hữu cho đúng người dùng hoặc nhóm và dùng 775 hoặc 770 giải quyết hầu hết lỗi quyền mà không mở tệp cho tất cả mọi người."],
+    ["Bit sticky làm gì?", "Trên một thư mục, nó ngăn người dùng xóa hoặc đổi tên các tệp không thuộc về họ, dù họ ghi được vào thư mục đó. Đó là lý do các thư mục dùng chung như <code>/tmp</code> có mode 1777. Trên Linux hiện đại, nó không có tác dụng với tệp thông thường."],
+    ["Công cụ này có thay đổi gì trên máy tính của tôi không?", "Không. Nó chỉ tính ra con số và các lệnh. Những gì bạn nhập không được gửi đi đâu, và bạn tự chạy các lệnh trong terminal."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Quyền</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Chủ sở hữu</th><th scope="col">Nhóm</th><th scope="col">Người khác</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Đọc <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Chủ sở hữu có quyền đọc"></td><td><input type="checkbox" id="m-g-r" aria-label="Nhóm có quyền đọc"></td><td><input type="checkbox" id="m-o-r" aria-label="Người khác có quyền đọc"></td></tr>
+          <tr><th scope="row">Ghi <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Chủ sở hữu có quyền ghi"></td><td><input type="checkbox" id="m-g-w" aria-label="Nhóm có quyền ghi"></td><td><input type="checkbox" id="m-o-w" aria-label="Người khác có quyền ghi"></td></tr>
+          <tr><th scope="row">Thực thi <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Chủ sở hữu có quyền thực thi"></td><td><input type="checkbox" id="m-g-x" aria-label="Nhóm có quyền thực thi"></td><td><input type="checkbox" id="m-o-x" aria-label="Người khác có quyền thực thi"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Đặt ID người dùng (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Đặt ID nhóm (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Bit sticky <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Bát phân</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Ký hiệu</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Các mode phổ biến">
+    <button class="btn btn--sm" type="button" data-mode="644">644 tệp</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 chương trình hoặc thư mục</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 tệp riêng tư</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 thư mục riêng tư</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 dùng chung trong nhóm</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 mọi người</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Tên tệp hoặc thư mục trong các lệnh</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Các lệnh">
+    <div><dt>Dạng số</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Sao chép lệnh dạng số">Sao chép</button></div>
+    <div><dt>Dạng ký hiệu</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Sao chép lệnh dạng ký hiệu">Sao chép</button></div>
+  </dl>
+  <h2 class="util-h">Mode này cho phép những gì</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Đối tượng</th><th scope="col">Với tệp</th><th scope="col">Với thư mục</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Quyền tệp Unix được lưu như thế nào</h2>
+<p>Mỗi tệp và thư mục trên hệ thống kiểu Unix mang một mode ngắn: ba bit quyền (đọc, ghi, thực thi) cho mỗi lớp trong ba lớp (người dùng sở hữu, nhóm sở hữu, mọi người còn lại), cộng ba bit đặc biệt. Đó là mười hai bit, và số bát phân đơn giản là các bit đó viết theo từng nhóm ba, vì vậy các chữ số chỉ lên đến 7. Dạng chín ký tự từ <code>ls -l</code> hiển thị cùng các bit đó dưới dạng chữ cái.</p>
+<p>Đọc, ghi và thực thi có ý nghĩa khác nhau trên một thư mục. Đọc cho phép liệt kê các tên bên trong, ghi cho phép thêm, đổi tên và xóa các mục, còn thực thi cho phép bước vào thư mục và truy cập mọi thứ theo tên. Một thư mục có quyền đọc nhưng không có thực thi sẽ hiển thị các tên nhưng từ chối truy cập mọi thứ bên trong, một nguồn gây lỗi quyền khó hiểu thường gặp.</p>
+<p>Các bit đặc biệt thay đổi cách một mode hoạt động. Setuid và setgid khiến chương trình chạy với quyền của chủ sở hữu hoặc nhóm của tệp thay vì quyền của người gọi, điều này rất mạnh nên bị bỏ qua với shell script trên hầu hết hệ thống. Setgid trên thư mục khiến tệp mới kế thừa nhóm của nó, và bit sticky trên thư mục ngăn người dùng xóa tệp của nhau. Nếu không chắc một tệp cần mode nào, hãy bắt đầu chặt chẽ và chỉ thêm những gì thông báo lỗi yêu cầu.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Nhị phân và bát phân là cùng các bit được viết khác đi; <a href="/tools/number-base-converter/">Chuyển đổi hệ cơ số</a> cho thấy 755 là 111 101 101.</li>
+  <li>Lên lịch cho cron job chạy một script bạn vừa cho phép thực thi? Hãy tạo lịch bằng <a href="/tools/cron-expression-generator/">Tạo biểu thức cron</a>.</li>
+  <li>Tiếp theo là tính dải mạng? Hãy thử <a href="/tools/subnet-calculator/">Tính subnet</a>.</li>
+</ul>

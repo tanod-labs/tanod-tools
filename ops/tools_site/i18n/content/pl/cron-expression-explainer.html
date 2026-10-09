@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Wyjaśnij wyrażenie cron i następne uruchomienia | Tanod Tools",
+  "description": "Wklej wyrażenie cron, aby przeczytać je prostym językiem i zobaczyć następne uruchomienia w wybranej strefie czasowej. Sprawdza każde pole i wyjaśnia błędy.",
+  "h1": "Wyjaśnij wyrażenie cron",
+  "lede": "Przeczytaj harmonogram crontab prostym językiem i wypisz najbliższe terminy jego uruchomienia w dowolnej strefie czasowej.",
+  "blurb": "Harmonogram cron prostym językiem, z terminami następnych uruchomień.",
+  "keywords": "crontab cron harmonogram zadanie cron następne uruchomienie crontab guru co 5 minut składnia cron sprawdzanie wyrażenia cron wyjaśnienie",
+  "limits": "Standardowy cron z pięcioma polami (minuta, godzina, dzień miesiąca, miesiąc, dzień tygodnia), używany przez Vixie cron, cronie i większość systemów Linux, oraz skróty typu @daily. Formaty Quartz i inne z polem sekund są wykrywane, ale nie wyjaśniane.",
+  "howto_title": "Jak sprawdzić wyrażenie cron",
+  "howto": [
+    "Wpisz lub wklej pięć pól harmonogramu, na przykład <code>*/15 9-17 * * 1-5</code>, albo wybierz przykład. Działa też cały wiersz crontab; polecenie po piątym polu jest ignorowane.",
+    "Przeczytaj podsumowanie prostym językiem i rozbicie każdego pola. Błąd jest wskazywany w polu, w którym występuje.",
+    "Sprawdź listę terminów następnych uruchomień. Wybierz strefę czasową, w której działa serwer, oraz inny czas początkowy, jeśli chcesz spojrzeć dalej w przód."
+  ],
+  "faq": [
+    ["Co oznaczają pięć pól?", "Po kolei: minuta (0–59), godzina (0–23), dzień miesiąca (1–31), miesiąc (1–12 lub JAN–DEC) i dzień tygodnia (0–7 lub SUN–SAT, gdzie 0 i 7 to niedziela). Każde pole przyjmuje pojedynczą wartość, listę, taką jak <code>1,15</code>, zakres, taki jak <code>9-17</code>, krok, taki jak <code>*/15</code> lub <code>0-30/10</code>, albo <code>*</code> dla każdej wartości."],
+    ["Dlaczego moje zadanie uruchamia się w więcej dni, niż oczekiwano?", "Gdy ograniczone są jednocześnie pola dnia miesiąca i dnia tygodnia, cron uruchamia zadanie w dni pasujące do któregokolwiek z nich, a nie do obu. <code>0 9 1 * 1</code> uruchamia się pierwszego dnia każdego miesiąca i w każdy poniedziałek. Tak zachowują się Vixie cron i cronie. Osobliwość tej samej reguły: pole zaczynające się od <code>*</code>, na przykład <code>*/2</code>, liczy się jako nieograniczone, więc wtedy oba pola muszą pasować."],
+    ["Jakiej strefy czasowej używa cron?", "Strefy czasowej maszyny lub kontenera, na którym działa, chyba że crontab ustawia <code>CRON_TZ</code> lub <code>TZ</code>. Wiele serwerów działa w UTC, więc sprawdź to, zanim zaufasz widzianym godzinom. Wybierz strefę serwera na liście, aby zobaczyć jego terminy uruchomień."],
+    ["Co się dzieje przy zmianie czasu na letni lub zimowy?", "Lista podąża za zegarem w wybranej strefie: godzina pomijana przy przestawieniu zegarów do przodu jest pomijana, a godzina występująca dwa razy przy cofnięciu jest wypisana raz. Vixie cron i cronie uruchamiają zadanie zaplanowane w pominiętej godzinie krótko po zmianie i nie powtarzają zadań w powtórzonej godzinie; inne harmonogramy zachowują się różnie. Gdy wypisany okres obejmuje zmianę czasu, pojawia się uwaga."],
+    ["Czy obsługuje sekundy lub składnię Quartz?", "Nie. Wyrażenia z sześcioma lub siedmioma polami albo ze znakami <code>?</code>, <code>L</code>, <code>W</code> lub <code>#</code> pochodzą z Quartz, Spring i podobnych harmonogramów, gdzie pierwsze pole to sekundy. Narzędzie mówi o tym zamiast zgadywać, bo odczytanie ich jako standardowego crona dałoby błędny harmonogram."],
+    ["Co znaczą @daily, @hourly i inne skróty?", "<code>@hourly</code> to <code>0 * * * *</code>, <code>@daily</code> i <code>@midnight</code> to <code>0 0 * * *</code>, <code>@weekly</code> to <code>0 0 * * 0</code>, <code>@monthly</code> to <code>0 0 1 * *</code>, a <code>@yearly</code> i <code>@annually</code> to <code>0 0 1 1 *</code>. <code>@reboot</code> uruchamia się raz przy starcie usługi cron, więc nie ma terminów do wypisania."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="c-in">Wyrażenie cron</label>
+    <input type="text" id="c-in" class="mono cron-in" value="*/15 9-17 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Przykłady">
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Co 5 minut</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Co godzinę</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Codziennie o północy</button>
+    <button class="btn btn--sm" type="button" data-cron="0 9 * * 1-5">W dni robocze o 09:00</button>
+    <button class="btn btn--sm" type="button" data-cron="30 2 * * 0">W niedziele o 02:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Pierwszego dnia miesiąca</button>
+  </div>
+  <p class="tt__report" id="c-info" aria-live="polite"></p>
+  <p class="cron-say" id="c-say" aria-live="polite"></p>
+  <dl class="cron-fields" id="c-fields" aria-label="Pola">
+    <div><dt>Minuta</dt><dd></dd></div>
+    <div><dt>Godzina</dt><dd></dd></div>
+    <div><dt>Dzień miesiąca</dt><dd></dd></div>
+    <div><dt>Miesiąc</dt><dd></dd></div>
+    <div><dt>Dzień tygodnia</dt><dd></dd></div>
+  </dl>
+  <p class="note" id="c-note" hidden></p>
+
+  <h2 class="util-h">Następne uruchomienia</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="c-tz">Strefa czasowa</label>
+      <select id="c-tz"></select>
+    </div>
+    <div class="field">
+      <label for="c-from">Od</label>
+      <input type="datetime-local" id="c-from" step="60">
+      <span class="help">Zostaw puste, aby zacząć od teraz.</span>
+    </div>
+    <div class="field">
+      <label for="c-count">Ile</label>
+      <select id="c-count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="c-runs-info"></p>
+  <ol class="cron-runs" id="c-runs" aria-label="Terminy następnych uruchomień"></ol>
+  <p class="note" id="c-runs-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Jak czytać harmonogram cron</h2>
+<p>Cron sprawdza swoją tabelę raz na minutę i uruchamia każde zadanie, którego wszystkie pięć pól pasuje do bieżącego czasu, z jednym wyjątkiem dla dwóch pól dni opisanym poniżej. Zatem <code>*/15 9-17 * * 1-5</code> oznacza: w minutach 0, 15, 30 i 45, w godzinach od 9 do 17, w dowolny dzień miesiąca, w dowolnym miesiącu, od poniedziałku do piątku. Ostatnie uruchomienie danego dnia jest o 17:45, bo pole godziny obejmuje całą godzinę 17.</p>
+<p>Narzędzie analizuje każde pole tak jak Vixie cron i cronie, które są dostarczane w większości dystrybucji Linuksa. Nazwy miesięcy i dni tygodnia są akceptowane w dowolnej wielkości liter, a 7 liczy się jako niedziela. Krok po pojedynczej liczbie, taki jak <code>5/10</code>, jest odczytywany jako <code>5-59/10</code>, tak jak robi to wiele wersji crona; niektóre starsze go odrzucają, dlatego narzędzie przypomina, aby zapisać zakres w pełni. Zakresy muszą biec od mniejszej wartości do większej: <code>FRI-MON</code> jest oznaczane jako błąd, a nie zawijane, bo standardowy cron nie zawija zakresów.</p>
+<p>Terminy następnych uruchomień są wyliczane przez przechodzenie po kalendarzu w wybranej strefie czasowej, więc wyrażenie, które może pasować tylko 29 lutego, od razu znajduje następny rok przestępny, a takie, które nigdy nie może pasować, na przykład <code>0 0 31 2 *</code>, jest zgłaszane jako nigdy nieuruchamiane.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Zamień czas uruchomienia z logu na znacznik czasu Unix lub z powrotem za pomocą narzędzia <a href="/tools/unix-timestamp-converter/">Konwerter znacznika czasu Unix</a>.</li>
+  <li>Testujesz wzorzec, którego zadanie używa do filtrowania logu? Wypróbuj <a href="/tools/regex-tester/">Tester wyrażeń regularnych</a>.</li>
+  <li>Zobacz, jak wygląda konfiguracja JSON z harmonogramami, w narzędziu <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>.</li>
+</ul>

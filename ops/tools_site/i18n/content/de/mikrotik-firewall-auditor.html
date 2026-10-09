@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "MikroTik-Firewall-Auditor: RouterOS-Export prüfen | Tanod Tools",
+  "description": "RouterOS-/export einfügen und typische Härtungslücken finden: Input-Chain ohne Schluss-Drop, offenes WinBox oder SSH, offener DNS-Resolver, Proxy, verdeckte Regeln.",
+  "h1": "MikroTik-Firewall-Auditor",
+  "lede": "Fügen Sie den /export Ihres Routers ein und erhalten Sie eine priorisierte Liste typischer Lücken bei Firewall und Diensten, jeweils mit der Ursprungszeile und einem Korrekturvorschlag.",
+  "blurb": "Findet offene Dienste, offene Resolver und Regelfehler in einem Export.",
+  "keywords": "mikrotik firewall audit routeros sicherheit check export prüfen winbox exponiert offener dns resolver allow-remote-requests input chain drop verdeckte regeln shadowed rules härtung hardening checkliste",
+  "local_text": "Ihr Export wird in Ihrem Browser geprüft und verlässt Ihr Gerät nie",
+  "limits": "Eine heuristische Prüfung eines einzelnen Exports, kein vollständiges Sicherheitsaudit: Gelesen werden /ip firewall filter und nat, /ip service, DNS, Proxy, SOCKS, UPnP, SNMP, der Bandwidth-Test-Server, MAC-Zugriff und Benutzer; bewertet wird die Erreichbarkeit aus dem WAN. IPv6-Firewall, Raw- und Mangle-Regeln, Skripte sowie WLAN- und VPN-Einstellungen werden nicht geprüft. MikroTik und RouterOS sind Marken der SIA Mikrotīkls. Dieses Tool ist unabhängig und weder mit MikroTik verbunden noch von MikroTik unterstützt.",
+  "howto_title": "So prüfen Sie eine MikroTik-Firewall",
+  "howto": [
+    "Führen Sie in einem Terminal auf dem Router <code>/export hide-sensitive</code> aus (unter v7 blendet <code>/export</code> Geheimnisse bereits aus) und kopieren Sie die Ausgabe, oder speichern Sie sie mit <code>/export file=config</code> und öffnen Sie die .rsc-Datei hier.",
+    "Fügen Sie sie in das Feld ein. Fügen Sie optional auch <code>/user print</code> ein, da Exporte die Benutzer auslassen.",
+    "Arbeiten Sie die Ergebnisse von oben nach unten ab. Jedes zeigt die betroffene Zeile und einen Korrekturvorschlag; wenden Sie Änderungen mit eingeschaltetem Safe Mode (Sicherheitsmodus) an."
+  ],
+  "faq": [
+    ["Ist es sicher, meine Konfiguration hier einzufügen?", "Der Export wird von JavaScript in dieser Seite gelesen und verlässt Ihr Gerät nie: Es gibt keinen Upload, keine serverseitige Verarbeitung, und die Sicherheitsrichtlinie der Seite blockiert Verbindungen zu anderen Websites. Verwenden Sie dennoch unter v6 <code>/export hide-sensitive</code> (v7 blendet Geheimnisse standardmäßig aus), damit Passwörter und Schlüssel gar nicht erst im Text stehen."],
+    ["Wie entscheidet der Auditor, ob ein Dienst exponiert ist?", "Er erkennt die WAN-Interfaces anhand von Interface-Listen, Masquerade-Regeln sowie DHCP- und PPPoE-Clients und läuft dann die Input-Chain so durch, wie es eine neue Verbindung aus dem Internet zum Port des Dienstes täte, einschließlich Sprüngen. Greift zuerst eine Accept-Regel oder verwirft vor dem Ende der Chain nichts das Paket, gilt der Dienst als erreichbar. Regeln mit Bedingungen, die er nicht beurteilen kann, zählen als möglicherweise akzeptierend und nie als verwerfend, er warnt also im Zweifel lieber."],
+    ["Was bedeutet \"Regel kann nie greifen\"?", "Eine frühere Regel in derselben Chain trifft auf jedes Paket zu, das auch die spätere Regel treffen würde, und akzeptiert oder verwirft es, sodass die spätere Regel nie ein Paket sieht. Meist wurde eine Regel am Ende der Chain statt oberhalb der Sammelregel angehängt, weshalb neue Regeln \"nicht funktionieren\"."],
+    ["Warum ist ein offener DNS-Resolver ein Problem?", "Mit allow-remote-requests=yes beantwortet der Router DNS auf jedem Interface. Verwirft die Input-Chain DNS aus dem WAN nicht, kann jeder ihn zur Verstärkung von DDoS-Angriffen missbrauchen, und Provider sperren Kunden mit solchen Routern regelmäßig oder warnen sie."],
+    ["Der Auditor hat nichts gefunden. Ist mein Router sicher?", "Nicht unbedingt. Er prüft eine Reihe häufiger Fehler mit großer Wirkung in dem, was ein Export zeigt. Nicht erfasst werden Schwachstellen der Firmware-Version über ein paar bekannte hinaus, Passwörter der Benutzer, geplante Skripte oder alles außerhalb der beim Tool genannten Menüs. Halten Sie RouterOS aktuell und prüfen Sie den Rest von Hand."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-audit" id="au">
+  <div class="ros-paste" id="au-form">
+    <div class="field">
+      <label for="au-in">RouterOS-Export</label>
+      <textarea id="au-in" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/ip firewall filter&#10;add action=accept chain=input connection-state=established,related&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}.rsc-Datei öffnen<input type="file" id="au-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="au-sample" type="button">Schwaches Beispiel laden</button>
+    </div>
+    <details class="ros-more">
+      <summary>Optional: Benutzerkonten (/user print)</summary>
+      <div class="field">
+        <label for="au-users">Ausgabe von /user print</label>
+        <textarea id="au-users" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+      </div>
+    </details>
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Heuristik, kein vollständiges Audit.</strong> Geprüft werden häufige Fehler in dem, was der Export zeigt. Ein sauberes Ergebnis beweist nicht, dass der Router sicher ist.</span></p>
+  </div>
+  <div class="ros-results" id="au-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="au-copy" type="button" hidden>Bericht kopieren</button></div>
+</div>
+<!--explain-->
+<h2>Was der Auditor prüft</h2>
+<p>Der Auditor liest die Menüs eines Exports, die bestimmen, wie exponiert ein Router ist. In der Firewall sucht er nach einer <strong>Input-Chain ohne Standard-Deny</strong> (RouterOS akzeptiert alles, was das Ende einer Chain erreicht), fehlenden <strong>Established/Related</strong>-Fast-Paths und <strong>Invalid-Paket-Drops</strong>, einer Forward-Chain, die neue WAN-Verbindungen ins LAN lässt, Accept-Everything-Regeln und <strong>Regeln, die nie greifen können</strong>, weil eine frühere Regel bereits alle ihre Pakete übernimmt. Danach ermittelt er Port für Port, ob WinBox, SSH, Telnet, FTP, WebFig und die API aus dem Internet erreichbar sind, unter Berücksichtigung der Adressbeschränkung jedes Dienstes.</p>
+<p>Außerhalb der Firewall meldet er einen <strong>offenen DNS-Resolver</strong>, einen aktivierten Web-Proxy oder SOCKS-Proxy (ein häufiges Zeichen für einen kompromittierten Router), UPnP, SNMP mit der Standard-Community, den Bandwidth-Test-Server, MAC-Telnet und MAC-WinBox auf allen Interfaces, Portweiterleitungen, die RDP, SMB, Datenbanken oder SSH für das ganze Internet veröffentlichen, das Standardkonto <code>admin</code>, wenn Sie <code>/user print</code> einfügen, sowie RouterOS-Versionen mit dem WinBox-Zugangsdaten-Leck von 2018.</p>
+<h3>Was er nicht prüft</h3>
+<ul>
+  <li>Die IPv6-Firewall, Raw- und Mangle-Tabellen, Skripte und Scheduler-Einträge, WLAN-Sicherheit, VPN- und IPsec-Einstellungen sowie die Passwortstärke.</li>
+  <li>Dynamische Regeln und Dienste, die Pakete zur Laufzeit hinzufügen und die in keinem Export auftauchen.</li>
+  <li>Alles, was von Ihrem Netz jenseits des Routers abhängt. Beheben Sie die Ergebnisse, erzeugen Sie dann mit dem <a href="/tools/mikrotik-firewall-generator/">MikroTik-Firewall-Generator</a> eine saubere Basis und vergleichen Sie das Ergebnis mit dem <a href="/tools/routeros-export-diff/">RouterOS-Export-Vergleich</a>.</li>
+</ul>

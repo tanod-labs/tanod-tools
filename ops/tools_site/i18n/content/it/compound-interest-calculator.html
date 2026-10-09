@@ -1,0 +1,93 @@
+<!--meta
+{
+  "title": "Calcolatore di interesse composto | Tanod Tools",
+  "description": "Calcolatore di interesse composto con versamenti mensili: saldo finale, interessi maturati e tabella anno per anno. Gratis, nel tuo browser.",
+  "h1": "Calcolatore di interesse composto",
+  "lede": "Inserisci un importo iniziale, un tasso annuo, la frequenza di capitalizzazione degli interessi e gli anni, con un versamento mensile facoltativo, per vedere a quanto cresce il tuo denaro.",
+  "blurb": "Saldo finale, interessi maturati e tabella anno per anno.",
+  "keywords": "calcolatore interesse composto calcolatore risparmio crescita investimento versamento mensile frequenza di capitalizzazione giornaliera mensile annuale continua tasso annuo effettivo tabella anno per anno",
+  "local_text": "Funziona nel browser; nulla di ciò che scrivi lascia il tuo dispositivo",
+  "limits": "Un tasso costante per l'intero periodo, senza commissioni, tasse o inflazione. I versamenti sono mensili, a fine mese salvo che tu scelga l'inizio, e maturano al tasso mensile equivalente a quello di capitalizzazione. Durate fino a 100 anni in mesi interi. È un'illustrazione, non una previsione.",
+  "howto_title": "Come calcolare l'interesse composto",
+  "howto": [
+    "Inserisci l'importo iniziale, il tasso di interesse annuo e il numero di anni.",
+    "Scegli la frequenza di capitalizzazione degli interessi e aggiungi un versamento mensile se risparmierai con regolarità.",
+    "Leggi il saldo finale, il totale versato e gli interessi maturati, e controlla la tabella anno per anno."
+  ],
+  "faq": [
+    ["Qual è la formula dell'interesse composto?", "Senza versamenti, il saldo è A = P × (1 + r/n)^(n × t), dove P è l'importo iniziale, r il tasso annuo in forma decimale, n il numero di capitalizzazioni all'anno e t il numero di anni. Con la capitalizzazione continua è A = P × e^(r × t)."],
+    ["Come vengono trattati i versamenti mensili?", "Il calcolatore procede mese per mese. Ogni mese il saldo cresce del tasso mensile equivalente alla tua capitalizzazione, poi il versamento viene aggiunto a fine mese, oppure a inizio mese se lo scegli. Con la capitalizzazione mensile corrisponde al montante standard di una rendita."],
+    ["Che differenza fa la frequenza di capitalizzazione?", "Più spesso vengono aggiunti gli interessi, più il saldo cresce, ma il guadagno si appiattisce in fretta. Al 5% per dieci anni, 10.000 diventano 16.288,95 con capitalizzazione annuale, 16.470,09 con quella mensile e 16.486,65 con quella giornaliera."],
+    ["Che cos'è il tasso annuo effettivo?", "È la crescita annua che si ottiene realmente una volta conteggiata la capitalizzazione. Un tasso nominale del 5% capitalizzato mensilmente corrisponde a un tasso effettivo del 5,12% all'anno."],
+    ["Include tasse, commissioni o inflazione?", "No. I rendimenti reali sono più bassi dopo commissioni e tasse, e il potere d'acquisto del saldo finale è inferiore dopo l'inflazione. Usa un tasso più basso per vedere uno scenario prudente."],
+    ["Ciò che scrivo viene caricato?", "No. Tutto viene calcolato nel tuo browser e nulla lascia il tuo dispositivo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ci">
+  <div class="opts">
+    <div class="field">
+      <label for="ci-p">Importo iniziale</label>
+      <input type="text" id="ci-p" class="mono" inputmode="decimal" value="10000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-r">Tasso di interesse annuo (%)</label>
+      <input type="text" id="ci-r" class="mono" inputmode="decimal" value="5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-y">Anni</label>
+      <input type="text" id="ci-y" class="mono" inputmode="decimal" value="10" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-f">Capitalizzazione</label>
+      <select id="ci-f">
+        <option value="annually">Annuale</option>
+        <option value="semiannually">Semestrale</option>
+        <option value="quarterly">Trimestrale</option>
+        <option value="monthly" selected>Mensile</option>
+        <option value="weekly">Settimanale</option>
+        <option value="daily">Giornaliera</option>
+        <option value="continuous">Continua</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ci-m">Versamento mensile (facoltativo)</label>
+      <input type="text" id="ci-m" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-t">I versamenti vengono aggiunti</label>
+      <select id="ci-t">
+        <option value="end" selected>A fine di ogni mese</option>
+        <option value="start">A inizio di ogni mese</option>
+      </select>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ci-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Saldo finale</span> <span id="ci-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Totale versato</dt><dd id="ci-dep">0</dd></div>
+      <div><dt>Interessi maturati</dt><dd id="ci-int">0</dd></div>
+      <div><dt>Tasso annuo effettivo</dt><dd id="ci-ear">0</dd></div>
+    </dl>
+    <h3 class="util-h">Anno per anno</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Crescita anno per anno">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Anno</th><th scope="col">Versamenti</th><th scope="col">Interessi</th><th scope="col">Saldo</th></tr></thead>
+        <tbody id="ci-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Come l'interesse composto fa crescere il denaro</h2>
+<p>L'interesse semplice si paga solo sull'importo da cui sei partito. L'interesse composto si paga sull'importo iniziale e sugli interessi già aggiunti, quindi il saldo cresce più in fretta a ogni periodo. In pochi anni la differenza è piccola; in decenni è grande, ed è per questo che iniziare presto conta più di quasi qualsiasi altra cosa quando si risparmia.</p>
+<p>Senza versamenti regolari il risultato segue A = P(1 + r/n)^(nt). Il calcolatore gestisce anche un versamento mensile procedendo un mese alla volta: il saldo cresce del tasso mensile equivalente a quello di capitalizzazione, poi viene aggiunto il versamento. Con capitalizzazione mensile e versamenti a fine mese coincide con il montante di una rendita dei libri di testo. Il totale versato conta l'importo iniziale più ogni versamento, e gli interessi maturati sono il saldo finale meno quel totale.</p>
+<p>La tabella anno per anno elenca i versamenti di ciascun anno, gli interessi maturati in quell'anno e il saldo alla sua fine, così puoi vedere la quota di interessi superare quella dei versamenti. Se la durata non è un numero intero di anni, l'ultima riga copre la parte di anno. Il tasso annuo effettivo mostra cosa comportano davvero in un anno il tasso nominale e la frequenza di capitalizzazione.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Chiedi un prestito invece di risparmiare? Il <a href="/tools/loan-calculator/">calcolatore di prestiti</a> mostra la rata e gli interessi che pagherai.</li>
+  <li>Controlla una variazione di tasso o la quota di un totale con il <a href="/tools/percentage-calculator/">calcolatore di percentuali</a>.</li>
+  <li>Scrivi il saldo finale in lettere per un documento con <a href="/tools/number-to-words/">Numeri in lettere</a>.</li>
+</ul>

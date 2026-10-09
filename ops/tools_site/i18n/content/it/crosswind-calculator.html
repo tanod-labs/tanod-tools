@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Calcolatore vento al traverso e di prua | Tanod Tools",
+  "description": "Inserisci una pista e il vento per ottenere vento di prua o di coda e componente al traverso, con raffiche, per entrambe le testate. Nodi, km/h, mph o m/s.",
+  "h1": "Calcolatore del vento al traverso e di prua",
+  "lede": "Inserisci la pista e il vento per vedere le componenti di vento frontale (o in coda) e al traverso per entrambe le testate, con vento costante e con raffiche.",
+  "blurb": "Componenti di vento frontale, in coda e al traverso per una pista.",
+  "keywords": "calcolatore vento al traverso vento frontale vento in coda componente pista direzione del vento raffica nodi pilota atterraggio decollo angolo seno coseno",
+  "limits": "Semplice trigonometria sul vento che inserisci. Non per la pianificazione del volo né per la navigazione: usa il limite di vento al traverso dimostrato dell'aeromobile e il bollettino ufficiale del vento, e ricorda che i numeri di pista e i venti della torre sono magnetici mentre i venti dei METAR sono veri.",
+  "howto_title": "Come trovare la componente al traverso",
+  "howto": [
+    "Inserisci il numero della pista (come 27 o 09L) o la sua prua in gradi (come 275).",
+    "Inserisci la direzione da cui proviene il vento, la sua velocità e, se riportata, la velocità delle raffiche. Scegli l'unità di velocità.",
+    "Leggi il vento frontale o in coda e quello al traverso per ogni testata della pista. Controlla quale testata dà vento frontale."
+  ],
+  "faq": [
+    ["Come si calcola il vento al traverso?", "Prendi l'angolo tra la direzione del vento e la prua della pista. Il vento al traverso è la velocità del vento per il seno di quell'angolo, e il vento frontale è la velocità del vento per il suo coseno. Un vento a 30 gradi dalla pista e a 20 nodi dà un vento al traverso di 10 nodi e un vento frontale di circa 17 nodi."],
+    ["Devo usare la velocità delle raffiche?", "Sì, i piloti di solito controllano entrambe. La colonna delle raffiche mostra le componenti per la raffica massima, che è il caso peggiore che puoi incontrare nella richiamata o nella corsa di atterraggio."],
+    ["Che cosa significano sinistra e destra?", "Destra significa che il vento soffia da destra guardando lungo la pista nella direzione di atterraggio o decollo. Sinistra significa da sinistra. Un vento frontale negativo è un vento in coda."],
+    ["Il numero di pista indica i gradi?", "Il numero di pista è la prua magnetica divisa per dieci e arrotondata: la pista 27 punta a circa 270 gradi, la pista 09 a circa 090. La testata opposta è a 180 gradi (09 e 27, oppure 36 e 18). Inserendo un numero di tre cifre viene usato come prua esatta."],
+    ["Vento e pista hanno lo stesso riferimento?", "Dovrebbero averlo. I venti della torre e dell'ATIS sono dati in gradi magnetici, mentre i venti di METAR e TAF sono in gradi veri. La differenza è la declinazione magnetica locale, che può essere di pochi gradi o di più di dieci. Usa lo stesso riferimento per entrambi i dati."],
+    ["Qual è un vento al traverso sicuro?", "Dipende dall'aeromobile, dalla pista e dal pilota. Il manuale dell'aeromobile riporta un vento al traverso massimo dimostrato, che non è un limite di legge ma è una buona guida. Questo calcolatore non fornisce limiti."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="cw-rwy">Numero di pista o prua</label>
+    <input type="text" id="cw-rwy" autocomplete="off" spellcheck="false" value="27" placeholder="27 o 275" aria-describedby="cw-msg">
+    <span class="help">Una o due cifre sono un numero di pista, tre cifre una prua in gradi.</span>
+  </div>
+  <div class="field">
+    <label for="cw-dir">Direzione del vento, da (gradi)</label>
+    <input type="text" id="cw-dir" inputmode="decimal" autocomplete="off" value="320" placeholder="320" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-spd">Velocità del vento</label>
+    <input type="text" id="cw-spd" inputmode="decimal" autocomplete="off" value="18" placeholder="18" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-gust">Velocità delle raffiche (facoltativa)</label>
+    <input type="text" id="cw-gust" inputmode="decimal" autocomplete="off" value="26" placeholder="26" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-unit">Unità di velocità</label>
+    <select id="cw-unit">
+      <option value="kt" selected>nodi</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+      <option value="ms">m/s</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="cw-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="cw-res" hidden>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Componenti del vento per ogni testata della pista</caption>
+      <thead><tr><th scope="col">Testata</th><th scope="col">Vento</th><th scope="col">Vento frontale o in coda</th><th scope="col">Vento al traverso</th></tr></thead>
+      <tbody id="cw-rows"></tbody>
+    </table>
+  </div>
+  <p class="help" id="cw-info"></p>
+</div>
+<!--explain-->
+<h2>La formula</h2>
+<p>Sia θ l'angolo dalla prua della pista alla direzione da cui soffia il vento e V la velocità del vento. La componente lungo la pista è vento frontale = V · cos θ (negativo significa vento in coda) e la componente trasversale è vento al traverso = V · sin θ, positiva da destra e negativa da sinistra. È la scomposizione standard del triangolo del vento usata nell'addestramento dei piloti, ad esempio nel Pilot's Handbook of Aeronautical Knowledge della FAA (FAA-H-8083-25, capitolo sulle prestazioni dell'aeromobile) e nell'Airplane Flying Handbook (FAA-H-8083-3).</p>
+<p>La testata opposta ha una prua a 180 gradi di distanza, quindi il suo vento frontale è l'opposto del primo e il suo vento al traverso cambia lato. Il numero di pista è la prua magnetica in decine di gradi arrotondata alla decina più vicina. Le velocità sono convertite esattamente (1 nodo = 1,852 km/h, 1 mph = 1,609344 km/h, 1 m/s = 3,6 km/h).</p>
+<p>Il calcolo ignora il wind shear, i fronti di raffica e gli effetti del terreno, e usa un solo valore di vento. <strong>Non per la pianificazione del volo né per la navigazione.</strong></p>

@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Обрезка изображения онлайн: точно, в пикселях | Tanod Tools",
+  "description": "Обрежьте JPG, PNG или WebP в браузере. Перетащите рамку, выберите пропорции или введите точные значения в пикселях. Ничего не загружается, формат сохраняется.",
+  "h1": "Обрезать изображение",
+  "lede": "Перетащите рамку обрезки по картинке или введите точные значения в пикселях, а затем сохраните обрезанную копию.",
+  "blurb": "Вырежьте из изображения нужную часть.",
+  "keywords": "обрезать изображение обрезать фото обрезка картинки кадрировать соотношение сторон квадрат 16:9 4:3 рамка обрезки cut trim aspect ratio square crop box photo",
+  "limits": "Одно изображение за раз, до 50 МБ и около 100 мегапикселей. PNG, JPEG, WebP, GIF, BMP и AVIF (если ваш браузер умеет их открывать).",
+  "howto_title": "Как обрезать изображение",
+  "howto": [
+    "Выберите изображение или перетащите его на страницу.",
+    "Перетащите рамку, чтобы переместить её, и угловые маркеры, чтобы изменить размер. Выберите нужные пропорции или введите X, Y, ширину и высоту в пикселях.",
+    "Нажмите <strong>Обрезать изображение</strong> и скачайте результат."
+  ],
+  "faq": [
+    ["Загружается ли моё изображение?", "Нет. Обрезка выполняется в вашем браузере по файлу на вашем устройстве. Ничего не отправляется на сервер."],
+    ["Можно ли пользоваться клавиатурой вместо мыши?", "Да. Сфокусируйтесь на рамке обрезки (перейдите к ней клавишей Tab или щёлкните по ней), затем стрелками перемещайте её, а стрелками со Shift меняйте размер. Поля X, Y, ширины и высоты тоже принимают точные значения в пикселях."],
+    ["Снижает ли обрезка качество?", "Пиксели внутри рамки копируются как есть, в полном разрешении, а не из экранного предпросмотра. JPEG и WebP сохраняются заново с качеством 92, так что небольшое повторное сжатие есть; PNG остаётся без потерь."],
+    ["В каком формате получится результат?", "В том же, что и оригинал: PNG остаётся PNG, JPEG остаётся JPEG, WebP остаётся WebP. GIF, BMP и AVIF сохраняются как PNG (из GIF берётся первый кадр)."],
+    ["Что делают готовые пропорции?", "Они фиксируют рамку на соотношении ширины к высоте, например 1:1 для квадрата или 16:9 для широкоформатного кадра, и сохраняют его при изменении размера. Выберите «Свободно», чтобы обрезать в любую форму."],
+    ["Сохраняются ли данные EXIF?", "Нет. Обрезанный файл — это новое изображение без метаданных камеры и GPS, сохранённое в той ориентации, в которой оно отображается."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Перетащите сюда изображение</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Выбрать изображение</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP или AVIF. Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Предпросмотр обрезаемого изображения" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Область обрезки" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Перетащите рамку, чтобы переместить её, или угол, чтобы изменить размер. Когда рамка в фокусе, стрелки перемещают её, а стрелки со Shift меняют размер.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Соотношение сторон</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Свободно</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Ширина (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Высота (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Обрезать изображение</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Обрезка без потери разрешения</h2>
+<p>При обрезке сохраняется прямоугольник исходных пикселей, а остальное отбрасывается. Картинка на экране — это уменьшенный предпросмотр, чтобы она помещалась на странице; сама обрезка берётся из изображения в полном разрешении по значениям X, Y, ширины и высоты, показанным в полях. Эти числа заданы в пикселях самого изображения, а не экранных пикселях.</p>
+<p>Выбирайте пропорции, когда результат должен подходить под рамку: 1:1 для квадратной аватарки, 16:9 для превью видео, 4:3 или 3:2 для привычных форматов фото, 9:16 для вертикальной истории. Рамка сохраняет эту форму при изменении размера, а ввод ширины или высоты обновляет вторую величину.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Сначала обрежьте, затем уменьшите размер инструментами «<a href="/tools/resize-image/">Изменить размер изображения</a>» и «<a href="/tools/compress-image/">Сжать изображение</a>».</li>
+  <li>Фото повёрнуто не в ту сторону? Исправит «<a href="/tools/rotate-image/">Повернуть изображение</a>».</li>
+  <li>Делаете значок из части картинки? Обрежьте до 1:1, а затем используйте «<a href="/tools/favicon-generator/">Генератор фавиконок</a>».</li>
+</ul>

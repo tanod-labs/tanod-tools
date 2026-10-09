@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Pembaca METAR dan TAF: cuaca penerbangan mudah | Tanod Tools",
+  "description": "Tempel METAR, SPECI atau TAF mentah dan dapatkan uraian jelas: angin, jarak pandang, cuaca, awan, suhu, tekanan, dan kategori penerbangan.",
+  "h1": "Pembaca METAR dan TAF",
+  "lede": "Tempel laporan METAR atau TAF mentah dan bacalah dalam bahasa sehari-hari: angin, jarak pandang, cuaca, awan, suhu, altimeter, dan periode prakiraan.",
+  "blurb": "Laporan cuaca METAR dan TAF mentah, dijelaskan.",
+  "keywords": "metar taf dekoder pembaca cuaca penerbangan speci cavok angin jarak pandang dasar awan kategori penerbangan vfr ifr altimeter qnh dekode terjemahkan laporan cuaca bandara bmkg",
+  "limits": "Hanya untuk belajar dan membaca cepat. Tidak untuk perencanaan penerbangan atau navigasi: selalu gunakan pengarahan (briefing) resmi. Keterangan (RMK) ditampilkan apa adanya, dan kelompok yang tidak dipahami dekoder akan didaftarkan, tidak ditebak.",
+  "howto_title": "Cara mendekode METAR atau TAF",
+  "howto": [
+    "Tempel laporan mentah ke kotak, dimulai dengan METAR, SPECI, TAF atau kode stasiun empat huruf. Beberapa laporan yang dipisah tanda = atau baris terpisah didekode satu per satu.",
+    "Baca uraian di bawahnya: setiap kelompok kode diterjemahkan ke dalam kata-kata, dengan satuan dikonversi ke knot, km/jam, kaki dan meter, °C dan °F, hPa dan inHg.",
+    "Periksa kategori penerbangan dan baris yang ditandai tidak didekode. Kelompok yang tidak dikenal ditampilkan persis seperti aslinya."
+  ],
+  "faq": [
+    [
+      "Apa beda METAR dan TAF?",
+      "METAR adalah pengamatan cuaca di bandara saat ini, biasanya diterbitkan setiap jam (SPECI adalah pembaruan tidak terjadwal setelah perubahan signifikan). TAF adalah prakiraan untuk bandara, biasanya mencakup 24 sampai 30 jam, terbagi menjadi prakiraan dasar dan kelompok perubahan."
+    ],
+    [
+      "Bagaimana cara membaca kelompok angin, seperti 29016G25KT?",
+      "Tiga digit pertama adalah arah datangnya angin, dalam derajat sebenarnya (true; 290 adalah barat-barat laut), dua atau tiga digit berikutnya adalah kecepatan (16), G menambahkan kecepatan hembusan (25), dan huruf terakhir adalah satuan: KT untuk knot, MPS untuk meter per detik, KMH untuk kilometer per jam. VRB berarti arah berubah-ubah; 00000KT berarti tenang."
+    ],
+    [
+      "Apa arti kelompok perubahan TAF?",
+      "FM (from) memulai rangkaian kondisi baru pada waktu tertentu dan menggantikan semua yang sebelumnya. BECMG berarti perubahan bertahap selama periode yang disebut. TEMPO berarti fluktuasi singkat yang berlangsung kurang dari satu jam setiap kalinya dan kurang dari separuh periode. PROB30 dan PROB40 memberi kemungkinan terjadinya kondisi yang mengikutinya. INTER adalah istilah lama untuk TEMPO."
+    ],
+    [
+      "Bagaimana kategori penerbangan ditentukan?",
+      "Dekoder memakai ambang FAA Amerika Serikat dari lapisan awan pecah atau mendung terendah (dasar awan) dan jarak pandang: VFR di atas 3.000 kaki dan 5 SM, MVFR dari 1.000 sampai 3.000 kaki atau 3 sampai 5 SM, IFR dari 500 sampai di bawah 1.000 kaki atau 1 sampai di bawah 3 SM, dan LIFR di bawah 500 kaki atau 1 SM. CAVOK dihitung sebagai VFR. Negara lain memakai batas berbeda, jadi anggap ini sebagai panduan."
+    ],
+    [
+      "Mengapa sebagian laporan saya ditampilkan sebagai tidak didekode?",
+      "Dekoder mencakup kelompok inti ICAO dan FAA. Kelompok regional, kode warna militer, kelompok kondisi landasan, dan apa pun yang salah ketik didaftarkan apa adanya, bukan ditebak. Keterangan setelah RMK tidak pernah ditafsirkan."
+    ],
+    [
+      "Apakah halaman ini mengirim laporan saya ke suatu tempat?",
+      "Tidak. Laporan didekode oleh JavaScript di browser Anda, dan tidak ada yang diunggah. Jika ingin mendekode laporan dari kode program, API dekode di panduan di bawah menjalankan fungsi yang sama."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">METAR atau TAF mentah</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Satu laporan, atau beberapa laporan yang dipisah tanda = atau baris yang diawali METAR, SPECI atau TAF.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Coba contoh lain</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Hapus</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>Cara dekoder membaca laporan</h2>
+<p>METAR atau TAF adalah rangkaian kelompok yang dipisah spasi dalam urutan tetap, yang ditetapkan oleh ICAO Annex 3 dan WMO Manual on Codes No. 306 (FM 15 METAR dan FM 51 TAF) dan, untuk Amerika Serikat, oleh FAA Aeronautical Information Manual 7-1-30. Dekoder membaca kode stasiun, hari dan waktu dalam UTC (DDHHMMZ), angin (arah, kecepatan, hembusan dan variasi), jarak pandang dalam meter atau mil statuta, jarak pandang landasan, cuaca saat ini, lapisan awan, jarak pandang vertikal, suhu dan titik embun, serta pengaturan altimeter (Q adalah hPa, A adalah inHg dalam perseratus).</p>
+<p>Kode cuaca menggabungkan intensitas (- ringan, + lebat, VC di sekitar), deskriptor (TS, SH, FZ dan lainnya) dan fenomena (RA hujan, SN salju, FG kabut, BR kabut tipis dan seterusnya). Kelompok awan memberi jumlah (FEW, SCT, BKN, OVC) dan dasar awan dalam ratusan kaki di atas permukaan tanah, dengan CB atau TCU untuk awan konvektif. Kelembapan relatif diperkirakan dari suhu dan titik embun dengan rumus Magnus, es = 6.1094 e^(17.625 T / (T + 243.04)), sehingga hanya perkiraan.</p>
+<p>Kategori penerbangan mengikuti definisi FAA: dasar awan adalah lapisan pecah atau mendung terendah atau jarak pandang vertikal, dan kategori ditentukan oleh yang lebih buruk antara dasar awan dan jarak pandang. Untuk TAF, setiap kelompok dasar atau perubahan didekode sendiri, dengan rentang waktunya dalam UTC dan kategorinya sendiri. Waktu diberikan sebagai tanggal dalam bulan dan waktu UTC karena laporan tidak memuat bulan atau tahun.</p>
+<p><strong>Tidak untuk perencanaan penerbangan atau navigasi.</strong> Ini adalah pembaca untuk keperluan edukasi. Selalu dapatkan cuaca dari sumber resmi sebelum terbang.</p>

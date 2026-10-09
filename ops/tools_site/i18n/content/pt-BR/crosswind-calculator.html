@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Calculadora de vento cruzado e vento de proa | Tanod Tools",
+  "description": "Informe a pista e o vento para obter as componentes de vento de proa ou de cauda e de vento cruzado, com rajadas, nas duas cabeceiras. Nós, km/h, mph ou m/s.",
+  "h1": "Calculadora de vento cruzado e vento de proa",
+  "lede": "Informe a pista e o vento para ver as componentes de vento de proa (ou de cauda) e de vento cruzado nas duas cabeceiras, com vento constante e com rajadas.",
+  "blurb": "Componentes de vento de proa, de cauda e cruzado para uma pista.",
+  "keywords": "calculadora vento cruzado vento de proa vento de cauda componente pista direcao do vento rajada nos piloto pouso decolagem angulo seno cosseno",
+  "limits": "Trigonometria simples sobre o vento informado. Não serve para planejamento de voo nem para navegação: use o limite de vento cruzado demonstrado da aeronave e o relatório oficial de vento, e lembre que os números das pistas e os ventos da torre são magnéticos, enquanto os ventos do METAR são verdadeiros.",
+  "howto_title": "Como achar a componente de vento cruzado",
+  "howto": [
+    "Informe o número da pista (como 27 ou 09L) ou o seu rumo em graus (como 275).",
+    "Informe a direção de onde o vento vem, a velocidade e, se houver, a velocidade da rajada. Escolha a unidade de velocidade.",
+    "Leia o vento de proa ou de cauda e o vento cruzado para cada cabeceira da pista. Veja qual cabeceira dá vento de proa."
+  ],
+  "faq": [
+    ["Como o vento cruzado é calculado?", "Pegue o ângulo entre a direção do vento e o rumo da pista. O vento cruzado é a velocidade do vento vezes o seno desse ângulo, e o vento de proa é a velocidade do vento vezes o cosseno. Um vento a 30 graus da pista, a 20 nós, dá 10 nós de vento cruzado e cerca de 17 nós de vento de proa."],
+    ["Devo usar a velocidade da rajada?", "Sim, os pilotos costumam verificar as duas. A coluna de rajada mostra as componentes para a rajada máxima, que é o pior caso que você pode encontrar no arredondamento ou na corrida de pouso."],
+    ["O que significam esquerda e direita?", "Direita significa que o vento sopra do lado direito quando você olha ao longo da pista no sentido do pouso ou da decolagem. Esquerda significa do lado esquerdo. Um vento de proa negativo é um vento de cauda."],
+    ["O número da pista é em graus?", "O número da pista é o rumo magnético dividido por dez e arredondado: a pista 27 aponta para cerca de 270 graus, a pista 09 para cerca de 090. A cabeceira oposta fica a 180 graus (09 e 27, ou 36 e 18). Um número de três dígitos é usado como rumo exato."],
+    ["O vento e a pista estão na mesma referência?", "Deveriam estar. Os ventos da torre e do ATIS são dados em graus magnéticos, enquanto os ventos do METAR e do TAF são em graus verdadeiros. A diferença é a declinação magnética local, que pode ser de alguns graus ou mais de dez. Use a mesma referência nas duas entradas."],
+    ["Qual é um vento cruzado seguro?", "Depende da aeronave, da pista e do piloto. O manual da aeronave traz o vento cruzado máximo demonstrado, que não é um limite legal, mas é um bom guia. Esta calculadora não informa limites."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="cw-rwy">Número ou rumo da pista</label>
+    <input type="text" id="cw-rwy" autocomplete="off" spellcheck="false" value="27" placeholder="27 ou 275" aria-describedby="cw-msg">
+    <span class="help">Um ou dois dígitos é um número de pista; três dígitos, um rumo em graus.</span>
+  </div>
+  <div class="field">
+    <label for="cw-dir">Direção do vento, de onde vem (graus)</label>
+    <input type="text" id="cw-dir" inputmode="decimal" autocomplete="off" value="320" placeholder="320" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-spd">Velocidade do vento</label>
+    <input type="text" id="cw-spd" inputmode="decimal" autocomplete="off" value="18" placeholder="18" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-gust">Velocidade da rajada (opcional)</label>
+    <input type="text" id="cw-gust" inputmode="decimal" autocomplete="off" value="26" placeholder="26" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-unit">Unidade de velocidade</label>
+    <select id="cw-unit">
+      <option value="kt" selected>nós</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+      <option value="ms">m/s</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="cw-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="cw-res" hidden>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Componentes do vento para cada cabeceira da pista</caption>
+      <thead><tr><th scope="col">Cabeceira</th><th scope="col">Vento</th><th scope="col">Vento de proa ou de cauda</th><th scope="col">Vento cruzado</th></tr></thead>
+      <tbody id="cw-rows"></tbody>
+    </table>
+  </div>
+  <p class="help" id="cw-info"></p>
+</div>
+<!--explain-->
+<h2>A fórmula</h2>
+<p>Seja θ o ângulo entre o rumo da pista e a direção de onde o vento sopra, e V a velocidade do vento. A componente ao longo da pista é vento de proa = V · cos θ (negativo significa vento de cauda) e a componente transversal é vento cruzado = V · sin θ, positiva vinda da direita e negativa vinda da esquerda. Esta é a decomposição padrão do triângulo de vento usada na formação de pilotos, por exemplo no Pilot's Handbook of Aeronautical Knowledge da FAA (FAA-H-8083-25, capítulo sobre desempenho da aeronave) e no Airplane Flying Handbook (FAA-H-8083-3).</p>
+<p>A cabeceira oposta tem rumo 180 graus diferente, então seu vento de proa é o negativo do primeiro e seu vento cruzado troca de lado. O número da pista é o rumo magnético em dezenas de graus, arredondado para a dezena mais próxima. As velocidades são convertidas com exatidão (1 nó = 1,852 km/h, 1 mph = 1,609344 km/h, 1 m/s = 3,6 km/h).</p>
+<p>O cálculo ignora cisalhamento do vento, frentes de rajada e efeitos do terreno, e usa um único valor de vento. <strong>Não serve para planejamento de voo nem para navegação.</strong></p>

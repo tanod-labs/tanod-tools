@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Generator slugów URL: zamień tekst na czysty slug | Tanod Tools",
+  "description": "Zamień tytuł na czysty slug URL: małe litery, polskie znaki zamienione na łacińskie, myślniki lub podkreślenia, opcjonalny limit długości. Jeden slug w wierszu.",
+  "h1": "Generator slugów URL",
+  "lede": "Wpisz tytuł i uzyskaj czysty, czytelny slug do adresu strony, z zamienionymi znakami diakrytycznymi i usuniętą interpunkcją.",
+  "blurb": "Zamieniaj tytuły na czyste slugi URL.",
+  "keywords": "generator slugów slug url przyjazny adres url permalink seo tekst na slug tytuł na adres myślniki polskie znaki slugify friendly url title to url hyphenate",
+  "limits": "Do 10 000 wierszy naraz; każdy wiersz staje się osobnym slugiem.",
+  "howto_title": "Jak utworzyć slug URL",
+  "howto": [
+    "Wpisz lub wklej tytuł. Aby uzyskać kilka slugów naraz, umieść każdy tytuł w osobnym wierszu.",
+    "Wybierz separator i opcje, takie jak małe litery, limit długości albo pomijanie krótkich słów, na przykład „the” i „of”.",
+    "Skopiuj slug albo pobierz wszystkie jako plik .txt."
+  ],
+  "faq": [
+    ["Czym jest slug URL?", "Slug to czytelna część adresu internetowego, która nazywa jedną stronę, na przykład <code>jak-upiec-chleb</code> w <code>example.com/blog/jak-upiec-chleb</code>. Dobry slug jest krótki, składa się z małych liter, ma myślniki między słowami i zawiera tylko litery oraz cyfry, dzięki czemu czyta się go jasno i nigdy nie wymaga kodowania znaków."],
+    ["Co dzieje się ze znakami diakrytycznymi i literami specjalnymi?", "Litery z akcentami zamieniają się na formę podstawową (é na e, ü na u, ñ na n), a litery takie jak ß, æ, ø i ł zamieniają się na ss, ae, o i l; polskie ą, ć, ę, ń, ó, ś, ź, ż stają się a, c, e, n, o, s, z, z. Litery greckie i cyrylica są transliterowane na łacińskie. Znaki bez łacińskiego odpowiednika, na przykład chińskie lub arabskie, są pomijane, gdy włączona jest opcja tylko ASCII; wyłącz ją, aby je zachować, a przeglądarki pokażą je tak, jak wpisano."],
+    ["Użyć myślników czy podkreśleń?", "Myślników. Wyszukiwarki traktują myślnik jak spację między słowami, a podkreślenie może łączyć słowa w jedno. Podkreślenia są nadal częste w nazwach plików i niektórych systemach, dlatego dostępne są obie opcje."],
+    ["Czy usuwać krótkie słowa, takie jak „the” i „and”?", "To opcjonalne. Pominięcie ich skraca slugi, ale slug, który nadal czyta się jak wyrażenie, jest łatwiejszy do zrozumienia. Opcja usuwa krótką listę angielskich słów (a, an, the, and, or, of, to, in, on, at, for, with i kilka innych), chyba że slug byłby wtedy pusty."],
+    ["Jak działa limit długości?", "Slug jest obcinany na ostatnim całym słowie, które się mieści, więc nigdy nie dostaniesz pół słowa na końcu. Tylko pojedyncze słowo dłuższe niż limit jest obcinane w środku."],
+    ["Czy mój tekst jest przesyłany?", "Nie. Slugi powstają w przeglądarce, a tekst nie jest przesyłany ani zapisywany."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2 slug-io">
+    <div class="field">
+      <label for="text">Tytuł lub tekst</label>
+      <textarea id="text" spellcheck="false" placeholder="Jak upiec chleb na zakwasie w domu"></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Slug</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="out slug-preview" id="preview" aria-live="polite">example.com/<b id="preview-slug">tutaj-twoj-slug</b></p>
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Separator</legend>
+      <div class="seg">
+        <label><input type="radio" name="sep" value="-" checked>Myślnik -</label>
+        <label><input type="radio" name="sep" value="_">Podkreślenie _</label>
+        <label><input type="radio" name="sep" value=".">Kropka .</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="max">Maksymalna długość</label>
+      <input type="number" id="max" class="mono" min="0" max="500" step="1" inputmode="numeric" placeholder="Bez limitu" aria-describedby="max-help">
+      <span class="help" id="max-help">Obcinane na całym słowie. Zostaw puste, aby nie ograniczać.</span>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="lower" checked>Małe litery</label>
+    <label class="check"><input type="checkbox" id="ascii" checked>Tylko ASCII (zamień znaki diakrytyczne, pomiń inne pisma)</label>
+    <label class="check"><input type="checkbox" id="amp" checked>Zapisuj &amp; jako „and”</label>
+    <label class="check"><input type="checkbox" id="stop">Usuń krótkie słowa (a, the, of…)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wpisz tytuł, aby zacząć.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj slug</button>
+    <button class="btn" id="dl" type="button" disabled>Pobierz .txt</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Wyczyść</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Jak powstaje slug</h2>
+<p>Każdy wiersz tekstu przechodzi te same kroki. Litery ze znakami diakrytycznymi są zamieniane na zwykłą formę łacińską, a litery greckie i cyrylica są transliterowane, więc „Crème brûlée” staje się „creme-brulee”, a „Москва” staje się „moskva”. Apostrofy są usuwane bez zostawiania przerwy, więc „don't” pozostaje jednym słowem. Każdy inny ciąg spacji i znaków interpunkcyjnych staje się pojedynczym separatorem, a separatory na początku i na końcu są obcinane.</p>
+<p>Podgląd pokazuje slug tak, jak wyglądałby na końcu adresu internetowego. Slugi powinny być krótkie i opisowe: kilka słów, które mówią, o czym jest strona, łatwiej przeczytać, udostępnić i zapamiętać niż pełny nagłówek.</p>
+<p>Zmiana sluga opublikowanej strony zmienia jej adres, więc linki do starego adresu przestają działać, chyba że witryna je przekieruje. Jeśli to możliwe, wybierz slug przed publikacją.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Sprawdź długość tytułu, zanim zamienisz go na slug, za pomocą narzędzia <a href="/tools/character-counter/">Licznik znaków</a>.</li>
+  <li>Potrzebujesz zamiast tego nazw camelCase lub snake_case do kodu? Użyj narzędzia <a href="/tools/case-converter/">Zmiana wielkości liter</a>.</li>
+  <li>Aby wstawić do adresu URL tekst ze spacjami i symbolami w niezmienionej postaci, zakoduj go za pomocą narzędzia <a href="/tools/url-encode-decode/">Koduj i dekoduj URL</a>.</li>
+</ul>

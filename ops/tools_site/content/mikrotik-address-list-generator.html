@@ -1,0 +1,85 @@
+<!--meta
+{
+  "category": "mikrotik",
+  "name": "MikroTik address list generator",
+  "title": "MikroTik address list generator, CIDR merge | Tanod Tools",
+  "description": "Turn a list of IPs, CIDRs and ranges into a RouterOS firewall address-list script. Removes duplicates, merges overlapping networks, IPv4 and IPv6, optional timeout.",
+  "h1": "MikroTik address list generator",
+  "lede": "Paste IP addresses, networks or ranges in any mix, and get a clean RouterOS address-list script with duplicates removed and adjacent networks merged.",
+  "blurb": "IPs and CIDRs to a deduplicated, merged address-list script.",
+  "keywords": "mikrotik address list generator routeros address-list import blocklist allowlist cidr aggregation merge subnets dedupe ip list firewall address list script rsc spamhaus drop",
+  "local_text": "Runs in your browser; your lists never leave your device",
+  "limits": "Reads IPv4 and IPv6 addresses, CIDR networks and ranges written as first-last; anything after # or ; on a line is ignored. Large lists (hundreds of thousands of entries) work but take a moment. MikroTik and RouterOS are trademarks of SIA Mikrotīkls. This tool is independent and not affiliated with or endorsed by MikroTik.",
+  "howto_title": "How to build a MikroTik address list",
+  "howto": [
+    "Paste the addresses, one per line or separated by commas or spaces. Networks (<code>203.0.113.0/24</code>) and ranges (<code>198.51.100.10-198.51.100.20</code>) work too.",
+    "Name the list, and add a timeout or comment if you want them on every entry.",
+    "Leave merging on to get the fewest entries, then copy the script or download the .rsc file and run <code>/import file-name=list.rsc</code>."
+  ],
+  "faq": [
+    ["What does merging do?", "It sorts every entry, joins addresses and networks that overlap or touch, and writes the result as the fewest CIDR blocks that cover exactly the same addresses. 10.0.0.0/25 and 10.0.0.128/25 become 10.0.0.0/24, and a single address inside a network you already have disappears. Nothing is added that wasn't covered before."],
+    ["Why did a range turn into several entries?", "A range such as 10.0.0.5-10.0.0.20 doesn't line up with one network boundary, so it is written as the CIDR blocks that cover it exactly: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 and 10.0.0.20/32. RouterOS accepts ranges too, but CIDR entries are easier to read and compare."],
+    ["My import stops halfway with \"already have such entry\". Why?", "RouterOS refuses to add an address that is already in the list, and an import stops at the first error. Tick \"Skip entries that already exist\": each line is then wrapped in <code>:do { … } on-error={}</code> so duplicates are skipped and the import carries on. Or tick \"Replace the list\" to empty it first."],
+    ["How do I use the list in a firewall rule?", "Match it with <code>src-address-list=</code> or <code>dst-address-list=</code>, for example <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. Dropping in the raw table skips connection tracking, which is cheaper for large block lists."],
+    ["Are my lists uploaded?", "No. The parsing and merging run in your browser, and nothing you paste is sent anywhere."]
+  ],
+  "related": ["subnet-calculator", "mikrotik-firewall-generator", "mikrotik-firewall-auditor", "mikrotik-port-forwarding", "remove-duplicate-lines"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Addresses, networks or ranges</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">One per line or separated by commas. Text after # or ; is ignored.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">List name</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">Optional, such as 1h, 1d or 1w.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Comment</label>
+        <input type="text" id="al-comment" value="" placeholder="imported 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Merge overlapping and adjacent networks</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Skip entries that already exist</label>
+      <label class="check"><input type="checkbox" id="al-replace">Replace the list (remove its current entries first)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">RouterOS script</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Copy script</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}Download .rsc</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Address lists on RouterOS</h2>
+<p>An address list is a named set of IP addresses and networks under <code>/ip firewall address-list</code> (and <code>/ipv6 firewall address-list</code> for IPv6). Firewall, NAT, mangle and raw rules can match a whole list with one condition, which keeps rule sets short and fast: RouterOS looks list membership up in a tree rather than walking one rule per network. Lists are the usual way to hold management networks, customer ranges, block lists from threat feeds, or addresses that a rule adds dynamically with <code>action=add-src-to-address-list</code>.</p>
+<p>The same list can hold single addresses, CIDR networks and ranges, and overlapping entries are allowed, which is how imported feeds grow untidy. This page cleans a list before it reaches the router: it normalises each entry (a network written with host bits, such as 10.1.2.3/24, becomes 10.1.2.0/24), drops exact duplicates and, with merging on, collapses everything into the minimal set of CIDR blocks. The script uses the plain address for a single host, as RouterOS itself prints it.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Check a network's size, range and mask in the <a href="/tools/subnet-calculator/">subnet calculator</a>.</li>
+  <li>Need the firewall rules that use the list? Start from the <a href="/tools/mikrotik-firewall-generator/">MikroTik firewall generator</a>.</li>
+  <li>Cleaning up a plain text list instead? <a href="/tools/remove-duplicate-lines/">Remove duplicate lines</a> keeps the order and the original text.</li>
+</ul>

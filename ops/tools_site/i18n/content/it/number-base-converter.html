@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Convertitore di basi numeriche: bin, oct, dec, hex | Tanod Tools",
+  "description": "Converti numeri interi tra binario, ottale, decimale, esadecimale e qualsiasi base da 2 a 36, di qualsiasi dimensione, con il complemento a due a 8, 16, 32 e 64 bit.",
+  "h1": "Convertitore di basi numeriche",
+  "lede": "Converti un numero intero tra binario, ottale, decimale, esadecimale e qualsiasi base fino a 36, e guarda le sue sequenze di bit in complemento a due.",
+  "blurb": "Binario, ottale, decimale, esadecimale e basi da 2 a 36.",
+  "keywords": "da binario a decimale da decimale a binario da esadecimale a decimale da decimale a esadecimale conversione di base ottale radice base 36 complemento a due con segno senza segno bit hex binary decimal",
+  "limits": "Numeri interi fino a 4.096 cifre, positivi o negativi. Le frazioni non vengono convertite.",
+  "howto_title": "Come convertire tra basi numeriche",
+  "howto": [
+    "Scegli la base in cui è scritto il tuo numero, oppure seleziona Altra e inserisci una base da 2 a 36.",
+    "Scrivi il numero. Il segno meno è consentito e un prefisso <code>0x</code>, <code>0b</code> o <code>0o</code> corrispondente viene accettato; spazi e trattini bassi vengono ignorati.",
+    "Leggilo in tutte le basi qui sotto, copia quella che ti serve e controlla la tabella del complemento a due per gli interi a larghezza fissa."
+  ],
+  "faq": [
+    ["Quanto grande può essere il numero da convertire?", "Fino a 4.096 cifre nella base di partenza. La conversione usa un'aritmetica esatta sugli interi (BigInt), quindi valori molto grandi come 2⁶⁴ + 1 = 18446744073709551617 vengono convertiti senza arrotondamenti, a differenza delle calcolatrici che passano alla virgola mobile oltre circa 9 milioni di miliardi."],
+    ["Può convertire frazioni come 0,1?", "No. Vengono convertiti solo i numeri interi, e un separatore decimale viene segnalato come errore invece di essere scartato in silenzio. Molte frazioni non hanno una forma esatta in un'altra base: 0,1 in decimale è una sequenza periodica in binario, ed è per questo che in quasi tutti i linguaggi di programmazione 0,1 + 0,2 non è esattamente 0,3."],
+    ["Cosa mostra il complemento a due?", "È il modo in cui i computer memorizzano gli interi con segno in un numero fisso di bit. Un numero negativo −n è memorizzato come 2 elevato al numero di bit, meno n, quindi −1 su 8 bit è 11111111 (FF). La tabella mostra la sequenza di bit a 8, 16, 32 e 64 bit, e cosa significa quella sequenza letta come intero con segno e senza segno. Se il numero non entra in una certa larghezza, la riga lo dice invece di troncarlo."],
+    ["Quali cifre si usano oltre la base 10?", "Le lettere, come fanno la maggior parte dei linguaggi di programmazione: A vale 10, B vale 11 e così via fino a Z che vale 35, per questo la base 36 è la massima. L'input è accettato in maiuscolo o minuscolo; l'opzione maiuscole controlla l'output."],
+    ["Perché una cifra viene segnalata come non valida?", "Ogni base ammette solo cifre inferiori al suo valore: il binario ammette 0 e 1, l'ottale da 0 a 7, l'esadecimale da 0 a 9 e da A a F. Il messaggio di errore indica il carattere e la sua posizione, così puoi trovare un errore di battitura o passare alla base in cui il numero è davvero scritto."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Il numero è in</label>
+      <select id="nb-from">
+        <option value="10" selected>Decimale (base 10)</option>
+        <option value="2">Binario (base 2)</option>
+        <option value="8">Ottale (base 8)</option>
+        <option value="16">Esadecimale (base 16)</option>
+        <option value="other">Altra base…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Base (da 2 a 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Numero</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Raggruppa le cifre</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Lettere maiuscole</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Complemento a due</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bit</th><th scope="col">Sequenza di bit (esadecimale, binario)</th><th scope="col">Letto come</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Come funzionano le basi numeriche</h2>
+<p>Una base, o radice, indica quante cifre diverse usa un sistema numerico. In decimale ogni posizione vale dieci volte quella alla sua destra; in binario ne vale due volte, quindi 1101 significa 8 + 4 + 0 + 1 = 13. L'esadecimale usa sedici cifre, da 0 a 9 poi da A a F, e ogni cifra esadecimale corrisponde esattamente a quattro cifre binarie, per questo i programmatori lo usano come modo compatto di scrivere i byte: 255 è FF, ovvero 11111111.</p>
+<p>L'ottale raggruppa le cifre binarie a tre a tre e compare ancora nei permessi dei file Unix (755 significa rwxr-xr-x). La base 36 usa tutte le cifre e le lettere e si trova negli ID brevi e negli accorciatori di URL.</p>
+<p>I computer memorizzano gli interi con segno in un numero fisso di bit usando il complemento a due, in cui il bit più alto ha peso negativo. Gli stessi bit possono quindi significare due numeri diversi: 11001000 è 200 se letto senza segno e −56 se letto con segno. La tabella sotto i risultati mostra entrambe le letture per le dimensioni di intero più comuni.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Vuoi trasformare del testo in byte binari anziché un numero? Usa <a href="/tools/text-to-binary/">Da testo a binario</a>.</li>
+  <li>I codici colore come <code>#1636A3</code> sono tre byte esadecimali: leggili nel <a href="/tools/color-converter/">Convertitore di colori e contrasto</a>.</li>
+  <li>I timestamp Unix sono semplici secondi in decimale; convertine uno con il <a href="/tools/unix-timestamp-converter/">Convertitore di timestamp Unix</a>.</li>
+</ul>

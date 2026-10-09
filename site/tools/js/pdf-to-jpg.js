@@ -1,5 +1,5 @@
-import { $, el, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, baseName, UserError, announce, tx, txn } from "./core.js?v=5";
-import { openForView, renderPage, parseRanges } from "./pdfcore.js?v=5";
+import { $, el, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, baseName, UserError, announce, tx, txn } from "./core.js?v=11";
+import { openForView, renderPage, parseRanges } from "./pdfcore.js?v=11";
 
 const MAX_BYTES = 200 * 1024 * 1024;
 const MAX_PAGES = 200;

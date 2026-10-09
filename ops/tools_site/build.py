@@ -36,13 +36,13 @@ SITE = ROOT / "site"
 OUT = SITE / "tools"
 I18N = HERE / "i18n"
 ORIGIN = "https://tanod.dev"
-LASTMOD = "2026-10-08"
+LASTMOD = "2026-10-09"
 WEB_DAILY_LIMIT = 10      # = scanapi settings.web_tools_per_day (SCANAPI_WEB_TOOLS_PER_DAY); copy only, the server enforces it
-ASSET_V = "5"
+ASSET_V = "11"
 
 # The six server-backed tools stay out of every sitemap (all languages) until Cloudflare Turnstile and the
 # /web/v1 API are switched on for the public. Flip this one flag to list them.
-SERVER_TOOLS_PUBLIC = False
+SERVER_TOOLS_PUBLIC = True
 
 sys.path.insert(0, str(I18N))
 import strings as js_strings  # noqa: E402
@@ -55,6 +55,12 @@ LANGS = [
     ("fr", "/fr", "fr", "fr_FR", "Français", "FR"),
     ("de", "/de", "de", "de_DE", "Deutsch", "DE"),
     ("id", "/id", "id", "id_ID", "Bahasa Indonesia", "ID"),
+    ("it", "/it", "it", "it_IT", "Italiano", "IT"),
+    ("tr", "/tr", "tr", "tr_TR", "Türkçe", "TR"),
+    ("vi", "/vi", "vi", "vi_VN", "Tiếng Việt", "VI"),
+    ("ru", "/ru", "ru", "ru_RU", "Русский", "RU"),
+    ("pl", "/pl", "pl", "pl_PL", "Polski", "PL"),
+    ("hi", "/hi", "hi", "hi_IN", "हिन्दी", "HI"),
 ]
 LANG_CODES = [l[0] for l in LANGS]
 PREFIX = {l[0]: l[1] for l in LANGS}
@@ -68,34 +74,86 @@ CATEGORIES = [
     ("image", "Image", "cat-image", "Resize, compress, convert and clean up photos."),
     ("text", "Text", "cat-text", "Count, clean, compare and transform text."),
     ("dev", "Developer", "cat-dev", "Encode, decode, hash, format and test."),
+    ("security", "Security & compliance", "cat-security", "security.txt, disclosure policies and EU Cyber Resilience Act reporting."),
     ("calc", "Calculators", "cat-calc", "Percentages, units, dates, time zones and maths."),
     ("util", "Utilities", "cat-util", "QR codes, barcodes, passwords, timers and random picks."),
+    ("einvoice", "E-invoicing", "cat-einvoice", "Read XRechnung, ZUGFeRD, Factur-X, FatturaPA, KSeF and Peppol invoices."),
+    ("aviation", "Aviation & Space", "cat-aviation", "Weather reports, distances, atmosphere, sun, moon and orbits."),
+    ("mikrotik", "MikroTik", "cat-mikrotik", "Firewall, queue, VLAN and VPN configs for RouterOS."),
 ]
+
+# A short note printed under a category on the index (translated in i18n/site.json).
+CATEGORY_NOTES = {
+    "mikrotik": "MikroTik and RouterOS are trademarks of SIA Mikrotīkls. These tools are independent and not affiliated with or endorsed by MikroTik.",
+}
+
+# Tool slug -> /learn guide for the paid API endpoint that does the same job (one table; map only real equivalents).
+# Tools missing here get no "Automate this" block. Link targets stay the English /learn pages in every language.
+API_GUIDES = {
+    "business-days-calculator": "business-days-api", "color-contrast-checker": "color-contrast-checker-api",
+    "cron-expression-explainer": "cron-next-run-api", "reorder-pdf-pages": "pdf-form-fill-and-edit-api",
+    "unit-converter": "unit-conversion-api",
+    "merge-pdf": "pdf-merge-api", "compress-pdf": "compress-pdf-api", "split-pdf": "pdf-split-api",
+    "extract-pdf-pages": "extract-pdf-pages-api", "remove-pdf-pages": "remove-pdf-pages-api",
+    "rotate-pdf": "rotate-pdf-api", "add-page-numbers-to-pdf": "pdf-page-numbers-api",
+    "watermark-pdf": "pdf-watermark-api", "pdf-to-jpg": "pdf-to-images-api",
+    "jpg-to-pdf": "images-to-pdf-api", "png-to-pdf": "images-to-pdf-api", "url-to-pdf": "html-to-pdf-api",
+    "ocr-pdf": "pdf-ocr-api", "protect-pdf": "password-protect-pdf-api", "unlock-pdf": "unlock-pdf-api",
+    "edit-pdf-metadata": "pdf-metadata-api",
+    "compress-image": "image-compress-api", "resize-image": "image-resize-api",
+    "convert-image": "image-convert-api", "png-to-jpg": "image-convert-api", "jpg-to-png": "image-convert-api",
+    "webp-to-png": "image-convert-api", "crop-image": "image-crop-api", "rotate-image": "image-rotate-api",
+    "remove-exif": "strip-image-metadata-api", "favicon-generator": "favicon-generator-api",
+    "image-to-text": "ocr-image-api",
+    "word-counter": "text-statistics-api", "character-counter": "text-statistics-api",
+    "text-diff": "text-diff-api", "text-to-slug": "slug-generator-api",
+    "markdown-to-html": "markdown-to-html-api", "html-to-markdown": "document-to-markdown-api",
+    "csv-to-json": "convert-data-formats-api", "json-to-csv": "convert-data-formats-api",
+    "yaml-to-json": "convert-data-formats-api", "json-to-yaml": "convert-data-formats-api",
+    "hash-generator": "hash-text-api", "user-agent-parser": "user-agent-parser-api",
+    "uuid-generator": "uuid-generator-api", "time-zone-converter": "timezone-converter-api",
+    "qr-code-generator": "qr-code-api", "barcode-generator": "barcode-generator-api",
+    "metar-taf-decoder": "decode-metar-taf-api", "flight-distance-calculator": "airport-lookup-flight-distance-api",
+    "sunrise-sunset-calculator": "sunrise-sunset-moon-phase-api", "moon-phase-calendar": "sunrise-sunset-moon-phase-api",
+    "aurora-visibility-estimator": "space-weather-kp-index-aurora-api",
+    "invisible-character-detector": "detect-ascii-smuggling-invisible-unicode-api",
+    "pdf-to-text": "pdf-to-text-api", "image-to-webp": "image-convert-api",
+}
 
 ORDER = [
     "merge-pdf", "compress-pdf", "split-pdf", "extract-pdf-pages", "remove-pdf-pages", "rotate-pdf",
-    "reorder-pdf-pages", "add-page-numbers-to-pdf", "watermark-pdf", "pdf-to-jpg",
+    "reorder-pdf-pages", "add-page-numbers-to-pdf", "watermark-pdf", "sign-pdf", "pdf-to-jpg", "pdf-to-text",
     "jpg-to-pdf", "png-to-pdf", "url-to-pdf", "ocr-pdf", "protect-pdf", "unlock-pdf", "edit-pdf-metadata",
-    "compress-image", "resize-image", "convert-image", "png-to-jpg", "jpg-to-png", "webp-to-png",
-    "svg-to-png", "crop-image", "rotate-image", "merge-images", "add-text-to-image", "image-filters",
+    "compress-image", "resize-image", "convert-image", "png-to-jpg", "jpg-to-png", "heic-to-jpg", "webp-to-png", "image-to-webp",
+    "svg-to-png", "crop-image", "rotate-image", "merge-images", "gif-maker", "add-text-to-image", "image-filters",
     "add-border-to-image", "image-to-text", "image-to-base64", "image-color-picker",
     "remove-exif", "favicon-generator", "placeholder-image-generator",
     "word-counter", "character-counter", "text-to-speech", "case-converter", "remove-duplicate-lines",
-    "sort-lines-alphabetically", "remove-line-breaks", "find-and-replace", "text-diff",
-    "text-to-slug", "reverse-text", "markdown-to-html", "html-to-markdown", "csv-to-json",
+    "sort-lines-alphabetically", "remove-line-breaks", "find-and-replace", "text-diff", "extract-emails-and-urls", "invisible-character-detector", "word-frequency-counter",
+    "text-to-slug", "reverse-text", "markdown-to-html", "html-to-markdown", "markdown-table-generator", "csv-to-json",
     "json-to-csv", "text-to-binary", "morse-code-translator", "lorem-ipsum-generator",
     "json-formatter", "sql-formatter", "xml-formatter", "html-formatter", "css-minifier",
     "yaml-to-json", "json-to-yaml", "json-to-typescript",
-    "base64-encode-decode", "url-encode-decode", "hash-generator",
+    "base64-encode-decode", "url-encode-decode", "html-entity-encoder-decoder", "hash-generator",
     "jwt-decoder", "unix-timestamp-converter", "cron-expression-explainer", "cron-expression-generator",
     "regex-tester", "subnet-calculator", "chmod-calculator", "http-status-codes", "user-agent-parser",
-    "color-converter", "color-palette-generator", "css-gradient-generator", "meta-tag-generator",
+    "color-converter", "color-contrast-checker", "color-palette-generator", "css-gradient-generator", "meta-tag-generator",
     "number-base-converter", "uuid-generator",
-    "percentage-calculator", "scientific-calculator", "fraction-calculator", "unit-converter",
-    "time-zone-converter", "age-calculator", "date-difference-calculator", "date-calculator",
-    "bmi-calculator", "roman-numeral-converter", "aspect-ratio-calculator",
+    "security-txt-generator", "vulnerability-disclosure-policy-generator", "cra-incident-clock",
+    "percentage-calculator", "loan-calculator", "compound-interest-calculator", "scientific-calculator", "fraction-calculator", "unit-converter",
+    "time-zone-converter", "age-calculator", "date-difference-calculator", "date-calculator", "business-days-calculator",
+    "bmi-calculator", "roman-numeral-converter", "number-to-words", "aspect-ratio-calculator",
     "qr-code-generator", "wifi-qr-code-generator", "vcard-qr-code-generator", "barcode-generator",
     "password-generator", "random-number-generator", "random-name-picker", "countdown-timer", "stopwatch",
+    "xrechnung-viewer", "zugferd-factur-x-viewer", "fatturapa-viewer", "ksef-viewer", "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer", "vietnam-e-invoice-viewer", "cfdi-viewer",
+    "metar-taf-decoder", "flight-distance-calculator", "crosswind-calculator", "density-altitude-calculator",
+    "aviation-unit-converter", "zulu-time-converter", "sunrise-sunset-calculator", "moon-phase-calendar",
+    "aurora-visibility-estimator", "julian-date-converter", "light-time-calculator", "orbital-period-calculator",
+    "routeros-v7-migration-helper", "mikrotik-firewall-auditor", "mikrotik-firewall-generator", "mikrotik-port-forwarding", "mikrotik-address-list-generator",
+    "mikrotik-simple-queue-generator", "mikrotik-burst-calculator", "mikrotik-pcq-generator", "mikrotik-load-balancing", "mikrotik-pppoe-server-generator",
+    "mikrotik-dhcp-server-generator", "mikrotik-vlan-generator", "mikrotik-wireguard-generator", "routeros-export-diff",
+    "mikrotik-netwatch-generator",
 ]
 
 # 48x48 marks: 4px square-capped strokes by default (see .mark in css/00-base.css);
@@ -112,6 +170,9 @@ ICONS = {
                 '<rect x="14" y="23" width="5" height="5" ' + F + '/><rect x="21.5" y="23" width="5" height="5" ' + F + '/><rect x="29" y="23" width="5" height="5" ' + F + '/>'
                 '<rect x="14" y="32" width="5" height="5" ' + F + '/><rect x="21.5" y="32" width="5" height="5" ' + F + '/><rect x="29" y="32" width="5" height="5" ' + F + '/>',
     "cat-util": '<path d="M4 18h40v24H4z"/><path d="M16 18v-8h16v8"/><path d="M4 28h40"/><path d="M21 28v5h6v-5"/>',
+    "cat-security": '<path d="M24 4l16 6v12c0 11-7 19-16 22C15 41 8 33 8 22V10z"/><path d="M17 24l5 5 9-10"/>',
+    "cat-einvoice": '<path d="M11 4h26v40l-4.3-3.2L28.4 44 24 40.8 19.6 44l-4.3-3.2L11 44z"/><path d="M17 14h14M17 22h14M17 30h8"/>',
+    "cat-aviation": '<path d="M24 4l4 14 16 8v5l-16-3-2 9 6 4v3l-8-2-8 2v-3l6-4-2-9-16 3v-5l16-8z"/>',
     # pdf
     "merge-pdf": '<path d="M4 6h16v20H4zM28 6h16v20H28z"/><path d="M12 26v8h24v-8"/><path d="M24 34v10"/>',
     "split-pdf": PAGE + '<path d="M2 26h4M12 26h6M24 26h6M36 26h4M44 26h2"/>',
@@ -169,13 +230,28 @@ ICONS = {
     "jwt-decoder": '<path d="M4 17h10v14H4zM19 17h10v14H19zM34 17h10v14H34z"/>',
     "unix-timestamp-converter": '<circle cx="18" cy="18" r="14"/><path d="M18 10v9l6 4"/><path d="M28 37h16M28 44h10"/>',
     "cron-expression-explainer": '<path d="M4 8h40v36H4z"/><path d="M4 18h40M14 3v9M34 3v9"/><path d="M24 23v14M18 26l12 8M30 26l-12 8"/>',
+    "invisible-character-detector": '<path d="M3 24c6-10 14-14 21-14s15 4 21 14c-6 10-14 14-21 14S9 34 3 24z"/><circle cx="24" cy="24" r="6"/><path d="M8 42L40 6"/>',
+    "extract-emails-and-urls": '<path d="M4 10h40v28H4z"/><path d="M4 12l20 14 20-14"/>',
+    "word-frequency-counter": '<path d="M4 8h38v7H4zM4 21h26v7H4zM4 34h16v7H4z"/>',
+    "markdown-table-generator": '<path d="M4 8h40v32H4z"/><path d="M4 18h40M18 8v32"/><path d="M26 26h12M26 33h8"/>',
+    "html-entity-encoder-decoder": '<path d="M35 41L15 21a6 6 0 1 1 11-4"/><path d="M31 41c-3 0-7-1-9-5-2-5 2-9 8-12"/><path d="M38 24v6"/>',
+    "number-to-words": '<path d="M8 6v16M5 9l3-3"/><path d="M16 14h28M4 32h40M4 41h26"/>',
+    "loan-calculator": '<circle cx="24" cy="24" r="19"/><path d="M24 11v26M31 18c-2-3-14-4-14 2 0 7 14 2 14 9 0 5-10 5-14 1"/>',
+    "compound-interest-calculator": '<path d="M4 42h40"/><path d="M10 42V34M20 42V27M30 42V17M40 42V6"/>',
+    "pdf-to-text": PAGE + '<path d="M16 20h16M24 20v8"/><path d="M16 34h16M16 40h9"/>',
+    "sign-pdf": PAGE + '<path d="M15 33c3-7 5-9 6-5s2 4 4 0 3-3 6 1"/><path d="M15 40h18"/>',
+    "heic-to-jpg": '<path d="M14 4h14a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><path d="M18 38h6"/><path d="M33 24h11M39 18l6 6-6 6"/>',
+    "image-to-webp": '<path d="M4 8h40v32H4z"/><path d="M11 18l5 14 5-10 5 10 5-14"/><path d="M36 20l4 4-4 4"/>',
+    "gif-maker": '<path d="M6 10h36v28H6z"/><path d="M16 10v28M32 10v28"/><path d="M10 17h2M10 24h2M10 31h2M36 17h2M36 24h2M36 31h2"/><path d="M20 28l3-4 3 3 3-4 3 5"/>',
     "regex-tester": '<rect x="6" y="34" width="8" height="8" ' + F + '/><path d="M32 6v22M22 11.5l20 11M42 11.5l-20 11"/>',
+    "color-contrast-checker": '<circle cx="24" cy="24" r="19"/><path d="M24 5a19 19 0 0 1 0 38z" ' + F + '/>',
     "color-converter": '<circle cx="24" cy="16" r="11"/><circle cx="16" cy="31" r="11"/><circle cx="32" cy="31" r="11"/>',
     "number-base-converter": '<circle cx="13" cy="30" r="9"/><path d="M27 21l16 18M43 21L27 39"/><path d="M4 8h40"/>',
     # utilities
     "percentage-calculator": '<circle cx="12" cy="12" r="6"/><circle cx="36" cy="36" r="6"/><path d="M38 6L10 42"/>',
     "unit-converter": '<path d="M4 16h40v16H4z"/><path d="M12 16v7M20 16v10M28 16v7M36 16v10"/>',
     "age-calculator": '<path d="M6 26h36v18H6z"/><path d="M6 34c6 4 12-4 18 0s12 4 18 0"/><path d="M24 15v11"/><path d="M24 3c-3 4-3 7 0 9 3-2 3-5 0-9z" ' + F + '/>',
+    "business-days-calculator": '<path d="M4 8h40v36H4z"/><path d="M4 18h40M14 3v9M34 3v9"/><path d="M13 32l7 7 15-15"/>',
     "date-difference-calculator": '<path d="M4 8h40v36H4z"/><path d="M4 18h40M14 3v9M34 3v9"/><path d="M12 31h24M30 25l6 6-6 6"/>',
     "aspect-ratio-calculator": '<path d="M4 8h40v32H4z"/><path d="M12 18v12h12"/><path d="M36 30V18H24"/>',
     "qr-code-generator": '<path d="M4 4h14v14H4zM30 4h14v14H30zM4 30h14v14H4z"/>'
@@ -229,6 +305,23 @@ ICONS = {
     "random-name-picker": '<circle cx="24" cy="27" r="17"/><path d="M24 27V10M24 27l14.5 8.5M24 27L9.5 35.5"/><path d="M19 2h10l-5 6z" ' + F + '/>',
     "countdown-timer": '<path d="M10 4h28M10 44h28M14 4c0 12 20 14 20 20s-20 8-20 20M34 4c0 12-20 14-20 20s20 8 20 20"/>',
     "stopwatch": '<circle cx="24" cy="27" r="17"/><path d="M18 4h12M24 4v6M24 27l7-7M38 12l3-3"/>',
+    # mikrotik
+    "cat-mikrotik": '<path d="M4 24h40v18H4z"/><path d="M11 24L7 6M37 24l4-18"/><rect x="10" y="30" width="6" height="6" fill="currentColor" stroke="none"/><rect x="20" y="30" width="6" height="6" fill="currentColor" stroke="none"/><rect x="30" y="30" width="6" height="6" fill="currentColor" stroke="none"/>',
+    "routeros-v7-migration-helper": '<path d="M4 12h12v24H4zM32 12h12v24H32z"/><path d="M19 24h9M24 19l5 5-5 5"/>',
+    "mikrotik-firewall-auditor": '<path d="M24 4l18 6v13c0 10-8 17-18 21C14 40 6 33 6 23V10z"/><path d="M16 24l6 6 10-12"/>',
+    "mikrotik-firewall-generator": '<path d="M4 8h40v32H4z"/><path d="M4 19h40M4 30h40M18 8v11M32 8v11M11 19v11M25 19v11M39 19v11M18 30v10M32 30v10"/>',
+    "mikrotik-port-forwarding": '<path d="M24 6h20v36H24z"/><path d="M4 24h28M24 16l8 8-8 8"/>',
+    "mikrotik-address-list-generator": '<rect x="4" y="7" width="6" height="6" fill="currentColor" stroke="none"/><rect x="4" y="21" width="6" height="6" fill="currentColor" stroke="none"/><rect x="4" y="35" width="6" height="6" fill="currentColor" stroke="none"/><path d="M16 10h28M16 24h20M16 38h24"/>',
+    "mikrotik-simple-queue-generator": '<path d="M4 6h40L28 26v16l-8-4V26z"/>',
+    "mikrotik-burst-calculator": '<path d="M4 4v40h40"/><path d="M10 36h6V12h8v16h18"/>',
+    "mikrotik-pcq-generator": '<path d="M4 24h12"/><path d="M16 24l10-14h18M16 24h28M16 24l10 14h18"/>',
+    "mikrotik-load-balancing": '<path d="M16 34h16v10H16z"/><path d="M21 34L10 15M27 34l11-19"/><circle cx="8" cy="10" r="5"/><circle cx="40" cy="10" r="5"/>',
+    "mikrotik-pppoe-server-generator": '<path d="M18 4h12v10H18z"/><path d="M24 14v8M8 22h32M8 22v8M24 22v8M40 22v8"/><circle cx="8" cy="38" r="5"/><circle cx="24" cy="38" r="5"/><circle cx="40" cy="38" r="5"/>',
+    "mikrotik-dhcp-server-generator": '<path d="M4 6h14v36H4z"/><path d="M18 14h12M18 24h12M18 34h12"/><rect x="33" y="10" width="11" height="8" fill="currentColor" stroke="none"/><rect x="33" y="20" width="11" height="8" fill="currentColor" stroke="none"/><rect x="33" y="30" width="11" height="8" fill="currentColor" stroke="none"/>',
+    "mikrotik-vlan-generator": '<path d="M4 30h26v14H4z"/><path d="M11 30v-8h26v14h-7"/><path d="M18 22v-8h26v14h-7"/>',
+    "mikrotik-netwatch-generator": '<path d="M4 26h10l5-14 8 26 5-12h12"/><circle cx="40" cy="12" r="3.5" ' + F + '/>',
+    "mikrotik-wireguard-generator": '<path d="M4 42V24a20 20 0 0 1 40 0v18"/><path d="M14 42V25a10 10 0 0 1 20 0v17"/><path d="M2 42h44"/>',
+    "routeros-export-diff": '<path d="M4 4h17v40H4zM27 4h17v40H27z"/><path d="M8 13h9M8 20h9M31 13h9M31 20h9M31 30h9M35.5 25.5v9M8 30h9"/>',
     # ui
     "i-check": '<path d="M8 25l10 10L40 13"/>',
     "i-alert": '<path d="M24 5L3 42h42z"/><path d="M24 18v11"/><rect x="22" y="33" width="4" height="4" ' + F + '/>',
@@ -241,6 +334,33 @@ ICONS = {
     "i-arrow-right": '<path d="M6 24h34M28 12l12 12-12 12"/>',
     "i-arrow-up": '<path d="M24 42V8M12 20L24 8l12 12"/>',
     "i-arrow-down": '<path d="M24 6v34M12 28l12 12 12-12"/>',
+    # aviation and space
+    "metar-taf-decoder": PAGE + '<path d="M16 35h14a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.5 1A4 4 0 0 0 16 35z"/>',
+    "flight-distance-calculator": '<circle cx="8" cy="36" r="3.5" ' + F + '/><circle cx="40" cy="36" r="3.5" ' + F + '/><path d="M8 36C13 6 35 6 40 36"/>',
+    "crosswind-calculator": '<path d="M20 4v40M36 4v40"/><path d="M28 8v6M28 21v6M28 34v6"/><path d="M2 16h12M9 11l5 5-5 5"/>',
+    "density-altitude-calculator": '<path d="M4 42l15-24 8 12 6-8 11 20z"/><path d="M24 4v6M11 9l4 4M37 9l-4 4"/>',
+    "aviation-unit-converter": '<circle cx="24" cy="24" r="19"/><path d="M24 24l9-9M24 8v4M40 24h-4M8 24h4"/><circle cx="24" cy="24" r="2.5" ' + F + '/>',
+    "zulu-time-converter": '<circle cx="24" cy="24" r="19"/><path d="M16 16h16L16 32h16"/>',
+    "sunrise-sunset-calculator": '<path d="M4 36h40"/><path d="M12 36a12 12 0 0 1 24 0"/><path d="M24 8v8M9 20l5 5M39 20l-5 5"/><path d="M12 43h24"/>',
+    "moon-phase-calendar": '<path d="M28 5a19 19 0 1 0 15 29A16 16 0 0 1 28 5z"/>',
+    "aurora-visibility-estimator": '<path d="M4 42h40"/><path d="M9 40c0-11 5-15 2-28M19 40c0-13 5-16 2-34M30 40c0-13 5-16 2-30M40 40c0-9 2-13 0-20"/>',
+    "julian-date-converter": '<path d="M6 10h36v32H6z"/><path d="M6 20h36M15 4v10M33 4v10"/><path d="M26 26v9a4 4 0 0 1-7 2"/>',
+    "light-time-calculator": '<circle cx="11" cy="24" r="7"/><circle cx="40" cy="24" r="3" ' + F + '/><path d="M21 24h11M27 19l5 5-5 5"/>',
+    "orbital-period-calculator": '<circle cx="24" cy="24" r="7"/><ellipse cx="24" cy="24" rx="20" ry="9" transform="rotate(-25 24 24)"/><circle cx="40" cy="15" r="3" ' + F + '/>',
+    # e-invoice viewers
+    "xrechnung-viewer": PAGE + '<path d="M20 24l-5 5 5 5M28 24l5 5-5 5"/>',
+    "zugferd-factur-x-viewer": PAGE + '<path d="M16 21h16M16 27h10"/><path d="M24 34h14v8H24z"/>',
+    "fatturapa-viewer": PAGE + '<circle cx="24" cy="31" r="7"/><path d="M20.5 31l2.5 2.5 4.5-5"/>',
+    "ksef-viewer": PAGE + '<path d="M19 23v16M19 31l9-8M21.5 30l7.5 9"/>',
+    "peppol-ubl-invoice-viewer": PAGE + '<circle cx="24" cy="24" r="3" ' + F + '/><circle cx="17" cy="37" r="3" ' + F + '/><circle cx="31" cy="37" r="3" ' + F + '/><path d="M24 27l-5 8M24 27l5 8M20 37h8"/>',
+    # security & compliance
+    "security-txt-generator": PAGE + '<path d="M24 20l8 3v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10v-6z"/>',
+    "vulnerability-disclosure-policy-generator": PAGE + '<path d="M16 20h16M16 26h10"/><path d="M16 35l4 4 8-9"/>',
+    "cra-incident-clock": '<circle cx="24" cy="26" r="17"/><path d="M24 14v12l8 5"/><path d="M18 4h12"/>',
+    "e-fatura-ubl-tr-viewer": PAGE + '<path d="M28 27a6 6 0 1 0 0 10a4.7 4.7 0 1 1 0-10z"/><path d="M33 31l1 2.2 2.3.3-1.7 1.6.4 2.3-2-1.2-2 1.2.4-2.3-1.7-1.6 2.3-.3z" ' + F + '/>',
+    "vietnam-e-invoice-viewer": PAGE + '<path d="M24 22l2.4 6.2 6.6.3-5.2 4.1 1.8 6.4-5.6-3.7-5.6 3.7 1.8-6.4-5.2-4.1 6.6-.3z"/>',
+    "cfdi-viewer": PAGE + '<path d="M17 22h14M17 28h8"/><circle cx="30" cy="35" r="5"/><path d="M27.5 35l2 2 3-3.5"/>',
+    "i-print": '<path d="M13 17V5h22v12"/><path d="M13 35H5V17h38v18h-8"/><path d="M13 27h22v16H13z"/>',
     "i-x": '<path d="M10 10l28 28M38 10L10 38"/>',
     "i-lock": '<path d="M9 21h30v23H9z"/><path d="M15 21v-6a9 9 0 0 1 18 0v6"/>',
     "i-server": '<path d="M5 5h38v15H5zM5 28h38v15H5z"/><path d="M11 12.5h8M11 35.5h8"/>'
@@ -305,6 +425,12 @@ COUNT_WORDS = {
     "fr": ["un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"],           # outils (m.)
     "de": ["ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun"],
     "id": ["satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan"],
+    "it": ["uno", "due", "tre", "quattro", "cinque", "sei", "sette", "otto", "nove"],
+    "tr": ["bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"],
+    "vi": ["một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"],
+    "ru": ["одного", "двух", "трёх", "четырёх", "пяти", "шести", "семи", "восьми", "девяти"],  # genitive: "Для шести инструментов"
+    "pl": ["jeden", "dwa", "trzy", "cztery", "pięć", "sześć", "siedem", "osiem", "dziewięć"],
+    "hi": ["एक", "दो", "तीन", "चार", "पाँच", "छह", "सात", "आठ", "नौ"],
 }
 
 
@@ -314,8 +440,11 @@ def count_word(lang: str, n: int) -> str:
 
 def search_norm(s: str) -> str:
     """Mirror of norm() in site/tools/js/index.js, so typed words match data-words."""
-    s = unicodedata.normalize("NFKD", s.lower().replace("ß", "ss"))
-    return re.sub(r"\s+", " ", re.sub(r"[^A-Za-z0-9_\s]", " ", s)).strip()
+    s = s.lower().replace("ß", "ss").replace("đ", "d").replace("ł", "l").replace("ı", "i")
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not "\u0300" <= c <= "\u036f")
+    s = "".join(c if (unicodedata.category(c)[0] in "LNM" or c == "_" or c.isspace()) else " " for c in s)
+    return re.sub(r"\s+", " ", s).strip()
 
 
 # ------------------------------------------------------------------ URLs
@@ -538,7 +667,7 @@ def local_tag(lang: str, meta: dict) -> str:
     if meta.get("local_text"):
         text = meta["local_text"]
     else:
-        text = S(lang, "Your files never leave your device" if meta["category"] in ("pdf", "image")
+        text = S(lang, "Your files never leave your device" if meta["category"] in ("pdf", "image", "einvoice")
                  else "Runs entirely in your browser")
     return f'<p class="local-tag">{mark("i-lock")}{esc(text)}</p>'
 
@@ -560,7 +689,7 @@ def with_drop_promise(lang: str, meta: dict) -> str:
                        f'{esc(S(lang, "Sent to our server for this one job, then deleted. Never stored or logged."))}</p>')
             tool = tool[:m.end()] + "\n  " + promise + tool[m.end():]
         return tool
-    if meta["category"] not in ("pdf", "image") or not meta.get("local", True):
+    if meta["category"] not in ("pdf", "image", "einvoice") or not meta.get("local", True):
         return tool
     m = re.search(r'(<div class="drop"[^>]*>.*?<p class="drop__hint">.*?</p>)', tool, re.S)
     if not m:
@@ -644,6 +773,9 @@ def tool_page(lang: str, meta: dict, pages: dict) -> str:
     extra += "".join(f'<script src="{esc(s)}" defer></script>\n' for s in meta.get("scripts", []))
     extra += f'<script type="module" src="/tools/js/{meta.get("module", slug)}.js?v={ASSET_V}"></script>\n'
 
+    xl = {k: tool_path(lang, s) for k, s in meta.get("xlinks", {}).items() if s in tools}
+    links_attr = f' data-links="{esc(json.dumps(xl, separators=(",", ":")))}"' if xl else ""
+
     related = [s for s in meta.get("related", []) if s in tools and s != slug]
     for s in ORDER:  # top up with same-category tools
         if len(related) >= 6:
@@ -655,11 +787,25 @@ def tool_page(lang: str, meta: dict, pages: dict) -> str:
     steps_html = "".join(f"<li><span>{s}</span></li>" for s in steps)
     faq_html = "".join(
         f'<details><summary>{esc(q)}</summary><div class="faq__a"><p>{a}</p></div></details>' for q, a in faq)
+    guide = API_GUIDES.get(slug)
+    automate = (f'<aside class="automate" aria-labelledby="auto-h"><h2 id="auto-h">{esc(S(lang, "Automate this"))}</h2>'
+                f'<p>{esc(S(lang, "Need this in code or for an AI agent? There is a pay-per-call API (USDC, no sign-up) and an MCP tool."))}</p>'
+                f'<p class="automate__links"><a href="{ORIGIN}/learn/{guide}.html">{esc(S(lang, "Read the API guide"))}</a>'
+                f'<a href="{ORIGIN}/connect/">{esc(S(lang, "Connect an agent"))}</a></p></aside>'
+                if guide else "")
+    monitor = ""
+    if meta["category"] == "mikrotik":
+        audit = (f'<p><a href="{ORIGIN}/monitor/">{esc(S(lang, "Check from outside whether Winbox is reachable: free exposure scan."))}</a></p>'
+                 if slug == "mikrotik-firewall-auditor" else "")
+        monitor = (f'<aside class="automate" aria-labelledby="mon-h"><h2 id="mon-h">{esc(S(lang, "Monitor this router for free"))}</h2>'
+                   f'<p>{esc(S(lang, "Tanod Monitor is free, needs no account, and uses push monitoring that works behind CGNAT. Its exposure scan checks whether Winbox, the RouterOS API, telnet, SNMP or an open resolver can be reached from the internet."))}</p>{audit}'
+                   f'<p class="automate__links"><a href="{ORIGIN}/monitor/">{esc(S(lang, "Open Tanod Monitor"))}</a>'
+                   f'<a href="{ORIGIN}/learn/monitor-mikrotik-router-behind-cgnat.html">{esc(S(lang, "Guide: monitor a MikroTik router behind CGNAT (English)")) if lang != "en" else "Guide: monitor a MikroTik router behind CGNAT"}</a></p></aside>')
     explain = (f'<section class="prose" aria-label="{esc(S(lang, "About this tool"))}">{meta["explain"]}</section>'
                if meta["explain"] else "")
 
     return f"""{head(lang, meta["title"], meta["description"], url, jsonld, alternates(pages, slug), extra)}
-<body data-tool="{slug}"{' data-server="1"' if meta.get("server") else ""}>
+<body data-tool="{slug}"{' data-server="1"' if meta.get("server") else ""}{links_attr}>
 <a class="skip" href="#tool">{esc(S(lang, "Skip to the tool"))}</a>
 {sprite()}
 {header(lang, cat_key, pages, slug)}
@@ -679,7 +825,7 @@ def tool_page(lang: str, meta: dict, pages: dict) -> str:
     <div class="ad-slot" data-ad-slot="below-tool" aria-hidden="true"></div>
     <div class="below">
       <section class="howto" aria-labelledby="howto-h"><h2 id="howto-h">{esc(howto_title)}</h2><ol class="steps">{steps_html}</ol></section>
-      {explain}
+      {explain}{automate}{monitor}
       <section class="faq" aria-labelledby="faq-h"><h2 id="faq-h">{esc(S(lang, "Questions"))}</h2>{faq_html}</section>
       <aside class="related" aria-labelledby="rel-h"><h2 id="rel-h">{esc(S(lang, "Related tools"))}</h2><ul>{rel_items}</ul><p class="related__all"><a href="{index_path(lang)}">{esc(S(lang, "All free tools"))}</a></p></aside>
     </div>
@@ -719,9 +865,10 @@ def index_page(lang: str, pages: dict) -> str:
                 f'<li data-words="{esc(words)}"><a href="{tool_path(lang, s)}">{mark(t.get("icon", s))}'
                 f'<span class="stops__name">{esc(t["name"])}{badge}</span><span class="stops__desc">{esc(t["blurb"])}</span></a></li>')
         n_label = S(lang, "{n} tools", n=len(slugs))
+        note = (f'\n  <p class="route__note">{esc(S(lang, CATEGORY_NOTES[key]))}</p>' if key in CATEGORY_NOTES else "")
         routes.append(f"""<section class="route" id="{key}" aria-labelledby="{key}-h">
   <div class="route__plate">{mark(icon_id)}<h2 id="{key}-h">{esc(S(lang, label))}</h2><span class="route__count" aria-label="{esc(n_label)}">{len(slugs)}</span></div>
-  <ul class="stops">{''.join(stops)}</ul>
+  <ul class="stops">{''.join(stops)}</ul>{note}
 </section>""")
     jsonld = {
         "@context": "https://schema.org",
@@ -768,6 +915,7 @@ def index_page(lang: str, pages: dict) -> str:
       <section class="prose" aria-labelledby="who-h">
         <h2 id="who-h">{esc(S(lang, "Who makes this"))}</h2>
         <p>{who}</p>
+        <p>{S(lang, 'Need the same jobs in your own code or agent? Our PDF, image and document tools are also <a href="/learn/">pay-per-call APIs and MCP tools</a>: no account, a free daily allowance, then from USD 0.001 per call.')}</p>
         <p>{S(lang, "Found a bug or a file that doesn't work? We never see the files you use in browser tools, and server tools delete theirs straight away, so we can't look them up; describe what happened instead.")}</p>
       </section>
     </div>
@@ -819,6 +967,41 @@ def write_sitemaps(pages: dict) -> list:
     if line not in r:
         robots.write_text(r.rstrip("\n") + "\n" + line + "\n")
     return files
+
+
+AIRPORTS_SRC = ROOT / "product" / "microapi-proto" / "microapi" / "data" / "ourairports_airports.tsv.gz"
+AIRPORTS_MAX_BYTES = 250_000
+
+
+def write_airports() -> str:
+    """site/tools/data/airports.json: large and medium airports with an IATA code, from OurAirports (public domain).
+    One array per airport: [ident, iata, name, lat, lon]; the name is the OurAirports name without \"Airport\" or
+    \"International\", plus the city when the name does not contain it. Loaded only by the flight distance calculator."""
+    import csv
+    import gzip
+    rows = []
+    with gzip.open(AIRPORTS_SRC, "rt", encoding="utf-8") as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            if r["type"] not in ("large_airport", "medium_airport") or not r["iata_code"]:
+                continue
+            try:
+                lat, lon = round(float(r["latitude_deg"]), 3), round(float(r["longitude_deg"]), 3)
+            except ValueError:
+                continue
+            name = re.sub(r"\s+International$", "", re.sub(r"\s+Airport$", "", r["name"].strip()))
+            city = re.sub(r"\s*\(.*?\)", "", r["municipality"]).strip()
+            if city and city.lower() not in name.lower():
+                name = f"{name}, {city}"
+            rows.append([r["icao_code"] or r["#ident"], r["iata_code"], name, lat, lon])
+    rows.sort(key=lambda x: x[1])
+    body = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
+    size = len(body.encode())
+    if size > AIRPORTS_MAX_BYTES:
+        sys.exit(f"airports.json is {size} bytes (limit {AIRPORTS_MAX_BYTES})")
+    d = OUT / "data"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "airports.json").write_text(body)
+    return f"airports.json: {len(rows)} airports, {size} bytes"
 
 
 def stamp_imports(entry_modules) -> int:
@@ -884,7 +1067,7 @@ def main() -> None:
         for lang, text in sorted(MISSING):
             print(f"error: i18n/site.json has no {lang} for {text!r}", file=sys.stderr)
         sys.exit(f"{len(MISSING)} page-chrome strings missing")
-    stamp_imports({"index"} | {t.get("module", s) for s, t in en.items()})
+    stamp_imports({"index", "heic-worker"} | {t.get("module", s) for s, t in en.items()})   # heic-worker.js is started by heic-to-jpg.js, not imported by it
     css = "\n".join(p.read_text() for p in sorted((HERE / "css").glob("*.css")))
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "tools.css").write_text(css)
@@ -897,6 +1080,7 @@ def main() -> None:
                 (d / "index.html").unlink()
                 d.rmdir()
     files = write_sitemaps(pages)
+    print(write_airports())
     print("built " + ", ".join(f"{lang} {n}" for lang, n in counts.items()) + " tool pages (+ an index each)")
     print("sitemaps: " + ", ".join(f"{f} ({n} URLs)" for f, n in files)
           + ("" if SERVER_TOOLS_PUBLIC else "; server tools left out (SERVER_TOOLS_PUBLIC = False)"))

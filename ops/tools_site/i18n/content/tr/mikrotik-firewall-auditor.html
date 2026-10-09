@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "MikroTik güvenlik duvarı denetleyici (RouterOS) | Tanod Tools",
+  "description": "RouterOS /export çıktısını yapıştırıp sıkılaştırma açıklarını bulun: son drop'u olmayan input zinciri, açık WinBox veya SSH, açık DNS çözümleyici, proxy ve daha fazlası.",
+  "h1": "MikroTik güvenlik duvarı denetleyici",
+  "lede": "Yönlendiricinizin /export çıktısını yapıştırın; yaygın güvenlik duvarı ve hizmet sıkılaştırma açıklarının önceliklendirilmiş listesini, her birinin geldiği satır ve önerilen çözümle birlikte alın.",
+  "blurb": "Bir export içindeki açık hizmetleri, açık çözümleyicileri ve kural hatalarını bulun.",
+  "keywords": "mikrotik güvenlik duvarı denetimi routeros güvenlik kontrolü export incelemesi winbox açık dns çözümleyici allow-remote-requests input zinciri drop gölgelenen kurallar sıkılaştırma kontrol listesi firewall audit hardening checklist",
+  "local_text": "Export'unuz tarayıcınızda denetlenir ve cihazınızdan asla çıkmaz",
+  "limits": "Tek bir export'un sezgisel incelemesidir, tam bir güvenlik denetimi değil: /ip firewall filter ve nat, /ip service, DNS, proxy, SOCKS, UPnP, SNMP, bant genişliği test sunucusu, MAC erişimi ve kullanıcıları okur ve WAN'dan erişilebilirliği değerlendirir. IPv6 güvenlik duvarı, raw ve mangle kuralları, betikler, kablosuz ve VPN ayarları denetlenmez. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik güvenlik duvarı nasıl denetlenir",
+  "howto": [
+    "Yönlendiricideki bir terminalde <code>/export hide-sensitive</code> komutunu çalıştırın (v7'de <code>/export</code> gizli bilgileri zaten gizler) ve çıktıyı kopyalayın ya da <code>/export file=config</code> ile kaydedip .rsc dosyasını burada açın.",
+    "Kutuya yapıştırın. İsteğe bağlı olarak <code>/user print</code> çıktısını da yapıştırın, çünkü export kullanıcıları dışarıda bırakır.",
+    "Bulguları en üstten başlayarak inceleyin. Her biri ilgili olduğu satırı ve önerilen çözümü gösterir; değişiklikleri Safe Mode açıkken uygulayın."
+  ],
+  "faq": [
+    ["Yapılandırmamı buraya yapıştırmak güvenli mi?", "Export, bu sayfadaki JavaScript tarafından okunur ve cihazınızdan asla çıkmaz: yükleme yok, sunucu tarafı işleme yok ve sayfanın güvenlik ilkesi diğer sitelere bağlantıları engeller. Yine de v6'da <code>/export hide-sensitive</code> kullanın (v7 gizli bilgileri varsayılan olarak gizler); böylece parolalar ve anahtarlar metinde hiç bulunmaz."],
+    ["Denetleyici bir hizmetin açıkta olduğuna nasıl karar verir?", "WAN arayüzlerini arayüz listelerinden, masquerade kurallarından, DHCP ve PPPoE istemcilerinden belirler; sonra input zincirini, internetten hizmetin portuna gelen yeni bir bağlantı gibi, atlamaları (jump) izleyerek dolaşır. Bir accept kuralı önce eşleşirse veya zincirin sonuna kadar hiçbir şey paketi düşürmezse hizmet erişilebilir sayılır. Değerlendiremediği koşullara sahip kurallar, düşüren değil, muhtemelen kabul eden olarak sayılır; yani sizi uyarma yönünde hata yapar."],
+    ["\"Kural hiçbir zaman eşleşemez\" ne demek?", "Aynı zincirde daha önceki bir kural, sonraki kuralın eşleşeceği her paketi eşleştirir ve kabul eder ya da düşürür; bu yüzden sonraki kural hiçbir paket görmez. Genellikle her şeyi yakalayan kuralın üstüne değil zincirin sonuna eklenmiş bir kuraldır; yeni kuralların \"çalışmamasının\" nedeni budur."],
+    ["Açık DNS çözümleyici neden önemli?", "allow-remote-requests=yes ile yönlendirici her arayüzde DNS yanıtlar. Input zinciri WAN'dan gelen DNS'i düşürmüyorsa herkes bunu DDoS saldırılarını güçlendirmek için kullanabilir; ISS'ler de yönlendiricileri bunu yapan müşterileri düzenli olarak engeller veya uyarır."],
+    ["Denetleyici hiçbir şey bulmadı. Yönlendiricim güvenli mi?", "Mutlaka değil. Bir export'un gösterdiği şeydeki bir dizi yaygın, yüksek etkili hatayı denetler. Bilinen birkaçı dışında bellenim sürümünün kendi açıklarını, kullanıcıların parolalarını, zamanlanmış betikleri ya da araç altında listelenen menülerin dışındaki herhangi bir şeyi görmez. RouterOS'u güncel tutun ve gerisini elle inceleyin."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-audit" id="au">
+  <div class="ros-paste" id="au-form">
+    <div class="field">
+      <label for="au-in">RouterOS export</label>
+      <textarea id="au-in" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/ip firewall filter&#10;add action=accept chain=input connection-state=established,related&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}.rsc dosyası aç<input type="file" id="au-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="au-sample" type="button">Zayıf bir örnek dene</button>
+    </div>
+    <details class="ros-more">
+      <summary>İsteğe bağlı: kullanıcı hesapları (/user print)</summary>
+      <div class="field">
+        <label for="au-users">/user print çıktısı</label>
+        <textarea id="au-users" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+      </div>
+    </details>
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Sezgiseldir, tam bir denetim değildir.</strong> Export'un gösterdiği şeydeki yaygın hataları denetler. Temiz bir sonuç, yönlendiricinin güvenli olduğunu kanıtlamaz.</span></p>
+  </div>
+  <div class="ros-results" id="au-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="au-copy" type="button" hidden>Raporu kopyala</button></div>
+</div>
+<!--explain-->
+<h2>Denetleyici neleri denetler</h2>
+<p>Denetleyici, bir export içinde yönlendiricinin ne kadar açıkta olduğunu belirleyen menüleri okur. Güvenlik duvarında <strong>varsayılan reddi olmayan bir input zincirini</strong> (RouterOS, bir zincirin sonuna ulaşan her şeyi kabul eder), eksik <strong>established/related</strong> hızlı yollarını ve <strong>geçersiz paket düşürmelerini</strong>, yeni WAN bağlantılarının LAN'a ulaşmasına izin veren bir forward zincirini, her şeyi kabul eden kuralları ve daha önceki bir kural paketlerinin hepsini zaten aldığı için <strong>hiçbir zaman eşleşemeyen kuralları</strong> arar. Sonra her hizmetin kendi adres kısıtlamasını hesaba katarak WinBox, SSH, telnet, FTP, WebFig ve API'ye internetten ulaşılıp ulaşılamayacağını port port çıkarır.</p>
+<p>Güvenlik duvarının dışında <strong>açık bir DNS çözümleyiciyi</strong>, etkin bir web proxy veya SOCKS proxy'yi (ele geçirilmiş bir yönlendiricinin yaygın bir işareti), UPnP'yi, varsayılan topluluk (community) ile SNMP'yi, bant genişliği test sunucusunu, tüm arayüzlerde MAC Telnet ve MAC WinBox'ı, RDP, SMB, veritabanlarını veya SSH'yi tüm internete yayımlayan port yönlendirmelerini, <code>/user print</code> yapıştırdığınızda varsayılan <code>admin</code> hesabını ve 2018 WinBox kimlik bilgisi sızıntısı olan RouterOS sürümlerini işaretler.</p>
+<h3>Neleri denetlemez</h3>
+<ul>
+  <li>IPv6 güvenlik duvarı, raw ve mangle tabloları, betikler ve zamanlayıcı girdileri, kablosuz güvenlik, VPN ve IPsec ayarları ve parola gücü.</li>
+  <li>Çalışma zamanında paketlerin eklediği ve hiçbir zaman bir export'ta görünmeyen dinamik kurallar ve hizmetler.</li>
+  <li>Yönlendiricinin ötesinde ağınıza bağlı olan her şey. Bulguları düzeltin, sonra <a href="/tools/mikrotik-firewall-generator/">MikroTik güvenlik duvarı oluşturucu</a> ile temiz bir temel oluşturun ve sonucu <a href="/tools/routeros-export-diff/">RouterOS export karşılaştırma</a> ile karşılaştırın.</li>
+</ul>

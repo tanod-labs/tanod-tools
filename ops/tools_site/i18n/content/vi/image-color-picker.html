@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Lấy màu từ ảnh: mã HEX và RGB từ một bức ảnh | Tanod Tools",
+  "description": "Lấy màu từ bất kỳ ảnh nào: nhấp vào một điểm ảnh để có mã HEX, RGB và HSL, đồng thời xem bảng màu chính của ảnh. Chạy trong trình duyệt, không tải lên.",
+  "h1": "Lấy màu từ ảnh",
+  "lede": "Nhấp vào bất kỳ đâu trên ảnh để đọc màu chính xác của điểm ảnh đó, hoặc lấy bảng các màu chính.",
+  "blurb": "Mã HEX và RGB từ bất kỳ điểm ảnh nào.",
+  "keywords": "lấy màu từ ảnh chọn màu từ hình ảnh công cụ hút màu mã màu hex rgb hsl bảng màu trích xuất màu ảnh chụp màn hình color picker from image eyedropper palette extractor",
+  "limits": "Mỗi lần một ảnh, tối đa 50 MB và khoảng 100 megapixel. PNG, JPEG, WebP, GIF (khung hình đầu), BMP hoặc AVIF.",
+  "howto_title": "Cách lấy màu từ ảnh",
+  "howto": [
+    "Chọn một ảnh, hoặc kéo thả hay dán vào trang.",
+    "Di chuột trên ảnh để ngắm bằng kính lúp, rồi nhấp hoặc chạm để chọn. Với bàn phím, hãy đặt tiêu điểm vào ảnh, di chuyển bằng phím mũi tên (giữ Shift để nhảy bước lớn hơn) và nhấn Enter.",
+    "Sao chép mã HEX, RGB hoặc HSL, hoặc sao chép một màu từ bảng các màu chính."
+  ],
+  "faq": [
+    ["Màu chính xác đến mức nào?", "Đó là giá trị được lưu của đúng một điểm ảnh dưới tâm ngắm, đọc từ ảnh kích thước đầy đủ, không phải từ bản xem trước đã thu nhỏ. Kính lúp hiển thị các điểm ảnh xung quanh để bạn ngắm đúng một điểm ảnh ở những cạnh có nhiều chi tiết."],
+    ["Vì sao màu khác với những gì ứng dụng khác hiển thị?", "Nén JPEG làm lệch màu đôi chút, đặc biệt ở gần cạnh và vùng phẳng, nên các điểm ảnh lân cận có thể chênh nhau vài giá trị. Ảnh có hồ sơ màu được trình duyệt chuyển sang sRGB chuẩn trước khi đọc, đúng như các trang web sử dụng; phần mềm chỉnh ảnh làm việc trong không gian màu khác có thể hiển thị số khác."],
+    ["Bảng màu được tính như thế nào?", "Ảnh được lấy mẫu tại tối đa 160 × 160 điểm và gom thành tám cụm màu bằng cách chia đi chia lại dải màu ở chỗ rộng nhất (phương pháp median cut). Mỗi ô màu là màu trung bình của cụm, kèm tỷ lệ của nó trong ảnh. Các điểm ảnh trong suốt hoàn toàn hoặc gần hoàn toàn bị bỏ qua."],
+    ["HEX, RGB và HSL nghĩa là gì?", "Đó là ba cách viết cùng một màu. HEX là các giá trị đỏ, lục, lam (0 đến 255) viết ở hệ cơ số 16, dùng trong CSS và công cụ thiết kế. RGB liệt kê chúng dưới dạng số thường. HSL cho sắc độ (0 đến 360 độ), độ bão hòa và độ sáng, dễ chỉnh bằng tay hơn."],
+    ["Ảnh của tôi có bị tải lên không?", "Không. Ảnh được giải mã và đọc trong trình duyệt, ngay trên thiết bị của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Thả ảnh vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP hoặc AVIF. Hoặc kéo thả hay dán vào đây.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="công cụ lấy màu" aria-label="Ảnh. Phím mũi tên di chuyển tâm ngắm, giữ Shift cùng phím mũi tên để di chuyển nhanh hơn, Enter để chọn màu." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Nhấp hoặc chạm để chọn. Bàn phím: phím mũi tên di chuyển tâm ngắm, Shift di chuyển nhanh hơn, Enter để chọn.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Dưới tâm ngắm</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Màu đã chọn</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="Sao chép mã HEX">Sao chép</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="Sao chép mã RGB">Sao chép</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="Sao chép mã HSL">Sao chép</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Đã chọn cho đến nay</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Các màu chính</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">Chọn một ô màu để sao chép mã HEX của nó.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Đọc màu trực tiếp từ các điểm ảnh</h2>
+<p>Khớp màu thương hiệu từ một logo, tìm đúng màu xanh trong ảnh chụp màn hình, hay tạo bảng màu từ một bức ảnh đều quy về cùng một việc: đọc các giá trị đỏ, lục, lam được lưu cho một điểm ảnh. Công cụ này giải mã ảnh trong trình duyệt của bạn và đọc các giá trị đó từ ảnh ở độ phân giải đầy đủ, nên mã bạn sao chép chính là màu thực sự có trong tệp.</p>
+<p>Một điểm ảnh đơn lẻ có thể gây hiểu lầm trong ảnh chụp, nơi nhiễu và nén khiến các điểm lân cận khác nhau. Hãy dùng kính lúp để ngắm vào giữa một vùng phẳng, hoặc lấy bảng màu, vốn lấy trung bình cả nhóm điểm ảnh tương tự thành một vài màu đại diện.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Chuyển một màu đã chọn sang CMYK hoặc kiểm tra độ tương phản với chữ bằng <a href="/tools/color-converter/">Chuyển đổi màu và kiểm tra độ tương phản</a>.</li>
+  <li>Lấy màu từ một phần nhỏ của ảnh lớn? Hãy <a href="/tools/crop-image/">Cắt ảnh</a> trước để vùng đó lấp đầy màn hình.</li>
+</ul>

@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Đánh số trang PDF trực tuyến, miễn phí | Tanod Tools",
+  "description": "Đánh số trang cho PDF ngay trong trình duyệt. Chọn vị trí, định dạng và số bắt đầu, bỏ qua trang bìa rồi tải xuống. Miễn phí, không cần đăng ký, tệp ở lại trên thiết bị.",
+  "h1": "Đánh số trang PDF",
+  "lede": "Đóng dấu số trang lên mọi trang hoặc chỉ những trang bạn chọn, và chọn vị trí đặt số.",
+  "blurb": "Đánh số trang cho tệp PDF.",
+  "keywords": "đánh số trang pdf chèn số trang pdf thêm số trang đánh số trang chân trang đầu trang trang x trên y page numbers pagination footer header",
+  "limits": "Mỗi lần một tệp PDF, tối đa 200 MB. Không thể chỉnh sửa PDF có mật khẩu. Số trang được vẽ bằng phông Helvetica.",
+  "howto_title": "Cách đánh số trang cho PDF",
+  "howto": [
+    "Chọn một tệp PDF hoặc kéo thả vào trang.",
+    "Chọn vị trí, định dạng số và số bắt đầu. Bỏ qua trang bìa hoặc chỉ đánh số một số trang nếu cần.",
+    "Bấm <strong>Đánh số trang</strong>, rồi tải xuống tệp PDF đã đánh số."
+  ],
+  "faq": [
+    ["PDF của tôi có bị tải lên không?", "Không. Thư viện mã nguồn mở pdf-lib vẽ các con số vào một bản sao PDF của bạn ngay trong trình duyệt. Không có gì được gửi đến máy chủ."],
+    ["Làm sao để trang bìa không có số?", "Đánh dấu <em>Bỏ qua trang đầu tiên</em>. Khi đó số bắt đầu áp dụng cho trang đầu tiên được đánh số, nên trang thứ hai sẽ nhận số bắt đầu bạn đặt. Nếu muốn trang 2 hiện “2”, hãy đặt số bắt đầu là 2."],
+    ["“Trang 1 trên N” lấy N từ đâu?", "N là số cuối cùng được dùng. Khi mọi trang đều được đánh số và bạn bắt đầu từ 1, đó chính là tổng số trang. Nếu bạn bỏ qua trang bìa hoặc chỉ đánh số một số trang, N bằng số bắt đầu cộng số trang được đánh số rồi trừ đi một."],
+    ["Số có thẳng đứng trên các trang bị xoay không?", "Có. Nếu một trang được lưu với góc xoay 90, 180 hoặc 270 độ, số sẽ được đặt theo cách trang hiển thị và xoay theo trang, nên nó đọc thẳng ở vị trí bạn chọn. Số được đặt bên trong vùng nhìn thấy của trang (khung cắt của trang, nếu có)."],
+    ["Tôi có thể đổi phông chữ không?", "Không thể trong công cụ này. Số trang được vẽ bằng Helvetica, một phông chuẩn của PDF, nên chúng hiển thị tốt ở mọi nơi và gần như không làm tăng dung lượng tệp."],
+    ["Công cụ có thay đổi phần còn lại của PDF không?", "Nội dung trang hiện có được giữ nguyên và các con số được thêm lên trên. Thông tin tài liệu như tiêu đề và tác giả không bị thay đổi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Thả tệp PDF vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Chọn tệp PDF</span></label>
+  <p class="drop__hint">Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pos">Vị trí</label>
+      <select id="pos">
+        <option value="bc" selected>Dưới, giữa</option>
+        <option value="br">Dưới, phải</option>
+        <option value="bl">Dưới, trái</option>
+        <option value="tc">Trên, giữa</option>
+        <option value="tr">Trên, phải</option>
+        <option value="tl">Trên, trái</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fmt">Định dạng</label>
+      <select id="fmt">
+        <option value="n" selected>1</option>
+        <option value="page">Trang 1</option>
+        <option value="of">Trang 1 trên N</option>
+        <option value="slash">1 / N</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Bắt đầu từ số</label>
+      <input id="start" type="number" inputmode="numeric" min="0" max="99999" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Cỡ chữ (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="6" max="48" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="margin">Cách mép (pt)</label>
+      <input id="margin" type="number" inputmode="numeric" min="0" max="200" step="1" value="28">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Trang cần đánh số</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Tất cả các trang</label>
+        <label><input type="radio" name="scope" value="range">Một số trang</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Trang</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+      <span class="help">Số trang được đếm từ 1.</span>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="skip"> Bỏ qua trang đầu tiên (trang bìa)</label>
+    </div>
+  </div>
+  <p class="help" id="sample" aria-live="polite"></p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Đánh số trang</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Đánh số trang mà không cần tải PDF lên</h2>
+<p>Số trang chỉ là những đoạn văn bản nhỏ được vẽ lên trên mỗi trang. Trình duyệt của bạn có thể làm việc đó trực tiếp: nó mở PDF bằng pdf-lib, thêm một dòng chữ Helvetica vào mọi trang bạn chọn, rồi ghi ra một tệp mới. Nội dung gốc của các trang được giữ nguyên.</p>
+<p>Mỗi trang có thể có kích thước, khung cắt và góc xoay riêng, nên vị trí được tính cho từng trang. Lề được đo từ mép của vùng nhìn thấy, và với trang được lưu theo chiều ngang, số sẽ xoay theo để vẫn đọc thẳng đúng chỗ bạn mong đợi.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Cần ghép nhiều tệp trước? Dùng <a href="/tools/merge-pdf/">Gộp PDF</a>, rồi đánh số tệp kết quả để số trang chạy liền mạch.</li>
+  <li>Cần một dấu chìm trên cả trang thay vì một con số? Hãy thử <a href="/tools/watermark-pdf/">Chèn watermark vào PDF</a>.</li>
+  <li>Các trang sai thứ tự? Hãy sửa bằng <a href="/tools/reorder-pdf-pages/">Sắp xếp lại trang PDF</a> trước khi đánh số.</li>
+</ul>

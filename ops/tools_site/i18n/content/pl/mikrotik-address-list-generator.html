@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Generator address list MikroTik, scalanie CIDR | Tanod Tools",
+  "description": "Zamień listę adresów IP, sieci CIDR i zakresów na skrypt address-list firewalla RouterOS. Usuwa duplikaty, scala nakładające się sieci, IPv4 i IPv6, opcjonalny timeout.",
+  "h1": "Generator address list MikroTik",
+  "lede": "Wklej adresy IP, sieci lub zakresy w dowolnej mieszance i uzyskaj czysty skrypt address-list dla RouterOS, bez duplikatów i ze scalonymi sąsiednimi sieciami.",
+  "blurb": "Adresy IP i CIDR na skrypt address-list bez duplikatów, ze scalonymi sieciami.",
+  "keywords": "mikrotik address list generator routeros address-list import lista blokad lista dozwolonych cidr agregacja scalanie podsieci deduplikacja lista ip firewall skrypt rsc spamhaus drop",
+  "local_text": "Działa w Twojej przeglądarce; Twoje listy nigdy nie opuszczają urządzenia",
+  "limits": "Odczytuje adresy IPv4 i IPv6, sieci CIDR oraz zakresy zapisane jako pierwszy-ostatni; wszystko po # lub ; w wierszu jest ignorowane. Duże listy (setki tysięcy wpisów) działają, ale wymagają chwili. MikroTik i RouterOS są znakami towarowymi SIA Mikrotīkls. To narzędzie jest niezależne i nie jest powiązane z MikroTik ani przez niego rekomendowane.",
+  "howto_title": "Jak zbudować address list MikroTik",
+  "howto": [
+    "Wklej adresy, po jednym w wierszu albo oddzielone przecinkami lub spacjami. Sieci (<code>203.0.113.0/24</code>) i zakresy (<code>198.51.100.10-198.51.100.20</code>) też działają.",
+    "Nazwij listę i dodaj timeout lub komentarz, jeśli mają znaleźć się przy każdym wpisie.",
+    "Zostaw scalanie włączone, aby uzyskać jak najmniej wpisów, a potem skopiuj skrypt lub pobierz plik .rsc i uruchom <code>/import file-name=list.rsc</code>."
+  ],
+  "faq": [
+    ["Co robi scalanie?", "Sortuje wszystkie wpisy, łączy adresy i sieci, które się nakładają lub stykają, i zapisuje wynik jako najmniejszą liczbę bloków CIDR obejmujących dokładnie te same adresy. 10.0.0.0/25 i 10.0.0.128/25 stają się 10.0.0.0/24, a pojedynczy adres wewnątrz już posiadanej sieci znika. Nic nie jest dodawane ponad to, co było objęte wcześniej."],
+    ["Dlaczego zakres zamienił się w kilka wpisów?", "Zakres taki jak 10.0.0.5-10.0.0.20 nie pokrywa się z jedną granicą sieci, więc jest zapisywany jako bloki CIDR, które obejmują go dokładnie: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 i 10.0.0.20/32. RouterOS akceptuje także zakresy, ale wpisy CIDR łatwiej czytać i porównywać."],
+    ["Mój import zatrzymuje się w połowie z komunikatem „already have such entry”. Dlaczego?", "RouterOS odmawia dodania adresu, który już jest na liście, a import zatrzymuje się przy pierwszym błędzie. Zaznacz „Pomijaj wpisy, które już istnieją”: każdy wiersz zostanie opakowany w <code>:do { … } on-error={}</code>, więc duplikaty są pomijane, a import trwa dalej. Możesz też zaznaczyć „Zastąp listę”, aby najpierw ją opróżnić."],
+    ["Jak użyć listy w regule firewalla?", "Dopasuj ją za pomocą <code>src-address-list=</code> lub <code>dst-address-list=</code>, na przykład <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. Odrzucanie w tabeli raw pomija śledzenie połączeń, co jest tańsze przy dużych listach blokad."],
+    ["Czy moje listy są przesyłane?", "Nie. Parsowanie i scalanie odbywa się w Twojej przeglądarce, a nic, co wkleisz, nie jest nigdzie wysyłane."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Adresy, sieci lub zakresy</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">Po jednym w wierszu lub oddzielone przecinkami. Tekst po # lub ; jest ignorowany.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">Nazwa listy</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">Opcjonalnie, na przykład 1h, 1d lub 1w.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Komentarz</label>
+        <input type="text" id="al-comment" value="" placeholder="zaimportowano 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Scalaj nakładające się i sąsiednie sieci</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Pomijaj wpisy, które już istnieją</label>
+      <label class="check"><input type="checkbox" id="al-replace">Zastąp listę (najpierw usuń jej obecne wpisy)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">Skrypt RouterOS</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Kopiuj skrypt</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}Pobierz .rsc</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Address listy w RouterOS</h2>
+<p>Address list to nazwany zbiór adresów IP i sieci w <code>/ip firewall address-list</code> (oraz <code>/ipv6 firewall address-list</code> dla IPv6). Reguły firewalla, NAT, mangle i raw mogą dopasować całą listę jednym warunkiem, dzięki czemu zestawy reguł są krótkie i szybkie: RouterOS sprawdza przynależność do listy w drzewie, zamiast przechodzić po jednej regule na sieć. Listy to zwykły sposób przechowywania sieci zarządzających, zakresów klientów, list blokad z kanałów zagrożeń lub adresów, które reguła dodaje dynamicznie przez <code>action=add-src-to-address-list</code>.</p>
+<p>Ta sama lista może zawierać pojedyncze adresy, sieci CIDR i zakresy, a nakładające się wpisy są dozwolone, przez co importowane źródła stają się nieuporządkowane. Ta strona czyści listę, zanim trafi na router: normalizuje każdy wpis (sieć zapisana z bitami hosta, na przykład 10.1.2.3/24, staje się 10.1.2.0/24), usuwa dokładne duplikaty, a przy włączonym scalaniu sprowadza wszystko do minimalnego zestawu bloków CIDR. Skrypt używa zwykłego adresu dla pojedynczego hosta, tak jak wypisuje go sam RouterOS.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Sprawdź rozmiar, zakres i maskę sieci w narzędziu <a href="/tools/subnet-calculator/">Kalkulator podsieci</a>.</li>
+  <li>Potrzebujesz reguł firewalla korzystających z listy? Zacznij od narzędzia <a href="/tools/mikrotik-firewall-generator/">Generator firewalla MikroTik</a>.</li>
+  <li>Czyścisz raczej zwykłą listę tekstową? <a href="/tools/remove-duplicate-lines/">Usuń zduplikowane wiersze</a> zachowuje kolejność i oryginalny tekst.</li>
+</ul>

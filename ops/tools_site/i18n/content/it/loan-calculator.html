@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Calcolatore di prestiti con piano di ammortamento | Tanod Tools",
+  "description": "Calcolatore di prestiti e mutui: rata mensile, interessi totali e piano di ammortamento completo da scaricare in CSV. Gratis, nel tuo browser.",
+  "h1": "Calcolatore di prestiti",
+  "lede": "Inserisci l'importo, il tasso di interesse annuo e la durata per vedere la rata mensile, gli interessi totali e un piano di ammortamento rata per rata da scaricare.",
+  "blurb": "Rata mensile, interessi totali e piano di ammortamento.",
+  "keywords": "calcolatore prestiti calcolatore mutuo rata mensile piano di ammortamento ammortamento interessi totali prestito auto prestito personale rate extra scaricare csv tasso zero",
+  "local_text": "Funziona nel browser; nulla di ciò che scrivi lascia il tuo dispositivo",
+  "limits": "Prestiti a tasso fisso con rate mensili costanti, interessi calcolati ogni mese a un dodicesimo del tasso annuo e importi arrotondati al centesimo a ogni rata. Durate fino a 100 anni. Spese, assicurazioni, imposte, rate finali (balloon) e tassi variabili non sono incluse, quindi le cifre di un finanziatore possono differire leggermente. Gli importi sono numeri semplici, nella valuta che usi.",
+  "howto_title": "Come calcolare la rata di un prestito",
+  "howto": [
+    "Inserisci l'importo del prestito, il tasso di interesse annuo e la durata, in anni o in mesi.",
+    "Se vuoi, aggiungi un importo extra che pagherai ogni mese oltre alla rata dovuta.",
+    "Leggi la rata mensile, gli interessi totali e il totale pagato, poi scorri il piano di ammortamento o scaricalo come file CSV."
+  ],
+  "faq": [
+    [
+      "Come viene calcolata la rata mensile?",
+      "Con la formula standard dell'annualità: rata = P × r ÷ (1 − (1 + r)^−n), dove P è l'importo finanziato, r è il tasso mensile (il tasso annuo diviso per 12) e n è il numero di rate mensili. La rata è arrotondata al centesimo e l'ultima viene corretta in modo che il debito residuo termini esattamente a zero."
+    ],
+    [
+      "E se il tasso di interesse è 0%?",
+      "Il prestito viene semplicemente diviso in rate uguali: l'importo diviso per il numero di mesi. Gli interessi totali sono quindi zero. Le eventuali differenze di arrotondamento finiscono nell'ultima rata."
+    ],
+    [
+      "Cosa mostra il piano di ammortamento?",
+      "Una riga per ogni rata: quanto va agli interessi, quanto riduce il capitale e il debito residuo che resta. All'inizio la maggior parte di ogni rata è interessi; verso la fine è quasi tutta capitale."
+    ],
+    [
+      "Come aiutano le rate extra?",
+      "Un importo extra ogni mese va direttamente al capitale, quindi il debito scende più in fretta, maturano meno interessi e il prestito finisce prima. Il risultato mostra quante rate servono e gli interessi totali con il tuo pagamento extra."
+    ],
+    [
+      "Perché la cifra del mio finanziatore è diversa?",
+      "I finanziatori possono applicare spese, capitalizzare gli interessi in modo diverso, contare i giorni anziché i mesi o arrotondare in altro modo. Usa questo risultato come stima approssimata, non come preventivo."
+    ],
+    [
+      "Quello che scrivo viene caricato?",
+      "No. Tutto viene calcolato nel tuo browser e nulla lascia il tuo dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Importo del prestito</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Tasso di interesse annuo (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Durata del prestito</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Unità di durata">
+          <option value="years" selected>anni</option>
+          <option value="months">mesi</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Pagamento extra ogni mese (facoltativo)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Rata mensile</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Interessi totali</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Totale pagato</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Numero di rate</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Scarica il piano (CSV)</button>
+    </div>
+    <h3 class="util-h">Piano di ammortamento</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Piano di ammortamento">
+      <table class="dv-table">
+        <thead><tr><th scope="col">N.</th><th scope="col">Rata</th><th scope="col">Quota capitale</th><th scope="col">Quota interessi</th><th scope="col">Debito residuo</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Come si calcola la rata di un prestito</h2>
+<p>La maggior parte dei prestiti e dei mutui è ammortizzata: paghi lo stesso importo ogni mese e ogni rata copre prima gli interessi maturati sul debito residuo, poi riduce una parte del capitale. Poiché il debito è massimo all'inizio, la quota interessi delle prime rate è grande e la quota capitale piccola. Man mano che il debito scende, la quota interessi si riduce e una parte maggiore di ogni rata va al capitale.</p>
+<p>Il calcolatore trasforma il tasso annuo in tasso mensile dividendolo per 12, trova la rata costante con la formula standard dell'annualità e poi costruisce il piano un mese alla volta. Gli interessi del mese sono il debito residuo per il tasso mensile, arrotondati al centesimo come fa un finanziatore. Il resto della rata riduce il debito. L'ultima rata è quella che estingue il debito, quindi può differire dalle altre di qualche centesimo. Un tasso dello 0% non richiede formule: l'importo viene diviso in parti uguali sui mesi.</p>
+<p>Pagare un po' di più ogni mese è uno dei modi più economici per ridurre gli interessi. L'importo extra va interamente al capitale, quindi il debito scende più in fretta e il prestito finisce prima. Inserisci un importo extra per vedere quante rate restano e quanti interessi risparmi rispetto a nessun pagamento extra.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Scopri quanto possono crescere dei risparmi o un investimento con il <a href="/tools/compound-interest-calculator/">calcolatore di interesse composto</a>.</li>
+  <li>Confronta due tassi o calcola la variazione di una rata con il <a href="/tools/percentage-calculator/">calcolatore di percentuali</a>.</li>
+  <li>Devi scrivere l'importo su un assegno? <a href="/tools/number-to-words/">Numero in lettere</a> lo scrive per esteso.</li>
+</ul>

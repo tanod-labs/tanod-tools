@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Resim filtreleri: siyah beyaz, sepya, bulanıklık | Tanod Tools",
+  "description": "Parlaklık, kontrast, doygunluk ve tonu ayarlayın ya da fotoğrafı siyah beyaz, sepya, negatif veya bulanık yapın. Canlı önizleme, tarayıcınızda çalışır.",
+  "h1": "Resim filtreleri",
+  "lede": "Bir fotoğrafı kaydırıcılarla veya tek tıkla hazır ayarlarla düzenleyin, özgün haliyle karşılaştırın ve sonucu tam boyutta kaydedin.",
+  "blurb": "Siyah beyaz, sepya, parlaklık, bulanıklık ve daha fazlası.",
+  "keywords": "fotoğraf düzenleme efektler siyah beyaz gri tonlama sepya nostaljik negatif ters çevirme parlaklık kontrast doygunluk ton bulanıklık resim filtresi photo editor grayscale sepia vintage invert blur instagram",
+  "limits": "50 MB'a ve yaklaşık 100 megapiksele kadar tek bir resimle çalışır. Çok büyük resimler birkaç saniye sürer; işlem sırasında sayfa kullanılabilir kalır.",
+  "howto_title": "Resme filtre nasıl uygulanır",
+  "howto": [
+    "Bir resim seçin. Kaydırıcılar anında yanıt versin diye önizleme küçültülmüş boyutta görünür.",
+    "<strong>Siyah beyaz</strong> veya <strong>Canlı</strong> gibi hazır bir ayarla başlayın, ardından kaydırıcıları ayarlayın. Karşılaştırmak için <strong>Özgün hali göster</strong> seçeneğini açın.",
+    "<strong>Uygula ve kaydet</strong> düğmesine basın. Filtreler tam boyutlu resme yeniden uygulanır ve resmi indirirsiniz."
+  ],
+  "faq": [
+    ["Fotoğrafım yükleniyor mu?", "Hayır. Her filtre, tarayıcınızda cihazınızda piksel piksel hesaplanır. Sunucuya hiçbir şey gönderilmez."],
+    ["Filtreler tarayıcımın CSS'indekiyle aynı sonucu veriyor mu?", "CSS Filter Effects belirtimindeki formülleri izlerler: parlaklık çarpar, kontrast orta griyi eksen alır; doygunluk, ton döndürme, gri tonlama ve sepya ise belirtimdeki renk matrislerini kullanır. Hesabı tarayıcının filtre özelliği yerine bu sayfada yapmak, bu özelliğin bulunmadığı tarayıcılarda da çalışması anlamına gelir."],
+    ["Filtreler hangi sırayla uygulanır?", "Parlaklık, kontrast, doygunluk, ton döndürme, gri tonlama, sepya, ters çevirme, sonra bulanıklık. Sıra sabittir; bu yüzden aynı kaydırıcı konumları her zaman aynı resmi verir."],
+    ["Bulanıklık önizlemede ve kaydedilen dosyada neden aynı görünür?", "Bulanıklık miktarı, piksel sayısı değil, resim genişliğinin bir oranıdır. 800 pikselde önizlenen 4000 piksellik bir fotoğraf, önizleme piksellerinde beş kat daha az bulanıklaştırılır; aynı ölçekte görüldüğünde bu tıpatıp aynı görünür."],
+    ["Saydamlığa ne olur?", "Dokunulmaz. Alfa kanalı hiçbir zaman değiştirilmez ve bulanıklık renkleri opaklığa göre ağırlıklandırır; böylece kesilmiş bir nesnenin yumuşak kenarları kararmaz. Saydamlığı korumak için PNG veya WebP olarak kaydedin; JPEG saydam alanları beyazla doldurur."],
+    ["Hazır bir ayarı geri alabilir miyim?", "Sıfırla'yı seçin veya kaydırıcıları geri sürükleyin. Hazır ayarlar yalnızca kaydırıcıları oynatır ve sonrasında bunları ayarlayabilirsiniz. Hiçbir şey özgün dosyanızı değiştirmez."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Bir resmi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Resim seçin</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP veya AVIF. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Filtreler uygulanmış önizleme"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Özgün hali göster</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Hazır ayarlar</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Siyah beyaz</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepya</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Canlı</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Soluk</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Ters çevir</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Sıfırla</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Parlaklık: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Kontrast: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Doygunluk: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Gri tonlama: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepya: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Ters çevirme: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Ton döndürme: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Bulanıklık: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Şu biçimde kaydet</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Aynı</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Aynı biçim, PNG, JPEG ve WebP'yi geldikleri gibi verir; GIF, BMP ve AVIF ise PNG olur.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Uygula ve kaydet</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Her filtre pikseller üzerinde ne yapar</h2>
+<p>Her piksel, kırmızı, yeşil ve mavi için 0 ile 255 arasında üç sayıdır. Parlaklık bu sayıları çarpar; yüzde 150, 100 değerini 150 yapar ve 255'i aşan her şey beyaza kırpılır. Kontrast, sayıları orta griden (128) uzağa gerer ya da ona doğru sıkıştırır; yüzde 0 kontrastın düz gri bir resim vermesinin nedeni budur. Doygunluk ve ton döndürme, üç kanalı sabit renk matrisleriyle karıştırır; bir fotoğraf böyle griye ya da renk çemberinde bir tur atmaya doğru kayar.</p>
+<p>Gri tonlama, her pikseli parlaklık (luminance) değeriyle değiştirir. Bu, en çok yeşili (yaklaşık yüzde 72), sonra kırmızıyı (yüzde 21) ve en az maviyi (yüzde 7) sayan ağırlıklı bir toplamdır; çünkü göz en çok yeşile duyarlıdır. Sepya, eski baskıların sıcak kahverengi tonunu veren bir matris kullanır. Ters çevirme, negatif elde etmek için her değeri 255'ten çıkarır. Bulanıklık, her pikselin ortalamasını komşularıyla alır; her yönde üç kez yapılan bu işlem Gauss bulanıklığına çok yakındır.</p>
+<p>Küçük önizlemeler kaydırıcıları hızlı yapar, ancak kaydedilen dosya tam çözünürlükte parçalar halinde işlenir; böylece sayfa yanıt vermeyi sürdürür ve ilerlemeyi gösterir. Kaydedildikten sonra özgün dosyaya dokunulmamış olur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Sonuçtan tam bir rengi okumak için <a href="/tools/image-color-picker/">Resimden renk seç</a> aracını kullanın.</li>
+  <li>Alt yazı eklemeden önce filtre uygulamak yazıyı net tutar: bu sırayı <a href="/tools/add-text-to-image/">Resme yazı ekle</a> ile izleyin.</li>
+  <li>Bulanık, yüksek kontrastlı bir resim çok farklı sıkışır; bu yüzden sonrasında boyutunu <a href="/tools/compress-image/">Resim sıkıştır</a> ile kontrol edin.</li>
+</ul>

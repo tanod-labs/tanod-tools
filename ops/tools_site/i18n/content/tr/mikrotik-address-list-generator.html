@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "MikroTik address list oluşturucu, CIDR birleştirme | Tanod Tools",
+  "description": "IP, CIDR ve aralık listesini RouterOS güvenlik duvarı address-list betiğine çevirin. Yinelenenleri siler, çakışan ağları birleştirir; IPv4, IPv6 ve isteğe bağlı timeout.",
+  "h1": "MikroTik address list oluşturucu",
+  "lede": "IP adreslerini, ağları veya aralıkları karışık olarak yapıştırın; yinelenenleri silinmiş ve bitişik ağları birleştirilmiş temiz bir RouterOS address-list betiği alın.",
+  "blurb": "IP ve CIDR'lerden tekilleştirilmiş, birleştirilmiş address-list betiği.",
+  "keywords": "mikrotik address list oluşturucu routeros address-list içe aktarma engelleme listesi izin listesi cidr birleştirme alt ağ tekilleştirme ip listesi güvenlik duvarı betik rsc spamhaus drop blocklist allowlist aggregation dedupe",
+  "local_text": "Tarayıcınızda çalışır; listeleriniz cihazınızdan çıkmaz",
+  "limits": "IPv4 ve IPv6 adreslerini, CIDR ağlarını ve ilk-son biçiminde yazılmış aralıkları okur; bir satırda # veya ; sonrası yok sayılır. Büyük listeler (yüz binlerce giriş) çalışır ama biraz zaman alır. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik address list nasıl oluşturulur",
+  "howto": [
+    "Adresleri her satıra bir tane olacak şekilde veya virgül ya da boşlukla ayırarak yapıştırın. Ağlar (<code>203.0.113.0/24</code>) ve aralıklar (<code>198.51.100.10-198.51.100.20</code>) da çalışır.",
+    "Listeye bir ad verin; her girişte olmasını istiyorsanız bir timeout veya yorum ekleyin.",
+    "En az girişi almak için birleştirmeyi açık bırakın, sonra betiği kopyalayın veya .rsc dosyasını indirip <code>/import file-name=list.rsc</code> komutunu çalıştırın."
+  ],
+  "faq": [
+    ["Birleştirme ne yapar?", "Her girişi sıralar, çakışan veya bitişik adresleri ve ağları birleştirir ve sonucu tam olarak aynı adresleri kapsayan en az sayıda CIDR bloğu olarak yazar. 10.0.0.0/25 ve 10.0.0.128/25, 10.0.0.0/24 olur; zaten sahip olduğunuz bir ağın içindeki tek bir adres ise kaybolur. Daha önce kapsanmayan hiçbir şey eklenmez."],
+    ["Bir aralık neden birkaç girişe dönüştü?", "10.0.0.5-10.0.0.20 gibi bir aralık tek bir ağ sınırıyla örtüşmez; bu yüzden onu tam olarak kapsayan CIDR blokları olarak yazılır: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 ve 10.0.0.20/32. RouterOS aralıkları da kabul eder, ama CIDR girişlerini okumak ve karşılaştırmak daha kolaydır."],
+    ["İçe aktarma \"already have such entry\" ile yarıda duruyor. Neden?", "RouterOS, listede zaten bulunan bir adresi eklemeyi reddeder ve içe aktarma ilk hatada durur. \"Zaten var olan girişleri atla\" seçeneğini işaretleyin: her satır <code>:do { … } on-error={}</code> içine sarılır; böylece yinelenenler atlanır ve içe aktarma sürer. Ya da önce listeyi boşaltmak için \"Listeyi değiştir\" seçeneğini işaretleyin."],
+    ["Listeyi bir güvenlik duvarı kuralında nasıl kullanırım?", "<code>src-address-list=</code> veya <code>dst-address-list=</code> ile eşleştirin; örneğin <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. raw tablosunda düşürmek bağlantı izlemeyi atlar; bu da büyük engelleme listeleri için daha ucuzdur."],
+    ["Listelerim yükleniyor mu?", "Hayır. Ayrıştırma ve birleştirme tarayıcınızda çalışır; yapıştırdığınız hiçbir şey bir yere gönderilmez."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Adresler, ağlar veya aralıklar</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">Her satıra bir tane ya da virgülle ayrılmış. # veya ; sonrasındaki metin yok sayılır.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">Liste adı</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">İsteğe bağlı; 1h, 1d veya 1w gibi.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Yorum</label>
+        <input type="text" id="al-comment" value="" placeholder="içe aktarıldı 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Çakışan ve bitişik ağları birleştir</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Zaten var olan girişleri atla</label>
+      <label class="check"><input type="checkbox" id="al-replace">Listeyi değiştir (önce mevcut girişlerini kaldır)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">RouterOS betiği</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS'ta address list'ler</h2>
+<p>Bir address list, <code>/ip firewall address-list</code> altında (IPv6 için <code>/ipv6 firewall address-list</code>) adlandırılmış bir IP adresi ve ağ kümesidir. Güvenlik duvarı, NAT, mangle ve raw kuralları tüm bir listeyi tek koşulla eşleştirebilir; bu da kural kümelerini kısa ve hızlı tutar: RouterOS liste üyeliğini ağ başına bir kuralı dolaşmak yerine bir ağaçta arar. Listeler; yönetim ağlarını, müşteri aralıklarını, tehdit akışlarından gelen engelleme listelerini veya bir kuralın <code>action=add-src-to-address-list</code> ile dinamik olarak eklediği adresleri tutmanın olağan yoludur.</p>
+<p>Aynı liste tek adresleri, CIDR ağlarını ve aralıkları tutabilir ve çakışan girişlere izin verilir; içe aktarılan akışların dağınıklaşması da böyle olur. Bu sayfa listeyi yönlendiriciye ulaşmadan önce temizler: her girişi normalleştirir (10.1.2.3/24 gibi ana bilgisayar bitleriyle yazılmış bir ağ 10.1.2.0/24 olur), birebir yinelenenleri atar ve birleştirme açıkken her şeyi en küçük CIDR bloğu kümesine indirger. Betik, tek bir ana bilgisayar için RouterOS'un kendisinin yazdırdığı gibi düz adresi kullanır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Bir ağın boyutunu, aralığını ve maskesini <a href="/tools/subnet-calculator/">Alt ağ hesaplayıcı</a>da kontrol edin.</li>
+  <li>Listeyi kullanan güvenlik duvarı kurallarına mı ihtiyacınız var? <a href="/tools/mikrotik-firewall-generator/">MikroTik güvenlik duvarı oluşturucu</a> ile başlayın.</li>
+  <li>Bunun yerine düz metin bir listeyi mi temizliyorsunuz? <a href="/tools/remove-duplicate-lines/">Tekrar eden satırları sil</a>, sırayı ve özgün metni korur.</li>
+</ul>

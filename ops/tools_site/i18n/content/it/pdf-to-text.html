@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Da PDF a testo: estrai il testo di un PDF online | Tanod Tools",
+  "description": "Estrai il testo da un PDF nel browser, pagina per pagina: copialo o salvalo in .txt. Gratis, senza registrazione né caricamenti. Per le scansioni serve l'OCR.",
+  "h1": "Da PDF a testo",
+  "lede": "Estrai il testo da un PDF pagina per pagina, poi copialo o salvalo come file .txt. Un PDF scansionato non contiene testo da estrarre: in quel caso usa <a href=\"/tools/ocr-pdf/\">OCR PDF</a>.",
+  "blurb": "Estrai il testo da un PDF, copialo o salvalo in .txt.",
+  "keywords": "da pdf a testo pdf in testo estrarre testo da pdf estrai testo da pdf copiare testo da pdf pdf in txt da pdf a txt estrattore di testo pdf convertire pdf in testo testo semplice pagina per pagina pdf scansionato ocr pdf to text pdf to txt extract text from pdf",
+  "limits": "Un PDF alla volta, fino a 200 MB e 500 pagine. Lo strumento legge il testo memorizzato nel PDF. Un PDF scansionato è fatto solo di immagini delle pagine e non ha testo, quindi serve invece <a href=\"/tools/ocr-pdf/\">OCR PDF</a>. Tabelle e colonne vengono estratte riga per riga, e i PDF protetti da password non possono essere aperti.",
+  "howto_title": "Come estrarre il testo da un PDF",
+  "howto": [
+    "Scegli un file PDF, oppure trascinalo sulla pagina.",
+    "Attendi qualche istante mentre ogni pagina viene letta. Scegli tutte le pagine o un intervallo come 1-3, 5 e decidi se segnare dove inizia ogni pagina.",
+    "Premi <strong>Scarica .txt</strong>, oppure copia tutto il testo, oppure copia solo quello di una pagina dall'elenco."
+  ],
+  "faq": [
+    ["Il mio PDF viene caricato?", "No. Il tuo browser legge il testo con la libreria open source pdf.js, sul tuo dispositivo. Non viene inviato nulla a un server e il testo sparisce quando chiudi la scheda."],
+    ["Perché non ottengo testo, o lo ottengo solo da alcune pagine?", "Lo strumento legge il testo memorizzato nel PDF. Un PDF scansionato salva ogni pagina come immagine, senza alcun testo sottostante, quindi non c'è nulla da leggere. Lo stesso vale per le pagine scansionate inserite in un documento altrimenti normale. Usa <a href=\"/tools/ocr-pdf/\">OCR PDF</a> per riconoscere le lettere nelle immagini. Le pagine senza testo sono segnalate nell'elenco pagina per pagina."],
+    ["La formattazione viene mantenuta?", "No. Ottieni testo semplice: lettere, numeri e interruzioni di riga. Font, colori, immagini e impaginazione non vengono inclusi. Le righe vanno a capo dove vanno a capo nel PDF, e viene aggiunta una riga vuota dove lo spazio tra due righe è più grande del solito, come tra un paragrafo e l'altro."],
+    ["Come unisco le righe spezzate in paragrafi?", "Incolla il testo in <a href=\"/tools/remove-line-breaks/\">Rimuovi interruzioni di riga</a>. Lo strumento unisce le righe all'interno di ogni paragrafo, mantiene le righe vuote tra un paragrafo e l'altro e può ricomporre le parole spezzate da un trattino a fine riga."],
+    ["Perché alcune parti del testo sono in un ordine strano o spezzate in frammenti insoliti?", "Il testo esce nell'ordine in cui è memorizzato nel PDF, che di solito è l'ordine di lettura ma non sempre. Tabelle, pagine su più colonne e PDF esportati da programmi di grafica possono uscire in disordine, e alcuni PDF memorizzano il testo in frammenti che non corrispondono alle parole che vedi."],
+    ["Funziona con lingue diverse dall'inglese?", "Sì. Il testo viene letto come Unicode, quindi lettere accentate, cirillico, greco, hindi, cinese e altre scritture vengono estratti, purché il PDF abbia un livello di testo corretto. Se un PDF usa una configurazione dei font insolita, copiando si ottengono caratteri senza senso in qualsiasi programma; la soluzione di solito è usare l'OCR."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Rilascia qui un PDF</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Scegli un PDF</span></label>
+  <p class="drop__hint">Oppure trascinalo in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Pagine</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Tutte le pagine</label>
+        <label><input type="radio" name="scope" value="range">Alcune pagine</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Intervallo di pagine</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Opzioni</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Segna dove inizia ogni pagina</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Pagine</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>Con testo</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Parole</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Caratteri</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Testo estratto</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}Scarica .txt</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Copia tutto il testo</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+  </div>
+  <h3 class="util-h">Pagina per pagina</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Testo trovato in ogni pagina">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Pagina</th><th scope="col">Parole</th><th scope="col">Caratteri</th><th scope="col"><span class="visually-hidden">Copia</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Da dove arriva il testo di un PDF</h2>
+<p>Un PDF creato da un programma di videoscrittura, da un browser o da un programma di grafica memorizza le parole come testo: ogni sequenza di lettere è associata a un font e a una posizione nella pagina. Lo strumento legge proprio questo testo memorizzato. Il tuo browser apre il file con pdf.js, chiede a ogni pagina il suo testo e ricompone le sequenze in righe, nell'ordine in cui il file le elenca. Non guarda mai l'aspetto della pagina sullo schermo.</p>
+<p>Un PDF scansionato è un'altra cosa. Uno scanner o la fotocamera di un telefono produce un'immagine di ogni pagina, e il PDF contiene soltanto quelle immagini, quindi non c'è testo da leggere: vedi delle parole, ma il file non le contiene. Trasformare di nuovo le immagini in testo è un lavoro diverso, chiamato riconoscimento ottico dei caratteri, e lo svolge <a href="/tools/ocr-pdf/">OCR PDF</a>. Le pagine senza testo sono segnalate nell'elenco sotto la casella di testo, così in un file misto puoi distinguere le scansioni dalle pagine normali.</p>
+<p>Il risultato è testo semplice, senza formattazione. Le righe finiscono dove finiscono nel PDF, e viene aggiunta una riga vuota dove lo spazio tra due righe è nettamente maggiore della normale interlinea di quella pagina: è così che si separano paragrafi e titoli. Le legature che alcuni font usano per coppie come fi e fl vengono scomposte di nuovo in lettere separate, e i trattini facoltativi invisibili vengono eliminati.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Le pagine scansionate compaiono come pagine senza testo. Esegui <a href="/tools/ocr-pdf/">OCR PDF</a> su quelle pagine e leggi il risultato.</li>
+  <li>Incolla il testo in <a href="/tools/remove-line-breaks/">Rimuovi interruzioni di riga</a> per trasformare le righe spezzate in paragrafi continui.</li>
+  <li>Ti servono solo alcune pagine come PDF? Con <a href="/tools/extract-pdf-pages/">Estrai pagine da PDF</a> le isoli, e con <a href="/tools/word-counter/">Conta parole</a> conti quello che hai copiato.</li>
+</ul>

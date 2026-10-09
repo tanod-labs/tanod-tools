@@ -1,7 +1,7 @@
 // HTTP status code reference data for http-status-codes.js. Official codes follow the IANA HTTP Status Code Registry.
 // Entry: [code, phrase, meaning, seen, client, owner, defined in, extra search words, flag]
 // flag: "u:<source>" for unofficial codes, "r" for registered but reserved / unused.
-import { tx } from "./i18n.js?v=5";
+import { tx } from "./i18n.js?v=11";
 
 export const CODES = [
   [100, "Continue", tx("The server has received the request headers and the client should go ahead and send the body."), tx("Rarely visible: clients such as curl send Expect: 100-continue before a large upload, and the server answers with this before the real response."), tx("Send the request body. If you do not want the server to wait for it, do not send the Expect header."), tx("Let your HTTP server or framework handle it. Reject large uploads early with a final 4xx instead of reading the body."), "RFC 9110 §15.2.1", "expect"],

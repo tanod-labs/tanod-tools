@@ -1,6 +1,6 @@
 // Load a classic (UMD) vendor script from /tools/vendor/ once, on first use, and resolve with the global it
 // defines. The script comes from this site, so the page's Content-Security-Policy (script-src 'self') allows it.
-import { tx } from "./i18n.js?v=5";
+import { tx } from "./i18n.js?v=11";
 const loading = new Map();
 
 export function loadScript(src, globalName) {

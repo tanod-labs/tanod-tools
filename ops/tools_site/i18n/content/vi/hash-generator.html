@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Tạo hash: MD5, SHA-1, SHA-256, SHA-512 | Tanod Tools",
+  "description": "Tạo hash MD5, SHA-1, SHA-256, SHA-384 và SHA-512 của văn bản hoặc tệp, ở dạng hex hoặc Base64, và đối chiếu với checksum mong đợi. Chạy trong trình duyệt.",
+  "h1": "Tạo hash",
+  "lede": "Tính hash MD5, SHA-1, SHA-256, SHA-384 và SHA-512 của văn bản hoặc tệp, và kiểm tra một tệp tải xuống với checksum được công bố.",
+  "blurb": "Checksum MD5 và SHA của văn bản hoặc tệp.",
+  "keywords": "tạo hash băm mã băm checksum kiểm tra tệp tải xuống md5 sha1 sha256 sha384 sha512 sha-2 file hash digest verify",
+  "limits": "Văn bản tối đa khoảng 5 MB. Tệp tối đa 200 MB, được đọc vào bộ nhớ trên thiết bị này.",
+  "howto_title": "Cách tạo hash",
+  "howto": [
+    "Nhập hoặc dán văn bản, hoặc chuyển sang Tệp và chọn một tệp. Cả năm hash được tính ngay.",
+    "Chọn kết quả ở dạng hex chữ thường, hex chữ hoa hoặc Base64.",
+    "Để xác minh một tệp tải xuống, dán checksum được công bố vào ô <strong>So sánh</strong>; thuật toán trùng khớp sẽ được làm nổi bật. Sao chép một hash, hoặc tải tất cả xuống dưới dạng tệp .txt."
+  ],
+  "faq": [
+    ["Văn bản hoặc tệp của tôi có bị tải lên không?", "Không. Hash được tính trong trình duyệt của bạn: hash SHA bằng các hàm Web Crypto có sẵn của trình duyệt còn MD5 bằng mã trên trang này. Không có gì được gửi đi hay lưu lại, và đóng thẻ là mọi thứ bị xóa."],
+    ["MD5 hay SHA-1 có an toàn để dùng không?", "Không an toàn cho mục đích bảo mật. Cả hai đều đã bị phá vỡ: người ta có thể cố ý tạo ra hai đầu vào khác nhau có cùng hash MD5 hoặc SHA-1. Chúng vẫn dùng tốt để phát hiện lỗi hỏng dữ liệu ngẫu nhiên, chẳng hạn kiểm tra tệp tải xuống còn nguyên vẹn. Với bất cứ việc gì mà có người có thể giả mạo dữ liệu, hoặc với chữ ký, hãy dùng SHA-256 trở lên."],
+    ["Tôi có thể dùng công cụ này để băm mật khẩu không?", "Bạn có thể xem hash của một mật khẩu, nhưng hash thường là cách sai để lưu mật khẩu: những hash nhanh như thế này có thể bị dò hàng tỷ lần mỗi giây. Lưu mật khẩu cần một thuật toán chậm, có salt như Argon2, scrypt hoặc bcrypt, do máy chủ của bạn chạy."],
+    ["Băm có giống mã hóa không?", "Không. Mã hóa có thể được đảo ngược bằng khóa. Hash là dấu vân tay có độ dài cố định và không thể chuyển ngược lại thành đầu vào; cách duy nhất để tìm đầu vào là đoán rồi so sánh. Cùng một đầu vào luôn cho cùng một hash, còn chỉ thay đổi một ký tự sẽ cho ra hash hoàn toàn khác."],
+    ["Vì sao hash của tôi không khớp với hash từ dòng lệnh?", "Hãy kiểm tra dấu xuống dòng ở cuối: <code>echo \"text\" | sha256sum</code> băm văn bản cộng thêm một ký tự xuống dòng, còn ô này băm đúng những gì bạn đã nhập. Văn bản được băm dưới dạng UTF-8 và các dấu xuống dòng trong ô là ký tự LF đơn, nên văn bản sao chép từ tệp Windows (CRLF) có thể cho kết quả khác. Để khớp chính xác, hãy băm chính tệp đó ở chế độ Tệp."],
+    ["Hex và Base64 ở đây nghĩa là gì?", "Đó là hai cách viết cùng các byte của hash. Hex dùng hai ký tự cho mỗi byte (SHA-256 có 64 ký tự hex); Base64 ngắn hơn (44 ký tự) và được dùng ở những nơi như thuộc tính Subresource Integrity. Ô So sánh chấp nhận cả hai."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Băm</legend>
+  <div class="seg" role="radiogroup" aria-label="Đầu vào">
+    <label><input type="radio" name="mode" value="text" checked>Văn bản</label>
+    <label><input type="radio" name="mode" value="file">Tệp</label>
+  </div>
+</fieldset>
+
+<div id="h-textpanel" class="field">
+  <label for="h-in">Văn bản</label>
+  <textarea id="h-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Nhập hoặc dán văn bản cần băm"></textarea>
+  <span class="help" id="h-tinfo"></span>
+</div>
+
+<div id="h-filepanel" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Thả tệp vào đây để băm</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Chọn tệp</span></label>
+    <p class="drop__hint">Mọi loại tệp, tối đa 200 MB. Tệp được đọc trên thiết bị này và không được tải lên.</p>
+  </div>
+</div>
+
+<div class="opts">
+  <div class="field">
+    <span class="label" id="h-fmt-l">Kết quả</span>
+    <div class="seg" role="radiogroup" aria-labelledby="h-fmt-l">
+      <label><input type="radio" name="fmt" value="hex" checked>hex</label>
+      <label><input type="radio" name="fmt" value="HEX">HEX</label>
+      <label><input type="radio" name="fmt" value="b64">Base64</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="h-expect">So sánh với hash mong đợi</label>
+    <input type="text" id="h-expect" class="mono" autocomplete="off" spellcheck="false" placeholder="Dán checksum để kiểm tra">
+  </div>
+</div>
+<p class="dv-verdict" id="h-verdict" role="status" hidden></p>
+<div class="status" id="status" role="status" hidden></div>
+<div id="h-result" hidden>
+  <p class="help" id="h-info"></p>
+  <dl class="dv-rows" id="h-rows"></dl>
+  <div class="actions">
+    <button class="btn btn--primary" id="h-copyall" type="button">{{mark:i-copy}}Sao chép tất cả</button>
+    <button class="btn" id="h-dl" type="button">{{mark:i-download}}Tải xuống .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="h-clear" type="button">Xóa</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Hash dùng để làm gì</h2>
+<p>Hàm băm mật mã biến mọi đầu vào, từ một chữ cái đến một tệp lớn, thành một dấu vân tay ngắn có độ dài cố định. Cùng một đầu vào luôn cho cùng một dấu vân tay, và chỉ đổi một bit là ra kết quả hoàn toàn khác. Nhờ vậy hash hữu ích để kiểm tra tệp đến nơi không bị thay đổi, để phát hiện tệp trùng lặp, và làm thành phần cơ bản trong chữ ký số và hệ thống quản lý phiên bản.</p>
+<p>Để kiểm tra một tệp tải xuống, hãy tìm checksum mà nhà phát hành niêm yết bên cạnh (thường là SHA-256), thả tệp vào đây và dán checksum vào ô So sánh. Nếu khớp, tệp giống từng byte với tệp mà nhà phát hành đã băm. Sự trùng khớp chỉ chứng minh tệp đúng như họ dự định nếu bạn tin tưởng trang mà checksum được lấy từ đó.</p>
+<p>Các hash SHA-1 và SHA-2 (SHA-256, SHA-384, SHA-512) được tính bằng các hàm Web Crypto của trình duyệt. Trình duyệt không cung cấp MD5, nên trang này có sẵn mã MD5 riêng, đọc tệp theo từng phần và hiển thị tiến độ với tệp lớn. MD5 và SHA-1 chỉ được giữ lại để tương thích với các checksum cũ.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Cần nội dung tệp ở dạng văn bản thay vì dấu vân tay? Hãy dùng <a href="/tools/base64-encode-decode/">Mã hóa và giải mã Base64</a>.</li>
+  <li>Để tạo một chuỗi bí mật ngẫu nhiên mạnh thay vì băm một chuỗi, hãy dùng <a href="/tools/password-generator/">Tạo mật khẩu</a>.</li>
+  <li>So sánh hai văn bản theo từng dòng dễ hơn với <a href="/tools/text-diff/">So sánh văn bản</a> so với việc so hai hash.</li>
+</ul>

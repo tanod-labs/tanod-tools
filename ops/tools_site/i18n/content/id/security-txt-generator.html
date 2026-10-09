@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "Pembuat dan pemeriksa security.txt (RFC 9116) | Tanod Tools",
+  "description": "Buat security.txt untuk /.well-known/ dengan field yang tepat, atau tempel milik Anda untuk diperiksa terhadap RFC 9116: Contact, Expires, Canonical, tanda tangan.",
+  "h1": "Pembuat dan pemeriksa security.txt",
+  "lede": "Susun security.txt yang valid menurut RFC 9116 agar peneliti tahu cara menghubungi Anda, atau tempel file yang sudah ada untuk melihat apa yang salah. Bagian dari persiapan menghadapi <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">Cyber Resilience Act Uni Eropa</a>.",
+  "blurb": "Buat security.txt dan periksa terhadap RFC 9116.",
+  "keywords": "pembuat security.txt pemeriksa security.txt cara membuat security.txt validator security.txt kontak keamanan pengungkapan kerentanan security.txt generator security.txt checker rfc 9116 well-known security.txt validator vulnerability disclosure contact expires canonical pgp cyber resilience act",
+  "limits": "Hanya memeriksa teks terhadap RFC 9116. Alat ini tidak mengambil isi situs Anda (apa pun yang Anda ketik tidak keluar dari halaman ini, jadi tempel saja filenya), tidak memverifikasi tanda tangan OpenPGP, dan tidak menguji apakah suatu alamat berfungsi. Ini templat, bukan nasihat hukum.",
+  "howto_title": "Cara membuat dan memeriksa security.txt",
+  "howto": [
+    "Isi minimal satu Contact (alamat email, nomor telepon, atau halaman https://) dan periksa tanggal Expires. Isi field opsional yang Anda perlukan, misalnya Policy dan Preferred-Languages.",
+    "Salin atau unduh filenya, lalu terbitkan di <code>/.well-known/security.txt</code> pada domain Anda lewat HTTPS sebagai teks biasa.",
+    "Untuk memeriksa file yang sudah ada, tempel teksnya ke pemeriksa. Perbaiki error, lalu lihat peringatannya. Tambahkan alamat tempat file itu disajikan untuk menguji field Canonical.",
+    "Pasang pengingat di kalender untuk memperbarui Expires sebelum tanggalnya lewat."
+  ],
+  "faq": [
+    ["Apakah Cyber Resilience Act mewajibkan security.txt?", "Tidak. Peraturan ini mengharapkan produsen memiliki kebijakan pengungkapan kerentanan yang terkoordinasi dan cara yang dipublikasikan untuk melaporkan kerentanan. File security.txt adalah cara umum untuk mempublikasikan kontak itu dan dianjurkan para praktisi, tetapi peraturan tidak menyebut formatnya. Lihat <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">panduan untuk vendor kecil</a>."],
+    ["Di mana tepatnya file ini diletakkan?", "Di <code>https://your-domain/.well-known/security.txt</code>, disajikan lewat HTTPS dengan content type <code>text/plain; charset=utf-8</code>. RFC 9116 juga membolehkan salinan di <code>/security.txt</code> untuk konfigurasi lama. Terbitkan di setiap domain atau subdomain yang ingin Anda cakup."],
+    ["Seberapa jauh ke depan sebaiknya Expires diatur?", "RFC 9116 menyebut tanggalnya sebaiknya kurang dari setahun ke depan, agar peneliti dapat percaya bahwa detail kontak selalu diperbarui. Pembuat ini memakai bawaan sedikit di bawah setahun. Setelah tanggal itu lewat, pembaca diminta mengabaikan file tersebut, jadi perbarui tepat waktu."],
+    ["Apakah file harus ditandatangani dengan PGP?", "Tidak, penandatanganan bersifat opsional tetapi dianjurkan. File yang ditandatangani adalah pesan cleartext-signed OpenPGP, dibuat dengan <code>gpg --clearsign security.txt</code>. Pemeriksa mengenali format bertanda tangan dan memeriksa kerangkanya, tetapi tidak dapat memverifikasi tanda tangannya; gunakan <code>gpg --verify</code> untuk itu."],
+    ["Mengapa pemeriksa tidak bisa mengambil situs saya?", "Demi menjaga privasi: halaman ini berjalan sepenuhnya di browser Anda dan tidak mengirim permintaan ke situs lain. Buka file Anda di tab browser, salin teksnya, lalu tempel di sini. Cara ini juga memeriksa apa yang benar-benar diterima pengunjung."],
+    ["Untuk apa field Canonical?", "Field ini mencantumkan alamat tempat file seharusnya disajikan, sehingga pembaca dapat memastikan bahwa file yang ditemukan di satu alamat memang berasal dari sana. Jika Anda mengisi alamat tempat file disajikan, pemeriksa menguji apakah salah satu baris Canonical cocok dengan alamat itu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">Buat security.txt</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Wajib</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (satu per baris)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Alamat email, nomor telepon dengan kode negara, atau halaman https://. Baris pertama adalah yang dicoba peneliti lebih dulu.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (akhir hari ini, UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>Opsional</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Kebijakan pengungkapan kerentanan Anda. <a href="/tools/vulnerability-disclosure-policy-generator/">Buat di sini.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (satu per baris)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Tautan https:// ke kunci publik Anda, record dns:, atau fingerprint openpgp4fpr:.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="id, en">
+            <span class="help">Kode bahasa dipisahkan koma.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (satu per baris)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">Alamat tempat file ini akan disajikan. Dianjurkan, terutama untuk file bertanda tangan.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Halaman yang berterima kasih kepada peneliti yang melaporkan masalah.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Halaman lowongan kerja keamanan Anda.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">security.txt Anda</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Salin</button>
+          <button class="btn" id="stx-dl" type="button">Unduh security.txt</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Catatan tentang file"></ul>
+        <h3 class="util-h">Letak file</h3>
+        <p class="help">Simpan file sebagai <code>security.txt</code> dan sajikan di <code>https://your-domain/.well-known/security.txt</code> lewat HTTPS sebagai teks biasa (<code>text/plain; charset=utf-8</code>). Lakukan hal yang sama di setiap domain yang ingin Anda cakup. Untuk menandatanganinya, jalankan <code>gpg --clearsign security.txt</code> lalu terbitkan hasilnya.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">Periksa security.txt</h2>
+    <div class="field">
+      <label for="stx-in">Tempel teks security.txt</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Alamat tempat file disajikan (opsional)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Domain atau alamat lengkap. Dipakai untuk menguji kecocokan Canonical. Tidak ada yang diambil dari internet.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Muat contoh</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Hapus</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Hasil pemeriksaan"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>Fungsi security.txt</h2>
+<p>Ketika peneliti, pelanggan, atau CERT menemukan kelemahan pada perangkat lunak Anda, masalah pertamanya adalah kepada siapa harus melapor. security.txt adalah file teks kecil di alamat tetap, <code>/.well-known/security.txt</code>, yang menjawabnya: sebuah kontak, tanggal kedaluwarsa, dan opsional tautan ke kebijakan pengungkapan serta kunci publik Anda. RFC 9116 mendefinisikan formatnya, dan banyak pemindai, platform bug bounty, dan CERT nasional mencari file ini sebelum mencari di tempat lain.</p>
+<p>Bagi vendor perangkat lunak di Uni Eropa, file ini juga mendukung kewajiban menurut Cyber Resilience Act: Lampiran I mengharapkan adanya cara yang dipublikasikan bagi pihak luar untuk melaporkan kerentanan, serta proses untuk menanganinya. Peraturan tidak menyebut format ini, tetapi inilah cara yang lazim untuk mempublikasikan kontaknya. <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">Panduan pelaporan untuk vendor kecil</a> menguraikan sisa persiapannya, termasuk jam 24 jam.</p>
+<h2>Field-field</h2>
+<p>Contact dan Expires wajib ada. Contact boleh muncul beberapa kali dan harus berupa URI: <code>mailto:</code>, <code>tel:</code> atau <code>https:</code>. Expires muncul sekali, berupa tanggal dan waktu seperti <code>2027-12-31T23:59:59Z</code>, dan RFC 9116 meminta jangkanya kurang dari setahun ke depan. Encryption, Acknowledgments, Policy, Hiring, dan Canonical adalah tautan opsional, dan setiap alamat web harus memakai https. Preferred-Languages muncul sekali dan berisi kode bahasa. Field yang tidak didefinisikan RFC diabaikan pembaca, sehingga pemeriksa menandainya sebagai peringatan: biasanya itu salah ketik.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Gunakan kotak surat yang dibaca beberapa orang, bukan alamat satu orang, dan uji dengan mengirim pesan ke sana.</li>
+  <li>Tulis <a href="/tools/vulnerability-disclosure-policy-generator/">kebijakan pengungkapan kerentanan</a> dan tautkan lewat field Policy.</li>
+  <li>Ketahui tenggat Anda sebelum laporan masuk: <a href="/tools/cra-incident-clock/">jam insiden 24 jam CRA</a> mengubah waktu Anda mengetahui kejadian menjadi tenggat bertanggal.</li>
+</ul>

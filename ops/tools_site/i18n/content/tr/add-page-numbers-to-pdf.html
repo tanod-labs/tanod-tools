@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "PDF'e sayfa numarası ekle, ücretsiz ve çevrimiçi | Tanod Tools",
+  "description": "PDF'e tarayıcınızda sayfa numarası ekleyin. Konumu, biçimi ve başlangıç numarasını seçin, kapağı atlayın. Ücretsiz, kayıt gerekmez, dosyalar cihazınızda kalır.",
+  "h1": "PDF'e sayfa numarası ekle",
+  "lede": "Her sayfaya ya da yalnızca seçtiğiniz sayfalara sayfa numarası basın ve nereye gideceğini belirleyin.",
+  "blurb": "PDF sayfalarını numaralandırın.",
+  "keywords": "pdf sayfa numarası ekle pdf numaralandırma sayfa numaralama sayfa numarası koy alt bilgi üst bilgi sayfa x / y page numbers pagination footer header",
+  "limits": "Aynı anda tek PDF, en fazla 200 MB. Parola korumalı PDF'ler düzenlenemez. Numaralar Helvetica yazı tipiyle çizilir.",
+  "howto_title": "PDF'e sayfa numarası nasıl eklenir?",
+  "howto": [
+    "Bir PDF dosyası seçin ya da sayfaya sürükleyin.",
+    "Konumu, numara biçimini ve başlangıç numarasını seçin. Gerekirse kapak sayfasını atlayın veya numaralandırmayı bazı sayfalarla sınırlayın.",
+    "<strong>Sayfa numarası ekle</strong> düğmesine basın, ardından numaralandırılmış PDF'i indirin."
+  ],
+  "faq": [
+    ["PDF'im yükleniyor mu?", "Hayır. Numaralar, açık kaynaklı pdf-lib kitaplığı tarafından tarayıcınızın içinde PDF'inizin bir kopyasına çizilir. Sunucuya hiçbir şey gönderilmez."],
+    ["Kapak sayfasını numarasız nasıl bırakırım?", "<em>İlk sayfayı atla</em> kutusunu işaretleyin. Başlangıç numarası, numaralandırılan ilk sayfaya uygulanır; yani ikinci sayfa, belirlediğiniz başlangıç numarasını alır. 2. sayfada \"2\" yazmasını istiyorsanız başlangıç numarasını 2 yapın."],
+    ["\"Sayfa 1 / N\" biçiminde N neye göre belirlenir?", "N, kullanılan son numaradır. Tüm sayfalar numaralandırılıyor ve 1'den başlıyorsa bu, toplam sayfa sayısıdır. Kapağı atlarsanız ya da yalnızca bazı sayfaları numaralandırırsanız, başlangıç numarası artı numaralandırılan sayfa sayısı eksi bir olur."],
+    ["Döndürülmüş sayfalarda numaralar dik görünür mü?", "Evet. Bir sayfa 90, 180 veya 270 derece döndürülmüş olarak saklanıyorsa numara, sayfanın görünüşüne göre yerleştirilir ve onunla birlikte döndürülür; böylece seçtiğiniz konumda dik okunur. Numara, sayfanın görünür alanının (varsa kırpma kutusunun) içine yerleştirilir."],
+    ["Yazı tipini değiştirebilir miyim?", "Bu araçta hayır. Numaralar standart bir PDF yazı tipi olan Helvetica ile çizilir; böylece her yerde çalışır ve dosya boyutuna çok az ekler."],
+    ["PDF'in geri kalanını değiştirir mi?", "Mevcut sayfa içeriğine dokunulmaz, numaralar üstüne eklenir. Başlık ve yazar gibi belge bilgileri değişmez."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF'i buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF seçin</span></label>
+  <p class="drop__hint">Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pos">Konum</label>
+      <select id="pos">
+        <option value="bc" selected>Altta, ortada</option>
+        <option value="br">Altta, sağda</option>
+        <option value="bl">Altta, solda</option>
+        <option value="tc">Üstte, ortada</option>
+        <option value="tr">Üstte, sağda</option>
+        <option value="tl">Üstte, solda</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fmt">Biçim</label>
+      <select id="fmt">
+        <option value="n" selected>1</option>
+        <option value="page">Sayfa 1</option>
+        <option value="of">Sayfa 1 / N</option>
+        <option value="slash">1 / N</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Başlangıç numarası</label>
+      <input id="start" type="number" inputmode="numeric" min="0" max="99999" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Yazı boyutu (pt)</label>
+      <input id="size" type="number" inputmode="numeric" min="6" max="48" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="margin">Kenar boşluğu (pt)</label>
+      <input id="margin" type="number" inputmode="numeric" min="0" max="200" step="1" value="28">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Numaralandırılacak sayfalar</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Tüm sayfalar</label>
+        <label><input type="radio" name="scope" value="range">Bazı sayfalar</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Sayfalar</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+      <span class="help">Sayfalar 1'den başlayarak sayılır.</span>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="skip"> İlk sayfayı (kapak) atla</label>
+    </div>
+  </div>
+  <p class="help" id="sample" aria-live="polite"></p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Sayfa numarası ekle</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>PDF'i yüklemeden sayfa numarası ekleme</h2>
+<p>Sayfa numaraları, her sayfanın üstüne çizilen küçük metin parçalarından ibarettir. Tarayıcınız bunu doğrudan yapabilir: PDF'i pdf-lib ile açar, seçtiğiniz her sayfaya bir satır Helvetica metni ekler ve yeni bir dosya yazar. Özgün sayfa içeriğine dokunulmaz.</p>
+<p>Her sayfanın kendi boyutu, kırpma kutusu ve dönüşü olabilir; bu yüzden konum her sayfa için ayrı hesaplanır. Kenar boşlukları görünür alanın kenarından ölçülür ve yan çevrilmiş saklanan bir sayfada numara da onunla birlikte döndürülür, böylece beklediğiniz yerde yine dik okunur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Önce birkaç dosyayı mı birleştiriyorsunuz? <a href="/tools/merge-pdf/">PDF birleştir</a> aracını kullanın, sonra sonucu numaralandırın; böylece numaralar baştan sona kesintisiz ilerler.</li>
+  <li>Numara yerine sayfanın üzerine bir işaret mi gerekiyor? <a href="/tools/watermark-pdf/">PDF'e filigran ekle</a> aracını deneyin.</li>
+  <li>Sayfalar yanlış sırada mı? Numaralandırmadan önce <a href="/tools/reorder-pdf-pages/">PDF sayfalarını yeniden sırala</a> ile düzeltin.</li>
+</ul>

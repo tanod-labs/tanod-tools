@@ -1,0 +1,139 @@
+<!--meta
+{
+  "title": "Podpisz PDF online: narysuj lub wpisz podpis | Tanod Tools",
+  "description": "Podpisz PDF w przeglądarce: narysuj lub wpisz podpis, umieść go na stronie, dodaj datę i zapisz. Bezpłatnie, bez rejestracji, plik zostaje na Twoim urządzeniu.",
+  "h1": "Podpisz plik PDF",
+  "lede": "Narysuj lub wpisz swój podpis, umieść go w dowolnym miejscu strony, w razie potrzeby dodaj datę i zapisz podpisany PDF. Wszystko dzieje się na Twoim urządzeniu.",
+  "blurb": "Narysuj lub wpisz podpis i umieść go na stronie PDF.",
+  "keywords": "podpisz pdf podpis w pdf dodaj podpis do pdf wstaw podpis do pdf podpis elektroniczny narysuj podpis wpisz podpis wypełnij i podpisz podpisz dokument online parafka inicjały data sign pdf add signature to pdf esign",
+  "limits": "Jeden plik PDF naraz, do 200 MB i do 500 stron. Podpis jest dodawany do strony jako obraz. To nie jest podpis cyfrowy z certyfikatem, więc nie dowodzi, kto podpisał, ani że plik pozostał niezmieniony. Plików PDF chronionych hasłem nie można edytować.",
+  "howto_title": "Jak podpisać plik PDF",
+  "howto": [
+    "Wybierz plik PDF albo przeciągnij go na stronę.",
+    "Narysuj swój podpis albo przełącz na <strong>Wpisywanie</strong> i wpisz swoje imię i nazwisko. Zaznacz pole, aby dodać datę.",
+    "Wybierz stronę, a potem przeciągnij podpis na właściwe miejsce, dotknij strony tam, gdzie ma się pojawić, albo użyj suwaków położenia i rozmiaru. Naciśnij <strong>Dodaj podpis</strong> i pobierz podpisany PDF."
+  ],
+  "faq": [
+    ["Czy mój plik PDF lub podpis jest przesyłany?", "Nie. Strona jest rysowana, a podpis dodawany przez kod działający w Twojej przeglądarce, z użyciem bibliotek pdf.js i pdf-lib o otwartym kodzie źródłowym. Ani plik PDF, ani podpis nie są wysyłane na serwer ani zapisywane, a po zamknięciu karty znikają oba."],
+    ["Czy to podpis prawnie wiążący?", "Wiele osób i instytucji akceptuje obraz podpisu na codziennych dokumentach, ale to, czy to wystarczy, zależy od dokumentu, od tego, kto o podpis prosi, i od obowiązujących Cię przepisów. To nie jest podpis cyfrowy oparty na certyfikacie: nie pokazuje, kto podpisał, ani że plik pozostał potem niezmieniony. Jeśli masz wątpliwości, zapytaj osobę, która poprosiła o podpis, co akceptuje."],
+    ["Czy mogę podpisać więcej niż jedną stronę?", "Tak. Wybierz <em>Każda strona</em>, aby umieścić ten sam podpis w tym samym miejscu na wszystkich stronach, co sprawdza się przy parafkach. Położenie i rozmiar są zachowywane proporcjonalnie do każdej strony, więc działa to także na stronach o różnych rozmiarach. Aby podpisać różne strony w różnych miejscach, podpisz raz, potem otwórz wynik i podpisz ponownie."],
+    ["Czy podpis można potem usunąć?", "Staje się częścią strony, więc widzi go każdy czytnik PDF, ale to zwykły obraz i ktoś z edytorem PDF mógłby go usunąć. Oryginalny plik nie jest zmieniany: pobierasz nową kopię. Jeśli chcesz ograniczyć, kto może zmieniać podpisaną kopię, dodaj hasło w narzędziu <a href=\"/tools/protect-pdf/\">Zabezpiecz PDF hasłem</a>."],
+    ["Dlaczego mój wpisany podpis wygląda inaczej na innym urządzeniu?", "Wpisane podpisy używają czcionek zainstalowanych na Twoim urządzeniu, a style pisma kaligraficznego różnią się między systemami. Podgląd pokazuje to, co zostanie zapisane. Zapisany podpis jest obrazem, więc wygląda tak samo, gdziekolwiek otworzysz PDF."],
+    ["Czy działa na obróconych stronach?", "Tak. Strona jest pokazywana tak, jak wygląda w czytniku PDF, a podpis obraca się razem ze stroną, dzięki czemu jest ustawiony prosto. Strony przycięte też są obsługiwane: położenie jest mierzone wewnątrz widocznego obszaru."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Upuść plik PDF tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">Twój podpis</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Sposób utworzenia</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Rysowanie</label>
+          <label><input type="radio" name="sg-mode" value="type">Wpisywanie</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="Pole podpisu. Narysuj tutaj swój podpis myszą, palcem lub rysikiem."></canvas>
+        <span class="help">Rysuj myszą, palcem lub rysikiem. Jeśli nie możesz rysować, wybierz Wpisywanie.</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Cofnij ostatnią kreskę</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Wyczyść</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Twoje imię i nazwisko</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Wpisz swoje imię i nazwisko">
+        </div>
+        <div class="field">
+          <label for="sg-font">Styl</label>
+          <select id="sg-font">
+            <option value="script" selected>Pismo kaligraficzne</option>
+            <option value="hand">Pismo odręczne</option>
+            <option value="serif">Klasyczna kursywa</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Podgląd wpisanego podpisu"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Kolor atramentu</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Czarny</label>
+          <label><input type="radio" name="sg-ink" value="blue">Niebieski</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">Dodaj datę pod podpisem</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Tekst daty</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Umieść podpis na stronie</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Poprzednia strona">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Strona</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Następna strona">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">Przeciągnij podpis po stronie, dotknij jej tam, gdzie podpis ma się pojawić, albo użyj suwaków.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">Położenie w poziomie: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">Położenie w pionie: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Rozmiar: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">Strony do podpisania</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>Ta strona</label>
+            <label><input type="radio" name="sg-scope" value="all">Każda strona</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Dodaj podpis</button>
+    <span class="help" id="sg-hint">Najpierw narysuj lub wpisz podpis.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Jak podpis trafia na stronę PDF</h2>
+<p>Strona PDF ma stały układ, więc podpisanie jej polega na dodaniu czegoś do strony, a nie na wpisaniu czegoś w jej treść. To narzędzie zamienia Twój podpis w mały obraz z przezroczystym tłem, razem z wierszem daty, jeśli zaznaczysz to pole, i rysuje ten obraz na wybranej stronie. Przeglądarka pokazuje stronę za pomocą pdf.js, a nową kopię zapisuje za pomocą pdf-lib, więc strona, którą widzisz, to ta sama strona, która zostaje podpisana.</p>
+<p>Położenie i rozmiar są zapisywane jako ułamki strony, a nie jako stałe wymiary. Dlatego jeden zestaw suwaków pasuje do stron o różnych rozmiarach, gdy podpisujesz każdą stronę, i dlatego strona zapisana w pliku jako obrócona bokiem i tak dostaje podpis ustawiony prosto. Oryginalny plik nigdy nie jest zmieniany; pobierasz osobną, podpisaną kopię.</p>
+<p>Efektem jest obraz podpisu, podobnie jak wtedy, gdy większość ludzi podpisuje formularze, listy i umowy odręcznie, a potem je skanuje. To nie jest kryptograficzny podpis cyfrowy. Takie podpisy opierają się na wydanym Ci certyfikacie, chronią plik przed zmianami po podpisaniu i wymagają usługi stworzonej do tego celu. To, jakiego rodzaju podpis jest potrzebny, zależy od dokumentu i od tego, kto o podpis prosi.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Rysuj powoli i wykorzystaj całe pole: podpis jest przycinany do narysowanych linii, więc większy rysunek daje ostrzejszy wynik przy tym samym rozmiarze na stronie.</li>
+  <li>Zablokuj podpisaną kopię w narzędziu <a href="/tools/protect-pdf/">Zabezpiecz PDF hasłem</a> albo oznacz każdą stronę w narzędziu <a href="/tools/watermark-pdf/">Dodaj znak wodny do PDF</a>.</li>
+  <li>Chcesz najpierw dodać podpisaną stronę do innego dokumentu? Narzędzie <a href="/tools/merge-pdf/">Połącz pliki PDF</a> łączy pliki w wybranej przez Ciebie kolejności.</li>
+</ul>

@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "Yoğunluk ve basınç irtifası hesaplama | Tanod Tools",
+  "description": "Saha yüksekliği, altimetre ayarı ve sıcaklıktan ISA standart atmosferiyle basınç irtifasını ve yoğunluk irtifasını hesaplayın.",
+  "h1": "Yoğunluk irtifası ve basınç irtifası hesaplama",
+  "lede": "Saha yüksekliğini, altimetre ayarını ve dış hava sıcaklığını girerek basınç irtifasını, yoğunluk irtifasını ve ISA sapmasını bulun.",
+  "blurb": "ISA standart atmosferinden basınç ve yoğunluk irtifası.",
+  "keywords": "yoğunluk irtifası basınç irtifası hesaplama isa standart atmosfer altimetre ayarı qnh inhg hpa sıcaklık sapması kalkış performansı sıcak yüksek density altitude pressure altitude",
+  "limits": "Kuru hava ISA hesabıdır; nem göz ardı edilir, bu da nemli günlerde yoğunluk irtifasını biraz düşük gösterir. Uçuş planlaması veya seyrüsefer için kullanılmaz: uçağın performans çizelgelerini ve resmî verileri kullanın.",
+  "howto_title": "Yoğunluk irtifası nasıl hesaplanır",
+  "howto": [
+    "Havalimanı yüksekliğini girin ve fit ya da metre seçin.",
+    "Altimetre ayarını (QNH) hPa veya inHg olarak, dış hava sıcaklığını °C veya °F olarak girin.",
+    "Basınç irtifasını ve yoğunluk irtifasını okuyun; sıcaklığın standarttan ne kadar uzak olduğunu görün."
+  ],
+  "faq": [
+    ["Yoğunluk irtifası nedir?", "Standart atmosferde havanın içinde bulunduğunuz havayla aynı yoğunluğa sahip olduğu irtifadır. Sıcak, yüksek veya nemli hava inceldiği için yoğunluk irtifası gerçek yükseklikten çok daha fazla olabilir. Bu, motor gücünü, pervane çekişini ve kanat kaldırmasını azaltır; kalkış mesafesini uzatır ve tırmanma hızını düşürür."],
+    ["Basınç irtifası nedir?", "Altimetre standart 1013,25 hPa (29,92 inHg) değerine ayarlıyken gösterdiği irtifadır. ISA'da basıncın gerçek basınca eşit olduğu yüksekliktir ve performans çizelgeleri ile uçuş seviyeleri için temeldir."],
+    ["ISA sıcaklığı nasıl bulunur?", "Standart atmosferde deniz seviyesinde 15 °C vardır ve 11 km'ye kadar her 1.000 m'de 6,5 °C (her 1.000 ft'te 1,98 °C) soğur. ISA sapması, gerçek sıcaklık eksi basınç irtifasındaki ISA sıcaklığıdır; standardın üstündeki her derece yoğunluk irtifasını kabaca 120 ft artırır."],
+    ["Sonucum neden pratik kuraldan veya çizelgeden farklı?", "Çizelgeler ve DA = PA + 120 × (OAT − ISA sıcaklığı) kuralı doğrusal yaklaşımlardır. Bu araç ISA yoğunluk profilini doğrudan tersine çevirir; bu yüzden sıcak günlerde birkaç yüz fit farklı çıkar. Kesin değer, pratik kural değerinin yanında da gösterilir."],
+    ["Nem önemli mi?", "Evet, biraz. Su buharı kuru havadan hafiftir; bu yüzden nemli hava daha incedir. Bu hesaplayıcı kuru hava kullanır, dolayısıyla sıcak ve nemli bir günde gerçek yoğunluk irtifası biraz daha yüksektir."],
+    ["Altimetre ayarını nereden alırım?", "METAR veya ATIS'ten: Q1013 hPa, A2992 ise yüzde bir inHg cinsindendir. Bu sitedeki METAR çözücü ikisini de çevirir. Yalnızca istasyon basıncınız varsa basınç irtifasını doğrudan kullanın."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="da-elev">Saha yüksekliği</label>
+    <input type="text" id="da-elev" inputmode="decimal" autocomplete="off" value="5434" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-elev-u">Yükseklik birimi</label>
+    <select id="da-elev-u"><option value="ft" selected>fit</option><option value="m">metre</option></select>
+  </div>
+  <div class="field">
+    <label for="da-qnh">Altimetre ayarı (QNH)</label>
+    <input type="text" id="da-qnh" inputmode="decimal" autocomplete="off" value="1013.25" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-qnh-u">Basınç birimi</label>
+    <select id="da-qnh-u"><option value="hpa" selected>hPa</option><option value="inhg">inHg</option></select>
+  </div>
+  <div class="field">
+    <label for="da-oat">Dış hava sıcaklığı</label>
+    <input type="text" id="da-oat" inputmode="decimal" autocomplete="off" value="30" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-oat-u">Sıcaklık birimi</label>
+    <select id="da-oat-u"><option value="c" selected>°C</option><option value="f">°F</option></select>
+  </div>
+</div>
+<p class="note" id="da-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="da-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Yoğunluk irtifası</span> <span class="calc-main__val num" id="da-main"></span></p>
+  <dl class="stats" id="da-stats"></dl>
+  <p class="help" id="da-info"></p>
+</div>
+<!--explain-->
+<h2>Formüller</h2>
+<p>Hesap Uluslararası Standart Atmosferi kullanır (ICAO Doc 7488, ISO 2533): deniz seviyesi sıcaklığı T0 = 288,15 K, basınç P0 = 1013,25 hPa, yoğunluk 1,225 kg/m³, 11.000 m'ye kadar L = 0,0065 K/m sıcaklık azalma oranı ve ardından sabit 216,65 K. Troposferde h irtifasındaki basınç P = P0 · (1 − L·h/T0)^(g/(R·L)) ile bulunur; burada g = 9,80665 m/s², R = 287,05287 J/(kg·K) ve üs 5,25588'dir.</p>
+<p>İstasyon basıncı altimetre ayarından P_station = QNH · (1 − L·yükseklik/T0)^5,25588 olarak bulunur. Basınç irtifası, bu basınca sahip ISA irtifasıdır: h = (T0/L) · (1 − (P_station/P0)^(1/5,25588)). Hava yoğunluğu, dış hava sıcaklığı kelvin cinsinden olmak üzere ideal gaz yasasından ρ = P_station / (R · T) olur; yoğunluk irtifası ise bu yoğunluğa sahip ISA irtifasıdır: h = (T0/L) · (1 − (ρ/ρ0)^(1/4,25588)). 11 km üzerinde bunun yerine eş sıcaklıklı katman kullanılır. Sıcaklık sapması, OAT eksi basınç irtifasındaki ISA sıcaklığıdır.</p>
+<p>Dönüşümler kesindir (1 ft = 0,3048 m, 1 inHg = 3.386,38864 Pa). <strong>Uçuş planlaması veya seyrüsefer için kullanılmaz.</strong></p>

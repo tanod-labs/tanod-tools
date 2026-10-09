@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Tạo address list MikroTik, gộp CIDR | Tanod Tools",
+  "description": "Biến danh sách IP, CIDR và dải địa chỉ thành script address-list tường lửa RouterOS. Loại trùng lặp, gộp mạng chồng lấn, IPv4 và IPv6, timeout tùy chọn.",
+  "h1": "Tạo address list MikroTik",
+  "lede": "Dán địa chỉ IP, mạng hoặc dải địa chỉ theo bất kỳ cách trộn nào và nhận script address-list RouterOS sạch, đã loại trùng lặp và gộp các mạng liền kề.",
+  "blurb": "IP và CIDR thành script address-list đã loại trùng và gộp.",
+  "keywords": "tạo address list mikrotik routeros address-list import danh sách chặn danh sách cho phép gộp cidr gộp subnet loại trùng danh sách ip tường lửa script rsc spamhaus drop blocklist allowlist aggregation merge dedupe",
+  "local_text": "Chạy trong trình duyệt; danh sách của bạn không bao giờ rời khỏi thiết bị",
+  "limits": "Đọc địa chỉ IPv4 và IPv6, mạng CIDR và dải viết dạng đầu-cuối; mọi thứ sau # hoặc ; trên một dòng đều bị bỏ qua. Danh sách lớn (hàng trăm nghìn mục) vẫn chạy được nhưng cần một lúc. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập và không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách tạo address list MikroTik",
+  "howto": [
+    "Dán các địa chỉ, mỗi dòng một địa chỉ hoặc ngăn cách bằng dấu phẩy hay dấu cách. Mạng (<code>203.0.113.0/24</code>) và dải (<code>198.51.100.10-198.51.100.20</code>) cũng dùng được.",
+    "Đặt tên cho danh sách, và thêm timeout hoặc comment nếu bạn muốn có trên mọi mục.",
+    "Để bật gộp nhằm có ít mục nhất, rồi sao chép script hoặc tải tệp .rsc xuống và chạy <code>/import file-name=list.rsc</code>."
+  ],
+  "faq": [
+    ["Gộp có tác dụng gì?", "Nó sắp xếp mọi mục, nối các địa chỉ và mạng chồng lấn hoặc liền kề nhau, và ghi kết quả thành số khối CIDR ít nhất bao phủ chính xác cùng các địa chỉ. 10.0.0.0/25 và 10.0.0.128/25 trở thành 10.0.0.0/24, và một địa chỉ đơn nằm trong mạng bạn đã có sẽ biến mất. Không có gì được thêm vào mà trước đó chưa được bao phủ."],
+    ["Vì sao một dải biến thành nhiều mục?", "Một dải như 10.0.0.5-10.0.0.20 không khớp với một ranh giới mạng nào, nên nó được ghi thành các khối CIDR bao phủ chính xác nó: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30 và 10.0.0.20/32. RouterOS cũng chấp nhận dải, nhưng các mục CIDR dễ đọc và dễ so sánh hơn."],
+    ["Việc import của tôi dừng giữa chừng với \"already have such entry\". Vì sao?", "RouterOS từ chối thêm một địa chỉ đã có trong danh sách, và việc import dừng ở lỗi đầu tiên. Hãy đánh dấu \"Bỏ qua các mục đã tồn tại\": mỗi dòng khi đó được bao trong <code>:do { … } on-error={}</code> nên các mục trùng bị bỏ qua và việc import tiếp tục. Hoặc đánh dấu \"Thay thế danh sách\" để làm trống nó trước."],
+    ["Làm sao dùng danh sách trong một quy tắc tường lửa?", "Khớp nó bằng <code>src-address-list=</code> hoặc <code>dst-address-list=</code>, ví dụ <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. Drop trong bảng raw bỏ qua connection tracking, tiết kiệm hơn cho danh sách chặn lớn."],
+    ["Danh sách của tôi có bị tải lên không?", "Không. Việc phân tích và gộp chạy trong trình duyệt của bạn, và không có gì bạn dán bị gửi đi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Địa chỉ, mạng hoặc dải</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">Mỗi dòng một mục hoặc ngăn cách bằng dấu phẩy. Văn bản sau # hoặc ; bị bỏ qua.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">Tên danh sách</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">Tùy chọn, như 1h, 1d hoặc 1w.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Comment</label>
+        <input type="text" id="al-comment" value="" placeholder="imported 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Gộp các mạng chồng lấn và liền kề</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Bỏ qua các mục đã tồn tại</label>
+      <label class="check"><input type="checkbox" id="al-replace">Thay thế danh sách (xóa các mục hiện có của nó trước)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">Script RouterOS</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Sao chép script</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Address list trên RouterOS</h2>
+<p>Address list là một tập hợp có tên gồm các địa chỉ IP và mạng trong <code>/ip firewall address-list</code> (và <code>/ipv6 firewall address-list</code> cho IPv6). Các quy tắc firewall, NAT, mangle và raw có thể khớp cả một danh sách bằng một điều kiện, giúp bộ quy tắc ngắn và nhanh: RouterOS tra cứu tư cách thành viên của danh sách trong một cây thay vì duyệt từng quy tắc cho mỗi mạng. Danh sách là cách thông thường để chứa các mạng quản trị, dải của khách hàng, danh sách chặn từ các nguồn thông tin mối đe dọa, hoặc những địa chỉ mà một quy tắc thêm động bằng <code>action=add-src-to-address-list</code>.</p>
+<p>Cùng một danh sách có thể chứa địa chỉ đơn, mạng CIDR và dải, và các mục chồng lấn được phép, đó là cách các nguồn nhập về trở nên lộn xộn. Trang này làm sạch danh sách trước khi nó đến router: nó chuẩn hóa từng mục (một mạng viết kèm các bit host, như 10.1.2.3/24, trở thành 10.1.2.0/24), loại các mục trùng hệt nhau và, khi bật gộp, rút gọn mọi thứ thành tập khối CIDR tối thiểu. Script dùng địa chỉ thuần cho một host đơn, đúng như cách RouterOS tự in ra.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Kiểm tra kích thước, dải và mặt nạ của một mạng trong <a href="/tools/subnet-calculator/">Tính subnet</a>.</li>
+  <li>Cần các quy tắc tường lửa dùng danh sách này? Hãy bắt đầu từ <a href="/tools/mikrotik-firewall-generator/">Tạo tường lửa MikroTik</a>.</li>
+  <li>Đang dọn một danh sách văn bản thuần? <a href="/tools/remove-duplicate-lines/">Xóa dòng trùng lặp</a> giữ nguyên thứ tự và văn bản gốc.</li>
+</ul>

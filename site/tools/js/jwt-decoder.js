@@ -1,6 +1,6 @@
 // JWT decoder: reads the header and payload of a JSON Web Token. Decoding only; the signature is not checked.
 // The token never leaves the page.
-import { $, el, icon, debounce, copyText, setStatus, UserError, friendlyError, tx, txn, EN, LOCALE, dateFormat, fmtNum } from "./core.js?v=5";
+import { $, el, icon, debounce, copyText, setStatus, UserError, friendlyError, tx, txn, EN, LOCALE, dateFormat, fmtNum } from "./core.js?v=11";
 
 const MAX_CHARS = 1024 * 1024;
 const B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";

@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "KSeF invoice viewer",
+  "icon": "ksef-viewer",
+  "module": "einvoice-viewer",
+  "title": "KSeF invoice viewer: open FA(3) and FA(2) XML | Tanod Tools",
+  "description": "Open a Polish KSeF invoice (FA(3) or FA(2) XML) and read it as a normal invoice. Print, save as PDF or export JSON. Free, nothing is uploaded.",
+  "h1": "KSeF invoice viewer",
+  "lede": "Open a structured invoice from Poland's KSeF and read it as an ordinary invoice: seller, buyer, lines, VAT groups and payment. The XML is read in your browser and never uploaded.",
+  "blurb": "Read a Polish KSeF invoice (FA(3), FA(2)) as a normal invoice.",
+  "keywords": "ksef viewer przeglądarka faktur ksef podgląd faktury ksef wizualizacja faktury xml faktura ustrukturyzowana fa(3) fa(2) otworzyć fakturę xml ksef faktura pdf",
+  "limits": "One file at a time, up to 25 MB; the first 5,000 line items are shown. Reads the KSeF schemas FA(3) and FA(2), including correction invoices. Not read: the structured attachment of FA(3) (Załącznik), FA_RR invoices and the older FA(1). Viewer only: it does not validate the invoice and does not connect to KSeF.",
+  "howto_title": "How to open a KSeF invoice",
+  "howto": [
+    "Choose the invoice XML you saved from KSeF or from your accounting program, or drag it onto the page.",
+    "Read the invoice: seller (Podmiot1) and buyer (Podmiot2), line items, VAT by rate, totals, payment and notes.",
+    "Press <strong>Print or save as PDF</strong>, <strong>Download JSON</strong>, or <strong>Show raw XML</strong>."
+  ],
+  "faq": [
+    [
+      "Is the invoice sent to KSeF or uploaded?",
+      "No. This page does not connect to KSeF or to any server. The XML is read in your browser and shown on this page, and closing the tab clears everything."
+    ],
+    [
+      "Where do I get the XML of an invoice?",
+      "In KSeF you can download an invoice as an XML file, and accounting programs that work with KSeF can export it. This page reads the file you saved."
+    ],
+    [
+      "What is the difference between FA(3) and FA(2)?",
+      "They are successive versions of the same invoice schema (the root element is Faktura). FA(3) is the version used since the mandatory KSeF started in 2026; FA(2) is the earlier one, and invoices written in it are still around. Both are read here."
+    ],
+    [
+      "Does it draw the KSeF QR codes or the official visualisation?",
+      "No. This page shows the content of the XML as a readable invoice. It does not create the QR codes of the official visualisation, and it is independent of the Ministry of Finance."
+    ],
+    [
+      "Why is there no VAT rate on some lines?",
+      "For exempt (zw), reverse-charge (oo) and not-subject (np) lines the file gives a code instead of a rate. The code is shown as it is, together with the matching VAT category."
+    ],
+    [
+      "What about correction invoices?",
+      "A correction (KOR) lists the lines as they were and as they are now, and the totals are the difference. The old lines are marked Before correction. The corrected invoice's number and KSeF number are shown if the file gives them."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "zugferd-factur-x-viewer",
+    "fatturapa-viewer",
+    "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "vietnam-e-invoice-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>KSeF and its invoices</h2>
+<p>KSeF, the Krajowy System e-Faktur, is Poland's national e-invoicing system, run by the Ministry of Finance. Invoices are issued as structured XML in a schema called FA, and in 2026 the system became mandatory for businesses, in stages. The XML that is stored and exchanged is the invoice; the readable version is a visualisation of it. This page makes that visualisation in your browser from the XML you have.</p>
+<h2>What the viewer shows</h2>
+<p>You see the seller (Podmiot1) and buyer (Podmiot2) with their NIP or EU VAT numbers and addresses, the invoice number (P_2), dates (P_1, P_6), the currency, every line item with quantity, unit, price and VAT rate, the VAT by rate group (P_13 and P_14), the total (P_15), payment details with the bank account, additional descriptions, the footer and registry numbers, and the markings that matter: split payment, reverse charge, cash accounting, self-billing and exemption. Amounts are shown exactly as in the file.</p>
+<p>It does not validate the invoice, does not check it against KSeF and does not read the structured attachment of FA(3). If the invoice was issued in a foreign currency, the VAT in PLN is shown under the totals.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Download JSON gives you the invoice as plain data, with Polish field names translated into the EN 16931 business terms.</li>
+  <li>Other formats open here too: XRechnung, ZUGFeRD / Factur-X, FatturaPA and Peppol. The page suggests the matching viewer when you open one.</li>
+  <li>Show raw XML helps when you need an element that the readable invoice does not show.</li>
+</ul>

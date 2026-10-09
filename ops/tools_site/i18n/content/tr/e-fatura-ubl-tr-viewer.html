@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "e-Fatura ve e-Arşiv görüntüleyici: UBL-TR XML açın | Tanod Tools",
+  "description": "e-Fatura veya e-Arşiv faturasını (UBL-TR XML) açıp normal fatura olarak okuyun. Yazdırın, PDF kaydedin, JSON alın. Ücretsiz, hiçbir şey yüklenmez.",
+  "h1": "e-Fatura / UBL-TR görüntüleyici",
+  "lede": "UBL-TR biçimindeki bir e-Fatura veya e-Arşiv faturasını açın ve sıradan bir fatura gibi okuyun: VKN veya TCKN'li satıcı ve alıcı, kalemler, KDV, KDV tevkifatı ve ödeme. XML tarayıcınızda okunur, hiçbir yere yüklenmez.",
+  "blurb": "e-Fatura veya e-Arşiv faturasını (UBL-TR) normal fatura olarak okuyun.",
+  "keywords": "e-fatura görüntüleyici e-fatura xml açma e-arşiv fatura görüntüleme ubl-tr xml okuma e-fatura xml görüntüle xml faturayı pdf yapma gib e-fatura tevkifat temelfatura ticarifatura earsivfatura ettn e-fatura viewer ubl-tr viewer",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB; ilk 5.000 fatura kalemi gösterilir. UBL-TR 1.2 faturalarını okur (TEMELFATURA, TICARIFATURA, EARSIVFATURA ve diğer senaryolar; iade ve tevkifatlı faturalar dahil). Mali mühür doğrulanmaz, dosyanın içindeki XSLT hiçbir zaman çalıştırılmaz. Yalnızca görüntüleyicidir: faturayı doğrulamaz ve GİB'e bağlanmaz.",
+  "howto_title": "e-Fatura veya e-Arşiv faturası nasıl açılır",
+  "howto": [
+    "e-Fatura özel entegratörünüzden, GİB portalından ya da muhasebe programınızdan kaydettiğiniz fatura XML'ini seçin veya sayfaya sürükleyin.",
+    "Faturayı okuyun: VKN veya TCKN ile vergi dairesini taşıyan satıcı ve alıcı, UUID (ETTN), senaryo ve fatura tipi, kalemler, orana göre KDV, tevkifat, toplamlar ve ödeme.",
+    "<strong>Yazdır veya PDF olarak kaydet</strong>, <strong>JSON indir</strong> ya da <strong>Ham XML'i göster</strong> düğmesine basın. Dosyada gönderenin XSLT'si varsa Ekler bölümünde yalnızca indirilebilir olarak sunulur."
+  ],
+  "faq": [
+    [
+      "Fatura yükleniyor veya GİB'e gönderiliyor mu?",
+      "Hayır. Bu sayfa GİB'e, özel entegratörünüze ya da herhangi bir sunucuya bağlanmaz. XML tarayıcınızda okunur ve bu sayfada gösterilir; sekmeyi kapattığınızda her şey silinir."
+    ],
+    [
+      "Mali mühür doğrulanıyor mu?",
+      "Hayır. Bu sayfa mali mührü ya da başka bir e-imzayı doğrulamaz. Mühür taşıyan dosya bir notla işaretlenir; ancak faturayı kimin mühürlediğini veya sonradan değiştirilip değiştirilmediğini bu sayfa söyleyemez. Bunun için özel entegratörünüzün ya da GİB'in araçlarını kullanın."
+    ],
+    [
+      "Dosyanın içindeki XSLT nedir, çalıştırılıyor mu?",
+      "Çoğu e-Fatura, AdditionalDocumentReference içinde bir XSLT stil sayfası taşır; göndericinin yazılımı faturayı bununla çizer. Bu sayfa XSLT'yi hiçbir zaman çalıştırmaz. Stil sayfası göndericinin sağladığı koddur; bu yüzden yalnızca indirilebilir olarak sunulur. Burada gördüğünüz fatura, XML'deki verilerden bu sayfa tarafından çizilir."
+    ],
+    [
+      "SATIS, IADE, TEVKIFAT ve ISTISNA ne demek?",
+      "Bunlar fatura tipi kodunun (InvoiceTypeCode) değerleridir: SATIS satış, IADE iade, TEVKIFAT KDV tevkifatlı fatura, ISTISNA ise istisna kapsamındaki faturadır. Senaryo (ProfileID) ise TEMELFATURA temel, TICARIFATURA ticari, EARSIVFATURA e-Arşiv faturasıdır. İkisi de dosyada yazdığı gibi gösterilir."
+    ],
+    [
+      "KDV tevkifatı nasıl gösterilir?",
+      "KDV'nin tevkif edilen kısmı, dosyadaki kod, ad ve oranla birlikte toplamların altında ve Ek bilgiler bölümünde ayrı bir satır olarak görünür. Ödenecek tutar dosyadakidir; bu sayfa yeniden hesaplamaz."
+    ],
+    [
+      "Faturanın XML'ini nereden alırım?",
+      "Özel entegratörünüz ya da GİB portalı faturayı XML dosyası olarak (çoğunlukla ZIP içinde) indirmenize izin verir; muhasebe programları da dışa aktarabilir. Bu sayfa, kaydettiğiniz XML dosyasını okur."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>e-Fatura, e-Arşiv ve UBL-TR</h2>
+<p>e-Fatura ve e-Arşiv, Gelir İdaresi Başkanlığı'nın (GİB) yürüttüğü elektronik fatura sistemleridir. e-Fatura, sisteme kayıtlı işletmeler arasında kullanılır; e-Arşiv ise sisteme kayıtlı olmayan alıcılara, örneğin tüketicilere kesilen faturaları kapsar. İkisi de UBL 2.1'i Türkiye'ye özgü bir uyarlamayla, UBL-TR ile (CustomizationID değeri TR1.2) kullanır. Fatura XML'in kendisidir; okunabilir hâli onun bir görünümüdür. Bu sayfa, elinizdeki XML'den o görünümü tarayıcınızda üretir.</p>
+<h2>Görüntüleyici neleri gösterir</h2>
+<p>VKN veya TCKN'leri, vergi daireleri ve adresleriyle satıcı ve alıcı; fatura numarası, tarih, UUID (ETTN), senaryo ve fatura tipi kodu; her kalem miktarı, birimi, fiyatı, iskontosu ve KDV oranıyla; istisna kodlarıyla birlikte orana göre KDV; faturada varsa KDV tevkifatı; ÖTV gibi diğer vergiler (dosyada listelendiği gibi); toplamlar ve ödenecek tutar; IBAN'ı içeren ödeme bilgileri; notlar; yabancı para birimli faturanın döviz kuru; sipariş, irsaliye ve iade faturasının atıfta bulunduğu fatura gibi referanslar görünür. Tutarlar dosyadakiyle birebir gösterilir.</p>
+<p>Mali mührü doğrulamaz, faturayı GİB şemalarına ve kurallarına göre denetlemez ve GİB'e bağlanmaz. Çoğu e-Faturanın taşıdığı XSLT stil sayfası hiçbir zaman çalıştırılmaz; Ekler bölümünde yalnızca indirilebilir olarak sunulur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>JSON indir, UBL öğeleri EN 16931 iş terimlerine eşlenmiş hâlde faturayı düz veri olarak verir.</li>
+  <li>Başka biçimler de burada açılır: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol ve Vietnam'ın hóa đơn điện tử faturası. Birini açtığınızda sayfa uygun görüntüleyiciyi önerir.</li>
+  <li>Ham XML'i göster, okunabilir faturanın göstermediği bir öğeye ihtiyaç duyduğunuzda işe yarar.</li>
+</ul>

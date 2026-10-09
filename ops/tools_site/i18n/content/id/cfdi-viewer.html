@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Penampil CFDI Meksiko: buka faktur XML CFDI 4.0 dan 3.3 | Tanod Tools",
+  "description": "Buka CFDI Meksiko (XML) dan baca sebagai faktur biasa, lengkap dengan UUID dan tautan verifikasi di SAT. Cetak, simpan sebagai PDF, atau ekspor JSON. Gratis, tidak ada yang diunggah.",
+  "h1": "Penampil CFDI Meksiko",
+  "lede": "Buka faktur elektronik Meksiko (CFDI 4.0 atau 3.3) dan baca seperti faktur biasa: UUID, seri dan folio, penerbit dan penerima beserta RFC, baris barang, IVA per tarif, pajak yang ditahan, dan segel pajaknya. XML dibaca di browser Anda dan tidak pernah diunggah.",
+  "blurb": "Baca XML CFDI 4.0 atau 3.3 Meksiko sebagai faktur biasa, dengan UUID dan tautan untuk memverifikasinya di SAT.",
+  "keywords": "penampil cfdi cfdi 4.0 buka xml cfdi baca xml cfdi faktur elektronik meksiko uuid folio fiscal verifikasi cfdi sat timbre fiscal digital comprobante fiscal digital por internet rfc penerbit penerima cfdi 3.3",
+  "limits": "Satu berkas sekali buka, maksimal 25 MB; 5.000 baris barang pertama ditampilkan. Membaca CFDI 4.0 dan 3.3 (elemen cfdi:Comprobante dalam namespace SAT), termasuk jenis ingreso (faktur) dan egreso (nota kredit). Komplemen seperti Pagos dan Nómina tidak ditampilkan. Segel (Sello) dan cap SAT tidak diverifikasi. Hanya penampil: tidak memvalidasi CFDI dan tidak menghubungi SAT; tautan Verifikasi di SAT adalah tautan biasa yang Anda klik sendiri.",
+  "howto_title": "Cara membuka CFDI",
+  "howto": [
+    "Pilih XML CFDI yang Anda unduh dari portal SAT, penyedia sertifikasi (PAC), atau perangkat lunak akuntansi Anda, atau seret ke halaman ini.",
+    "Baca fakturnya: UUID (folio fiscal), seri dan folio, tanggal, penerbit dan penerima beserta RFC, baris barang, IVA per tarif, pajak yang ditahan, total, dan pembayaran.",
+    "Tekan <strong>Verifikasi di SAT</strong> untuk membuka halaman pemeriksaan SAT sendiri, atau <strong>Cetak atau simpan sebagai PDF</strong>, <strong>Unduh JSON</strong>, atau <strong>Tampilkan XML mentah</strong>."
+  ],
+  "faq": [
+    [
+      "Apakah CFDI diunggah atau dikirim ke SAT?",
+      "Tidak. Halaman ini tidak terhubung ke SAT, penyedia Anda, atau server mana pun. XML dibaca di browser Anda dan ditampilkan di halaman ini, dan menutup tab menghapus semuanya."
+    ],
+    [
+      "Apa yang dilakukan tautan Verifikasi di SAT?",
+      "Itu tautan biasa ke halaman verifikasi publik SAT, disusun dari pola alamat yang terdokumentasi dengan UUID, RFC penerbit dan penerima, total, dan 8 karakter terakhir segel. Tidak ada yang dikirim saat Anda membuka halaman ini; data baru sampai ke SAT jika Anda mengklik tautannya, lalu SAT menampilkan jawabannya sendiri."
+    ],
+    [
+      "Apakah segel dan cap SAT diperiksa?",
+      "Tidak. Segel digital dan Timbre Fiscal Digital tidak diverifikasi di sini, dan berkas yang memuatnya diberi catatan. Halaman ini tidak bisa menyatakan apakah CFDI sah atau diubah setelahnya. Gunakan tautan SAT untuk itu."
+    ],
+    [
+      "Versi dan jenis CFDI apa yang bisa dibuka?",
+      "CFDI 4.0 dan 3.3. Faktur ingreso dan nota kredit egreso ditampilkan lengkap; dokumen traslado, pago, dan nómina terbuka dengan kepala, para pihak, dan total, tetapi komplemennya tidak ditampilkan. Versi lama seperti 3.2 tidak dibaca."
+    ],
+    [
+      "Bagaimana pajak ditampilkan?",
+      "IVA ditampilkan per tarif (16%, 8%, 0%, dan dibebaskan), pajak lain yang dikenakan seperti IEPS ada di informasi tambahan, dan pajak yang ditahan (ISR, IVA) didaftar serta dikurangkan dalam total. Jumlah yang harus dibayar adalah Total yang tertulis di berkas."
+    ],
+    [
+      "Di mana saya mendapat XML CFDI?",
+      "Unduh dari portal SAT (Mis comprobantes), dari penyedia (PAC) yang membubuhkan cap, atau ekspor dari perangkat lunak akuntansi Anda. Halaman ini membaca XML, bukan PDF cetaknya."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>CFDI Meksiko</h2>
+<p>Pelaku usaha di Meksiko menerbitkan faktur sebagai CFDI (Comprobante Fiscal Digital por Internet): berkas XML yang dibubuhi cap oleh penyedia sertifikasi resmi (PAC) dan didaftarkan ke SAT, otoritas pajak. Versi 4.0 menggantikan versi 3.3. Cap itu menambahkan UUID, folio fiscal yang mengidentifikasi faktur. XML adalah fakturnya; versi cetak hanyalah gambaran darinya. Halaman ini membuat gambaran itu di browser Anda dari XML yang Anda miliki.</p>
+<h2>Apa yang ditampilkan penampil</h2>
+<p>Anda melihat UUID dalam huruf besar, seri dan folio, tanggal, waktu pembubuhan cap dan PAC, penerbit (Emisor) dan penerima (Receptor) dengan RFC, nama, rezim pajak, dan kode pos domisili fiskal, bentuk (FormaPago) dan metode pembayaran (MetodoPago: PUE atau PPD), setiap baris dengan satuan, jumlah, harga, diskon, dan IVA, IVA per tarif, pajak yang ditahan, total, kurs untuk mata uang asing, dan CFDI terkait dari nota kredit. Jumlah ditampilkan persis seperti di berkas.</p>
+<p>Tautan Verifikasi di SAT membuka halaman pemeriksaan SAT sendiri di tab baru; halaman ini sendiri tidak mengirim apa pun. Halaman ini tidak memverifikasi segel atau cap, tidak memvalidasi CFDI terhadap katalog dan aturan SAT, dan tidak menampilkan komplemen seperti Pagos atau Nómina.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Unduh JSON memberi Anda faktur sebagai data biasa, dengan bidang CFDI dipetakan ke istilah bisnis EN 16931.</li>
+  <li>Format lain juga terbuka di sini: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol, e-Fatura Turki, dan hóa đơn Vietnam. Halaman menyarankan penampil yang cocok saat Anda membuka salah satunya.</li>
+  <li>Tampilkan XML mentah berguna saat Anda butuh atribut yang tidak tampil di faktur yang mudah dibaca.</li>
+</ul>

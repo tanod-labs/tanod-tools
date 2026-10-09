@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Giải thích biểu thức cron và thời điểm chạy kế tiếp | Tanod Tools",
+  "description": "Dán biểu thức cron để đọc nó bằng tiếng thường và xem các thời điểm chạy kế tiếp theo múi giờ của bạn, UTC hoặc múi giờ khác. Kiểm tra từng trường và giải thích lỗi.",
+  "h1": "Giải thích biểu thức cron",
+  "lede": "Đọc lịch crontab bằng ngôn ngữ thông thường và liệt kê những lần chạy kế tiếp, ở bất kỳ múi giờ nào.",
+  "blurb": "Lịch cron bằng ngôn ngữ thông thường, kèm thời điểm chạy kế tiếp.",
+  "keywords": "giải thích cron biểu thức cron crontab lịch chạy cron job lần chạy kế tiếp crontab guru mỗi 5 phút kiểm tra cú pháp cron cron schedule next run",
+  "limits": "Cron chuẩn năm trường (phút, giờ, ngày trong tháng, tháng, ngày trong tuần) như Vixie cron, cronie và hầu hết hệ thống Linux dùng, cùng các lối tắt kiểu @daily. Quartz và các định dạng có trường giây khác được nhận diện nhưng không được giải thích.",
+  "howto_title": "Cách kiểm tra biểu thức cron",
+  "howto": [
+    "Gõ hoặc dán năm trường của lịch, chẳng hạn <code>*/15 9-17 * * 1-5</code>, hoặc chọn một ví dụ. Một dòng crontab đầy đủ cũng dùng được; lệnh sau trường thứ năm sẽ bị bỏ qua.",
+    "Đọc phần tóm tắt bằng ngôn ngữ thông thường và phần phân tích từng trường. Lỗi được chỉ ra ngay ở trường xảy ra lỗi.",
+    "Xem danh sách các thời điểm chạy kế tiếp. Chọn múi giờ mà máy chủ đang chạy, và một thời điểm bắt đầu khác nếu bạn muốn xem trước."
+  ],
+  "faq": [
+    ["Năm trường có nghĩa là gì?", "Theo thứ tự: phút (0-59), giờ (0-23), ngày trong tháng (1-31), tháng (1-12 hoặc JAN-DEC) và ngày trong tuần (0-7 hoặc SUN-SAT, trong đó cả 0 và 7 đều là Chủ nhật). Mỗi trường nhận một giá trị đơn, một danh sách như <code>1,15</code>, một khoảng như <code>9-17</code>, một bước nhảy như <code>*/15</code> hoặc <code>0-30/10</code>, hoặc <code>*</code> cho mọi giá trị."],
+    ["Vì sao tác vụ của tôi chạy vào nhiều ngày hơn tôi mong đợi?", "Khi cả trường ngày trong tháng và trường ngày trong tuần đều bị giới hạn, cron chạy vào những ngày khớp với một trong hai, chứ không phải cả hai. <code>0 9 1 * 1</code> chạy vào ngày mùng 1 hằng tháng và vào mọi thứ Hai. Đây là cách Vixie cron và cronie hoạt động. Một điểm lạ của cùng quy tắc: trường bắt đầu bằng <code>*</code>, như <code>*/2</code>, được coi là không bị giới hạn, khi đó cả hai trường đều phải khớp."],
+    ["Cron dùng múi giờ nào?", "Múi giờ của máy hoặc container mà nó chạy trên đó, trừ khi crontab đặt <code>CRON_TZ</code> hoặc <code>TZ</code>. Nhiều máy chủ chạy theo UTC, nên hãy kiểm tra điều đó trước khi tin các thời điểm bạn thấy. Chọn múi giờ của máy chủ trong danh sách để xem thời điểm chạy của nó."],
+    ["Điều gì xảy ra khi đồng hồ đổi giờ mùa hè?", "Danh sách theo đồng hồ ở múi giờ bạn chọn: thời điểm bị bỏ qua khi đồng hồ chỉnh tiến lên sẽ bị loại, và thời điểm xảy ra hai lần khi đồng hồ chỉnh lùi chỉ được liệt kê một lần. Vixie cron và cronie chạy tác vụ được lên lịch trong giờ bị bỏ qua ngay sau khi đổi giờ và không lặp lại tác vụ trong giờ bị lặp; các trình lập lịch khác thì khác nhau. Một ghi chú xuất hiện khi khoảng thời gian được liệt kê có đổi giờ."],
+    ["Công cụ có hỗ trợ giây hoặc cú pháp Quartz không?", "Không. Biểu thức có sáu hoặc bảy trường, hoặc có <code>?</code>, <code>L</code>, <code>W</code> hay <code>#</code>, đến từ Quartz, Spring và các trình lập lịch tương tự, nơi trường đầu tiên là giây. Công cụ báo như vậy thay vì đoán, vì đọc chúng như cron chuẩn sẽ cho lịch sai."],
+    ["@daily, @hourly và các lối tắt khác có nghĩa là gì?", "<code>@hourly</code> là <code>0 * * * *</code>, <code>@daily</code> và <code>@midnight</code> là <code>0 0 * * *</code>, <code>@weekly</code> là <code>0 0 * * 0</code>, <code>@monthly</code> là <code>0 0 1 * *</code>, còn <code>@yearly</code> và <code>@annually</code> là <code>0 0 1 1 *</code>. <code>@reboot</code> chạy một lần khi dịch vụ cron khởi động, nên không có thời điểm nào để liệt kê."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="c-in">Biểu thức cron</label>
+    <input type="text" id="c-in" class="mono cron-in" value="*/15 9-17 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Ví dụ">
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Mỗi 5 phút</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Mỗi giờ</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Mỗi ngày lúc nửa đêm</button>
+    <button class="btn btn--sm" type="button" data-cron="0 9 * * 1-5">Các ngày trong tuần lúc 09:00</button>
+    <button class="btn btn--sm" type="button" data-cron="30 2 * * 0">Chủ nhật lúc 02:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Ngày mùng 1 hằng tháng</button>
+  </div>
+  <p class="tt__report" id="c-info" aria-live="polite"></p>
+  <p class="cron-say" id="c-say" aria-live="polite"></p>
+  <dl class="cron-fields" id="c-fields" aria-label="Các trường">
+    <div><dt>Phút</dt><dd></dd></div>
+    <div><dt>Giờ</dt><dd></dd></div>
+    <div><dt>Ngày trong tháng</dt><dd></dd></div>
+    <div><dt>Tháng</dt><dd></dd></div>
+    <div><dt>Ngày trong tuần</dt><dd></dd></div>
+  </dl>
+  <p class="note" id="c-note" hidden></p>
+
+  <h2 class="util-h">Những lần chạy kế tiếp</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="c-tz">Múi giờ</label>
+      <select id="c-tz"></select>
+    </div>
+    <div class="field">
+      <label for="c-from">Bắt đầu từ</label>
+      <input type="datetime-local" id="c-from" step="60">
+      <span class="help">Để trống để bắt đầu từ bây giờ.</span>
+    </div>
+    <div class="field">
+      <label for="c-count">Số lần</label>
+      <select id="c-count">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="c-runs-info"></p>
+  <ol class="cron-runs" id="c-runs" aria-label="Thời điểm chạy kế tiếp"></ol>
+  <p class="note" id="c-runs-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Cách đọc một lịch cron</h2>
+<p>Cron kiểm tra bảng của nó mỗi phút một lần và chạy mọi tác vụ có cả năm trường khớp với thời gian hiện tại, trừ một ngoại lệ cho hai trường ngày được mô tả bên dưới. Vì vậy <code>*/15 9-17 * * 1-5</code> nghĩa là: vào các phút 0, 15, 30 và 45, trong các giờ từ 9 đến 17, vào bất kỳ ngày nào của tháng, trong bất kỳ tháng nào, từ thứ Hai đến thứ Sáu. Lần chạy cuối cùng trong ngày là lúc 17:45, vì trường giờ bao gồm cả giờ 17.</p>
+<p>Công cụ giải thích phân tích từng trường theo cách Vixie cron và cronie làm, loại mà hầu hết các bản phân phối Linux đi kèm. Tên tháng và tên ngày trong tuần được chấp nhận ở mọi kiểu chữ và 7 được tính là Chủ nhật. Một bước nhảy sau một số đơn, như <code>5/10</code>, được đọc là <code>5-59/10</code> theo cách nhiều phiên bản cron đọc; một số phiên bản cũ từ chối nó, nên công cụ nhắc bạn viết rõ khoảng ra. Khoảng phải chạy từ thấp lên cao: <code>FRI-MON</code> bị đánh dấu thay vì quay vòng, vì cron chuẩn không quay vòng các khoảng.</p>
+<p>Thời điểm chạy kế tiếp được tính bằng cách đi qua lịch theo múi giờ bạn chọn, nên một biểu thức chỉ có thể khớp vào ngày 29 tháng 2 sẽ tìm ra năm nhuận kế tiếp ngay lập tức, và biểu thức không bao giờ có thể khớp, như <code>0 0 31 2 *</code>, được báo là không bao giờ chạy.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Đổi thời điểm chạy trong log thành Unix timestamp, hoặc ngược lại, bằng <a href="/tools/unix-timestamp-converter/">Chuyển đổi Unix timestamp</a>.</li>
+  <li>Kiểm tra mẫu mà một tác vụ dùng để lọc log? Hãy thử <a href="/tools/regex-tester/">Kiểm tra regex</a>.</li>
+  <li>Xem một cấu hình JSON chứa các lịch trông như thế nào bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+</ul>

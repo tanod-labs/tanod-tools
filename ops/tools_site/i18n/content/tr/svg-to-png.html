@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "SVG'den PNG'ye dönüştür, istediğiniz boyutta | Tanod Tools",
+  "description": "Bir SVG'yi 1x, 2x, 4x veya tam genişlikte, şeffaf ya da renkli arka planla net bir PNG'ye dönüştürün. Tarayıcınızda çalışır; hiçbir şey yüklenmez.",
+  "h1": "SVG'den PNG'ye",
+  "lede": "Bir SVG çizimini, simgeyi veya logoyu ihtiyacınız olan boyutta net bir PNG olarak oluşturun.",
+  "blurb": "SVG simge ve logoları net PNG olarak oluşturun.",
+  "keywords": "svg png dönüştür svg'den png'ye simge logo vektör piksel yüksek çözünürlük şeffaf svg to png convert export icon vector to raster transparent",
+  "limits": "Her seferinde bir SVG, en fazla 10 MB. Çıktı yaklaşık 100 megapikselle ve bir kenarda 32.767 pikselle sınırlıdır.",
+  "howto_title": "SVG PNG'ye nasıl dönüştürülür",
+  "howto": [
+    "Bir .svg dosyası seçin ya da sayfaya sürükleyin. SVG'nin istediği boyutla birlikte bir önizleme görünür.",
+    "Bir ölçek seçin (1x, 2x, 4x) veya tam bir genişlik yazın, ardından şeffaf ya da düz bir arka plan seçin.",
+    "<strong>PNG'ye dönüştür</strong> düğmesine basın, ardından resmi indirin."
+  ],
+  "faq": [
+    ["PNG büyük boyutta da net olur mu?", "Evet. SVG, küçük çizilip büyütülmek yerine doğrudan çıktı boyutunda çizilir; bu yüzden eğriler ve metin 2x, 4x veya yazdığınız herhangi bir genişlikte net oluşturulur."],
+    ["1x'te PNG'nin boyutu ne olur?", "SVG'nin <code>width</code> ve <code>height</code> özniteliklerinde bildirdiği, piksele çevrilmiş boyut (santimetre, milimetre, inç ve punto inç başına 96 pikselle çevrilir). Bunlar yoksa <code>viewBox</code> kullanılır. İkisi de yoksa tarayıcının varsayılanı olan 300 × 150 kullanılır ve araç bunu size bildirir."],
+    ["Şeffaflığı korur mu?", "Evet, varsayılan olarak. Örneğin bir uygulama simgesi ya da belge için düz bir arka plana ihtiyacınız varsa <em>Şeffaf arka plan</em> seçeneğinin işaretini kaldırın ve bir renk seçin."],
+    ["Yazı tipleri veya gömülü resimler neden farklı görünüyor?", "SVG, bir web sayfasının <code>img</code> etiketinde SVG göstermesi gibi, kendi içinde bütün bir resim olarak çizilir. Web yazı tipleri ve başka sitelerdeki bağlı resimler getirilmez; bu yüzden metin cihazınızdaki yazı tiplerine döner ve bağlı resimler dışarıda kalır. SVG dosyasının içine gömülü resimler çizilir."],
+    ["Başkasından gelen bir SVG'yi açmak güvenli mi?", "Burada evet. SVG dosyaları betik içerebilir, ancak dosya bir resim olarak yüklenir; tarayıcılar resimlerde betik çalıştırmaz veya bağlantıları izlemez ve dosya sayfaya hiçbir zaman eklenmez. Hiçbir şey yüklenmez."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:svg-to-png drop__mark}}
+  <p class="drop__title">SVG'yi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/svg+xml,.svg">{{mark:i-plus}}<span data-pick-label>SVG seçin</span></label>
+  <p class="drop__hint">En fazla 10 MB'lık bir .svg dosyası. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="editor" class="util-stack" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview svgp__preview"><canvas id="cv" role="img" aria-label="SVG önizlemesi"></canvas></div>
+  <p class="note" id="size-note" hidden></p>
+  <div class="opts">
+    <fieldset class="field">
+      <legend>Boyut</legend>
+      <div class="seg">
+        <label><input type="radio" name="scale" value="1">1x</label>
+        <label><input type="radio" name="scale" value="2" checked>2x</label>
+        <label><input type="radio" name="scale" value="4">4x</label>
+        <label><input type="radio" name="scale" value="custom">Genişlik</label>
+      </div>
+    </fieldset>
+    <div class="field" id="w-field" hidden>
+      <label for="width">Genişlik (px)</label>
+      <input type="number" id="width" min="1" max="32767" inputmode="numeric">
+      <p class="help">Yükseklik, SVG'nin oranlarını izler.</p>
+    </div>
+    <div class="field">
+      <span class="label">Arka plan</span>
+      <label class="check"><input type="checkbox" id="transparent" checked>Şeffaf arka plan</label>
+      <div id="bg-wrap" hidden><label class="visually-hidden" for="bg">Arka plan rengi</label><input type="color" id="bg" value="#ffffff"></div>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">PNG'ye dönüştür</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Vektör grafikleri piksellere çevirmek</h2>
+<p>Bir SVG şekilleri koordinatlarla tanımlar; bu yüzden netliğini kaybetmeden her boyutta çizilebilir. Yine de pek çok yer bit eşlem ister: uygulama mağazaları, sosyal medya profilleri, sunumlar, e-posta imzaları ve eski tasarım araçları. PNG'ye dönüştürmek çizimi tek bir piksel boyutuna sabitler; bu yüzden ihtiyaç duyacağınız en büyük boyutu seçin. PNG'yi sonradan küçültebilirsiniz, ama büyütmek bulanıklaştırır.</p>
+<p>Çizimi, tarayıcınızın kendi SVG oluşturucusu bir tuval üzerinde, çıktı boyutunda yapar ve tuval tam şeffaflıkla PNG olarak kaydedilir. SVG kesinlikle bir resim olarak ele alınır: içindeki betikler çalışmaz ve bağlandığı hiçbir şey indirilmez.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Piksel yoğunluğu yüksek ekranlar için resmin gösterileceği boyutun 2 veya 3 katında dışa aktarın.</li>
+  <li>Site simgesi mi yapıyorsunuz? <a href="/tools/favicon-generator/">Favicon oluşturucu</a> tek bir resimden tüm boyutları üretir.</li>
+  <li>Bunun yerine JPG veya WebP mi gerekiyor? PNG'yi <a href="/tools/convert-image/">Resim dönüştür</a> ile dönüştürün.</li>
+</ul>

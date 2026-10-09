@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Нумерация страниц PDF онлайн, бесплатно | Tanod Tools",
+  "description": "Пронумеруйте страницы PDF прямо в браузере. Выберите положение, формат и начальный номер, пропустите обложку и скачайте файл. Бесплатно, без регистрации.",
+  "h1": "Добавить номера страниц в PDF",
+  "lede": "Поставьте номера на все страницы или только на выбранные и выберите, где они будут расположены.",
+  "blurb": "Нумерация страниц PDF.",
+  "keywords": "нумерация страниц пронумеровать pdf номера страниц колонтитул страница x из y нумерация pdf page numbers pagination footer header",
+  "limits": "Один PDF за раз, до 200 МБ. PDF, защищённые паролем, редактировать нельзя. Номера выводятся шрифтом Helvetica.",
+  "howto_title": "Как добавить номера страниц в PDF",
+  "howto": [
+    "Выберите файл PDF или перетащите его на страницу.",
+    "Укажите положение, формат номера и начальный номер. При необходимости пропустите обложку или пронумеруйте только часть страниц.",
+    "Нажмите <strong>Добавить номера страниц</strong> и скачайте пронумерованный PDF."
+  ],
+  "faq": [
+    ["Загружается ли мой PDF?", "Нет. Номера добавляются в копию вашего PDF открытой библиотекой pdf-lib прямо в браузере. Ничего не отправляется на сервер."],
+    ["Как оставить обложку без номера?", "Отметьте пункт <em>Пропустить первую страницу</em>. Начальный номер тогда относится к первой нумеруемой странице, то есть вторая страница получит заданный вами начальный номер. Если на второй странице должна стоять цифра 2, укажите начальный номер 2."],
+    ["Что подставляется вместо N в формате «Страница 1 из N»?", "N — это последний использованный номер. Если пронумерованы все страницы и счёт начинается с 1, это общее число страниц. Если обложка пропущена или нумеруются только некоторые страницы, это начальный номер плюс число пронумерованных страниц минус один."],
+    ["Будут ли номера прямыми на повёрнутых страницах?", "Да. Если страница хранится с поворотом на 90, 180 или 270 градусов, номер размещается относительно того, как страница выглядит, и поворачивается вместе с ней, так что читается прямо в выбранном месте. Номер ставится внутри видимой области страницы (её рамки обрезки, если она есть)."],
+    ["Можно ли изменить шрифт?", "В этом инструменте нет. Номера выводятся шрифтом Helvetica, стандартным для PDF, поэтому они везде отображаются одинаково и почти не увеличивают размер файла."],
+    ["Меняется ли остальное содержимое PDF?", "Содержимое страниц остаётся прежним, номера добавляются поверх. Сведения о документе, такие как название и автор, не меняются."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Перетащите сюда PDF</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Выбрать PDF</span></label>
+  <p class="drop__hint">Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pos">Положение</label>
+      <select id="pos">
+        <option value="bc" selected>Внизу по центру</option>
+        <option value="br">Внизу справа</option>
+        <option value="bl">Внизу слева</option>
+        <option value="tc">Вверху по центру</option>
+        <option value="tr">Вверху справа</option>
+        <option value="tl">Вверху слева</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fmt">Формат</label>
+      <select id="fmt">
+        <option value="n" selected>1</option>
+        <option value="page">Страница 1</option>
+        <option value="of">Страница 1 из N</option>
+        <option value="slash">1 / N</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Начать с номера</label>
+      <input id="start" type="number" inputmode="numeric" min="0" max="99999" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Размер шрифта (пт)</label>
+      <input id="size" type="number" inputmode="numeric" min="6" max="48" step="1" value="11">
+    </div>
+    <div class="field">
+      <label for="margin">Отступ от края (пт)</label>
+      <input id="margin" type="number" inputmode="numeric" min="0" max="200" step="1" value="28">
+    </div>
+    <div class="field">
+      <span class="label" id="scope-l">Какие страницы нумеровать</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Все страницы</label>
+        <label><input type="radio" name="scope" value="range">Часть страниц</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Страницы</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false">
+      <span class="help">Страницы считаются с 1.</span>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="skip"> Пропустить первую страницу (обложку)</label>
+    </div>
+  </div>
+  <p class="help" id="sample" aria-live="polite"></p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Добавить номера страниц</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Нумерация страниц без загрузки PDF</h2>
+<p>Номера страниц — это небольшие фрагменты текста, нарисованные поверх каждой страницы. Браузер справляется с этим сам: он открывает PDF с помощью pdf-lib, добавляет строку текста шрифтом Helvetica на каждую выбранную страницу и записывает новый файл. Исходное содержимое страниц не затрагивается.</p>
+<p>У каждой страницы могут быть свой размер, рамка обрезки и поворот, поэтому положение вычисляется для каждой страницы отдельно. Отступы отсчитываются от края видимой области, а на странице, хранящейся в повёрнутом виде, номер поворачивается вместе с ней и читается прямо там, где вы ожидаете.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Склеиваете несколько файлов? Сначала используйте «<a href="/tools/merge-pdf/">Объединить PDF</a>», а затем пронумеруйте результат, чтобы нумерация шла сквозная.</li>
+  <li>Нужна отметка поперёк страницы, а не номер? Попробуйте «<a href="/tools/watermark-pdf/">Водяной знак для PDF</a>».</li>
+  <li>Страницы идут не в том порядке? Исправьте это инструментом «<a href="/tools/reorder-pdf-pages/">Изменить порядок страниц в PDF</a>» до нумерации.</li>
+</ul>

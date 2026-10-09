@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "MikroTik DHCP sunucu ve IP pool oluşturucu | Tanod Tools",
+  "description": "RouterOS DHCP sunucusu oluşturun: IP pool, sunucu, ağ ayarları (ağ geçidi, DNS, etki alanı, NTP) ve sabit kiralamalar; alt ağa göre denetlenir. Tarayıcıda çalışır.",
+  "h1": "MikroTik DHCP sunucu oluşturucu",
+  "lede": "Arayüzü ve alt ağı girin; IP pool, DHCP sunucusu, ağ ayarları ve sabit kiralamaları denetlenmiş tek bir RouterOS betiği olarak alın.",
+  "blurb": "IP pool, DHCP sunucusu, ağ ve sabit kiralamalar.",
+  "keywords": "mikrotik dhcp sunucu kurulumu routeros ip pool dhcp-server network ağ geçidi dns-server sabit kiralama mac adresi rezervasyonu lease-time dhcp betiği vlan dhcp static lease reservation script",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "Tek bir arayüzde IPv4 DHCP sunucusu için RouterOS v7 sözdizimini (v6'da da geçerli) üretir. Özel DHCP seçenekleri ve relay'ler kapsanmaz. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te DHCP sunucusu nasıl kurulur",
+  "howto": [
+    "İstemcilerin bulunduğu arayüzü (bir bridge veya VLAN arayüzü) ve alt ağını girin; ağ geçidi ve pool buna göre önerilir.",
+    "Pool'u, DNS sunucularını, etki alanını ve kiralama süresini ayarlayın; sabit adres gereken cihazlar için sabit kiralamalar ekleyin.",
+    "Betiği kopyalayın veya .rsc dosyasını indirip çalıştırın; notlar, bir kez daha bakılması gereken her şeyi işaret eder."
+  ],
+  "faq": [
+    ["RouterOS DHCP sunucusunun parçaları nelerdir?", "Üç menü birlikte çalışır: <code>/ip pool</code> dağıtılacak adresleri tutar, <code>/ip dhcp-server</code> bir sunucuyu bir arayüze ve bir pool'a bağlar, <code>/ip dhcp-server network</code> ise istemcilere söylenenleri tutar: o alt ağ için ağ geçidi, DNS sunucuları, etki alanı ve NTP sunucuları. Yönlendiricinin arayüzde kendi adresine de ihtiyacı vardır; betik bunu ekleyebilir."],
+    ["Sabit kiralamalar pool'un içinde mi dışında mı olmalı?", "İkisi de çalışır: RouterOS, bir sabit kiralamanın tuttuğu adresi asla dağıtmaz. Sabit cihazları dinamik aralığın dışında tutmak (örneğin pool .10'dan başlarken .2 ile .9 arası) planı okumayı kolaylaştırır ve bir kiralama silinirse karışıklığı önler."],
+    ["Hangi kiralama süresini kullanmalıyım?", "Bir ev veya ofis LAN'ı için bir gün yaygındır. Çok sayıda kısa ziyaretin olduğu misafir ağları ve hotspot'lar, adreslerin pool'a hızla dönmesi için bir saat veya daha az süreyle daha iyi çalışır. Çok kısa kiralamalar daha çok yenileme demektir, ancak küçük bir ağda gerçek bir maliyeti yoktur."],
+    ["İstemcilerin yönlendiriciyi DNS olarak kullanması için allow-remote-requests gerekli mi?", "Evet; ve güvenlik duvarı WAN'dan gelen DNS'i düşürmüyorsa yönlendiriciyi açık bir çözümleyici yapan da budur. Araç bunu yalnızca seçeneği işaretlediğinizde ekler ve input zincirini kontrol etmenizi hatırlatır."],
+    ["Ağ planım bir yere gönderiliyor mu?", "Hayır. Denetimler ve betik tarayıcınızda yapılır."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Ağ</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Arayüz</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Alt ağ</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Ağ geçidi (yönlendirici adresi)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Pool aralığı</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Ağ geçidi adresini arayüze ekle</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>İstemci ayarları</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">DNS sunucuları</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Etki alanı</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">NTP sunucuları</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="isteğe bağlı" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Kiralama süresi</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Sunucu ve pool adı</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">Yönlendirici LAN için DNS yanıtlar (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Sabit kiralamalar</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Sabit kiralama ekle</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">RouterOS betiği</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS'ta DHCP, parça parça</h2>
+<p>RouterOS bir DHCP sunucusunu üç yerde tutar ve istemcilerin adres alamamasının olağan nedeni eksik bir parçadır. <strong>Pool</strong>, yalnızca adlandırılmış bir adres aralıkları kümesidir. <strong>Sunucu</strong> tek bir arayüzü dinler ve adresleri pool'undan kiralar. <strong>Network</strong> kaydı alt ağa göre eşleşir ve her kiralamayla gönderilen seçenekleri tutar: ağ geçidi, DNS sunucuları, etki alanı adı ve NTP sunucuları. Arayüzün ayrıca o alt ağda yönlendiricinin kendi adresine de ihtiyacı vardır; yoksa sunucunun hizmet vereceği bir ağ olmaz.</p>
+<p>Sayfa, bir şey yazmadan önce parçaları birbirine karşı denetler: ağ geçidi ve pool alt ağın içinde olmalı, pool ağ, yayın (broadcast) ve ağ geçidi adreslerinden kaçınmalı ve sabit kiralamalar benzersiz olup alt ağın içinde bulunmalıdır. Sabit kiralamalar, sunucunun adıyla <code>/ip dhcp-server lease</code> altına yazılır; böylece her cihaz her zaman aynı adresi alır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Adreslemeyi mi planlıyorsunuz? <a href="/tools/subnet-calculator/">Alt ağ hesaplayıcı</a>, herhangi bir önekin ana bilgisayar aralığını ve boyutunu gösterir.</li>
+  <li>VLAN başına bir DHCP sunucusu: önce VLAN arayüzlerini <a href="/tools/mikrotik-vlan-generator/">MikroTik VLAN oluşturucu</a> ile oluşturun, sonra bunu her VLAN için bir kez çalıştırın.</li>
+  <li>Yönlendirici DNS yanıtlıyorsa <a href="/tools/mikrotik-firewall-generator/">güvenlik duvarı</a>nın internetten gelen DNS'i düşürdüğünden emin olun.</li>
+</ul>

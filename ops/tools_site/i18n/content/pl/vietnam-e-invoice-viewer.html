@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Wietnamska e-faktura: otwórz XML hóa đơn điện tử | Tanod Tools",
+  "description": "Otwórz wietnamską fakturę hóa đơn điện tử (XML) i czytaj ją jak zwykłą fakturę. Drukuj, zapisz PDF lub JSON. Bezpłatnie, bez wysyłania.",
+  "h1": "Przeglądarka e-faktur z Wietnamu",
+  "lede": "Otwórz wietnamską fakturę elektroniczną (hóa đơn điện tử) i czytaj ją jak zwykłą fakturę: symbol i numer faktury, sprzedawca, nabywca, pozycje, VAT według stawek i kod organu podatkowego. Plik XML jest odczytywany w przeglądarce i nigdy nie jest przesyłany.",
+  "blurb": "Odczytaj wietnamski hóa đơn điện tử (XML wg Dekretu 123/2020) jak zwykłą fakturę.",
+  "keywords": "przeglądarka e-faktur wietnam hóa đơn điện tử podgląd xml jak otworzyć wietnamską fakturę xml vietnam e-invoice viewer xem hoá đơn điện tử xml mở file xml hóa đơn nghị định 123/2020 thông tư 78/2021 mã của cơ quan thuế mccqt đọc hóa đơn xml",
+  "limits": "Jeden plik naraz, do 25 MB; wyświetlanych jest pierwszych 5000 pozycji. Odczytuje XML faktur wg Dekretu 123/2020 i Okólnika 78/2021 (element główny HDon, także gdy jest opakowany w komunikat TDiep od organu podatkowego), z kodem lub bez kodu. Podpisy cyfrowe (DSCKS) nie są weryfikowane. Tylko przeglądarka: nie waliduje faktury i niczego nie sprawdza w organie podatkowym.",
+  "howto_title": "Jak otworzyć wietnamską e-fakturę",
+  "howto": [
+    "Wybierz plik XML faktury zapisany od dostawcy e-faktur, z portalu organu podatkowego lub z programu księgowego albo przeciągnij go na stronę.",
+    "Przeczytaj fakturę: symbol (KHHDon) i numer (SHDon), kod organu podatkowego (MCCQT), jeśli faktura go ma, sprzedawcę (NBan), nabywcę (NMua), pozycje, VAT według stawek, sumy i płatność.",
+    "Naciśnij <strong>Drukuj lub zapisz jako PDF</strong>, <strong>Pobierz JSON</strong> albo <strong>Pokaż surowy XML</strong>."
+  ],
+  "faq": [
+    [
+      "Czy faktura jest przesyłana albo wysyłana do organu podatkowego?",
+      "Nie. Ta strona nie łączy się z organem podatkowym, z Twoim dostawcą ani z żadnym serwerem. Plik XML jest odczytywany w przeglądarce i wyświetlany na tej stronie, a zamknięcie karty wszystko usuwa."
+    ],
+    [
+      "Czy podpis cyfrowy jest weryfikowany?",
+      "Nie. Podpisy w elemencie DSCKS (sprzedawcy oraz, na fakturze z kodem, organu podatkowego) nie są weryfikowane. Plik, który zawiera podpis, jest oznaczany uwagą, ale ta strona nie powie Ci, kto podpisał fakturę ani czy została później zmieniona. Jeśli tego potrzebujesz, skorzystaj z narzędzi swojego dostawcy lub organu podatkowego."
+    ],
+    [
+      "Czym są symbol faktury i MCCQT?",
+      "Symbol faktury składa się z numeru formularza (KHMSHDon) i symbolu (KHHDon, na przykład C24TAA), a numer to SHDon. MCCQT to kod, który organ podatkowy nadaje fakturze z kodem (hóa đơn có mã). Faktura bez kodu nie ma MCCQT. Wszystko jest pokazywane tak, jak podaje plik; ta strona nie może sprawdzić, czy kod jest prawdziwy."
+    ],
+    [
+      "Czy można otworzyć komunikat zwrotny z organu podatkowego?",
+      "Tak. Jeśli plik XML to komunikat TDiep z fakturą wewnątrz DLieu, faktura jest wyjmowana i wyświetlana. Inne typy komunikatów oraz faktury w starszych formatach nie są odczytywane."
+    ],
+    [
+      "Jak są pokazywane stawki VAT?",
+      "Stawki takie jak 10%, 8%, 5% i 0% są pokazywane jako stawki. KCT (niepodlega VAT) i KKKNT (niedeklarowany i nieopłacany) są pokazywane jako kod podany w pliku, obok odpowiedniej kategorii VAT. Stawka zapisana jako KHAC:x% jest pokazywana jako stawka x."
+    ],
+    [
+      "Skąd wziąć plik XML faktury?",
+      "Dostawca e-faktur i portal organu podatkowego pozwalają pobrać fakturę jako plik XML, a programy księgowe mogą ją wyeksportować. Ta strona odczytuje zapisany przez Ciebie plik XML, a nie PDF."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Upuść e-fakturę tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik</span></label>
+  <p class="drop__hint">Plik XML, PDF z fakturą w środku (ZUGFeRD, Factur-X) albo podpisany plik .p7m. Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drukuj lub zapisz jako PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Pobierz JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Pobierz XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Pokaż surowy XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Surowy XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Tutaj widać tylko początek długiego pliku. Pobierz XML, aby mieć go w całości.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Wietnamskie faktury elektroniczne</h2>
+<p>Od czasu Dekretu 123/2020/ND-CP i Okólnika 78/2021/TT-BTC przedsiębiorstwa w Wietnamie wystawiają hóa đơn điện tử, czyli faktury elektroniczne, jako pliki XML w formacie ustalonym przez organ podatkowy. Faktura albo ma kod z organu podatkowego (hóa đơn có mã, pokazywany w elemencie MCCQT), albo jest wystawiana bez kodu. Fakturą jest plik XML; czytelna wersja to jego wizualizacja. Ta strona tworzy taką wizualizację w Twojej przeglądarce na podstawie posiadanego pliku XML.</p>
+<h2>Co pokazuje przeglądarka</h2>
+<p>Widzisz nazwę i wersję faktury, numer formularza (KHMSHDon), symbol (KHHDon), numer (SHDon), datę (NLap), kod organu podatkowego (MCCQT), jeśli jest, sprzedawcę (NBan) i nabywcę (NMua) z ich kodami podatkowymi (MST), adresami i danymi kontaktowymi, każdą pozycję z jednostką, ilością, ceną, rabatem i stawką VAT, VAT według stawek (THTTLTSuat), sumy, kwotę słownie i dane do płatności. W przypadku faktury korygującej lub zastępującej (TCHDon) pokazywana jest faktura, do której się odnosi. Kwoty są pokazywane dokładnie tak, jak w pliku.</p>
+<p>Przeglądarka nie weryfikuje podpisów cyfrowych (DSCKS), nie waliduje faktury względem schematu i reguł organu podatkowego i nie sprawdza faktury w organie podatkowym. Faktury w innych formatach, takie jak starsze faktury z Okólnika 32/2011, nie są odczytywane.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Pobierz JSON, aby uzyskać fakturę jako zwykłe dane, z wietnamskimi nazwami pól przypisanymi do terminów biznesowych EN 16931.</li>
+  <li>Otwierają się tu także inne formaty: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol i turecka e-Fatura. Po otwarciu takiego pliku strona podpowiada odpowiednią przeglądarkę.</li>
+  <li>Pokaż surowy XML pomaga, gdy potrzebujesz elementu, którego czytelna faktura nie pokazuje.</li>
+</ul>

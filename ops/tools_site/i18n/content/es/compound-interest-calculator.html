@@ -1,0 +1,93 @@
+<!--meta
+{
+  "title": "Calculadora de interés compuesto | Tanod Tools",
+  "description": "Calculadora de interés compuesto con aportes mensuales: saldo final, intereses ganados y tabla año por año. Gratis, en tu navegador.",
+  "h1": "Calculadora de interés compuesto",
+  "lede": "Ingresa un monto inicial, una tasa anual, cada cuánto se capitalizan los intereses y cuántos años, con un aporte mensual opcional, para ver en cuánto crece tu dinero.",
+  "blurb": "Saldo final, intereses ganados y tabla año por año.",
+  "keywords": "calculadora de interés compuesto calculadora de ahorro crecimiento de inversión aporte mensual frecuencia de capitalización diaria mensual anual continua tasa efectiva anual tabla año por año",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Una tasa constante durante todo el plazo, sin comisiones, impuestos ni inflación. Los aportes se hacen cada mes, al final de cada mes salvo que elijas el inicio, y crecen a la tasa mensual equivalente a la de capitalización. Plazos de hasta 100 años en meses completos. Es una ilustración, no un pronóstico.",
+  "howto_title": "Cómo calcular el interés compuesto",
+  "howto": [
+    "Ingresa el monto inicial, la tasa de interés anual y el número de años.",
+    "Elige cada cuánto se capitalizan los intereses y agrega un aporte mensual si vas a ahorrar con regularidad.",
+    "Lee el saldo final, el total que aportaste y los intereses ganados, y revisa la tabla año por año."
+  ],
+  "faq": [
+    ["¿Cuál es la fórmula del interés compuesto?", "Sin aportes, el saldo es A = P × (1 + r/n)^(n × t), donde P es el monto inicial, r la tasa anual en forma decimal, n el número de veces que se capitalizan los intereses al año y t el número de años. Con capitalización continua es A = P × e^(r × t)."],
+    ["¿Cómo se tratan los aportes mensuales?", "La calculadora trabaja mes a mes. Cada mes el saldo crece según la tasa mensual equivalente a tu capitalización y luego se suma tu aporte al final del mes, o al inicio si así lo eliges. Con capitalización mensual, esto es el valor futuro estándar de una anualidad."],
+    ["¿Qué diferencia hace la frecuencia de capitalización?", "Mientras más seguido se suman los intereses, más crece el saldo, pero la ganancia se estabiliza rápido. Al 5 % durante diez años, 10,000 se convierten en 16,288.95 con capitalización anual, 16,470.09 con mensual y 16,486.65 con diaria."],
+    ["¿Qué es la tasa efectiva anual?", "Es el crecimiento anual real una vez que se cuenta la capitalización. Una tasa nominal del 5 % capitalizada mensualmente equivale a una tasa efectiva del 5.12 % anual."],
+    ["¿Incluye impuestos, comisiones o inflación?", "No. Los rendimientos reales son menores después de comisiones e impuestos, y el poder adquisitivo del saldo final es menor tras la inflación. Usa una tasa más baja para ver un escenario prudente."],
+    ["¿Lo que escribo se sube a algún servidor?", "No. Todo se calcula en tu navegador y nada sale de tu dispositivo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ci">
+  <div class="opts">
+    <div class="field">
+      <label for="ci-p">Monto inicial</label>
+      <input type="text" id="ci-p" class="mono" inputmode="decimal" value="10000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-r">Tasa de interés anual (%)</label>
+      <input type="text" id="ci-r" class="mono" inputmode="decimal" value="5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-y">Años</label>
+      <input type="text" id="ci-y" class="mono" inputmode="decimal" value="10" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-f">Capitalización</label>
+      <select id="ci-f">
+        <option value="annually">Anual</option>
+        <option value="semiannually">Semestral</option>
+        <option value="quarterly">Trimestral</option>
+        <option value="monthly" selected>Mensual</option>
+        <option value="weekly">Semanal</option>
+        <option value="daily">Diaria</option>
+        <option value="continuous">Continua</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ci-m">Aporte mensual (opcional)</label>
+      <input type="text" id="ci-m" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-t">Los aportes se suman</label>
+      <select id="ci-t">
+        <option value="end" selected>Al final de cada mes</option>
+        <option value="start">Al inicio de cada mes</option>
+      </select>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ci-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Saldo final</span> <span id="ci-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Aportes totales</dt><dd id="ci-dep">0</dd></div>
+      <div><dt>Intereses ganados</dt><dd id="ci-int">0</dd></div>
+      <div><dt>Tasa efectiva anual</dt><dd id="ci-ear">0</dd></div>
+    </dl>
+    <h3 class="util-h">Año por año</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Crecimiento año por año">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Año</th><th scope="col">Aportes</th><th scope="col">Intereses</th><th scope="col">Saldo</th></tr></thead>
+        <tbody id="ci-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Cómo el interés compuesto hace crecer el dinero</h2>
+<p>El interés simple se paga solo sobre el monto con el que empezaste. El interés compuesto se paga sobre el monto inicial y sobre los intereses ya acumulados, por lo que el saldo crece más rápido en cada período. En unos pocos años la diferencia es pequeña; en décadas es enorme, y por eso empezar temprano importa más que casi cualquier otra cosa al ahorrar.</p>
+<p>Sin aportes regulares, el resultado sigue A = P(1 + r/n)^(nt). La calculadora también maneja un aporte mensual avanzando un mes a la vez: el saldo crece según la tasa mensual equivalente a la de capitalización y después se suma el aporte. Con capitalización mensual y aportes al final del mes, esto coincide con el valor futuro de una anualidad de los libros de texto. El total de aportes cuenta el monto inicial más cada aporte, y los intereses ganados son el saldo final menos ese total.</p>
+<p>La tabla año por año muestra los aportes de cada año, los intereses ganados en ese año y el saldo al cierre, para que veas cómo la parte de intereses supera a la de aportes. Si el plazo no es un número entero de años, la última fila cubre el tramo parcial. La tasa efectiva anual muestra lo que realmente equivalen la tasa nominal y la frecuencia de capitalización en un año.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Pides prestado en vez de ahorrar? La <a href="/tools/loan-calculator/">calculadora de préstamos</a> muestra la cuota y los intereses que pagarás.</li>
+  <li>Revisa un cambio de tasa o la parte de un total con la <a href="/tools/percentage-calculator/">calculadora de porcentajes</a>.</li>
+  <li>Escribe el saldo final con letras para un documento con <a href="/tools/number-to-words/">Número a palabras</a>.</li>
+</ul>

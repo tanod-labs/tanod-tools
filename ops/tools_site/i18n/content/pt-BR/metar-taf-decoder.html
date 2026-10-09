@@ -1,0 +1,43 @@
+<!--meta
+{
+  "title": "Decodificador de METAR e TAF: leia o tempo | Tanod Tools",
+  "description": "Cole um METAR, SPECI ou TAF bruto e veja a explicação em linguagem simples: vento, visibilidade, tempo presente, nuvens, temperatura, pressão e categoria de voo.",
+  "h1": "Decodificador de METAR e TAF",
+  "lede": "Cole um relatório METAR ou TAF bruto e leia em linguagem simples: vento, visibilidade, tempo presente, nuvens, temperatura, altímetro e períodos da previsão.",
+  "blurb": "Relatórios meteorológicos METAR e TAF brutos, explicados.",
+  "keywords": "metar taf decodificador meteorologia aeronautica speci cavok vento visibilidade teto categoria de voo vfr ifr altimetro qnh decodificar traduzir boletim meteorologico aeroporto",
+  "limits": "Apenas para estudo e leitura rápida. Não serve para planejamento de voo nem para navegação: use sempre os briefings oficiais. As observações (RMK) são exibidas como foram escritas, e qualquer grupo que o decodificador não entende é listado, nunca adivinhado.",
+  "howto_title": "Como decodificar um METAR ou TAF",
+  "howto": [
+    "Cole o relatório bruto na caixa, começando por METAR, SPECI, TAF ou pelo código de quatro letras da estação. Vários relatórios separados por = ou em linhas diferentes são decodificados um após o outro.",
+    "Leia a explicação abaixo: cada grupo do código é traduzido em palavras, com as unidades convertidas para nós, km/h, pés e metros, °C e °F, hPa e inHg.",
+    "Confira a categoria de voo e qualquer linha marcada como não decodificada. Grupos desconhecidos aparecem exatamente como foram escritos."
+  ],
+  "faq": [
+    ["Qual é a diferença entre METAR e TAF?", "O METAR é uma observação do tempo em um aeroporto neste momento, normalmente emitida a cada hora (o SPECI é uma atualização extra após uma mudança significativa). O TAF é uma previsão para o aeroporto, geralmente de 24 a 30 horas, dividida em uma previsão base e grupos de mudança."],
+    ["Como leio o grupo de vento, como 29016G25KT?", "Os três primeiros dígitos são a direção de onde o vento sopra, em graus verdadeiros (290 é oés-noroeste), os dois ou três dígitos seguintes são a velocidade (16), G acrescenta a velocidade da rajada (25) e as letras finais são a unidade: KT para nós, MPS para metros por segundo, KMH para quilômetros por hora. VRB indica direção variável; 00000KT é calmaria."],
+    ["O que significam os grupos de mudança do TAF?", "FM (from, a partir de) inicia um novo conjunto de condições em determinado horário e substitui tudo o que vinha antes. BECMG indica uma mudança gradual durante o período informado. TEMPO indica flutuações passageiras, que duram menos de uma hora por vez e menos da metade do período. PROB30 e PROB40 dão a probabilidade das condições que vêm a seguir. INTER é um termo antigo para TEMPO."],
+    ["Como são calculadas as categorias de voo?", "O decodificador usa os limites da FAA dos Estados Unidos, a partir da camada de nuvens quebrada ou encoberta mais baixa (o teto) e da visibilidade: VFR acima de 3.000 ft e 5 SM, MVFR de 1.000 a 3.000 ft ou 3 a 5 SM, IFR de 500 a menos de 1.000 ft ou 1 a menos de 3 SM, e LIFR abaixo de 500 ft ou 1 SM. CAVOK conta como VFR. Outros países usam limites diferentes, então trate como uma referência."],
+    ["Por que parte do meu relatório aparece como não decodificada?", "O decodificador cobre os grupos principais da ICAO e da FAA. Grupos regionais, códigos de cor militares, grupos de estado da pista e qualquer coisa escrita errada são listados como foram escritos, em vez de adivinhados. As observações depois de RMK nunca são interpretadas."],
+    ["A página envia meu relatório para algum lugar?", "Não. O relatório é decodificado por JavaScript no seu navegador e nada é enviado. Se quiser decodificar relatórios a partir de código, a API de decodificação do guia abaixo faz o mesmo trabalho."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">METAR ou TAF bruto</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Um relatório, ou vários separados por = ou por linhas que começam com METAR, SPECI ou TAF.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Testar outro exemplo</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Limpar</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>Como o decodificador lê um relatório</h2>
+<p>Um METAR ou TAF é uma sequência de grupos separados por espaço, em ordem fixa, definida pelo Anexo 3 da ICAO e pelo Manual de Códigos nº 306 da OMM (FM 15 METAR e FM 51 TAF) e, nos Estados Unidos, pelo Aeronautical Information Manual 7-1-30 da FAA. O decodificador lê o código da estação, o dia e a hora em UTC (DDHHMMZ), o vento (direção, velocidade, rajadas e variação), a visibilidade em metros ou milhas terrestres, o alcance visual na pista, o tempo presente, as camadas de nuvens, a visibilidade vertical, a temperatura e o ponto de orvalho, e o ajuste do altímetro (Q é hPa, A é inHg em centésimos).</p>
+<p>Os códigos de tempo combinam uma intensidade (- fraca, + forte, VC nas proximidades), descritores (TS, SH, FZ e outros) e fenômenos (RA chuva, SN neve, FG nevoeiro, BR névoa úmida e assim por diante). Os grupos de nuvens informam a quantidade (FEW, SCT, BKN, OVC) e a base em centenas de pés acima do solo, com CB ou TCU para nuvens convectivas. A umidade relativa é estimada a partir da temperatura e do ponto de orvalho com a fórmula de Magnus, es = 6.1094 e^(17.625 T / (T + 243.04)), portanto é aproximada.</p>
+<p>As categorias de voo seguem as definições da FAA: o teto é a camada quebrada ou encoberta mais baixa, ou a visibilidade vertical, e a categoria é definida pelo pior entre teto e visibilidade. Num TAF, cada grupo base ou de mudança é decodificado separadamente, com seu intervalo de tempo em UTC e sua própria categoria. Os horários aparecem como dia do mês e hora UTC porque os relatórios não trazem mês nem ano.</p>
+<p><strong>Não serve para planejamento de voo nem para navegação.</strong> Este é um leitor educativo. Obtenha sempre a meteorologia em uma fonte oficial antes de voar.</p>

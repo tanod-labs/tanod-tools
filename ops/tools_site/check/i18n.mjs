@@ -7,7 +7,7 @@
 //      from the page's string table left in the rendered DOM (text nodes and placeholder/aria-label/title/alt)
 //   4. screenshots of the index and three tools per language at 375 and 1280 for review
 //
-// Usage: node ops/tools_site/check/i18n.mjs [--langs es,pt-BR,fr,de,id] [--only slug,...] [--no-tests]
+// Usage: node ops/tools_site/check/i18n.mjs [--langs es,pt-BR,fr,de,id,it,tr,vi,ru,pl,hi] [--only slug,...] [--no-tests]
 //        [--no-sweep] [--sweep-shots-only] [--out DIR] [--port N]
 import { mkdirSync, readdirSync, readFileSync, rmSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,7 +20,7 @@ const HERE = fileURLToPath(new URL(".", import.meta.url));
 const SITE = fileURLToPath(new URL("../../../site/", import.meta.url));
 const args = process.argv.slice(2);
 const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
-const LANGS = (opt("--langs") || "es,pt-BR,fr,de,id").split(",");
+const LANGS = (opt("--langs") || "es,pt-BR,fr,de,id,it,tr,vi,ru,pl,hi").split(",");
 const only = opt("--only") ? opt("--only").split(",") : null;
 const OUT = opt("--out") || join(tmpdir(), "tt-i18n");
 const port = Number(opt("--port") || 9334);
@@ -101,7 +101,12 @@ const SCAN = (needles) => `(() => {
 
 async function i18nProblems(page, lang, pageSlug) {
   const tab = await table(lang, pageSlug);
-  const r = await page.eval(SCAN(needlesOf(tab)));
+  const needles = needlesOf(tab);
+  // A one-word label that the translated page itself uses (German "Minimum", French "Image") is not leftover English.
+  const htmlFile = join(SITE, pathOf(lang, pageSlug), "index.html");
+  const html = existsSync(htmlFile) ? readFileSync(htmlFile, "utf8") : "";
+  needles.words = needles.words.filter((w) => !html.includes(">" + w + "<"));
+  const r = await page.eval(SCAN(needles));
   return [...r.missing.map((k) => "string missing from table: " + k), ...r.found.map((f) => "English left: " + f)];
 }
 

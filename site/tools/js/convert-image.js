@@ -1,5 +1,5 @@
-import { $, fmtBytes, tx, txn } from "./core.js?v=5";
-import { batchTool, decode, newCanvas, ctx2d, release, encodeCanvas, outName, LABEL, dims } from "./imgcore.js?v=5";
+import { $, fmtBytes, tx, txn } from "./core.js?v=11";
+import { batchTool, decode, newCanvas, ctx2d, release, encodeCanvas, outName, LABEL, dims } from "./imgcore.js?v=11";
 
 const radio = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
 const qInput = $("#quality"), qOut = $("#quality-out"), bg = $("#bg");

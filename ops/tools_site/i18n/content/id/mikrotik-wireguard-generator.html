@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Generator konfigurasi WireGuard MikroTik (RouterOS v7) | Tanod Tools",
+  "description": "Buat server WireGuard RouterOS v7 dan konfigurasi peer siap pakai. Key dibuat di browser dengan Web Crypto dan tidak pernah meninggalkan perangkat Anda.",
+  "h1": "Generator WireGuard MikroTik",
+  "lede": "Tentukan jaringan tunnel dan peer Anda, lalu dapatkan konfigurasi WireGuard RouterOS v7 plus file konfigurasi untuk setiap laptop, ponsel, atau site remote.",
+  "blurb": "Server WireGuard RouterOS v7 plus file konfigurasi peer.",
+  "keywords": "setup wireguard mikrotik routeros v7 interface wireguard peers allowed-address public key private key generator konfigurasi klien wg-quick road warrior vpn site to site",
+  "local_text": "Key dibuat di browser Anda dan tidak pernah meninggalkan perangkat Anda",
+  "limits": "Memerlukan RouterOS v7 (WireGuard tidak tersedia di v6). Key dibuat dengan X25519 Web Crypto browser Anda; jika browser tidak mendukungnya, router membuat key sendiri dan konfigurasi berisi placeholder. Hanya alamat tunnel IPv4. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara menyiapkan WireGuard di MikroTik",
+  "howto": [
+    "Masukkan nama interface, listen port, alamat tunnel router (misalnya <code>10.66.0.1/24</code>), dan alamat publik yang akan dituju klien.",
+    "Tambahkan satu baris per peer dengan alamat tunnel-nya; untuk link site-to-site, tambahkan jaringan di belakangnya. Pilih full atau split tunnel.",
+    "Tempel skrip RouterOS, pindahkan aturan firewall ke atas aturan drop Anda, lalu impor file .conf tiap peer ke aplikasi WireGuard-nya."
+  ],
+  "faq": [
+    ["Amankah key jika dibuat di halaman web?", "Key dibuat oleh implementasi X25519 Web Crypto bawaan browser Anda, kurva yang sama dengan yang dipakai WireGuard, dan hanya ada di memori halaman ini serta di teks yang ditampilkannya kepada Anda. Tidak ada yang dikirim ke mana pun: halaman ini tidak punya komponen server, dan kebijakan keamanannya memblokir koneksi ke situs lain. Tutup tab dan key hilang, jadi simpan dulu konfigurasi yang Anda perlukan."],
+    ["Bagaimana jika browser saya tidak bisa membuat key X25519?", "Halaman memberi tahu Anda dan beralih ke key yang dibuat di tempat lain: skrip RouterOS tidak menyertakan private key, sehingga router membuat sendiri saat interface dibuat. Jalankan /interface wireguard print untuk membaca public key-nya, tempel ke konfigurasi peer, dan tempel public key tiap peer (dari aplikasi WireGuard-nya) ke tabel di sini."],
+    ["Apa itu allowed-address pada peer MikroTik?", "Fungsinya sebagai daftar akses sekaligus tabel routing: router hanya menerima paket dari peer dengan alamat sumber ini, dan mengirim lalu lintas untuk tujuan ini ke peer tersebut. Untuk satu perangkat, isinya /32 perangkat itu. Untuk site remote, tambahkan LAN site tersebut, dan skrip juga menambahkan route ke sana."],
+    ["Full tunnel atau split tunnel?", "Full tunnel (AllowedIPs 0.0.0.0/0 pada peer) mengirim semua lalu lintas perangkat lewat router, berguna di Wi-Fi yang tidak tepercaya; router harus me-masquerade alamat tunnel ke internet. Split tunnel hanya mengirim jaringan tunnel dan jaringan yang Anda sebutkan, sehingga penjelajahan biasa tetap lokal."],
+    ["Mengapa peer memerlukan PersistentKeepalive?", "Ponsel atau laptop di belakang NAT hanya bisa menerima paket selama pemetaan NAT-nya hidup. Keepalive setiap 25 detik menjaganya tetap terbuka, sehingga router bisa menjangkau peer dan tunnel cepat pulih setelah jeda."],
+    ["Apa tambahan dari preshared key?", "Rahasia simetris tambahan yang dicampurkan ke handshake, yang menambah lapisan perlindungan terhadap serangan kuantum di masa depan pada pertukaran public key. Opsional, dan harus sama di kedua sisi."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Router</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">Nama interface</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Listen port (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">Alamat tunnel router</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">Alamat publik (endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">DNS untuk peer</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Key</legend>
+      <div class="seg" role="radiogroup" aria-label="Key">
+        <label><input type="radio" name="wg-keys" value="browser" checked>Buat di browser ini</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">Dibuat di tempat lain</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>Browser ini tidak bisa membuat key X25519, jadi router akan membuat sendiri dan Anda menempel public key peer di bawah.</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>Tambahkan preshared key per peer</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}Key baru</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Peer</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Tambah peer</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Lalu lintas peer</legend>
+      <div class="seg" role="radiogroup" aria-label="Lalu lintas peer">
+        <label><input type="radio" name="wg-route" value="full" checked>Full tunnel (semua lalu lintas)</label>
+        <label><input type="radio" name="wg-route" value="split">Split tunnel</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">Jaringan yang dijangkau peer lewat tunnel</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>Tambahkan tunnel ke interface list LAN</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">Skrip RouterOS v7</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">Salin skrip</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>WireGuard di RouterOS v7</h2>
+<p>WireGuard hadir di RouterOS 7 dan dikonfigurasi di dua tempat: <code>/interface wireguard</code> menyimpan pasangan key dan listen port router, dan <code>/interface wireguard peers</code> menyimpan satu entri per perangkat atau site remote, yang diidentifikasi oleh public key-nya. Interface tunnel lalu mendapat alamat IP seperti interface lain, dan aturan firewall, route, serta interface list berlaku padanya seperti biasa. Tidak ada nama pengguna atau password: peer adalah siapa pun yang memegang private key yang cocok dengan public key yang dikonfigurasi.</p>
+<p><code>allowed-address</code> setiap peer adalah inti konfigurasi. Isinya alamat sumber yang diterima router dari peer itu dan, sekaligus, tujuan yang dikirim router ke peer itu. Di sisi perangkat, <code>AllowedIPs</code> melakukan hal yang sama dengan arah terbalik: 0.0.0.0/0 mengirim semuanya lewat tunnel, sedangkan daftar jaringan membatasi tunnel hanya untuk jaringan tersebut.</p>
+<h3>Sebelum terhubung</h3>
+<ul>
+  <li>Router harus menerima UDP pada listen port di input chain-nya, di atas aturan drop mana pun. <a href="/tools/mikrotik-firewall-generator/">Generator firewall</a> dapat membukanya untuk Anda dengan <code>udp/13231</code>.</li>
+  <li>Jika router berada di belakang perangkat NAT lain, teruskan port UDP itu ke router, seperti yang ditunjukkan <a href="/tools/mikrotik-port-forwarding/">generator port forwarding</a>.</li>
+  <li>Konfigurasi peer berisi private key. Pindahkan ke perangkat lewat saluran tepercaya dan hapus salinan yang tercecer.</li>
+</ul>

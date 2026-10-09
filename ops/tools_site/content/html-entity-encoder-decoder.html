@@ -1,0 +1,83 @@
+<!--meta
+{
+  "category": "dev",
+  "name": "HTML entity encoder and decoder",
+  "title": "HTML entity encoder and decoder | Tanod Tools",
+  "description": "Encode text to named or numeric HTML entities, or only the unsafe < > & \" ' characters, and decode any entity back to text. Free, in your browser.",
+  "h1": "HTML entity encoder and decoder",
+  "lede": "Turn text into HTML entities, or turn entities such as &amp;amp; and &amp;#8364; back into the characters they stand for.",
+  "blurb": "Encode and decode named and numeric HTML entities.",
+  "keywords": "html entity encoder decoder html entities escape html special characters named entities numeric character references decode html entities amp lt gt quot nbsp copy euro unescape html",
+  "local_text": "Runs in your browser; nothing you type leaves your device",
+  "limits": "Text up to a few million characters. Decoding understands every named entity your browser knows (the full HTML5 list) and decimal and hexadecimal numbers; a reference needs its closing semicolon. Decoding is one level only: &amp;amp;lt; becomes &amp;lt;, not &lt;.",
+  "howto_title": "How to encode and decode HTML entities",
+  "howto": [
+    "Choose <em>Encode</em> or <em>Decode</em> and paste your text.",
+    "When encoding, choose whether to encode only the unsafe characters, to use names such as &amp;eacute; where they exist, or to use numbers for everything outside ASCII.",
+    "Copy the result."
+  ],
+  "faq": [
+    ["Which characters must be escaped in HTML?", "Five: the less-than sign &lt; (&amp;lt;), the greater-than sign &gt; (&amp;gt;), the ampersand &amp; (&amp;amp;), the double quote \" (&amp;quot;) and the single quote ' (&amp;#39;). Escaping them lets you show code or user input as text without it being read as markup. The first option, <em>Only the unsafe characters</em>, does just that."],
+    ["What is the difference between named and numeric entities?", "A named entity uses a short word, such as &amp;eacute; for é or &amp;euro; for €. A numeric one uses the Unicode code point, in decimal (&amp;#233;) or hexadecimal (&amp;#xE9;). Both give the same character. Only some characters have names; the rest need numbers."],
+    ["Why encode non-ASCII characters at all?", "If a page or an email is not served as UTF-8, accented letters and symbols can turn into garbage. Entities are plain ASCII, so they survive any encoding."],
+    ["Does decoding cover every entity?", "Yes. Decimal and hexadecimal references are converted directly, and names are looked up by the browser's own HTML parser, which knows the complete HTML5 list of more than two thousand names. A reference without its semicolon is left as it is, and so is an unknown name, which is listed so you can see it."],
+    ["Is encoding enough to stop XSS?", "Encoding the five unsafe characters is the right fix when you place text in HTML element content or in a quoted attribute value. It is not enough inside a script, a style, an unquoted attribute or a URL, which need their own escaping. This tool is for text you paste, not a replacement for your framework's escaping."],
+    ["Is my text uploaded?", "No. Everything happens in your browser and nothing leaves your device."]
+  ],
+  "related": ["url-encode-decode", "base64-encode-decode", "html-formatter", "html-to-markdown", "markdown-to-html", "invisible-character-detector"]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="he">
+  <div class="field">
+    <span class="label" id="he-mode-l">What do you want to do?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="he-mode-l">
+      <label><input type="radio" name="he-mode" value="encode" checked>Encode</label>
+      <label><input type="radio" name="he-mode" value="decode">Decode</label>
+    </div>
+  </div>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="he-in">Input</label>
+      <textarea id="he-in" class="mono" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste text here"></textarea>
+    </div>
+    <div class="field">
+      <label for="he-out">Result</label>
+      <textarea id="he-out" class="mono" rows="9" readonly spellcheck="false"></textarea>
+    </div>
+  </div>
+  <div id="he-opts">
+    <div class="opts opts--pair">
+      <div class="field">
+        <label for="he-style">Encode</label>
+        <select id="he-style">
+          <option value="unsafe">Only the unsafe characters (&lt; &gt; &amp; " ')</option>
+          <option value="named" selected>Named entities where they exist, numbers for the rest</option>
+          <option value="numeric">Numbers for everything outside ASCII</option>
+        </select>
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="he-hex">Use hexadecimal numbers (&amp;#xE9;)</label>
+      <label class="check"><input type="checkbox" id="he-all">Encode every character</label>
+    </div>
+  </div>
+  <p class="tt__report" id="he-report" aria-live="polite">Paste text to begin.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="he-copy" type="button" disabled>{{mark:i-copy}}Copy result</button>
+    <button class="btn" id="he-use" type="button" disabled>Use result as input</button>
+    <button class="btn btn--quiet" id="he-clear" type="button" disabled>Clear</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>What HTML entities are</h2>
+<p>HTML gives a few characters a special job: the less-than sign starts a tag, the ampersand starts an entity, and the quotes end an attribute value. To show one of those characters as text, you write an entity instead: <code>&amp;lt;</code> for &lt;, <code>&amp;amp;</code> for &amp;. Entities also let you write characters that are hard to type or that an old page encoding cannot hold, such as <code>&amp;eacute;</code> for é, <code>&amp;euro;</code> for € or <code>&amp;#128512;</code> for an emoji.</p>
+<p>An entity starts with an ampersand and ends with a semicolon. Between them is either a name (<code>copy</code>), a decimal number after # (<code>#169</code>) or a hexadecimal number after #x (<code>#xA9</code>). All three of those write the copyright sign. Encoding goes through your text one character at a time: the five unsafe characters always become entities, and the rest depends on the option you choose, from nothing at all to a number for every character.</p>
+<p>Decoding reads each reference and replaces it with its character. Numbers are converted directly, following the HTML rules: a number that is zero, out of range or a surrogate becomes the replacement character, and the numbers 128 to 159 are read as Windows-1252 characters, as browsers do. Names are resolved by your browser, which knows the whole HTML5 list. Decoding is a single pass, so <code>&amp;amp;lt;</code> becomes <code>&amp;lt;</code> and not a bare less-than sign.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Escaping a value for a web address instead? Use <a href="/tools/url-encode-decode/">URL encode and decode</a>.</li>
+  <li>Tidy markup before you escape it with the <a href="/tools/html-formatter/">HTML formatter</a>.</li>
+  <li>Not sure why text looks strange? Hidden characters can hide inside it: check with the <a href="/tools/invisible-character-detector/">invisible character detector</a>.</li>
+</ul>

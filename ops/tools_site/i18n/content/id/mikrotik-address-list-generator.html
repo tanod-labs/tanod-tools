@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Generator address list MikroTik: dedup dan gabung CIDR | Tanod Tools",
+  "description": "Ubah daftar IP, CIDR, dan rentang menjadi skrip address-list RouterOS. Hapus duplikat, gabung jaringan yang tumpang tindih, IPv4 dan IPv6, timeout opsional.",
+  "h1": "Generator address list MikroTik",
+  "lede": "Tempel alamat IP, jaringan, atau rentang dalam campuran apa pun, dan dapatkan skrip address-list RouterOS yang bersih, dengan duplikat dihapus dan jaringan berdekatan digabung.",
+  "blurb": "IP dan CIDR menjadi skrip address-list yang dededuplikasi dan digabung.",
+  "keywords": "generator address list mikrotik routeros address-list import blocklist allowlist daftar blokir agregasi cidr gabung subnet dedupe daftar ip skrip address list firewall rsc spamhaus drop",
+  "local_text": "Berjalan di browser; daftar Anda tidak meninggalkan perangkat Anda",
+  "limits": "Membaca alamat IPv4 dan IPv6, jaringan CIDR, dan rentang yang ditulis sebagai awal-akhir; apa pun setelah # atau ; pada sebuah baris diabaikan. Daftar besar (ratusan ribu entri) tetap bisa diproses tetapi butuh waktu sejenak. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara membuat address list MikroTik",
+  "howto": [
+    "Tempel alamatnya, satu per baris atau dipisahkan koma atau spasi. Jaringan (<code>203.0.113.0/24</code>) dan rentang (<code>198.51.100.10-198.51.100.20</code>) juga bisa.",
+    "Beri nama pada list, dan tambahkan timeout atau komentar jika ingin ada di setiap entri.",
+    "Biarkan penggabungan aktif untuk mendapat entri paling sedikit, lalu salin skrip atau unduh file .rsc dan jalankan <code>/import file-name=list.rsc</code>."
+  ],
+  "faq": [
+    ["Apa yang dilakukan penggabungan?", "Alat ini mengurutkan semua entri, menyatukan alamat dan jaringan yang tumpang tindih atau bersentuhan, lalu menuliskan hasilnya sebagai blok CIDR paling sedikit yang mencakup persis alamat yang sama. 10.0.0.0/25 dan 10.0.0.128/25 menjadi 10.0.0.0/24, dan satu alamat di dalam jaringan yang sudah ada akan hilang. Tidak ada yang ditambahkan di luar yang sebelumnya tercakup."],
+    ["Mengapa satu rentang menjadi beberapa entri?", "Rentang seperti 10.0.0.5-10.0.0.20 tidak sejajar dengan satu batas jaringan, jadi ditulis sebagai blok CIDR yang mencakupnya persis: 10.0.0.5/32, 10.0.0.6/31, 10.0.0.8/29, 10.0.0.16/30, dan 10.0.0.20/32. RouterOS menerima rentang juga, tetapi entri CIDR lebih mudah dibaca dan dibandingkan."],
+    ["Import saya berhenti di tengah dengan \"already have such entry\". Mengapa?", "RouterOS menolak menambahkan alamat yang sudah ada di list, dan import berhenti pada error pertama. Centang \"Lewati entri yang sudah ada\": setiap baris lalu dibungkus <code>:do { … } on-error={}</code> sehingga duplikat dilewati dan import berlanjut. Atau centang \"Ganti list\" untuk mengosongkannya terlebih dahulu."],
+    ["Bagaimana memakai list itu di aturan firewall?", "Cocokkan dengan <code>src-address-list=</code> atau <code>dst-address-list=</code>, misalnya <code>/ip firewall raw add chain=prerouting src-address-list=blocklist action=drop</code>. Melakukan drop di tabel raw melewati connection tracking, yang lebih hemat untuk daftar blokir besar."],
+    ["Apakah list saya diunggah?", "Tidak. Parsing dan penggabungan berjalan di browser Anda, dan apa pun yang Anda tempel tidak dikirim ke mana pun."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="al">
+  <div class="ros-gen__form">
+    <div class="field">
+      <label for="al-in">Alamat, jaringan, atau rentang</label>
+      <textarea id="al-in" class="mono" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="al-in-h">203.0.113.7
+203.0.113.0/25
+203.0.113.128/25
+198.51.100.10-198.51.100.20
+192.0.2.55 # scanner
+192.0.2.55
+2001:db8:bad::/48</textarea>
+      <span class="help" id="al-in-h">Satu per baris atau dipisahkan koma. Teks setelah # atau ; diabaikan.</span>
+    </div>
+    <div class="opts">
+      <div class="field">
+        <label for="al-name">Nama list</label>
+        <input type="text" id="al-name" class="mono" value="blocklist" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="al-timeout">Timeout</label>
+        <input type="text" id="al-timeout" class="mono" value="" placeholder="1d" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="al-timeout-h">
+        <span class="help" id="al-timeout-h">Opsional, misalnya 1h, 1d, atau 1w.</span>
+      </div>
+      <div class="field opts__full">
+        <label for="al-comment">Komentar</label>
+        <input type="text" id="al-comment" value="" placeholder="diimpor 2026-01-01" autocomplete="off">
+      </div>
+    </div>
+    <div class="ros-checks">
+      <label class="check"><input type="checkbox" id="al-merge" checked>Gabungkan jaringan yang tumpang tindih dan berdekatan</label>
+      <label class="check"><input type="checkbox" id="al-skip" checked>Lewati entri yang sudah ada</label>
+      <label class="check"><input type="checkbox" id="al-replace">Ganti list (hapus dulu entri saat ini)</label>
+    </div>
+    <dl class="ros-facts" id="al-stats" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <label for="al-out" class="label">Skrip RouterOS</label>
+    <textarea id="al-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="al-copy" type="button">Salin skrip</button>
+      <button class="btn" id="al-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="al-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Address list di RouterOS</h2>
+<p>Address list adalah kumpulan bernama berisi alamat IP dan jaringan di bawah <code>/ip firewall address-list</code> (dan <code>/ipv6 firewall address-list</code> untuk IPv6). Aturan firewall, NAT, mangle, dan raw bisa mencocokkan seluruh list dengan satu kondisi, sehingga rule set tetap pendek dan cepat: RouterOS mencari keanggotaan list dalam sebuah tree, bukan menelusuri satu aturan per jaringan. List adalah cara lazim menyimpan jaringan manajemen, rentang pelanggan, daftar blokir dari threat feed, atau alamat yang ditambahkan secara dinamis oleh aturan dengan <code>action=add-src-to-address-list</code>.</p>
+<p>List yang sama bisa memuat alamat tunggal, jaringan CIDR, dan rentang, dan entri yang tumpang tindih diperbolehkan, yang membuat feed hasil import menjadi berantakan. Halaman ini merapikan list sebelum sampai ke router: setiap entri dinormalkan (jaringan yang ditulis dengan bit host, seperti 10.1.2.3/24, menjadi 10.1.2.0/24), duplikat persis dibuang dan, dengan penggabungan aktif, semuanya diringkas menjadi himpunan blok CIDR minimal. Skrip memakai alamat polos untuk host tunggal, sama seperti yang dicetak RouterOS sendiri.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Periksa ukuran, rentang, dan mask sebuah jaringan di <a href="/tools/subnet-calculator/">kalkulator subnet</a>.</li>
+  <li>Butuh aturan firewall yang memakai list ini? Mulai dari <a href="/tools/mikrotik-firewall-generator/">generator firewall MikroTik</a>.</li>
+  <li>Merapikan daftar teks biasa saja? <a href="/tools/remove-duplicate-lines/">Hapus baris duplikat</a> mempertahankan urutan dan teks aslinya.</li>
+</ul>

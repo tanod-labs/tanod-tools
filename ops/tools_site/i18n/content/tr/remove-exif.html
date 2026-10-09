@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Fotoğraflardan EXIF verilerini silin, GPS dahil | Tanod Tools",
+  "description": "Fotoğrafın neyi ele verdiğini (GPS, kamera, tarih) görün, sonra resmi yeniden kodlamadan EXIF, XMP ve IPTC verilerini silin. Yükleme yok.",
+  "h1": "Fotoğraflardan EXIF verilerini silin",
+  "lede": "Bir fotoğrafta gizli konumu, kamerayı ve tarihi görün, ardından resme dokunmadan silin.",
+  "blurb": "Fotoğraflardan GPS, kamera ve diğer meta verileri temizleyin.",
+  "keywords": "exif verisi sil meta veri gps konum gizlilik exif temizleyici xmp iptc fotoğraf meta veri silme metadata remover exif remover strip exif",
+  "limits": "Toplu işlemde en fazla 50 resim, her biri 50 MB'a kadar. JPEG, PNG ve WebP yeniden kodlanmadan temizlenir; GIF, BMP ve AVIF yeniden çizilir ve PNG olarak kaydedilir.",
+  "howto_title": "Fotoğraftan EXIF verileri nasıl silinir",
+  "howto": [
+    "Fotoğraflarınızı seçin veya sayfaya sürükleyin. Her biri içerdiklerini listeler; GPS konumu varsa işaretlenir.",
+    "Yönü buna bağlı fotoğrafların yan dönmemesi için “Yönü koru” seçeneğini açık bırakın ya da her şeyi silmek için kapatın.",
+    "<strong>Meta verileri sil</strong> düğmesine basın, ardından temiz kopyaları veya bir .zip dosyasını indirin. Dosya adlarına “-clean” eklenir."
+  ],
+  "faq": [
+    [
+      "Fotoğraflarım yükleniyor mu?",
+      "Hayır. Dosya tarayıcınızda okunur ve yeniden yazılır; hiçbir şey sunucuya gönderilmez. Herhangi bir şey değişmeden önce her fotoğrafın içerdiklerinin listesini kontrol edebilirsiniz."
+    ],
+    [
+      "JPEG'imi yeniden sıkıştırır mı?",
+      "Hayır. JPEG, PNG ve WebP için araç dosya kapsayıcısını yeniden yazar ve meta veri bloklarını atar. Resim verisi bayt bayt kopyalanır; bu yüzden kalite kaybı olmaz ve pikseller aynı kalır."
+    ],
+    [
+      "Tam olarak neler siliniyor?",
+      "JPEG: EXIF ve XMP (APP1), IPTC (APP13), yorumlar ve JFIF başlığı, renk profili ile Adobe renk bayrağı dışındaki uygulama blokları. PNG: metin parçaları (XMP barındırabilen tEXt, zTXt, iTXt), EXIF ve değiştirilme zamanı. WebP: EXIF ve XMP parçaları. Bir JPEG veya PNG resminin sonuna eklenmiş veriler de atılır."
+    ],
+    [
+      "“Yönü koru” nedir?",
+      "Birçok kamera bir fotoğrafı yan olarak saklar ve görüntüleyicilere onu döndürmelerini söyleyen bir yön etiketi ekler. Bu etiket kaldırılırsa fotoğraf yan görünebilir. Bu seçenek açıkken (varsayılan), özgün fotoğraf dik değilse yalnızca yön numarasını içeren küçük bir EXIF bloğu geri yazılır. Konum veya kamera ayrıntısı içermez. Onu da silmek için seçeneği kapatın."
+    ],
+    [
+      "Renk profili siliniyor mu?",
+      "Hayır. Gömülü ICC renk profili korunur, çünkü onu kaldırmak renklerin görünümünü değiştirebilir. Fotoğrafın nerede veya nasıl çekildiğini değil, renklerin nasıl işleneceğini tanımlar."
+    ],
+    [
+      "Bulunanların listesi ne kadar güvenilir?",
+      "Standart EXIF alanlarını (kamera, lens, tarih, yazılım, GPS, yön) okur ve geri kalanı sayar. Kamera üreticileri özel verileri kendi biçimlerinde ekler; bunlar sayılır ama açıklanmaz. Temizlenen dosya, yazıldıktan sonra hiçbir EXIF konumunun, kameranın, XMP'nin veya metin meta verisinin kalmadığını doğrulamak için denetlenir."
+    ],
+    [
+      "GIF, BMP veya AVIF dosyalarına ne olur?",
+      "Bu araç o kapsayıcıları düzenlemez. Resmi yeniden çizer ve meta veri taşımayan PNG olarak kaydeder. GIF, ilk karesine dönüşür."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Fotoğrafları buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Fotoğraf seçin</span></label>
+  <p class="drop__hint">JPEG, PNG veya WebP (ayrıca GIF, BMP, AVIF). Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<ol class="files" id="files" aria-label="Temizlenecek fotoğraflar" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Yönü koru, fotoğraflar yan dönmesin</label>
+      <p class="help">Yalnızca yön numarasını içeren küçük bir EXIF bloğunu geri yazar ve bunu yalnızca fotoğraf zaten dik değilse yapar.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Meta verileri sil</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tümünü temizle</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Bir fotoğraf neleri ele verebilir</h2>
+<p>Çoğu kamera ve telefon her fotoğrafa ek bilgi yazar: marka ve model, çekildiği zaman, düzenleyen yazılım ve konum açıksa durduğunuz yerin GPS koordinatları. Bu bloğa EXIF denir. Düzenleme programları açıklamalar, yazar adları ve anahtar sözcükler içeren XMP ve IPTC blokları ekler. Birçok site yüklediğinizde bunları temizler ama hepsi yapmaz; e-posta veya sohbetle gönderilen bir dosya ise genellikle her şeyi korur.</p>
+<p>Bu araç önce her fotoğrafın neler içerdiğini gösterir, sonra dosyanın kapsayıcısını yeniden yazarak bunları siler. Bir JPEG, etiketli bloklar dizisi ve ardından sıkıştırılmış resimden oluşur; meta veri blokları dışarıda bırakılır ve resim verisi değiştirilmeden kopyalanır. Sonucun yeniden sıkıştırılmamasının ve aynı görünmesinin nedeni budur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Paylaşmadan önce listeyi kontrol edin: işaretli bir konum, fotoğrafın koordinat taşıdığı anlamına gelir.</li>
+  <li>Ekran görüntüleri ve düzenlenmiş dışa aktarımlar yine de metin meta verisi içerebilir. Onları da buradan geçirin.</li>
+  <li>Dosyayı ayrıca küçültmek için sonrasında <a href="/tools/compress-image/">Resim sıkıştır</a> aracını kullanın; o da yeniden kodlar ve meta verileri de atar.</li>
+</ul>

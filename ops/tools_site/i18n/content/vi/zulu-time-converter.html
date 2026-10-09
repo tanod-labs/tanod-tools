@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Đổi giờ Zulu: giờ địa phương sang UTC và ngược lại | Tanod Tools",
+  "description": "Đổi giờ địa phương sang giờ Zulu (UTC) và ngược lại cho mọi múi giờ, kèm nhóm thời gian dạng METAR DDHHMMZ. Dùng cơ sở dữ liệu múi giờ của trình duyệt.",
+  "h1": "Đổi giờ Zulu (UTC)",
+  "lede": "Đổi giờ địa phương sang giờ Zulu (UTC) hoặc ngược lại cho mọi múi giờ, và đọc các nhóm thời gian dạng METAR DDHHMMZ.",
+  "blurb": "Giờ địa phương sang Zulu (UTC) và nhóm METAR DDHHMMZ.",
+  "keywords": "đổi giờ zulu utc gmt giờ địa phương hàng không giờ z ddhhmmz metar nhóm thời gian đổi múi giờ giờ quân sự 24 giờ giờ mùa hè zulu time converter",
+  "limits": "Dùng dữ liệu múi giờ tích hợp sẵn trong trình duyệt của bạn, gồm cả quy tắc giờ mùa hè. Không dùng cho lập kế hoạch bay hoặc dẫn đường: hãy tự kiểm tra giờ chính thức và hiệu lực của NOTAM.",
+  "howto_title": "Cách đổi giờ địa phương sang Zulu",
+  "howto": [
+    "Chọn ngày và giờ đồng hồ, cùng múi giờ của nó. Ô đầu tiên bắt đầu bằng múi giờ của chính bạn.",
+    "Chọn múi giờ để hiển thị: mặc định là UTC, còn gọi là giờ Zulu hay Z.",
+    "Đọc giờ đã chuyển đổi và nhóm DDHHMMZ. Để giải mã nhóm thời gian trong METAR hoặc TAF, hãy nhập vào phần thứ hai."
+  ],
+  "faq": [
+    ["Giờ Zulu là gì?", "Giờ Zulu là Giờ Phối hợp Quốc tế (UTC), được viết kèm chữ Z, là tên theo bảng chữ cái ngữ âm NATO của múi giờ quân sự không có độ lệch. Hàng không, khí tượng và quân đội dùng nó để mọi người có một đồng hồ chung, không bị đổi giờ mùa hè."],
+    ["Làm sao đọc nhóm thời gian như 081405Z?", "Hai chữ số đầu là ngày trong tháng (08), hai chữ số tiếp theo là giờ (14) và hai chữ số cuối là phút (05), luôn theo UTC, nên 081405Z là ngày 8 lúc 14:05 UTC. Thời gian trong METAR, TAF và NOTAM dùng dạng này. Tháng và năm không được nêu, nên công cụ chọn tháng gần nhất với ngày tham chiếu."],
+    ["UTC có giống GMT không?", "Trong sử dụng hằng ngày thì có: đồng hồ hiển thị cùng một giờ. Nói chặt chẽ, GMT là múi giờ dựa trên chuyển động quay của Trái Đất còn UTC là thang thời gian nguyên tử được giữ trong khoảng 0,9 giây so với nó nhờ giây nhuận. Hàng không dùng UTC."],
+    ["Giờ Zulu có giờ mùa hè không?", "Không. UTC không bao giờ thay đổi. Độ lệch của múi giờ địa phương so với UTC thay đổi khi giờ mùa hè bắt đầu hoặc kết thúc, đó là lý do lịch bay dễ đọc hơn theo UTC."],
+    ["Chuyện gì xảy ra khi đổi giờ mùa hè?", "Khi đồng hồ chỉnh tới, một giờ của giờ địa phương không tồn tại, và công cụ chuyển sang giờ hợp lệ gần nhất. Khi đồng hồ chỉnh lùi, một giờ xảy ra hai lần và công cụ dùng lần đầu, đồng thời thông báo cho bạn."],
+    ["Công cụ lấy quy tắc múi giờ ở đâu?", "Từ cơ sở dữ liệu múi giờ IANA tích hợp sẵn trong trình duyệt (API Intl), nên không có gì được tải xuống. Trình duyệt cũ có thể có quy tắc lỗi thời cho một số quốc gia."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="zt-date">Ngày</label>
+    <input type="date" id="zt-date">
+  </div>
+  <div class="field">
+    <label for="zt-time">Giờ</label>
+    <input type="time" id="zt-time">
+  </div>
+  <div class="field">
+    <label for="zt-from">Múi giờ của giờ này</label>
+    <select id="zt-from"></select>
+  </div>
+  <div class="field">
+    <label for="zt-to">Hiển thị theo</label>
+    <select id="zt-to"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="zt-now" type="button">Dùng giờ hiện tại</button>
+  <button class="btn btn--quiet" id="zt-swap" type="button">Đổi chỗ các múi giờ</button>
+</div>
+<p class="note" id="zt-note" role="status" aria-live="polite" hidden></p>
+<dl class="stats" id="zt-stats"></dl>
+<h2 class="util-h" id="zt-grp-h">Đọc nhóm thời gian METAR hoặc TAF</h2>
+<div class="opts">
+  <div class="field">
+    <label for="zt-grp">Nhóm thời gian (DDHHMMZ)</label>
+    <input type="text" id="zt-grp" class="mono" autocomplete="off" spellcheck="false" value="081405Z" placeholder="081405Z" aria-describedby="zt-grp-msg">
+  </div>
+  <div class="field">
+    <label for="zt-ref">Gần nhất với ngày UTC này</label>
+    <input type="date" id="zt-ref">
+  </div>
+</div>
+<p class="note" id="zt-grp-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="zt-grp-stats"></dl>
+<!--explain-->
+<h2>Cách chuyển đổi hoạt động</h2>
+<p>UTC (Giờ Phối hợp Quốc tế) là chuẩn thời gian dân sự quốc tế do BIPM duy trì và được định nghĩa trong Khuyến nghị ITU-R TF.460. Trong hàng không nó được viết với hậu tố Z, từ chữ cái múi giờ quân sự Zulu, và theo định dạng nhóm thời gian ICAO DDHHMMZ dùng trong các bản tin METAR, TAF và SIGMET (Phụ ước 3 của ICAO, WMO số 306). Giờ địa phương là UTC cộng độ lệch của múi giờ, độ lệch này phụ thuộc vào ngày do quy tắc giờ mùa hè.</p>
+<p>Trang chuyển ngày và giờ đồng hồ bạn nhập thành một thời điểm bằng độ lệch mà múi giờ có vào lúc đó, rồi hiển thị thời điểm ấy ở múi giờ còn lại. Việc này dùng Cơ sở dữ liệu Múi giờ IANA qua API Intl của trình duyệt, cùng dữ liệu mà hệ điều hành sử dụng. Một giờ địa phương không hợp lệ rơi vào giờ bị bỏ qua lúc bắt đầu giờ mùa hè sẽ được dời tới theo khoảng trống đó, và một giờ mơ hồ trong giờ lặp lại dùng lần xuất hiện đầu tiên.</p>
+<p>Nhóm thời gian không có tháng hay năm, nên công cụ thử tháng trước, tháng này và tháng sau rồi giữ ngày gần nhất với ngày tham chiếu bạn đưa ra (mặc định là hôm nay, theo UTC), đây là cách một bản tin thời tiết thường được đối chiếu với lịch. <strong>Không dùng cho lập kế hoạch bay hoặc dẫn đường.</strong></p>

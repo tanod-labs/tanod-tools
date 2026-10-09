@@ -1,7 +1,7 @@
 // Shared helpers for the calculators: number parsing and formatting, and calendar date arithmetic.
 // Dates are handled as plain year/month/day numbers (no time zone, no daylight saving), so a
 // day is always a day. Everything runs in the browser.
-import { txn, EN, LOCALE, parseNum as parseLocal, dateFormat, listText } from "./i18n.js?v=5";
+import { txn, EN, LOCALE, parseNum as parseLocal, dateFormat, listText } from "./i18n.js?v=11";
 
 /* ------------------------------------------------------------------ numbers */
 

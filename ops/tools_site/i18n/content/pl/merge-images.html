@@ -1,0 +1,106 @@
+<!--meta
+{
+  "title": "Połącz obrazy obok siebie, w kolumnie lub siatce | Tanod Tools",
+  "description": "Połącz od 2 do 20 obrazów w jeden: obok siebie, jeden pod drugim lub w siatce, z odstępami, wyrównaniem i kolorem tła. Nic nie jest przesyłane.",
+  "h1": "Połącz obrazy",
+  "lede": "Złącz kilka obrazów w jeden: w rzędzie, w kolumnie lub w siatce, z wybranym odstępem i tłem.",
+  "blurb": "Połącz obrazy w rząd, kolumnę lub siatkę.",
+  "keywords": "połącz obrazy łączenie zdjęć kolaż obok siebie jeden pod drugim pionowo poziomo siatka sprite sheet zdjęcia merge images combine stitch",
+  "limits": "Od 2 do 20 obrazów w jednym połączeniu, po 50 MB każdy. Połączony obraz może mieć do 100 megapikseli i 32 767 pikseli na bok. Wynik w formacie PNG, JPEG lub WebP.",
+  "howto_title": "Jak połączyć obrazy",
+  "howto": [
+    "Wybierz co najmniej dwa obrazy albo przeciągnij je na stronę. Przyciskami w górę i w dół na liście ustaw ich kolejność.",
+    "Wybierz <strong>Obok siebie</strong>, <strong>Jeden pod drugim</strong> lub <strong>Siatka</strong>, a potem ustaw odstęp, wyrównanie, tło i to, czy obrazy mają być skalowane do wspólnego rozmiaru.",
+    "Sprawdź podgląd, wybierz PNG, JPEG lub WebP i kliknij <strong>Połącz obrazy</strong>."
+  ],
+  "faq": [
+    ["Czy moje obrazy są przesyłane?", "Nie. Obrazy są dekodowane i rysowane na jednym płótnie w Twojej przeglądarce. Nic nie jest wysyłane na serwer."],
+    ["Co się dzieje, gdy obrazy mają różne rozmiary?", "Domyślnie każdy zachowuje własny rozmiar, a mniejsze są umieszczane na początku, w środku lub na końcu rzędu albo kolumny, zależnie od wyboru, a puste miejsce wypełnia kolor tła. Aby je wyrównać, ustaw „Dopasuj rozmiary”, by skalować je do najmniejszego lub największego obrazu w zestawie."],
+    ["Jak działa dopasowanie rozmiarów w każdym układzie?", "Układ obok siebie nadaje każdemu obrazowi tę samą wysokość z zachowaniem proporcji. Układ jeden pod drugim nadaje każdemu tę samą szerokość. W siatce każdy obraz jest wpasowany w tę samą komórkę bez przycinania, więc kształty są zachowane, a pozostałe miejsce przyjmuje kolor tła."],
+    ["Czy tło może być przezroczyste?", "Tak, dla PNG i WebP. Odstępy i puste miejsca pozostają przezroczyste. JPEG nie przechowuje przezroczystości, więc po wybraniu JPEG te obszary są wypełniane kolorem tła."],
+    ["Dlaczego moje połączenie zostało odrzucone jako zbyt duże?", "Łączenie sumuje rozmiary obrazów, a rząd kilku dużych zdjęć bardzo szybko staje się bardzo szeroki. Wynik jest ograniczony do 100 megapikseli i 32 767 pikseli na dowolnym boku, aby przeglądarka mogła go zbudować. Skaluj do najmniejszego obrazu, użyj siatki albo usuń część obrazów."],
+    ["Czy kolejność na liście ma znaczenie?", "Tak. Pierwszy obraz trafia w lewy górny róg w każdym układzie, a siatka wypełnia cały rząd, zanim zacznie następny. Przyciski w górę i w dół zmieniają kolejność, a podgląd aktualizuje się od razu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść tutaj co najmniej dwa obrazy</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Wybierz obrazy</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP lub AVIF. Możesz też przeciągnąć je w dowolne miejsce na tej stronie.</p>
+</div>
+<ol class="files mrg-list" id="files" aria-label="Obrazy do połączenia, w kolejności" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts mrg-opts">
+    <fieldset class="field">
+      <legend>Układ</legend>
+      <div class="seg">
+        <label><input type="radio" name="layout" value="row" checked>Obok siebie</label>
+        <label><input type="radio" name="layout" value="column">Jeden pod drugim</label>
+        <label><input type="radio" name="layout" value="grid">Siatka</label>
+      </div>
+    </fieldset>
+    <div class="field" id="cols-field" hidden>
+      <label for="cols">Kolumny</label>
+      <input type="number" id="cols" min="1" max="20" step="1" value="2" inputmode="numeric">
+    </div>
+    <fieldset class="field">
+      <legend>Wyrównanie</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="start">Początek</label>
+        <label><input type="radio" name="align" value="center" checked>Środek</label>
+        <label><input type="radio" name="align" value="end">Koniec</label>
+      </div>
+      <p class="help" id="align-help"></p>
+    </fieldset>
+    <div class="field">
+      <label for="scale">Dopasuj rozmiary</label>
+      <select id="scale">
+        <option value="none" selected>Zachowaj oryginalne rozmiary</option>
+        <option value="min">Skaluj do najmniejszego</option>
+        <option value="max">Skaluj do największego</option>
+      </select>
+      <p class="help" id="scale-help"></p>
+    </div>
+    <div class="field">
+      <label for="gap">Odstęp (px)</label>
+      <input type="number" id="gap" min="0" max="10000" step="1" value="0" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="bg">Kolor tła</label>
+      <input type="color" id="bg" value="#ffffff">
+      <label class="check"><input type="checkbox" id="transparent">Przezroczyste (PNG i WebP)</label>
+    </div>
+    <fieldset class="field">
+      <legend>Format wyjściowy</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="png" checked>PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help" id="fmt-help">PNG zachowuje każdy piksel i przezroczystość.</p>
+    </fieldset>
+  </div>
+  <p class="help">Podgląd, pomniejszony do okna. Zapisany plik jest budowany w pełnym rozmiarze.</p>
+  <div class="preview mrg-preview"><canvas id="preview" role="img" aria-label="Podgląd połączonego obrazu"></canvas></div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Połącz obrazy</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Wyczyść wszystko</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Jak łączone są obrazy o różnych rozmiarach</h2>
+<p>Rząd obrazów jest tak wysoki jak jego najwyższy element, a kolumna tak szeroka jak jej najszerszy. Wszystko, co mniejsze, zostawia wolne miejsce, więc ustawienie wyrównania decyduje, gdzie obraz się w nim znajdzie: na początku, w środku lub na końcu. Wolne miejsce jest wypełniane kolorem tła albo pozostaje przezroczyste w PNG i WebP.</p>
+<p>Skalowanie to drugi sposób radzenia sobie z niedopasowanymi rozmiarami. Skalowanie do najmniejszego obrazu niczego nie powiększa, więc nic się nie rozmywa, ale duże zdjęcia tracą szczegóły. Skalowanie do największego zachowuje ostrość dużych, a małe rozciąga. W siatce ta sama zasada dotyczy jednego kształtu komórki, w który wpasowywany jest każdy obraz.</p>
+<p>Szerokości i wysokości sumują się szybko. Pięć zdjęć o szerokości 4000 pikseli w rzędzie daje obraz szeroki na 20 000 pikseli, co może przekraczać możliwości przeglądarki, więc strona zatrzymuje Cię i podaje rozmiar, zanim klikniesz przycisk.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Dla kolażu do wydruku lub udostępnienia dodaj potem ramkę w narzędziu <a href="/tools/add-border-to-image/">Dodaj ramkę do obrazu</a>.</li>
+  <li>Jeśli połączony plik jest za ciężki do wysłania, zmniejszą go narzędzia <a href="/tools/compress-image/">Kompresuj obraz</a> lub <a href="/tools/resize-image/">Zmień rozmiar obrazu</a>.</li>
+  <li>Wolisz obrazy w dokumencie? <a href="/tools/jpg-to-pdf/">JPG na PDF</a> umieszcza każdy na osobnej stronie.</li>
+</ul>

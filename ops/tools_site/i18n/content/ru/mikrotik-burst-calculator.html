@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "Калькулятор Burst для MikroTik (burst-limit, threshold) | Tanod Tools",
+  "description": "Узнайте, как долго очередь RouterOS работает в режиме burst при заданных max-limit, burst-limit, threshold и burst-time. График и готовые строки queue и rate-limit PPP.",
+  "h1": "Калькулятор Burst для MikroTik",
+  "lede": "Введите max-limit, burst-limit, burst-threshold и burst-time и узнайте, сколько точно клиент пользуется burst после простоя, сколько это данных и какую строку queue вставить.",
+  "blurb": "Длительность burst, объём данных и график скорости для настроек burst в очередях.",
+  "keywords": "калькулятор burst mikrotik burst limit burst threshold burst time max-limit simple queue burst rate-limit ppp profile как работает burst routeros очередь",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Моделирует burst RouterOS для одного клиента с неограниченным спросом, с шагом burst-time/16, как это делает RouterOS. Реальный трафик более неравномерен, а родительские очереди могут ограничивать клиента ниже этих значений. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен этой компанией.",
+  "howto_title": "Как рассчитать настройки burst для MikroTik",
+  "howto": [
+    "Введите max-limit, burst-limit, burst-threshold и burst-time для отдачи и загрузки. Скорости принимаются с k, M или G, например 20M.",
+    "Узнайте, сколько длится burst после простоя, и посмотрите график: он показывает допустимую скорость и среднее значение, которое RouterOS сравнивает с порогом.",
+    "При желании введите нужную длительность burst, чтобы получить порог, дающий её, затем скопируйте строку simple queue или rate-limit для PPP."
+  ],
+  "faq": [
+    ["Как работает burst на MikroTik?", "Каждые burst-time/16 RouterOS вычисляет среднюю скорость клиента за последний burst-time. Пока это среднее ниже burst-threshold, очередь позволяет клиенту передавать до burst-limit; когда среднее достигает порога, клиент снижается до max-limit. У клиента, который простаивал, среднее равно нулю, поэтому новая загрузка начинается на burst-limit и через несколько секунд падает до max-limit."],
+    ["Сколько длится burst?", "Если начать с простоя и клиент забирает всё, что ему предлагают, burst длится примерно burst-threshold × burst-time ÷ burst-limit. При burst-limit 40M, пороге 16M и burst-time 8s это 16 × 8 ÷ 40 = 3,2 секунды. Среднее перепроверяется только каждые burst-time/16 (здесь полсекунды), поэтому burst на самом деле заканчивается при первой проверке после этого момента, на 3,5 секунды; калькулятор проходит эти проверки по шагам и показывает оба значения."],
+    ["Почему burst-threshold должен быть ниже max-limit?", "Если порог выше max-limit, у клиента, скачивающего на max-limit, среднее ниже порога, поэтому burst снова включается, среднее растёт, burst выключается, и клиент постоянно колеблется. Когда порог ниже max-limit, клиент, который продолжает загрузку, остаётся на max-limit и снова получает burst только после паузы."],
+    ["Для чего нужна строка rate-limit?", "Профили PPP, секреты PPP и RADIUS (атрибут Mikrotik-Rate-Limit) принимают те же ограничения в одной строке: max-limit, burst-limit, burst-threshold и burst-time, каждое в виде rx/tx со стороны маршрутизатора, то есть отдача/загрузка для клиента. Из неё RouterOS создаёт динамическую simple queue, когда клиент подключается."],
+    ["Входит ли limit-at в burst?", "Нет. limit-at — это скорость, которую очередь гарантирует при перегрузке родительской очереди; burst лишь определяет, насколько выше max-limit клиент может подняться на время. Держите limit-at не выше max-limit."],
+    ["Что-нибудь отправляется на сервер?", "Нет. Моделирование и график рассчитываются в вашем браузере."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="bc">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Отдача (клиент в интернет)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-up-max">max-limit</label><input type="text" id="bc-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-burst">burst-limit</label><input type="text" id="bc-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-thr">burst-threshold</label><input type="text" id="bc-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-time">burst-time</label><input type="text" id="bc-up-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Загрузка (из интернета клиенту)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-down-max">max-limit</label><input type="text" id="bc-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-burst">burst-limit</label><input type="text" id="bc-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-thr">burst-threshold</label><input type="text" id="bc-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-time">burst-time</label><input type="text" id="bc-down-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="bc-want">Нужная длительность burst (секунды)</label>
+      <input type="text" id="bc-want" class="mono" value="" placeholder="5" inputmode="numeric" autocomplete="off" aria-describedby="bc-want-h">
+      <span class="help" id="bc-want-h">Необязательно: показывает порог, дающий burst такой длительности.</span>
+    </div>
+    <dl class="ros-facts" id="bc-facts" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <div class="seg" role="radiogroup" aria-label="Направление графика">
+      <label><input type="radio" name="bc-dir" value="down" checked>Загрузка клиента</label>
+      <label><input type="radio" name="bc-dir" value="up">Отдача клиента</label>
+    </div>
+    <figure class="ros-fig">
+      <div id="bc-chart"></div>
+      <figcaption id="bc-chart-t" class="help"></figcaption>
+    </figure>
+    <ul class="ros-legend" aria-hidden="true">
+      <li><i></i>Допустимая скорость</li>
+      <li class="k-avg"><i></i>Среднее за burst-time</li>
+      <li class="k-thr"><i></i>burst-threshold</li>
+    </ul>
+    <label for="bc-out" class="label">Настройки очереди</label>
+    <textarea id="bc-out" class="mono gen-out ros-out ros-out--short" rows="8" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="bc-copy" type="button">Копировать</button>
+      <button class="btn" id="bc-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="bc-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Burst в очередях RouterOS шаг за шагом</h2>
+<p>Burst позволяет клиенту ненадолго превышать max-limit, чтобы веб-страницы и небольшие загрузки открывались быстро, а долгие передачи всё равно выходили на скорость тарифа. Его определяют четыре параметра, каждый из которых в simple queue задаётся в виде отдача/загрузка: <code>max-limit</code> — обычный потолок; <code>burst-limit</code> — более высокий потолок во время burst; <code>burst-threshold</code> — средняя скорость, при которой burst прекращается; и <code>burst-time</code> — окно, на котором измеряется это среднее.</p>
+<p>RouterOS делит burst-time на 16 интервалов. После каждого интервала он усредняет скорость клиента за последние 16 интервалов и сравнивает её с порогом: если она ниже, клиент может использовать burst-limit; если равна порогу или выше, то только max-limit. Клиент, начинающий с простоя, имеет среднее ноль, передаёт на burst-limit, и среднее растёт, пока не пересечёт порог. При burst-time 8 с, burst-limit 40M и пороге 16M среднее достигает порога через 3,2 с, а следующая проверка, на 3,5 с, прекращает burst; к этому моменту клиент передал около 17,5 МБ. Затем среднее остаётся выше порога, пока клиент продолжает передачу на max-limit, поэтому для следующего burst нужна пауза.</p>
+<h3>Выбор значений</h3>
+<ul>
+  <li>Задайте burst-limit равным скорости, которую должны ощущать короткие передачи, часто в 1,5–2 раза выше max-limit.</li>
+  <li>Держите burst-threshold ниже max-limit, обычно на уровне 60–80% от него, и подбирайте burst-time, чтобы получить нужную длительность burst.</li>
+  <li>Отключите FastTrack или исключите из него клиентов с очередями: пакеты, прошедшие FastTrack, полностью обходят simple queue. Создавайте очереди в инструменте «<a href="/tools/mikrotik-simple-queue-generator/">Генератор Simple Queue для MikroTik</a>» или в виде профилей PPP в инструменте «<a href="/tools/mikrotik-pppoe-server-generator/">Генератор PPPoE-сервера MikroTik</a>».</li>
+</ul>

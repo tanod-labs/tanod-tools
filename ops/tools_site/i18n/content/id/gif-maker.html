@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Pembuat GIF online: ubah gambar menjadi GIF animasi | Tanod Tools",
+  "description": "Buat GIF animasi dari beberapa gambar di browser Anda: atur urutan, jeda, dan ukuran, lalu lihat pratinjaunya dan unduh. Gratis, tanpa daftar, tanpa unggah.",
+  "h1": "Pembuat GIF",
+  "lede": "Ubah beberapa gambar menjadi GIF animasi. Urutkan gambarnya, tentukan berapa lama setiap gambar tampil dan seberapa besar GIF-nya, tonton pratinjaunya, lalu unduh.",
+  "blurb": "Buat GIF animasi dari beberapa gambar atau foto.",
+  "keywords": "pembuat gif buat gif membuat gif gif animasi animasi gif gambar ke gif foto ke gif buat gif dari foto gif maker create animated gif images to gif photos to gif slideshow gif jeda frame loop animasi generator gif",
+  "limits": "2 sampai 60 gambar, masing-masing maksimal 50 MB. GIF bisa selebar hingga 1.200 piksel, dan setiap frame mengikuti bentuk gambar pertama. Satu frame GIF memuat paling banyak 256 warna, sehingga foto menampilkan sedikit garis-garis warna (banding), dan tidak ada transparansi: area tembus pandang diisi dengan warna latar. Gambar animasi yang Anda tambahkan dipakai mulai dari frame pertamanya.",
+  "howto_title": "Cara membuat GIF animasi",
+  "howto": [
+    "Pilih dua gambar atau lebih, atau seret ke halaman ini. Gunakan tombol naik dan turun untuk mengatur urutannya.",
+    "Atur jeda antara frame dan lebar GIF, lalu pilih cara menyesuaikan gambar yang bentuknya berbeda. Tonton pratinjaunya.",
+    "Tekan <strong>Buat GIF</strong>, periksa hasilnya, lalu unduh."
+  ],
+  "faq": [
+    ["Apakah gambar saya diunggah?", "Tidak. Gambar digambar dan GIF ditulis oleh kode yang berjalan di browser Anda, dengan encoder open source gifenc. Tidak ada yang dikirim ke server."],
+    ["Bagaimana cara membuat animasi lebih cepat atau lebih lambat?", "Ubah jeda antara frame, dalam milidetik: 1.000 berarti satu detik dan 100 berarti sepuluh frame per detik. Jeda terpendek yang tersedia adalah 20 ms, karena browser memutar jeda yang lebih pendek dari itu dengan kecepatan yang jauh lebih lambat."],
+    ["Mengapa GIF saya terlihat berbintik atau muncul garis-garis warna?", "Satu frame GIF hanya bisa memakai 256 warna, sehingga foto dan gradasi halus menampilkan garis-garis warna (banding). Alat ini memilih 256 warna terbaik untuk setiap frame secara terpisah, sehingga setiap frame tetap sedekat mungkin dengan gambarnya, sejauh yang diizinkan format ini. Grafik datar dan screenshot hasilnya paling bagus."],
+    ["Mengapa GIF saya sangat besar?", "GIF kurang efisien dalam kompresi dan menyimpan setiap frame secara utuh, sehingga ukurannya ikut membesar seiring bertambahnya lebar, tinggi, dan jumlah frame. Untuk memperkecilnya, gunakan lebar yang lebih kecil, lebih sedikit gambar, atau lebih sedikit warna per frame."],
+    ["Apa yang terjadi pada gambar dengan ukuran atau bentuk yang berbeda?", "Setiap frame mengikuti bentuk gambar pertama. <em>Muat di dalam</em> menampilkan setiap gambar secara utuh dan mengisi ruang sisanya dengan warna latar, <em>Isi dan potong</em> menutupi seluruh frame dan memotong kelebihannya dengan mempertahankan bagian tengah gambar, dan <em>Regangkan</em> meregangkan setiap gambar agar pas dengan frame."],
+    ["Apakah transparansi tetap terjaga?", "Tidak. GIF hanya bisa menandai satu warna sebagai tembus pandang, jadi alat ini mengisi area transparan dengan warna latar yang Anda pilih. Dengan begitu setiap frame tampil sama di mana pun."],
+    ["Apa fungsi opsi putar maju lalu mundur?", "Setelah frame terakhir, opsi ini menambahkan frame yang sama lagi dalam urutan terbalik, tanpa mengulang frame pertama dan terakhir, sehingga animasi bergerak maju-mundur dengan mulus alih-alih melompat kembali ke awal."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Letakkan dua gambar atau lebih di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Pilih gambar</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP, atau AVIF. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Frame, sesuai urutan" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Jeda antara frame (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1.000 ms sama dengan satu detik. Jeda terpendek adalah 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Lebar (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">Tingginya mengikuti gambar pertama: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Gambar dengan bentuk lain</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Muat di dalam</label>
+        <label><input type="radio" name="gm-fit" value="cover">Isi dan potong</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Regangkan</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Warna latar</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Ulangi</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>Terus-menerus</label>
+        <label><input type="radio" name="gm-loop" value="once">Sekali</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Warna per frame</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (kualitas terbaik)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (file terkecil)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Urutan</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Putar maju, lalu mundur</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Pratinjau</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Pratinjau animasi"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Buat GIF</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Hapus semua</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cara GIF animasi disusun</h2>
+<p>GIF adalah tumpukan gambar biasa yang ditampilkan satu demi satu. Setiap frame membawa tabel warna kecilnya sendiri yang berisi paling banyak 256 warna, beserta jeda, yaitu waktu (dalam seperseratus detik) sebelum frame berikutnya muncul. Pengaturan pengulangan (loop) di bagian awal memberi tahu penampil apakah animasi diulang terus-menerus atau berhenti setelah satu putaran. GIF tidak memakai kompresi video: setiap frame disimpan utuh, dipadatkan dengan metode lossless yang sederhana, dan itulah sebabnya ukuran GIF cepat membengkak.</p>
+<p>Membuat GIF dari foto berarti memilih 256 warna yang paling mewakili setiap gambar, lalu mengganti setiap piksel dengan warna terdekat di antaranya. Alat ini melakukannya untuk setiap frame secara terpisah dengan encoder open source gifenc, setelah menggambar semua gambar dalam ukuran yang sama agar semua frame sejajar. Ukurannya ditentukan oleh lebar yang Anda pilih dan proporsi gambar pertama, sedangkan gambar lainnya dimuat di dalamnya, dipotong sampai memenuhinya, atau diregangkan, sesuai pilihan Anda.</p>
+<p>Gambar Anda dibaca satu per satu selagi GIF ditulis, sehingga daftar panjang foto berukuran besar tidak perlu muat sekaligus di memori. Pratinjau di atas tombol memutar frame yang sama dalam ukuran lebih kecil agar Anda bisa menilai urutan, kecepatan, dan cara gambar disesuaikan sebelum membuat GIF-nya; pratinjau bisa dijeda dengan satu tombol, dan dimulai dalam keadaan dijeda jika sistem Anda meminta pengurangan gerakan.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Buat singkat saja: beberapa detik dengan 10 frame per detik sudah lebih dari cukup, dan frame yang lebih sedikit serta lebih kecil menghasilkan file yang jauh lebih kecil.</li>
+  <li>Samakan dulu bentuk gambarnya dengan <a href="/tools/crop-image/">Potong gambar</a>, atau perkecil foto besar dengan <a href="/tools/resize-image/">Ubah ukuran gambar</a>.</li>
+  <li>Ingin satu gambar, bukan animasi? <a href="/tools/merge-images/">Gabungkan gambar</a> menyatukannya berdampingan atau dalam kisi.</li>
+</ul>

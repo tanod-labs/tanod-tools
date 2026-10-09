@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Metin bul ve değiştir, regex desteğiyle | Tanod Tools",
+  "description": "Tarayıcınızda metin bulun ve değiştirin: büyük/küçük harf eşleme, tam sözcük ve $1 gruplu isteğe bağlı düzenli ifadeler. Ücretsiz, hiçbir şey yüklenmez.",
+  "h1": "Metin bul ve değiştir",
+  "lede": "Bir metin bloğundaki sözcükleri veya desenleri değiştirin; değiştirmeden önce kaç eşleşme olduğunu görün.",
+  "blurb": "Büyük/küçük harf, tam sözcük ve regex ile bul ve değiştir.",
+  "keywords": "bul ve değiştir metin değiştir toplu değiştirme düzenli ifade regex arama değiştirme find replace replace text regular expression",
+  "limits": "En fazla yaklaşık 5 MB metin. 2 saniyeden uzun süren regex desenleri durdurulur.",
+  "howto_title": "Metin nasıl bulunur ve değiştirilir",
+  "howto": [
+    "Metninizi kutuya yapıştırın veya bir .txt dosyası açın.",
+    "Aranacak metni ve yerine geçecek metni yazın. Eşleşme sayısı siz yazdıkça güncellenir.",
+    "<strong>Tümünü değiştir</strong> düğmesine basın, ardından sonucu kopyalayın veya indirin."
+  ],
+  "faq": [
+    ["Arama birebir mi yoksa desen mi?", "Varsayılan olarak birebirdir: yazdığınız metin, . ve * gibi karakterler dahil, aynen eşleştirilir. JavaScript düzenli ifade sözdizimini kullanmak için \"Düzenli ifade\" seçeneğini açın."],
+    ["Yerine geçecek metinde grupları nasıl kullanırım?", "Düzenli ifade modunda $1, $2 ve devamı, parantezli birinci, ikinci (ve sonraki) grupla eşleşen metni ekler; $& eşleşmenin tamamını, $&lt;ad&gt; ise adlandırılmış bir grubu ekler. Örneğin (\\w+)@(\\w+) ifadesini bulup $2 at $1 ile değiştirirseniz bob@example, example at bob olur. Birebir modda yerine geçecek metin yazdığınız gibi eklenir."],
+    ["Tam sözcük ne işe yarar?", "Aranan metni yalnızca daha uzun bir sözcüğün parçası olmadığında eşleştirir; yani kal aramak kalem sözcüğüyle eşleşmez. Birebir modda harfler, rakamlar ve alt çizgi, hangi yazı sistemine ait olursa olsun sözcük karakteri sayılır. Düzenli ifade modunda deseniniz sözcük sınırlarıyla (\\b) sarılır; bu sınırlar yalnızca A-Z, rakamları ve alt çizgiyi tanır."],
+    ["2 saniye sınırı nedir?", "(a+)+$ gibi bazı desenler belirli metinlerde çok uzun sürebilir. Düzenli ifade modu ayrı bir arka plan işleyicisinde (worker) çalışır; 2 saniye sonunda bitmemişse durdurulur ve desenin çok uzun sürdüğü size bildirilir, böylece sayfa asla donmaz."],
+    ["Desen satırlar arasında da çalışır mı?", "Düzenli ifade modunda ^ ve $ her satırın başında ve sonunda eşleşir, nokta ise satır sonuyla eşleşmez. Büyük/küçük harf eşle açık değilse harf büyüklüğü yok sayılır."],
+    ["Metnim yükleniyor mu?", "Hayır. Her şey tarayıcınızda çalışır; hiçbir şey saklanmaz veya gönderilmez."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="field">
+    <label for="text">Metniniz</label>
+    <textarea id="text" spellcheck="false" placeholder="Metninizi buraya yazın veya yapıştırın."></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="find">Bul</label>
+      <input type="text" id="find" class="mono" autocomplete="off" spellcheck="false" aria-describedby="info">
+    </div>
+    <div class="field">
+      <label for="repl">Şununla değiştir</label>
+      <input type="text" id="repl" class="mono" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="case">Büyük/küçük harf eşle</label>
+    <label class="check"><input type="checkbox" id="whole">Tam sözcük</label>
+    <label class="check"><input type="checkbox" id="regex">Düzenli ifade</label>
+  </div>
+  <p class="help" id="regex-help" hidden>JavaScript düzenli ifade sözdizimi. Yerine geçecek metinde gruplar için $1, $2, eşleşmenin tamamı için $&amp; kullanın.</p>
+  <p class="tt__report" id="info" aria-live="polite">Aranacak metni yazın.</p>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Tümünü değiştir</button>
+    <button class="btn btn--quiet" id="clear" type="button">Metni temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>.txt dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="out-wrap" hidden>
+    <div class="field">
+      <label for="out">Sonuç</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="copy" type="button">{{mark:i-copy}}Sonucu kopyala</button>
+      <button class="btn" id="dl" type="button">.txt indir</button>
+      <button class="btn btn--quiet" id="use" type="button">Sonucu metin olarak kullan</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Metni toplu olarak değiştirme</h2>
+<p>Bul ve değiştir, bir sözcüğün veya desenin her geçtiği yeri tek seferde değiştirir. Eşleşme sayısı siz yazdıkça güncellenir; böylece değişikliği uygulamadan önce ne kadar yeri etkileyeceğini görebilirsiniz. Sonuç ayrı bir kutuda görünür, dolayısıyla "Sonucu metin olarak kullan" seçeneğini seçene kadar özgün metniniz asla üzerine yazılmaz.</p>
+<p>Düzenli ifadeler sabit bir dizi yerine bir biçimi tarif etmenizi sağlar: bir rakam dizisi, bir tarih, ardından virgül gelen bir sözcük. Parantez içindeki gruplar, yerine geçecek metinde $1, $2 ve devamıyla yeniden sıralanabilir. Kötü yazılmış bir desen çok uzun süre çalışabileceğinden, desenler iki saniye sonra durdurulan bir arka plan işleyicisinde yürütülür.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Deseni önce, her eşleşmeyi ve gruplarını listeleyen <a href="/tools/regex-tester/">Regex test aracı</a>nda oluşturup hatalarını ayıklayın.</li>
+  <li>Büyük/küçük harf düzenini <a href="/tools/case-converter/">Büyük/küçük harf dönüştürücü</a> ile değiştirin.</li>
+  <li>Yaptığınız düzenlemeyi <a href="/tools/text-diff/">Metin karşılaştır</a> ile kontrol edin.</li>
+  <li>Tekrar eden satırları <a href="/tools/remove-duplicate-lines/">Tekrar eden satırları sil</a> ile kaldırın.</li>
+</ul>

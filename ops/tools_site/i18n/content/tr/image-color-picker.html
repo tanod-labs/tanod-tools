@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Resimden renk seç: fotoğraftan HEX ve RGB | Tanod Tools",
+  "description": "Herhangi bir resimden renk seçin: bir pikseli tıklayıp HEX, RGB ve HSL kodunu alın, resmin ana renk paletini görün. Tarayıcınızda çalışır, yükleme yok.",
+  "h1": "Resimden renk seç",
+  "lede": "Bir pikselin tam rengini okumak için resmin herhangi bir yerine tıklayın ya da ana renklerinin paletini alın.",
+  "blurb": "Herhangi bir pikselden HEX ve RGB kodları.",
+  "keywords": "resimden renk seçme renk seçici damlalık hex kodu rgb hsl palet çıkarma fotoğraf ekran görüntüsü color picker from image eyedropper palette extractor",
+  "limits": "Aynı anda bir resim; 50 MB ve yaklaşık 100 megapiksele kadar. PNG, JPEG, WebP, GIF (ilk kare), BMP veya AVIF.",
+  "howto_title": "Resimden renk nasıl seçilir",
+  "howto": [
+    "Bir resim seçin ya da sayfaya sürükleyin veya yapıştırın.",
+    "Büyüteçle nişan almak için resmin üzerinde gezinin, ardından seçmek için tıklayın veya dokunun. Klavyeyle resme odaklanın, ok tuşlarıyla (büyük adımlar için Shift) hareket edin ve Enter'a basın.",
+    "HEX, RGB veya HSL kodunu kopyalayın ya da ana renk paletinden bir rengi kopyalayın."
+  ],
+  "faq": [
+    ["Renk ne kadar kesin?", "Artı işaretinin altındaki tek pikselin kayıtlı değeridir ve küçültülmüş önizlemeden değil, tam boyutlu resimden okunur. Büyüteç çevresindeki pikselleri gösterir; böylece karmaşık bir kenarda tek bir piksele nişan alabilirsiniz."],
+    ["Renk neden başka bir uygulamanın gösterdiğinden farklı?", "JPEG sıkıştırması, özellikle kenarların yakınında ve düz alanlarda renkleri biraz kaydırır; bu yüzden komşu pikseller birkaç değer farklı olabilir. Renk profili olan resimler, okunmadan önce tarayıcınız tarafından web sayfalarının kullandığı standart sRGB'ye dönüştürülür; başka bir renk uzayında çalışan bir fotoğraf düzenleyici farklı sayılar gösterebilir."],
+    ["Palet nasıl hesaplanıyor?", "Resimden en fazla 160 × 160 noktada örnek alınır ve renk aralığı en geniş olduğu yerden tekrar tekrar bölünerek (medyan kesme yöntemi) sekiz renk kümesinde gruplanır. Her renk örneği, kümesinin ortalama rengidir ve resimdeki payıyla gösterilir. Tamamen veya büyük ölçüde saydam pikseller atlanır."],
+    ["HEX, RGB ve HSL ne anlama geliyor?", "Aynı rengi yazmanın üç yoludur. HEX, kırmızı, yeşil ve mavi değerlerinin (0 ile 255 arası) 16'lık tabanda yazılmış halidir; CSS'te ve tasarım araçlarında kullanılır. RGB bunları düz sayılar olarak sıralar. HSL ise ton (0 ile 360 derece), doygunluk ve açıklık verir; elle ayarlaması daha kolaydır."],
+    ["Resmim yükleniyor mu?", "Hayır. Resim, cihazınızda, tarayıcınızda çözülür ve okunur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-color-picker drop__mark}}
+  <p class="drop__title">Bir resmi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Resim seçin</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP veya AVIF. Ya da buraya sürükleyin veya yapıştırın.</p>
+</div>
+<div id="work" class="cp" hidden>
+  <div class="cp__stage">
+    <div class="cp__img" id="target" tabindex="0" role="application" aria-roledescription="renk seçici" aria-label="Resim. Ok tuşları artı işaretini hareket ettirir, Shift ile ok tuşları daha hızlı hareket ettirir, Enter rengi seçer." aria-describedby="cp-help">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <span class="cp__cross" id="cross" aria-hidden="true"></span>
+    </div>
+    <p class="help" id="cp-help">Seçmek için tıklayın veya dokunun. Klavye: ok tuşları artı işaretini hareket ettirir, Shift daha hızlı hareket ettirir, Enter seçer.</p>
+  </div>
+  <div class="cp__side">
+    <div class="cp__aim">
+      <canvas id="loupe" class="cp__loupe" width="121" height="121" aria-hidden="true"></canvas>
+      <div>
+        <p class="label">Artı işaretinin altında</p>
+        <p class="cp__now"><span class="cp__chip" id="now-chip"></span><span class="num" id="now-hex">-</span></p>
+        <p class="help num" id="now-xy"></p>
+      </div>
+    </div>
+    <div class="cp__picked" id="picked" hidden>
+      <p class="label">Seçilen renk</p>
+      <div class="cp__big" id="big-chip"></div>
+      <ul class="cp__codes">
+        <li><span class="cp__k">HEX</span><code class="num" id="v-hex"></code><button class="btn btn--sm" type="button" data-copy="v-hex" aria-label="HEX kodunu kopyala">Kopyala</button></li>
+        <li><span class="cp__k">RGB</span><code class="num" id="v-rgb"></code><button class="btn btn--sm" type="button" data-copy="v-rgb" aria-label="RGB kodunu kopyala">Kopyala</button></li>
+        <li><span class="cp__k">HSL</span><code class="num" id="v-hsl"></code><button class="btn btn--sm" type="button" data-copy="v-hsl" aria-label="HSL kodunu kopyala">Kopyala</button></li>
+      </ul>
+    </div>
+    <div id="history-box" hidden>
+      <p class="label" id="history-l">Şimdiye kadar seçilenler</p>
+      <ul class="cp__swatches" id="history" aria-labelledby="history-l"></ul>
+    </div>
+  </div>
+  <section class="cp__pal" aria-labelledby="pal-h">
+    <h2 class="cp__h" id="pal-h">Ana renkler</h2>
+    <ul class="cp__palette" id="palette"></ul>
+    <p class="help">HEX kodunu kopyalamak için bir renk örneği seçin.</p>
+  </section>
+  <div class="actions">
+    <span class="help num" id="file-meta"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Renkleri doğrudan piksellerden okuma</h2>
+<p>Bir logodaki marka rengini yakalamak, bir ekran görüntüsündeki tam maviyi bulmak ya da bir fotoğraftan palet oluşturmak, hepsi aynı şeye çıkar: bir piksel için kayıtlı kırmızı, yeşil ve mavi değerlerini okumak. Bu araç resmi tarayıcınızda çözer ve bu değerleri tam çözünürlüklü resimden okur; böylece kopyaladığınız kod, dosyada gerçekten bulunan renktir.</p>
+<p>Fotoğraflarda tek tek pikseller yanıltabilir; gürültü ve sıkıştırma komşu pikselleri birbirinden farklı kılar. Büyüteçle düz bir alanın ortasına nişan alın ya da benzer piksel gruplarının ortalamasını birkaç temsilci renge indirgeyen paleti kullanın.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Seçtiğiniz rengi CMYK'ye çevirmek veya metne karşı kontrastını denetlemek için <a href="/tools/color-converter/">Renk dönüştürücü ve kontrast denetleyici</a>yi kullanın.</li>
+  <li>Büyük bir resmin küçük bir bölümünden mi seçiyorsunuz? Alanın ekranı doldurması için önce <a href="/tools/crop-image/">Resim kırp</a> ile kırpın.</li>
+</ul>

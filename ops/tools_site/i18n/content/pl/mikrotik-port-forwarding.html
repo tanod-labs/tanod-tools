@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Przekierowanie portów i hairpin NAT w MikroTik | Tanod Tools",
+  "description": "Twórz reguły dst-nat RouterOS dla TCP i UDP, z opcjonalnym hairpin NAT i ograniczeniem źródeł. Sprawdzone, opatrzone komentarzami, generowane w przeglądarce.",
+  "h1": "Generator przekierowania portów MikroTik",
+  "lede": "Wypisz porty, które chcesz udostępnić, i serwery, które za nimi stoją, a otrzymasz reguły dst-nat dla RouterOS v7 wraz z hairpin NAT, aby klienci LAN mogli korzystać także z adresu publicznego.",
+  "blurb": "Reguły dst-nat dla TCP i UDP, z hairpin NAT.",
+  "keywords": "przekierowanie portów mikrotik, otwieranie portów mikrotik, dst-nat, hairpin nat, nat loopback, mikrotik port forwarding destination nat routeros dstnat to-addresses to-ports rdp kamera nvr",
+  "local_text": "Działa w przeglądarce; nic, co zostanie wpisane, nie opuszcza urządzenia",
+  "limits": "Generuje składnię RouterOS v7 (poprawną także w v6) dla IPv4. Porty i adresy są sprawdzane, ale nie testowane na Twoim routerze. MikroTik i RouterOS są znakami towarowymi SIA Mikrotīkls. To narzędzie jest niezależne i nie jest powiązane z firmą MikroTik ani przez nią rekomendowane.",
+  "howto_title": "Jak przekierować port na routerze MikroTik",
+  "howto": [
+    "Wybierz, po czym reguła rozpoznaje ruch do Twojego adresu publicznego: lista interfejsów WAN, stały publiczny adres IP albo dowolny adres routera.",
+    "Dodaj wiersz dla każdej usługi: protokół, port publiczny, adres IP serwera wewnętrznego oraz, jeśli jest inny, jego port wewnętrzny.",
+    "Zaznacz hairpin NAT, jeśli klienci LAN mają docierać do usługi przez jej adres publiczny, a następnie skopiuj skrypt lub pobierz plik .rsc."
+  ],
+  "faq": [
+    ["Dlaczego z wnętrza sieci LAN nie działa moje przekierowanie portu?", "Klient LAN wysyła pakiet na Twój publiczny adres IP, router zmienia adres docelowy na serwer, a serwer odpowiada klientowi bezpośrednio, bo obaj są w tej samej podsieci. Klient spodziewał się odpowiedzi z publicznego adresu IP, więc ją odrzuca. Hairpin NAT maskaraduje ten ruch LAN–LAN, dzięki czemu odpowiedź wraca przez router. Działa to tylko wtedy, gdy reguła dst-nat dopasowuje adres publiczny, a nie interfejs WAN, ponieważ pakiet przychodzi na interfejs LAN."],
+    ["Czy reguła powinna dopasowywać in-interface, czy dst-address?", "Dopasowanie do listy interfejsów WAN jest najprostsze i przetrwa zmianę publicznego IP, ale nie obsłuży hairpin NAT. Dopasowanie dst-address działa z hairpin, lecz trzeba je poprawić, gdy IP się zmieni. Opcja dst-address-type=local dopasowuje dowolny adres routera, co załatwia zarówno dynamiczne IP, jak i hairpin; haczyk polega na tym, że przechwytuje też te porty na własnym adresie LAN routera."],
+    ["Czy potrzebuję jeszcze reguły filtra firewalla?", "Przy domyślnej konfiguracji MikroTika nie: jej łańcuch forward odrzuca nowe połączenia z WAN tylko wtedy, gdy są „not DSTNATed”, więc przekierowane połączenia przechodzą. Jeśli napisano bardziej rygorystyczny łańcuch forward, przed końcowym drop dodaj regułę accept dla connection-nat-state=dstnat."],
+    ["Jak przekierować zakres portów?", "Wpisz zakres, np. 50000-50100, lub listę, np. 80,443, i zostaw port wewnętrzny pusty. Porty są przekierowywane bez zmian. Zmiana numeru portu (publiczny 8443 na wewnętrzny 443) działa dla pojedynczych portów."],
+    ["Czy bezpieczne jest przekierowanie RDP, SSH lub Winbox?", "Wystawienie usług zdalnego dostępu na cały internet zachęca do ataków brute force. Wpisz dozwolone sieci źródłowe, aby ograniczyć przekierowanie do znanych adresów, lub ukryj usługę za VPN, na przykład WireGuard."],
+    ["Czy moja konfiguracja jest dokądś wysyłana?", "Nie. Reguły generuje JavaScript na tej stronie, a nic, co wpiszesz, nie jest przesyłane, zapisywane ani rejestrowane w logach."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Dopasuj ruch do</legend>
+      <div class="seg" role="radiogroup" aria-label="Dopasuj ruch do">
+        <label><input type="radio" name="pf-mode" value="list" checked>Lista WAN</label>
+        <label><input type="radio" name="pf-mode" value="iface">Interfejs WAN</label>
+        <label><input type="radio" name="pf-mode" value="ip">Publiczny IP</label>
+        <label><input type="radio" name="pf-mode" value="local">Dowolny adres routera</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">Lista interfejsów WAN</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">Publiczny adres IP</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Przekierowania</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}Dodaj przekierowanie</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opcje</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">Hairpin NAT (dostęp do usługi z LAN przez jej adres publiczny)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">Podsieci LAN</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">Dozwolone sieci źródłowe</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">Opcjonalnie. Zostaw puste, aby przyjmować połączenia z dowolnego miejsca.</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">Skrypt RouterOS v7</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">Kopiuj skrypt</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}Pobierz .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak działa przekierowanie portów w RouterOS</h2>
+<p>Przekierowanie portu to reguła <code>dst-nat</code> w łańcuchu <code>dstnat</code> menu <code>/ip firewall nat</code>. Gdy nadchodzi nowe połączenie pasujące do reguły (protokół, port docelowy oraz interfejs WAN lub Twój adres publiczny), RouterOS zmienia jego adres docelowy na adres serwera wewnętrznego i, opcjonalnie, port. Śledzenie połączeń zapamiętuje tę translację, więc odpowiedzi są przepisywane z powrotem automatycznie; nie potrzeba żadnej osobnej reguły dla ruchu powrotnego.</p>
+<p>Translacja następuje, zanim łańcuch forward filtra zobaczy pakiet. Dlatego domyślna reguła forward w MikroTiku odrzuca nowe połączenia z WAN tylko przy <code>connection-nat-state=!dstnat</code>: połączenie przetłumaczone regułą dst-nat jest oznaczone jako dstnat i przechodzi, a cała reszta z internetu jest odrzucana.</p>
+<h3>Hairpin NAT</h3>
+<p>Gdy komputer w LAN łączy się z publicznym adresem serwera, który również stoi w LAN, reguła dst-nat kieruje pakiet do serwera, ale serwer widzi prywatny adres klienta i odpowiada mu bezpośrednio. Klient dostaje wtedy odpowiedź z adresu, z którym nigdy nie rozmawiał, i ją odrzuca. Reguła hairpin maskaraduje ruch z podsieci LAN do serwera, dzięki czemu serwer odpowiada routerowi, a ten tłumaczy odpowiedź z powrotem. Koszt jest taki, że w logach serwera klienci LAN widnieją pod adresem routera. Rekord DNS typu split-horizon, który wskazuje nazwę na adres wewnętrzny, całkowicie omija NAT i często jest czystszym rozwiązaniem.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Sprawdź, czy firewall odrzuca to, co powinien, za pomocą narzędzia <a href="/tools/mikrotik-firewall-auditor/">Audyt firewalla MikroTik</a>.</li>
+  <li>Dostęp zdalny jest bezpieczniejszy przez VPN; <a href="/tools/mikrotik-wireguard-generator/">Generator WireGuard MikroTik</a> konfiguruje go w kilku linijkach.</li>
+  <li>Ograniczasz przekierowanie do wielu sieci źródłowych? Zbuduj listę w narzędziu <a href="/tools/mikrotik-address-list-generator/">Generator address list MikroTik</a>.</li>
+</ul>

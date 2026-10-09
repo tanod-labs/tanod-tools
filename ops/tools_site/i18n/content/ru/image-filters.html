@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Фильтры для фото онлайн: чёрно-белое, сепия, размытие | Tanod Tools",
+  "description": "Меняйте яркость, контраст, насыщенность и оттенок или делайте фото чёрно-белым, сепией, негативом, размытым. Предпросмотр сразу, работает в браузере.",
+  "h1": "Фильтры для изображений",
+  "lede": "Настройте фото ползунками или готовыми пресетами в один щелчок, сравните с оригиналом и сохраните результат в полном размере.",
+  "blurb": "Чёрно-белое, сепия, яркость, размытие и другое.",
+  "keywords": "фильтры для фото онлайн фоторедактор эффекты чёрно-белое фото ч/б сепия винтаж негатив инверсия яркость контраст насыщенность оттенок размытие blur grayscale sepia",
+  "limits": "Работает с одним изображением до 50 МБ и примерно 100 мегапикселей. Очень большие изображения обрабатываются несколько секунд; страница при этом остаётся отзывчивой.",
+  "howto_title": "Как применить фильтры к изображению",
+  "howto": [
+    "Выберите изображение. Предпросмотр показывается в уменьшенном размере, чтобы ползунки реагировали сразу.",
+    "Начните с пресета, например <strong>Чёрно-белое</strong> или <strong>Яркое</strong>, затем подстройте ползунки. Включите <strong>Показать оригинал</strong>, чтобы сравнить.",
+    "Нажмите <strong>Применить и сохранить</strong>. Фильтры будут применены заново к полноразмерному изображению, и вы скачаете его."
+  ],
+  "faq": [
+    ["Моё фото загружается на сервер?", "Нет. Каждый фильтр вычисляется в вашем браузере, на вашем устройстве, пиксель за пикселем. Ничего не отправляется на сервер."],
+    ["Дают ли фильтры тот же результат, что CSS в моём браузере?", "Они используют те же формулы, что и спецификация CSS Filter Effects: яркость умножает значения, контраст вращается вокруг среднего серого, а насыщенность, поворот оттенка, градации серого и сепия используют цветовые матрицы из спецификации. Вычисления на самой странице, а не средствами фильтров браузера, позволяют работать и в браузерах, где этой возможности нет."],
+    ["В каком порядке применяются фильтры?", "Яркость, контраст, насыщенность, поворот оттенка, градации серого, сепия, инверсия, затем размытие. Порядок неизменный, поэтому одни и те же положения ползунков всегда дают одну и ту же картинку."],
+    ["Почему размытие в предпросмотре и в сохранённом файле выглядит одинаково?", "Степень размытия — доля ширины изображения, а не число пикселей. Фото шириной 4000 пикселей, показанное в предпросмотре шириной 800, размывается в пикселях предпросмотра в пять раз слабее, и при одинаковом масштабе это выглядит одинаково."],
+    ["Что происходит с прозрачностью?", "Она не меняется. Альфа-канал никогда не изменяется, а при размытии цвета взвешиваются по непрозрачности, чтобы мягкие края вырезанного объекта не темнели. Сохраняйте в PNG или WebP, чтобы сохранить прозрачность; JPEG заливает прозрачные области белым."],
+    ["Можно ли отменить пресет?", "Нажмите «Сбросить» или верните ползунки на место. Пресеты лишь сдвигают ползунки, и после этого их можно подстроить. Исходный файл не меняется."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Перетащите сюда изображение</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Выбрать изображение</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP или AVIF. Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Предпросмотр с применёнными фильтрами"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Показать оригинал</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Пресеты</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Чёрно-белое</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Сепия</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Яркое</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Выцветшее</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Негатив</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Сбросить</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Яркость: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Контраст: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Насыщенность: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Оттенки серого: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Сепия: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Инверсия: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Поворот оттенка: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Размытие: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Сохранить как</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Как есть</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Вариант «Как есть» сохраняет PNG, JPEG и WebP в исходном формате; GIF, BMP и AVIF становятся PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Применить и сохранить</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Что каждый фильтр делает с пикселями</h2>
+<p>Каждый пиксель — это три числа от 0 до 255: красный, зелёный и синий. Яркость умножает эти числа, поэтому 150 процентов превращают значение 100 в 150, а всё, что больше 255, обрезается до белого. Контраст растягивает числа от среднего серого (128) или сжимает их к нему, поэтому при контрасте 0 процентов получается ровная серая картинка. Насыщенность и поворот оттенка смешивают три канала с помощью фиксированных цветовых матриц, так фотография уходит в серый или смещается по цветовому кругу.</p>
+<p>Оттенки серого заменяют каждый пиксель его яркостью (люминансом), взвешенной суммой, где сильнее всего учитывается зелёный (около 72 процентов), затем красный (21 процент) и меньше всего синий (7 процентов), поскольку глаз наиболее чувствителен к зелёному. Сепия использует матрицу, дающую тёплый коричневый оттенок старых отпечатков. Инверсия вычитает каждое значение из 255 и даёт негатив. Размытие усредняет каждый пиксель с соседями, трижды в каждом направлении, что близко соответствует размытию по Гауссу.</p>
+<p>Маленькие предпросмотры делают ползунки быстрыми, но сохраняемый файл обрабатывается в полном разрешении частями, поэтому страница продолжает отвечать и показывает ход выполнения. После сохранения исходный файл остаётся нетронутым.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Чтобы узнать точный цвет в результате, воспользуйтесь инструментом «<a href="/tools/image-color-picker/">Определить цвет на изображении</a>».</li>
+  <li>Если применить фильтры до добавления надписи, текст останется чётким: выполняйте эти шаги в таком порядке с помощью «<a href="/tools/add-text-to-image/">Добавить текст на изображение</a>».</li>
+  <li>Размытое изображение с высоким контрастом сжимается совсем иначе, поэтому проверьте размер после этого в инструменте «<a href="/tools/compress-image/">Сжать изображение</a>».</li>
+</ul>

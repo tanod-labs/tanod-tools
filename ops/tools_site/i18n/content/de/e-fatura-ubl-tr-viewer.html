@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "e-Fatura- und e-Arşiv-Viewer: UBL-TR-XML öffnen | Tanod Tools",
+  "description": "Öffnen Sie eine türkische e-Fatura oder e-Arşiv-Rechnung (UBL-TR-XML) und lesen Sie sie wie eine normale Rechnung. Drucken, PDF oder JSON. Kostenlos, ohne Upload.",
+  "h1": "e-Fatura- / UBL-TR-Viewer",
+  "lede": "Öffnen Sie eine türkische e-Fatura oder e-Arşiv-Rechnung im UBL-TR-Format und lesen Sie sie wie eine gewöhnliche Rechnung: Verkäufer und Käufer mit VKN oder TCKN, Positionen, KDV, einbehaltene Umsatzsteuer (tevkifat) und Zahlung. Das XML wird in Ihrem Browser gelesen und nie hochgeladen.",
+  "blurb": "Türkische e-Fatura oder e-Arşiv-Rechnung (UBL-TR) als normale Rechnung lesen.",
+  "keywords": "e-fatura viewer ubl-tr viewer e-arşiv rechnung anzeigen e-fatura xml öffnen türkische e-rechnung anzeigen ubl-tr xml lesen e-fatura görüntüleyici e-arşiv fatura görüntüleyici e-fatura xml açma gib e-fatura tevkifat temelfatura ticarifatura earsivfatura",
+  "limits": "Eine Datei auf einmal, bis 25 MB; angezeigt werden die ersten 5.000 Rechnungspositionen. Gelesen werden UBL-TR-1.2-Rechnungen (TEMELFATURA, TICARIFATURA, EARSIVFATURA und die übrigen Profile, einschließlich Retouren und Einbehalt). Das Fiskalsiegel (mali mühür) wird nicht geprüft, und das XSLT in der Datei wird nie ausgeführt. Nur Viewer: Die Rechnung wird nicht validiert, und es gibt keine Verbindung zur GİB.",
+  "howto_title": "So öffnen Sie eine e-Fatura oder e-Arşiv-Rechnung",
+  "howto": [
+    "Wählen Sie das Rechnungs-XML aus, das Sie von Ihrem e-Fatura-Anbieter, aus dem GİB-Portal oder aus Ihrem Buchhaltungsprogramm gespeichert haben, oder ziehen Sie es auf die Seite.",
+    "Lesen Sie die Rechnung: Verkäufer und Käufer mit VKN oder TCKN und Finanzamt, UUID (ETTN), Profil und Rechnungstyp, Positionen, KDV nach Satz, Einbehalt, Summen und Zahlung.",
+    "Mit <strong>Drucken oder als PDF speichern</strong>, <strong>JSON herunterladen</strong> oder <strong>Roh-XML anzeigen</strong> geht es weiter. Das XSLT des Absenders, falls die Datei eines enthält, wird unter Anhänge nur als Download angeboten."
+  ],
+  "faq": [
+    [
+      "Wird die Rechnung hochgeladen oder an die GİB gesendet?",
+      "Nein. Diese Seite stellt keine Verbindung zur GİB, zu Ihrem Anbieter oder zu irgendeinem Server her. Das XML wird in Ihrem Browser gelesen und auf dieser Seite angezeigt, und beim Schließen des Tabs ist alles gelöscht."
+    ],
+    [
+      "Wird das Fiskalsiegel (mali mühür) geprüft?",
+      "Nein. Diese Seite prüft weder das mali mühür noch eine andere elektronische Signatur. Eine Datei, die eines trägt, wird mit einem Hinweis gekennzeichnet, aber die Seite kann Ihnen nicht sagen, wer die Rechnung gesiegelt hat oder ob sie danach geändert wurde. Nutzen Sie dafür die Werkzeuge Ihres Anbieters oder der GİB."
+    ],
+    [
+      "Was ist das XSLT in der Datei, und wird es ausgeführt?",
+      "Die meisten e-Faturas enthalten in einer AdditionalDocumentReference ein XSLT-Stylesheet; die Software des Absenders nutzt es, um die Rechnung darzustellen. Diese Seite führt es nie aus. Es wird nur als Download angeboten, weil ein Stylesheet vom Absender gelieferter Code ist. Die Rechnung, die Sie hier sehen, wird von dieser Seite aus den Daten im XML gezeichnet."
+    ],
+    [
+      "Was bedeuten SATIS, IADE, TEVKIFAT und ISTISNA?",
+      "Das sind Werte des Rechnungstypcodes: SATIS ist ein Verkauf, IADE eine Rücksendung, TEVKIFAT eine Rechnung mit Einbehalt der Umsatzsteuer und ISTISNA eine steuerbefreite. Das Profil (ProfileID) ist das Szenario: TEMELFATURA ist das Basisprofil, TICARIFATURA das kommerzielle und EARSIVFATURA eine e-Arşiv-Rechnung. Beides wird so angezeigt, wie die Datei es angibt."
+    ],
+    [
+      "Wie wird die einbehaltene Umsatzsteuer (tevkifat) angezeigt?",
+      "Der einbehaltene Teil der KDV wird als eigene Zeile unter den Summen und unter Zusätzliche Angaben angezeigt, mit dem Code, dem Namen und dem Satz, die die Datei angibt. Der Zahlbetrag ist der aus der Datei; diese Seite rechnet nichts neu."
+    ],
+    [
+      "Wo bekomme ich das XML einer Rechnung?",
+      "Ihr e-Fatura-Anbieter oder das GİB-Portal lässt Sie eine Rechnung als XML-Datei herunterladen (oft in einer ZIP-Datei), und Buchhaltungsprogramme können sie exportieren. Diese Seite liest die XML-Datei, die Sie gespeichert haben."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>e-Fatura, e-Arşiv und UBL-TR</h2>
+<p>e-Fatura und e-Arşiv sind die elektronischen Rechnungssysteme der Türkei und werden von der Steuerverwaltung (GİB) betrieben. e-Fatura wird zwischen Unternehmen verwendet, die im System registriert sind; e-Arşiv deckt Rechnungen an Käufer ab, die es nicht sind, etwa Verbraucher. Beide nutzen UBL 2.1 mit einer türkischen Anpassung namens UBL-TR (die CustomizationID lautet TR1.2). Das XML ist die Rechnung; die lesbare Fassung ist eine Visualisierung davon. Diese Seite erstellt diese Visualisierung in Ihrem Browser aus dem XML, das Sie haben.</p>
+<h2>Was der Viewer anzeigt</h2>
+<p>Sie sehen den Verkäufer und den Käufer mit VKN oder TCKN, Finanzamt und Adressen; die Rechnungsnummer, das Datum, die UUID (ETTN), das Profil und den Typcode; jede Position mit Menge, Einheit, Preis, Rabatt und KDV-Satz; die KDV nach Satzgruppen mit Befreiungscodes; einbehaltene Umsatzsteuer (tevkifat), wo die Rechnung sie hat; andere Steuern wie ÖTV so, wie die Datei sie aufführt; die Summen und den Zahlbetrag; Zahlungsangaben mit der IBAN; Hinweise; den Wechselkurs einer Rechnung in Fremdwährung; und die Verweise auf Bestellungen, Lieferscheine und die Rechnung, auf die sich eine Retoure bezieht. Beträge werden genau so angezeigt, wie sie in der Datei stehen.</p>
+<p>Das Fiskalsiegel (mali mühür) wird nicht geprüft, die Rechnung wird nicht gegen die Schemas und Regeln der GİB validiert, und es gibt keine Verbindung zur GİB. Das XSLT-Stylesheet, das die meisten e-Faturas enthalten, wird nie ausgeführt: Es wird unter Anhänge als Download angeboten.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>„JSON herunterladen“ liefert die Rechnung als reine Daten, wobei die UBL-Elemente den Geschäftsbegriffen der EN 16931 zugeordnet sind.</li>
+  <li>Auch andere Formate lassen sich hier öffnen: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol und die vietnamesische hóa đơn điện tử. Die Seite schlägt beim Öffnen den passenden Viewer vor.</li>
+  <li>„Roh-XML anzeigen“ hilft, wenn Sie ein Element brauchen, das die lesbare Rechnung nicht zeigt.</li>
+</ul>

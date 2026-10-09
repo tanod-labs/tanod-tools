@@ -7,7 +7,7 @@
 //   % always means "divide by 100":  50% = 0.5,  200*10% = 20,  200+10% = 200.1
 //   n! is defined for whole numbers 0..170;  numbers take no thousands commas;  1e-3 is an exponent, 2*e is Euler's number.
 
-import { tx } from "./i18n.js?v=5";
+import { tx } from "./i18n.js?v=11";
 
 export class CalcError extends Error {}
 const fail = (msg) => { throw new CalcError(msg); };

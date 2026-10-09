@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Visor de CFDI de México: abre facturas XML CFDI 4.0 y 3.3 | Tanod Tools",
+  "description": "Abre un CFDI mexicano (XML) y léelo como una factura normal, con el UUID y un enlace para verificar en el SAT. Imprime, guarda como PDF o exporta JSON. Gratis, sin subir nada.",
+  "h1": "Visor de CFDI de México",
+  "lede": "Abre una factura electrónica mexicana (CFDI 4.0 o 3.3) y léela como una factura corriente: UUID, serie y folio, emisor y receptor con su RFC, conceptos, IVA por tasa, impuestos retenidos y el timbre. El XML del CFDI se lee en tu navegador y nunca se sube.",
+  "blurb": "Lee el XML de un CFDI 4.0 o 3.3 como una factura normal, con el UUID y un enlace para verificarlo en el SAT.",
+  "keywords": "visor cfdi visor cfdi 4.0 abrir xml cfdi leer xml cfdi factura electrónica xml ver factura electrónica uuid folio fiscal verificar cfdi en el sat timbre fiscal digital comprobante fiscal digital por internet rfc emisor receptor cfdi 3.3 visualizador cfdi",
+  "limits": "Un archivo a la vez, de hasta 25 MB; se muestran los primeros 5,000 conceptos. Lee CFDI 4.0 y 3.3 (el elemento cfdi:Comprobante en el espacio de nombres del SAT), incluidos los comprobantes de ingreso y de egreso (nota de crédito). Los complementos como Pagos y Nómina no se muestran. El sello y el timbre fiscal del SAT no se verifican. Solo visor: no valida el CFDI y no se conecta al SAT; el enlace Verificar en el SAT es un enlace normal al que tú das clic.",
+  "howto_title": "Cómo abrir el XML de un CFDI",
+  "howto": [
+    "Elige el XML del CFDI que descargaste del portal del SAT, de tu proveedor de certificación (PAC) o de tu sistema contable, o arrástralo a la página.",
+    "Lee la factura: UUID (folio fiscal), serie y folio, fecha, emisor y receptor con su RFC, conceptos, IVA por tasa, impuestos retenidos, totales y forma de pago.",
+    "Da clic en <strong>Verificar en el SAT</strong> para abrir la página de verificación del propio SAT, o en <strong>Imprimir o guardar como PDF</strong>, <strong>Descargar JSON</strong> o <strong>Mostrar XML original</strong>."
+  ],
+  "faq": [
+    [
+      "¿El CFDI se sube o se envía al SAT?",
+      "No. Esta página no se conecta al SAT, a tu PAC ni a ningún servidor. El XML se lee en tu navegador y se muestra en esta página, y al cerrar la pestaña se borra todo."
+    ],
+    [
+      "¿Qué hace el enlace Verificar en el SAT?",
+      "Es un enlace normal a la página pública de verificación del SAT, armado con el patrón de dirección documentado: UUID, RFC del emisor y del receptor, total y los últimos 8 caracteres del sello. Al abrir esta página no se envía nada; los datos van al SAT solo si das clic en el enlace, y el SAT muestra entonces su propia respuesta."
+    ],
+    [
+      "¿Se revisan el sello y el timbre fiscal?",
+      "No. El sello digital y el Timbre Fiscal Digital no se verifican aquí, y un archivo que los trae se señala con una nota. Esta página no puede decirte si un CFDI es válido ni si se modificó después. Para eso usa el enlace del SAT."
+    ],
+    [
+      "¿Qué versiones y tipos de CFDI abre?",
+      "CFDI 4.0 y 3.3. Las facturas de ingreso y las notas de crédito (egreso) se muestran completas; los comprobantes de traslado, de pago y de nómina se abren con encabezado, partes y totales, pero sus complementos no se muestran. Las versiones anteriores, como la 3.2, no se leen."
+    ],
+    [
+      "¿Cómo se muestran los impuestos?",
+      "El IVA se muestra por tasa (16%, 8%, 0% y exento), otros impuestos trasladados como el IEPS aparecen en información adicional, y los impuestos retenidos (ISR, IVA) se listan y se restan en los totales. El importe a pagar es el Total que indica el archivo."
+    ],
+    [
+      "¿De dónde saco el XML de un CFDI?",
+      "Descárgalo del portal del SAT (Mis comprobantes), del proveedor (PAC) que lo timbró, o expórtalo desde tu sistema contable. Esta página lee el XML, no el PDF de la representación impresa."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Suelta una factura electrónica aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Elegir un archivo</span></label>
+  <p class="drop__hint">Un XML, un PDF con una factura dentro (ZUGFeRD, Factur-X) o un .p7m firmado. O arrástralo a cualquier parte de esta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Imprimir o guardar como PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Descargar JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Descargar XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostrar XML original</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML original" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Aquí solo se muestra el inicio de un archivo largo. Descarga el XML para obtenerlo completo.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>El CFDI de México</h2>
+<p>En México las facturas se emiten como CFDI (Comprobante Fiscal Digital por Internet): un archivo XML que un proveedor autorizado de certificación (PAC) timbra y registra ante el SAT. La versión 4.0 sustituyó a la 3.3. El timbre añade el UUID, el folio fiscal que identifica la factura. El XML es la factura; la representación impresa es un dibujo de él. Esta página hace ese dibujo en tu navegador a partir del XML que tienes.</p>
+<h2>Qué muestra el visor</h2>
+<p>Ves el UUID en letra grande, la serie y el folio, la fecha, la hora del timbrado y el PAC, el emisor y el receptor con su RFC, nombre, régimen fiscal y código postal del domicilio fiscal, la forma de pago y el método de pago (PUE o PPD), cada concepto con unidad, cantidad, valor unitario, descuento e IVA, el IVA por tasa, los impuestos retenidos, los totales, el tipo de cambio en moneda extranjera y el CFDI relacionado de una nota de crédito. Los importes se muestran exactamente como están en el archivo.</p>
+<p>El enlace Verificar en el SAT abre la página de verificación del propio SAT en una pestaña nueva; esta página no envía nada. No verifica el sello ni el timbre, no valida el CFDI contra los catálogos y reglas del SAT y no muestra complementos como Pagos o Nómina.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Descargar JSON te da la factura como datos simples, con los campos del CFDI asignados a los términos de negocio de EN 16931.</li>
+  <li>Aquí también se abren otros formatos: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol, la e-Fatura turca y la hóa đơn vietnamita. La página te sugiere el visor adecuado cuando abres uno.</li>
+  <li>Mostrar XML original sirve cuando necesitas un atributo que la factura legible no muestra.</li>
+</ul>

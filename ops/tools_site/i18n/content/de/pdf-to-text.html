@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "PDF in Text umwandeln – Text aus PDF extrahieren | Tanod Tools",
+  "description": "Text aus einem PDF im Browser seitenweise extrahieren. Kopieren oder als .txt speichern. Kostenlos, ohne Anmeldung, kein Upload. Gescannte PDFs brauchen OCR.",
+  "h1": "PDF in Text umwandeln",
+  "lede": "Holen Sie den Text Seite für Seite aus einem PDF, kopieren Sie ihn oder speichern Sie ihn als .txt-Datei. Ein gescanntes PDF enthält keinen Text, den man herausholen könnte: Verwenden Sie dafür <a href=\"/tools/ocr-pdf/\">PDF-OCR</a>.",
+  "blurb": "Text aus PDF extrahieren, kopieren oder als .txt speichern.",
+  "keywords": "pdf in text umwandeln text aus pdf extrahieren text aus pdf auslesen text aus pdf kopieren pdf in txt pdf zu txt pdf in textdatei pdf text extrahieren pdf to text pdf to txt reiner text seitenweise gescanntes pdf ocr",
+  "limits": "Ein PDF auf einmal, bis 200 MB und bis 500 Seiten. Gelesen wird der Text, der im PDF gespeichert ist. Ein gescanntes PDF besteht nur aus Seitenbildern und enthält keinen Text; dafür brauchen Sie stattdessen <a href=\"/tools/ocr-pdf/\">PDF-OCR</a>. Tabellen und Spalten kommen Zeile für Zeile heraus, und passwortgeschützte PDFs können nicht geöffnet werden.",
+  "howto_title": "So extrahieren Sie Text aus einem PDF",
+  "howto": [
+    "Wählen Sie eine PDF-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Warten Sie einen Moment, während jede Seite gelesen wird. Wählen Sie alle Seiten oder einen Bereich wie 1-3, 5 und legen Sie fest, ob die Seitenanfänge markiert werden sollen.",
+    "Klicken Sie auf <strong>.txt herunterladen</strong>, kopieren Sie den gesamten Text oder kopieren Sie eine einzelne Seite aus der Liste."
+  ],
+  "faq": [
+    ["Wird mein PDF hochgeladen?", "Nein. Ihr Browser liest den Text auf Ihrem Gerät mit der Open-Source-Bibliothek pdf.js. Nichts wird an einen Server gesendet, und der Text ist weg, sobald Sie den Tab schließen."],
+    ["Warum erhalte ich keinen Text oder nur von einigen Seiten?", "Das Tool liest den Text, der im PDF gespeichert ist. Ein gescanntes PDF speichert jede Seite als Bild, ohne Text dahinter, sodass es nichts zu lesen gibt. Dasselbe gilt für gescannte Seiten, die in ein sonst normales Dokument eingefügt wurden. Mit <a href=\"/tools/ocr-pdf/\">PDF-OCR</a> erkennen Sie die Buchstaben in den Bildern. Seiten ohne Text sind in der Liste „Seite für Seite“ gekennzeichnet."],
+    ["Bleibt die Formatierung erhalten?", "Nein. Sie erhalten reinen Text: Buchstaben, Ziffern und Zeilenumbrüche. Schriften, Farben, Bilder und das Seitenlayout bleiben außen vor. Zeilen brechen an denselben Stellen um wie im PDF, und eine Leerzeile wird eingefügt, wo der Abstand zwischen zwei Zeilen größer ist als sonst, etwa zwischen Absätzen."],
+    ["Wie füge ich die umbrochenen Zeilen zu Absätzen zusammen?", "Fügen Sie den Text in <a href=\"/tools/remove-line-breaks/\">Zeilenumbrüche entfernen</a> ein. Das Tool verbindet die Zeilen innerhalb jedes Absatzes, behält die Leerzeilen zwischen den Absätzen bei und kann Wörter reparieren, die am Zeilenende durch einen Bindestrich getrennt sind."],
+    ["Warum steht manchmal Text in seltsamer Reihenfolge oder ist in merkwürdige Stücke zerteilt?", "Der Text kommt in der Reihenfolge heraus, in der das PDF ihn speichert. Das ist meist die Lesereihenfolge, aber nicht immer. Tabellen, Seiten mit mehreren Spalten und PDFs, die aus Designprogrammen exportiert wurden, können durcheinander herauskommen, und manche PDFs speichern Text in Stücken, die nicht zu den Wörtern passen, die Sie sehen."],
+    ["Funktioniert es auch mit anderen Sprachen als Englisch?", "Ja. Der Text wird als Unicode gelesen, daher kommen Buchstaben mit Akzenten oder Umlauten, Kyrillisch, Griechisch, Hindi, Chinesisch und andere Schriftsysteme korrekt heraus, sofern das PDF eine ordentliche Textebene hat. Verwendet ein PDF eine ungewöhnliche Schriftkonfiguration, entstehen beim Kopieren in jedem Programm unleserliche Zeichen; der übliche Ausweg ist, das PDF per OCR lesen zu lassen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF auswählen</span></label>
+  <p class="drop__hint">Oder ziehen Sie es an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Seiten</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Alle Seiten</label>
+        <label><input type="radio" name="scope" value="range">Bestimmte</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Seitenbereich</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Optionen</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Seitenanfänge markieren</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Seiten</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>Mit Text</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Wörter</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Zeichen</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Extrahierter Text</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}.txt herunterladen</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Gesamten Text kopieren</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <h3 class="util-h">Seite für Seite</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Auf den einzelnen Seiten gefundener Text">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Seite</th><th scope="col">Wörter</th><th scope="col">Zeichen</th><th scope="col"><span class="visually-hidden">Kopieren</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Woher der Text in einem PDF stammt</h2>
+<p>Ein PDF, das von einer Textverarbeitung, einem Browser oder einem Designprogramm erzeugt wurde, speichert seine Wörter als Text: Jede Zeichenfolge kommt mit einer Schrift und einer Position auf der Seite. Genau diesen gespeicherten Text liest dieses Tool. Ihr Browser öffnet die Datei mit pdf.js, fragt von jeder Seite den Text ab und setzt die Zeichenfolgen in der Reihenfolge, in der die Datei sie aufführt, wieder zu Zeilen zusammen. Wie die Seite auf dem Bildschirm aussieht, bleibt dabei völlig außen vor.</p>
+<p>Bei einem gescannten PDF ist das anders. Ein Scanner oder eine Handykamera erzeugt von jeder Seite ein Bild, und das PDF enthält nur diese Bilder, sodass es keinen Text zu lesen gibt: Sie sehen Wörter, aber die Datei enthält sie nicht. Die Bilder wieder in Text zu verwandeln ist eine andere Aufgabe, die optische Zeichenerkennung (OCR); sie übernimmt <a href="/tools/ocr-pdf/">PDF-OCR</a>. Seiten ohne Text sind in der Liste unter dem Textfeld markiert, sodass Sie in einer gemischten Datei Scans von normalen Seiten unterscheiden können.</p>
+<p>Das Ergebnis ist reiner Text ohne Formatierung. Zeilen enden dort, wo sie im PDF enden, und eine Leerzeile wird eingefügt, wo der Abstand zwischen zwei Zeilen deutlich größer ist als der übliche Zeilenabstand auf der Seite; so werden Absätze und Überschriften voneinander getrennt. Ligaturen, die manche Schriften für Buchstabenpaare wie fi und fl verwenden, werden wieder in einzelne Buchstaben zerlegt, und unsichtbare bedingte Trennstriche werden entfernt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Gescannte Seiten erscheinen als Seiten ohne Text. Wenden Sie darauf <a href="/tools/ocr-pdf/">PDF-OCR</a> an und lesen Sie das Ergebnis.</li>
+  <li>Fügen Sie den Text in <a href="/tools/remove-line-breaks/">Zeilenumbrüche entfernen</a> ein, um aus den untereinander stehenden Zeilen fließende Absätze zu machen.</li>
+  <li>Sie brauchen nur einige Seiten als PDF? <a href="/tools/extract-pdf-pages/">PDF-Seiten extrahieren</a> schneidet sie heraus, und <a href="/tools/word-counter/">Wörter zählen</a> zählt den kopierten Text.</li>
+</ul>

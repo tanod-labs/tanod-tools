@@ -1,0 +1,79 @@
+<!--meta
+{
+  "title": "Chuyển PNG sang PDF, miễn phí và riêng tư | Tanod Tools",
+  "description": "Gộp ảnh chụp màn hình, bản scan và đồ họa PNG thành một PDF ngay trong trình duyệt. Giữ độ trong suốt và chữ sắc nét. Không tải lên, không đăng ký.",
+  "h1": "PNG sang PDF",
+  "lede": "Đưa ảnh chụp màn hình, bản scan hoặc sơ đồ PNG vào một PDF duy nhất, mỗi trang một ảnh, mà không làm mờ chữ trong đó.",
+  "blurb": "Gộp ảnh chụp màn hình PNG thành một PDF.",
+  "keywords": "png sang pdf, chuyển png sang pdf, ảnh chụp màn hình sang pdf, ghép ảnh thành pdf, ảnh sang pdf, scan sang pdf, png to pdf, screenshots to pdf, convert png pdf images to pdf scan transparent",
+  "limits": "Tối đa 200 ảnh, mỗi ảnh 50 MB. PNG, cùng JPG, WebP, GIF và BMP nếu bạn trộn các định dạng.",
+  "howto_title": "Cách chuyển PNG sang PDF",
+  "howto": [
+    "Chọn các tệp PNG của bạn, hoặc kéo thả vào trang. Sắp xếp theo thứ tự trang bằng các mũi tên.",
+    "Giữ <em>Vừa với ảnh</em> để mỗi trang khớp với ảnh chụp màn hình của nó, hoặc chọn A4 hay US Letter để in.",
+    "Nhấn <strong>Tạo PDF</strong>, rồi tải xuống tệp."
+  ],
+  "faq": [
+    ["PNG có bị nén lại hay làm mờ không?", "Không. Điểm ảnh PNG đi vào PDF mà không mất chất lượng, nên chữ trong ảnh chụp màn hình và các đường nét trong sơ đồ vẫn sắc nét như trong tệp gốc. Với Vừa với ảnh, mỗi điểm ảnh thành một point trên trang, khi in tương đương khoảng 72 điểm ảnh mỗi inch; phóng to trong trình xem sẽ thấy đầy đủ chi tiết."],
+    ["Các vùng trong suốt sẽ ra sao?", "Chúng vẫn trong suốt. PNG được lưu cùng kênh alpha, nên trên trang PDF trắng chúng trông màu trắng, và nếu bạn in trên giấy màu thì màu giấy sẽ lộ ra. Nếu muốn có màu đặc phía sau ảnh, hãy làm phẳng nó trước bằng <a href=\"/tools/png-to-jpg/\">PNG sang JPG</a> với một màu nền."],
+    ["Vì sao PDF của tôi lớn như vậy?", "Cách lưu không mất chất lượng giữ lại mọi điểm ảnh, nên một PDF gồm các ảnh chụp lớn lưu dạng PNG có thể nặng nhiều megabyte. Với ảnh chụp, chuyển chúng sang JPG trước, hoặc dùng <a href=\"/tools/jpg-to-pdf/\">JPG sang PDF</a> với bản gốc JPG, sẽ tạo PDF nhỏ hơn nhiều. Ảnh chụp màn hình và bản scan văn bản thường nén tốt và vẫn nhỏ."],
+    ["Tôi nên dùng khổ trang nào?", "<em>Vừa với ảnh</em> tốt nhất cho ảnh chụp màn hình và đọc trên màn hình vì không có lề bị lãng phí. A4 hoặc US Letter co ảnh cho vừa trang, căn giữa và đúng tỷ lệ, đây là điều bạn cần khi in hoặc gửi tài liệu đã scan."],
+    ["Ảnh của tôi có được tải lên không?", "Không. PDF được ghép ngay trong trình duyệt của bạn bằng thư viện mã nguồn mở pdf-lib, trên thiết bị của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Thả tệp PNG vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,.png,image/jpeg,image/webp,image/gif,image/bmp,.jpg,.jpeg,.webp,.gif,.bmp" multiple>{{mark:i-plus}}<span data-pick-label>Chọn tệp PNG</span></label>
+  <p class="drop__hint">Ảnh chụp màn hình, bản scan hoặc đồ họa PNG. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<ol class="files files--img" id="files" aria-label="Ảnh, theo thứ tự trang" hidden></ol>
+<div id="work" hidden>
+  <div class="opts">
+    <div class="field">
+      <label for="pagesize">Khổ trang</label>
+      <select id="pagesize">
+        <option value="fit" selected>Vừa với ảnh</option>
+        <option value="a4">A4</option>
+        <option value="letter">US Letter</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="orient">Hướng trang</label>
+      <select id="orient">
+        <option value="auto" selected>Tự động (theo ảnh)</option>
+        <option value="portrait">Dọc</option>
+        <option value="landscape">Ngang</option>
+      </select>
+      <span class="help" id="orient-help"></span>
+    </div>
+    <div class="field">
+      <label for="margin">Lề</label>
+      <select id="margin">
+        <option value="0" selected>Không</option>
+        <option value="18">Nhỏ</option>
+        <option value="36">Lớn</option>
+      </select>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button">Tạo PDF</button>
+    <span class="help" id="summary"></span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Xóa tất cả</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ảnh chụp màn hình và bản scan PNG thành một PDF</h2>
+<p>Ảnh chụp màn hình của một hóa đơn, một cuộc trò chuyện hay một bộ slide sẽ dễ gửi, lưu trữ và in hơn khi ở dạng một PDF so với một thư mục ảnh. PNG là định dạng mà hầu hết công cụ chụp màn hình lưu, và vì không mất chất lượng, PDF có thể chứa nó mà không thay đổi gì: các điểm ảnh được nén bằng cùng loại phương pháp không mất dữ liệu và đặt lên trang.</p>
+<p>Thứ tự của danh sách là thứ tự các trang. Ảnh chụp màn hình dài thành trang dài với Vừa với ảnh; với khổ giấy cụ thể, chúng bị thu nhỏ cho vừa, nên các ảnh chụp rất cao có thể in nhỏ và tốt nhất nên cắt ra trước.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Thêm kết quả vào một tài liệu có sẵn? Hãy dùng <a href="/tools/merge-pdf/">Gộp PDF</a>.</li>
+  <li>Sai thứ tự sau khi lưu? Sửa bằng <a href="/tools/reorder-pdf-pages/">Sắp xếp lại trang PDF</a>.</li>
+  <li>Biến ảnh chụp thành PDF? <a href="/tools/jpg-to-pdf/">JPG sang PDF</a> giữ tệp JPG gọn nhẹ.</li>
+</ul>

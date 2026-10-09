@@ -1,5 +1,5 @@
-import { $, $$, el, fmtBytes, setStatus, runJob, showResults, clearNode, announce, debounce, friendlyError, tx } from "./core.js?v=5";
-import { singleImage, decode, newCanvas, ctx2d, previewInto, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=5";
+import { $, $$, el, fmtBytes, setStatus, runJob, showResults, clearNode, announce, debounce, friendlyError, tx } from "./core.js?v=11";
+import { singleImage, decode, newCanvas, ctx2d, previewInto, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=11";
 
 const drop = $("#drop"), editor = $("#editor"), goRow = $("#go-row"), go = $("#go"), summary = $("#summary");
 const status = $("#status"), result = $("#result"), stage = $("#stage"), cv = $("#cv"), box = $("#box");

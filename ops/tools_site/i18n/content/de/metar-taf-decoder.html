@@ -1,0 +1,43 @@
+<!--meta
+{
+  "title": "METAR und TAF dekodieren: Flugwetter im Klartext | Tanod Tools",
+  "description": "Fügen Sie einen METAR, SPECI oder TAF ein und erhalten Sie die Klartext-Auswertung: Wind, Sicht, Wetter, Wolken, Temperatur, Luftdruck und Flugkategorie.",
+  "h1": "METAR und TAF dekodieren",
+  "lede": "Fügen Sie einen Roh-METAR oder -TAF ein und lesen Sie ihn im Klartext: Wind, Sicht, Wetter, Wolken, Temperatur, Höhenmessereinstellung und Vorhersagezeiträume.",
+  "blurb": "Rohe METAR- und TAF-Wettermeldungen, verständlich erklärt.",
+  "keywords": "metar taf dekodierer decoder flugwetter speci cavok wind sicht wolkenuntergrenze flugkategorie vfr ifr höhenmesser qnh dekodieren übersetzen flughafen wetterbericht wettermeldung",
+  "limits": "Nur zum Lernen und zum schnellen Lesen. Nicht für die Flugplanung oder Navigation geeignet: Nutzen Sie immer die offiziellen Briefings. Bemerkungen (RMK) werden wie geschrieben angezeigt, und Gruppen, die der Dekodierer nicht versteht, werden aufgelistet, nie geraten.",
+  "howto_title": "So dekodieren Sie einen METAR oder TAF",
+  "howto": [
+    "Fügen Sie die Rohmeldung in das Feld ein, beginnend mit METAR, SPECI, TAF oder dem vierstelligen Stationscode. Mehrere Meldungen, getrennt durch = oder in eigenen Zeilen, werden nacheinander dekodiert.",
+    "Lesen Sie die Auswertung darunter: Jede Gruppe des Codes wird in Worte übersetzt, mit Einheiten umgerechnet in Knoten, km/h, Fuß und Meter, °C und °F, hPa und inHg.",
+    "Prüfen Sie die Flugkategorie und jede als nicht dekodiert markierte Zeile. Unbekannte Gruppen werden genau so angezeigt, wie sie geschrieben wurden."
+  ],
+  "faq": [
+    ["Was ist der Unterschied zwischen METAR und TAF?", "Ein METAR ist eine Beobachtung des aktuellen Wetters an einem Flughafen, meist stündlich herausgegeben (ein SPECI ist eine außerplanmäßige Aktualisierung nach einer deutlichen Änderung). Ein TAF ist eine Vorhersage für den Flughafen, die normalerweise 24 bis 30 Stunden abdeckt und in eine Grundvorhersage und Änderungsgruppen gegliedert ist."],
+    ["Wie lese ich die Windgruppe, zum Beispiel 29016G25KT?", "Die ersten drei Ziffern geben die Richtung an, aus der der Wind weht, in Grad rechtweisend (290 ist West-Nordwest), die nächsten zwei oder drei Ziffern die Geschwindigkeit (16), G fügt die Böengeschwindigkeit hinzu (25), und die letzten Buchstaben nennen die Einheit: KT für Knoten, MPS für Meter pro Sekunde, KMH für Kilometer pro Stunde. VRB bedeutet veränderliche Richtung, 00000KT ist Windstille."],
+    ["Was bedeuten die Änderungsgruppen im TAF?", "FM (from) beginnt zu einer bestimmten Zeit einen neuen Satz von Bedingungen und ersetzt alles davor. BECMG bedeutet eine allmähliche Änderung im angegebenen Zeitraum. TEMPO steht für kurzzeitige Schwankungen, die jeweils weniger als eine Stunde und insgesamt weniger als die Hälfte des Zeitraums dauern. PROB30 und PROB40 geben die Wahrscheinlichkeit der folgenden Bedingungen an. INTER ist ein älteres Wort für TEMPO."],
+    ["Wie werden die Flugkategorien bestimmt?", "Der Dekodierer verwendet die US-Grenzwerte der FAA aus der untersten aufgelockerten oder geschlossenen Wolkenschicht (der Wolkenuntergrenze) und der Sicht: VFR über 3.000 ft und 5 SM, MVFR von 1.000 bis 3.000 ft oder 3 bis 5 SM, IFR von 500 bis unter 1.000 ft oder 1 bis unter 3 SM und LIFR unter 500 ft oder 1 SM. CAVOK zählt als VFR. Andere Länder verwenden andere Grenzen, verstehen Sie die Angabe daher als Richtwert."],
+    ["Warum wird ein Teil meiner Meldung als nicht dekodiert angezeigt?", "Der Dekodierer deckt die Kerngruppen von ICAO und FAA ab. Regionale Gruppen, militärische Farbcodes, Gruppen zum Pistenzustand und alles, was falsch geschrieben ist, werden wie geschrieben aufgelistet, statt geraten zu werden. Bemerkungen nach RMK werden nie interpretiert."],
+    ["Sendet die Seite meine Meldung irgendwohin?", "Nein. Die Meldung wird per JavaScript in Ihrem Browser dekodiert, es wird nichts hochgeladen. Wenn Sie Meldungen aus Code heraus dekodieren möchten, leistet die Decode-API in der Anleitung unten dasselbe."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">Roher METAR oder TAF</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Eine Meldung oder mehrere, getrennt durch = oder durch Zeilen, die mit METAR, SPECI oder TAF beginnen.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Anderes Beispiel laden</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Leeren</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>So liest der Dekodierer eine Meldung</h2>
+<p>Ein METAR oder TAF ist eine Folge von durch Leerzeichen getrennten Gruppen in fester Reihenfolge, festgelegt in ICAO Annex 3 und im WMO Manual on Codes No. 306 (FM 15 METAR und FM 51 TAF) sowie, für die Vereinigten Staaten, im FAA Aeronautical Information Manual 7-1-30. Der Dekodierer liest den Stationscode, Tag und Uhrzeit in UTC (DDHHMMZ), den Wind (Richtung, Geschwindigkeit, Böen und Schwankung), die Sicht in Metern oder Landmeilen, die Pistensichtweite, das aktuelle Wetter, Wolkenschichten, die vertikale Sicht, Temperatur und Taupunkt sowie die Höhenmessereinstellung (Q ist hPa, A ist inHg in Hundertsteln).</p>
+<p>Wettercodes kombinieren eine Intensität (- leicht, + stark, VC in der Umgebung), Beschreibungen (TS, SH, FZ und andere) und Erscheinungen (RA Regen, SN Schnee, FG Nebel, BR Dunst und so weiter). Wolkengruppen nennen die Bedeckung (FEW, SCT, BKN, OVC) und die Untergrenze in Hunderten von Fuß über Grund, mit CB oder TCU für konvektive Wolken. Die relative Luftfeuchtigkeit wird aus Temperatur und Taupunkt mit der Magnus-Formel geschätzt, es = 6,1094 e^(17,625 T / (T + 243,04)), ist also nur ein Näherungswert.</p>
+<p>Die Flugkategorien folgen den FAA-Definitionen: Die Wolkenuntergrenze ist die unterste aufgelockerte oder geschlossene Schicht oder die vertikale Sicht, und die Kategorie richtet sich nach dem schlechteren Wert aus Wolkenuntergrenze und Sicht. Bei einem TAF wird jede Grund- oder Änderungsgruppe einzeln dekodiert, mit ihrem Zeitraum in UTC und ihrer eigenen Kategorie. Zeiten werden als Tag des Monats und UTC-Uhrzeit angegeben, weil die Meldungen weder Monat noch Jahr enthalten.</p>
+<p><strong>Nicht für die Flugplanung oder Navigation geeignet.</strong> Dies ist ein Lesehilfsmittel zu Lernzwecken. Holen Sie sich vor einem Flug das Wetter immer aus einer offiziellen Quelle.</p>

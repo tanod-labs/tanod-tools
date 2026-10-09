@@ -1,0 +1,103 @@
+<!--meta
+{
+  "title": "Tekrar eden satırları sil ve satırları sırala | Tanod Tools",
+  "description": "Listeden tekrar eden satırları silin; satırları A-Z, Z-A, doğal, uzunluğa göre, ters veya karışık sıralayın. Ücretsiz, tarayıcınızda, yükleme yok.",
+  "h1": "Tekrar eden satırları sil",
+  "lede": "Bir liste yapıştırın, tekrar eden satırları silin ve kalanı sıralayın.",
+  "blurb": "Tekrar eden satırları silin ve satırları sıralayın.",
+  "keywords": "tekrar eden satırları sil yinelenenleri kaldır benzersiz satırlar satırları sırala alfabetik karıştır liste doğal sıralama boş satırlar dedupe unique lines sort lines shuffle natural sort",
+  "limits": "Yaklaşık 5 MB'a kadar metin. Sonuç, seçenekleri değiştirdikçe güncellenir.",
+  "howto_title": "Tekrar eden satırlar nasıl silinir",
+  "howto": [
+    "Listenizi satır başına bir öğe olacak şekilde girdiye yapıştırın ya da bir .txt dosyası açın.",
+    "Satırların nasıl karşılaştırılacağını, hangi kopyanın tutulacağını ve isterseniz bir sıralama düzenini seçin.",
+    "Sonucu kopyalayın veya .txt dosyası olarak indirin."
+  ],
+  "faq": [
+    [
+      "Neyin tekrar olduğu sayılır?",
+      "İki satır, karakter karakter tamamen aynıysa tekrardır. Elma ile elma aynı satır sayılsın diye “Büyük/küçük harfi yok say”ı, her satırın başındaki ve sonundaki boşlukları ve sekmeleri yok saymak için “Karşılaştırmadan önce boşlukları kırp”ı açın."
+    ],
+    [
+      "Kırpma sonuçtaki satırları değiştirir mi?",
+      "Evet. Kırpma açıkken her satırın başındaki ve sonundaki boşluklar yalnızca karşılaştırmadan değil, geri aldığınız satırlardan da kaldırılır."
+    ],
+    [
+      "Boş satırlara ne olur?",
+      "“Boş satırları sil” açıkken boş olan veya yalnızca boşluk içeren satırlar atılır. Kapalıyken boş satırlar olduğu gibi tutulur ve birbirinin tekrarı sayılmaz."
+    ],
+    [
+      "Doğal sıralama nedir?",
+      "Doğal sıralama metin içindeki sayıları anlar; böylece madde2, madde10'dan önce gelir. A'dan Z'ye, tarayıcınızın dil kurallarını kullanarak karakter karakter sıralar ve madde10'u madde2'den önce koyar. Uzunluğa göre sıralama en kısa satırları öne alır ve eşit uzunluktaki satırlar arasında özgün sırayı korur."
+    ],
+    [
+      "Karıştırma rastgele mi?",
+      "Tarayıcınızın güvenli rastgele sayı üretecini Fisher-Yates karıştırmasıyla kullanır; böylece her sıralama eşit olasılıktadır. Yeni bir sıra için tekrar Karıştır'a basın."
+    ],
+    [
+      "Listem yükleniyor mu?",
+      "Hayır. Her şey tarayıcınızda yapılır ve hiçbir şey saklanmaz."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">Girdi satırları</label>
+      <textarea id="text" spellcheck="false" wrap="off" placeholder="Satır başına bir öğe."></textarea>
+    </div>
+    <div class="field">
+      <label for="out">Sonuç</label>
+      <textarea id="out" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="ci">Büyük/küçük harfi yok say</label>
+    <label class="check"><input type="checkbox" id="trim">Karşılaştırmadan önce boşlukları kırp</label>
+    <label class="check"><input type="checkbox" id="noempty" checked>Boş satırları sil</label>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="keep">Tutulacak</label>
+      <select id="keep"><option value="first">İlk geçen</option><option value="last">Son geçen</option></select>
+    </div>
+    <div class="field">
+      <label for="sort">Satırları sırala</label>
+      <select id="sort">
+        <option value="none">Özgün sırayı koru</option>
+        <option value="az">A'dan Z'ye</option>
+        <option value="za">Z'den A'ya</option>
+        <option value="natural">Doğal (sayılar sırayla)</option>
+        <option value="length">Uzunluğa göre, en kısa önce</option>
+        <option value="reverse">Ters sıra</option>
+        <option value="shuffle">Karıştır</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Başlamak için satırları yapıştırın.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Sonucu kopyala</button>
+    <button class="btn" id="dl" type="button" disabled>İndir .txt</button>
+    <button class="btn" id="shuffle" type="button" hidden>{{mark:i-refresh}}Yeniden karıştır</button>
+    <button class="btn btn--quiet" id="use" type="button" disabled>Sonucu girdi olarak kullan</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/plain,.txt,.md,.csv">{{mark:i-upload}}<span>.txt dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Tekrarları silmek ve satırları sıralamak</h2>
+<p>Listeler tekrar biriktirir: birkaç kaynaktan yapıştırılmış e-posta adresleri, anahtar sözcükler, günlük satırları, dosya adları. Bu araç metni satır satır okur, gördüğü her satırı hatırlar ve sonraki kopyaları (son geçeni tutmayı seçerseniz öncekileri) atar. Kalan satırlar, bir sıralama seçmediğiniz sürece özgün sıralarında kalır.</p>
+<p>Düğmelerin üstündeki rapor, kaç satırın girdiğini, kaçının çıktığını ve kaçının tekrar olarak silindiğini gösterir; böylece sonucu beklentinizle karşılaştırabilirsiniz. Seçenekle silinen boş satırlar ayrıca raporlanır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Önce satırları temizlemek için <a href="/tools/find-and-replace/">Bul ve değiştir</a> aracını kullanın, ardından buraya dönün.</li>
+  <li>Bir listenin iki sürümü arasında neyin değiştiğini <a href="/tools/text-diff/">Metin karşılaştır</a> ile kontrol edin.</li>
+  <li>Yalnızca listeyi sıraya mı koymak istiyorsunuz, daha fazla sıralama seçeneğiyle? <a href="/tools/sort-lines-alphabetically/">Satırları alfabetik sırala</a> aracını kullanın.</li>
+  <li>Geriye kalanı <a href="/tools/word-counter/">Kelime sayacı</a> ile sayın.</li>
+</ul>

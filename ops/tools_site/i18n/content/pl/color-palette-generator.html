@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Generator palety kolorów: harmonie z jednego koloru | Tanod Tools",
+  "description": "Wybierz kolor bazowy i uzyskaj palety analogowe, komplementarne, trójkątne, tetradyczne i monochromatyczne z kontrastem i eksportem. Bezpłatnie, w przeglądarce.",
+  "h1": "Generator palety kolorów",
+  "lede": "Zacznij od jednego koloru i uzyskaj pasujące palety, każda próbka z wartościami HEX i RGB oraz kontrastem względem bieli i czerni.",
+  "blurb": "Harmonie kolorów z jednego koloru bazowego, ze współczynnikami kontrastu.",
+  "keywords": "paleta kolorów schemat kolorów harmonia kolorów analogowe komplementarne trójkątne tetradyczne podzielone komplementarne monochromatyczne odcienie cienie oklch losowa paleta próbki zmienne css color palette",
+  "limits": "Palety są tworzone w przestrzeni barw OKLCH i pokazywane jako HEX sRGB, więc kolory zbyt intensywne dla ekranu mają obniżone nasycenie. Wartości kontrastu stosują wzór WCAG 2, który mierzy wyłącznie kontrast jasności.",
+  "howto_title": "Jak stworzyć paletę kolorów",
+  "howto": [
+    "Wybierz kolor bazowy próbnikiem albo wpisz wartość, taką jak <code>#1636a3</code> lub <code>f60</code>, w polu HEX.",
+    "Przejrzyj palety harmonii poniżej. Każda próbka pokazuje swój HEX, RGB oraz to, czy czarny lub biały tekst na niej spełnia WCAG AA lub AAA.",
+    "Wybierz paletę w sekcji <strong>Eksport</strong> i skopiuj ją lub pobierz jako zmienne CSS, tablicę JSON albo zwykłą listę. Użyj <strong>Losowa paleta</strong> i przycisków blokowania, aby eksperymentować."
+  ],
+  "faq": [
+    ["Dlaczego OKLCH zamiast HSL?", "W HSL żółty i niebieski o tej samej wartości jasności wyglądają na bardzo różnie jasne. OKLCH jest zbudowany tak, aby równe kroki jasności wyglądały równo, co utrzymuje próbki palety w podobnej wadze. Odcień to kąt używany w harmoniach, więc kolor komplementarny leży 180 stopni od koloru bazowego w OKLCH, a nie w HSL."],
+    ["Co się dzieje, gdy kolor nie może być pokazany na ekranie?", "Obrót odcienia przy zachowaniu jasności i nasycenia czasem trafia poza zakres sRGB, który potrafi pokazać zwykły wyświetlacz. Narzędzie obniża wtedy nasycenie, zachowując jasność i odcień, aż kolor się zmieści. Dlatego obrócona próbka może wyglądać nieco mniej intensywnie niż baza."],
+    ["Co oznaczają etykiety AA i AAA?", "Podają współczynnik kontrastu WCAG 2 białego lub czarnego tekstu na tej próbce. Współczynnik 4,5 lub więcej to AA dla zwykłego tekstu, 7 lub więcej to AAA, a od 3 do 4,5 spełnia AA tylko dla dużego tekstu. Próbka, która nie spełnia wymagań ani dla czerni, ani dla bieli, jest słabym tłem dla tekstu."],
+    ["Jak działa losowa paleta?", "Pięć kolorów jest losowanych bezpiecznym generatorem liczb losowych przeglądarki: odcienie rozłożone na kole, z losową jasnością i nasyceniem w zakresie unikającym kolorów prawie czarnych i prawie białych. Zablokuj próbkę, aby ją zachować, a potem naciśnij Losowa paleta lub spację, aby wymienić pozostałe."],
+    ["Którego formatu eksportu użyć?", "Zmienne CSS wklejasz prosto do bloku <code>:root</code> arkusza stylów. Tablica JSON pasuje do tokenów projektowych lub skryptów, a zwykła lista to jeden HEX w wierszu dla narzędzi przyjmujących wklejone kolory. Wszystkie trzy używają wyświetlanych wartości HEX."],
+    ["Czy obsługuje skrócony HEX i wielkie litery?", "Tak. Odczytywane są <code>#abc</code>, <code>abc</code>, <code>#AABBCC</code> i <code>aabbcc</code>. Wartości z parą alfa, na przykład ośmiocyfrowe, nie są tu akceptowane; najpierw usuń alfę w narzędziu <a href=\"/tools/color-converter/\">Konwerter kolorów i kontrastu</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack gen-pal">
+  <div class="gen-base">
+    <div class="field">
+      <label for="cp-pick">Kolor bazowy</label>
+      <input type="color" id="cp-pick" value="#1636a3">
+    </div>
+    <div class="field gen-base__hex">
+      <label for="cp-hex">Wartość HEX</label>
+      <input type="text" id="cp-hex" class="mono" value="#1636a3" maxlength="9" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="cp-msg">
+    </div>
+    <p class="tt__report gen-base__info" id="cp-msg" aria-live="polite"></p>
+  </div>
+
+  <div id="cp-harmonies" class="util-stack"></div>
+
+  <h2 class="util-h">Losowa paleta</h2>
+  <p class="help" id="cp-rand-help">Pięć kolorów z generatora liczb losowych przeglądarki. Zablokuj te, które chcesz zachować, i losuj ponownie. Naciśnij spację, aby losować, gdy żadne pole tekstowe nie jest aktywne.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="cp-random" type="button">Losowa paleta</button>
+  </div>
+  <div id="cp-random-out" data-scheme="random"></div>
+
+  <h2 class="util-h">Eksport</h2>
+  <div class="opts">
+    <div class="field"><label for="cp-which">Paleta</label><select id="cp-which"></select></div>
+    <fieldset class="field">
+      <legend>Format</legend>
+      <div class="seg" role="radiogroup" aria-label="Format eksportu">
+        <label><input type="radio" name="cp-fmt" value="css" checked>Zmienne CSS</label>
+        <label><input type="radio" name="cp-fmt" value="json">JSON</label>
+        <label><input type="radio" name="cp-fmt" value="list">Zwykła lista</label>
+      </div>
+    </fieldset>
+  </div>
+  <label class="visually-hidden" for="cp-out">Wyeksportowana paleta</label>
+  <textarea id="cp-out" class="mono gen-out" rows="7" readonly spellcheck="false"></textarea>
+  <div class="actions">
+    <button class="btn" id="cp-copy" type="button">Kopiuj</button>
+    <button class="btn" id="cp-dl" type="button">Pobierz</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak powstają harmonie</h2>
+<p>Harmonia kolorów to zestaw kolorów, których odcienie leżą pod stałymi kątami na kole barw. Kolory analogowe są sąsiadami, oddalonymi o 30 stopni. Kolor komplementarny leży 180 stopni dalej, para podzielonych komplementarnych 150 i 210 stopni, triada jest rozstawiona co 120 stopni, a tetrada używa czterech odcieni co 90 stopni. Paleta monochromatyczna zachowuje odcień i zmienia jasność od bladych tintów do ciemnych cieni.</p>
+<p>Użyte tu koło to OKLCH, walcowa postać przestrzeni OKLab Björna Ottossona. Przeliczenie idzie od sRGB do światła liniowego, potem przez macierze OKLab i z powrotem ze sprawdzeniem gamy. Jeśli obrócony kolor wypada poza to, co może pokazać sRGB, jego nasycenie jest zmniejszane małymi krokami, aż się zmieści, więc wybrana jasność i odcień zostają zachowane.</p>
+<p>Kontrast jest podawany dla każdej próbki zarówno względem bieli, jak i czerni, bo pierwsze pytanie o kolor palety zwykle brzmi, jaki tekst można na nim umieścić. Współczynnik oraz opis AA lub AAA są zawsze zapisane słowami, więc informacja nie zależy od widzenia kolorów.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz tego samego koloru jako HSL, CMYK lub nazwy CSS? Użyj narzędzia <a href="/tools/color-converter/">Konwerter kolorów i kontrastu</a>.</li>
+  <li>Zrób tło z dwóch kolorów palety w narzędziu <a href="/tools/css-gradient-generator/">Generator gradientów CSS</a>.</li>
+  <li>Chcesz kolor wzięty ze zdjęcia, a nie z koła? Wypróbuj <a href="/tools/image-color-picker/">Pobierz kolor z obrazu</a>.</li>
+</ul>

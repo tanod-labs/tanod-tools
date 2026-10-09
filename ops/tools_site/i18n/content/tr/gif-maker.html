@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "GIF oluşturucu: resimlerden hareketli GIF yapın | Tanod Tools",
+  "description": "Birkaç resimden tarayıcınızda hareketli GIF yapın: sırayı, gecikmeyi ve boyutu ayarlayın, önizleyin, indirin. Ücretsiz, kayıt gerekmez, hiçbir şey yüklenmez.",
+  "h1": "GIF oluşturucu",
+  "lede": "Birkaç resmi hareketli bir GIF'e dönüştürün. Resimleri sıraya koyun, her birinin ne kadar süre görüneceğini ve GIF'in ne kadar büyük olacağını seçin, önizlemeyi izleyin, sonra indirin.",
+  "blurb": "Birkaç resimden hareketli bir GIF oluşturun.",
+  "keywords": "gif oluşturucu gif yapma gif oluşturma hareketli gif resimlerden gif fotoğraftan gif resimleri gif yapma animasyon oluşturma slayt gif kare gecikme döngü gif maker create animated gif images to gif photos to gif animation creator",
+  "limits": "2 ile 60 arası resim, her biri 50 MB. GIF en fazla 1.200 piksel genişliğinde olabilir ve her kare ilk resmin en boy oranını alır. Bir GIF karesi en fazla 256 renk içerir; bu yüzden fotoğraflarda bir miktar bantlaşma görülür. Saydamlık da desteklenmez: saydam alanlar arka plan rengini alır. Eklediğiniz hareketli resimlerin ilk karesi kullanılır.",
+  "howto_title": "Hareketli GIF nasıl yapılır",
+  "howto": [
+    "İki veya daha fazla resim seçin ya da sayfaya sürükleyin. Sırayı ayarlamak için yukarı ve aşağı düğmelerini kullanın.",
+    "Kareler arasındaki gecikmeyi ve genişliği ayarlayın, farklı oranlardaki resimlerin nasıl sığacağını seçin. Önizlemeyi izleyin.",
+    "<strong>GIF oluştur</strong> düğmesine basın, sonucu kontrol edin ve indirin."
+  ],
+  "faq": [
+    ["Resimlerim yükleniyor mu?", "Hayır. Resimler çizilir ve GIF, tarayıcınızda çalışan kodla, açık kaynaklı gifenc kodlayıcısı kullanılarak yazılır. Sunucuya hiçbir şey gönderilmez."],
+    ["Animasyonu nasıl hızlandırır veya yavaşlatırım?", "Kareler arasındaki gecikmeyi milisaniye cinsinden değiştirin: 1000 bir saniye, 100 ise saniyede on karedir. Seçebileceğiniz en kısa gecikme 20 ms'dir; çünkü tarayıcılar bundan kısa gecikmeleri çok daha yavaş bir hızda oynatır."],
+    ["GIF'im neden tanecikli veya bantlı görünüyor?", "Bir GIF karesi en fazla 256 renk kullanabilir; bu yüzden fotoğraflarda ve yumuşak renk geçişlerinde bantlaşma görülür. Bu araç her kare için en iyi 256 rengi ayrı ayrı seçer; bu da her kareyi, GIF biçiminin izin verdiği ölçüde kendi resmine yakın tutar. En iyi sonucu düz grafikler ve ekran görüntüleri verir."],
+    ["GIF'im neden bu kadar büyük?", "GIF'in sıkıştırması zayıftır ve her kare eksiksiz saklanır; bu yüzden dosya boyutu, genişlik, yükseklik ve kare sayısıyla birlikte büyür. Küçültmek için daha küçük bir genişlik, daha az resim ya da kare başına daha az renk kullanın."],
+    ["Farklı boyut veya oranlardaki resimlere ne olur?", "Her kare, ilk resmin en boy oranına sahip olur. <em>İçine sığdır</em> her resmi bütün olarak gösterir ve boş kalan alanı arka plan rengiyle doldurur; <em>Doldur ve kırp</em> karenin tamamını kaplar, resmi ortalayıp taşan kısımları keser; <em>Ger</em> ise her resmi kareye uyacak biçimde esnetir."],
+    ["Saydamlık korunuyor mu?", "Hayır. Bir GIF yalnızca tek bir rengi saydam olarak işaretleyebilir; bu yüzden araç saydam alanları seçtiğiniz arka plan rengiyle doldurur. Böylece her kare her yerde aynı görünür."],
+    ["İleri, sonra geri oynatmak ne yapar?", "Son kareden sonra kareleri, ilk ve son kareyi tekrarlamadan ters sırayla yeniden ekler; böylece animasyon başa sıçramak yerine ileri geri akıcı biçimde hareket eder."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">İki veya daha fazla resmi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Resim seçin</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP veya AVIF. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Kareler, sırayla" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Kareler arasındaki gecikme (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1000 ms bir saniyedir. En kısa gecikme 20 ms'dir.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Genişlik (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">Yükseklik ilk resme göre belirlenir: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Farklı oranlardaki resimler</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>İçine sığdır</label>
+        <label><input type="radio" name="gm-fit" value="cover">Doldur ve kırp</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Ger</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Arka plan rengi</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Tekrar</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>Sonsuza kadar</label>
+        <label><input type="radio" name="gm-loop" value="once">Bir kez</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Kare başına renk sayısı</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (en iyi kalite)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (en küçük dosya)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Oynatma sırası</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">İleri, sonra geri oynat</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Önizleme</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Animasyonun önizlemesi"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">GIF oluştur</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Tümünü temizle</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Hareketli bir GIF nasıl oluşur</h2>
+<p>GIF, art arda gösterilen sıradan resimlerden oluşan bir dizidir. Her kare, en fazla 256 renkten oluşan kendi küçük renk tablosunu ve bir gecikmeyi taşır; gecikme, bir sonraki karenin görünmesinden önce geçen, saniyenin yüzde biriyle ölçülen süredir. Başlangıçtaki bir döngü ayarı, görüntüleyiciye sonsuza kadar tekrar edip etmeyeceğini ya da tek turdan sonra durup durmayacağını söyler. Video sıkıştırması yoktur: her kare bütün olarak, basit bir kayıpsız yöntemle paketlenerek saklanır; GIF'lerin hızla büyümesinin nedeni budur.</p>
+<p>Fotoğraflardan bir GIF yapmak, her resmi en iyi temsil eden 256 rengi seçmek ve sonra her pikseli bunların en yakınıyla değiştirmek demektir. Bu araç, kareler hizalansın diye her resmi aynı boyutta çizdikten sonra bunu her kare için ayrı ayrı, açık kaynaklı gifenc kodlayıcısıyla yapar. Boyut, seçtiğiniz genişlikten ve ilk resmin oranlarından gelir; diğer resimler seçiminize göre bunun içine sığdırılır, tüm kareyi dolduracak şekilde kırpılır ya da gerilir.</p>
+<p>GIF yazılırken resimleriniz tek tek okunur; bu yüzden büyük fotoğraflardan oluşan uzun bir listenin hepsinin aynı anda belleğe sığması gerekmez. Düğmenin üstündeki önizleme aynı kareleri daha küçük boyutta oynatır; böylece sırayı, hızı ve sığdırma biçimini karar vermeden önce değerlendirebilirsiniz. Tek bir düğmeyle duraklatılır ve sisteminizde hareketi azaltma ayarı açıksa duraklatılmış olarak başlar.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Kısa tutun: saniyede 10 karede birkaç saniye fazlasıyla yeterlidir; daha az ve daha küçük kare çok daha küçük bir dosya verir.</li>
+  <li>Önce resimleri <a href="/tools/crop-image/">Resim kırp</a> ile aynı orana getirin ya da büyük fotoğrafları <a href="/tools/resize-image/">Resim boyutlandır</a> ile küçültün.</li>
+  <li>Animasyon yerine tek bir resim mi istiyorsunuz? <a href="/tools/merge-images/">Resimleri birleştir</a> onları yan yana ya da ızgara hâlinde birleştirir.</li>
+</ul>

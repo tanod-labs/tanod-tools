@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Ritaglia immagine online: gratis, ritaglio al pixel | Tanod Tools",
+  "description": "Ritaglia un JPG, PNG o WebP nel browser. Trascina il riquadro, usa i preset di proporzioni o digita valori esatti in pixel. Nulla viene caricato e il formato resta.",
+  "h1": "Ritaglia immagine",
+  "lede": "Trascina un riquadro di ritaglio sull'immagine, oppure digita valori esatti in pixel, poi salva la copia ritagliata.",
+  "blurb": "Taglia un'immagine nella parte che ti serve.",
+  "keywords": "ritaglia immagine ritagliare foto tagliare immagine proporzioni quadrato 16:9 4:3 riquadro di ritaglio ritaglio al pixel taglia foto crop",
+  "limits": "Un'immagine alla volta, fino a 50 MB e circa 100 megapixel. PNG, JPEG, WebP, GIF, BMP e AVIF (dove il tuo browser può aprirli).",
+  "howto_title": "Come ritagliare un'immagine",
+  "howto": [
+    "Scegli un'immagine, oppure trascinala sulla pagina.",
+    "Trascina il riquadro per spostarlo e le maniglie degli angoli per ridimensionarlo. Scegli una proporzione se ti serve, oppure digita X, Y, larghezza e altezza in pixel.",
+    "Premi <strong>Ritaglia immagine</strong>, poi scarica il risultato."
+  ],
+  "faq": [
+    ["La mia immagine viene caricata?", "No. Il ritaglio viene fatto nel tuo browser a partire dal file sul tuo dispositivo. Non viene inviato nulla a un server."],
+    ["Posso usare la tastiera al posto del mouse?", "Sì. Dai il focus al riquadro di ritaglio (raggiungilo con Tab, oppure cliccalo), poi usa i tasti freccia per spostarlo e Maiusc con i tasti freccia per ridimensionarlo. I campi X, Y, larghezza e altezza accettano anche valori esatti in pixel."],
+    ["Ritagliare riduce la qualità?", "I pixel dentro il riquadro vengono copiati così come sono, alla risoluzione piena, non dall'anteprima delle dimensioni dello schermo. JPEG e WebP vengono salvati di nuovo con qualità 92, quindi c'è una piccola ricompressione; il PNG resta senza perdita."],
+    ["Che formato ha il risultato?", "Lo stesso dell'originale: il PNG resta PNG, il JPEG resta JPEG e il WebP resta WebP. GIF, BMP e AVIF vengono salvati come PNG (una GIF diventa il suo primo fotogramma)."],
+    ["Cosa fanno i preset di proporzioni?", "Bloccano il riquadro a un rapporto larghezza-altezza come 1:1 per un quadrato o 16:9 per un'inquadratura widescreen, e lo mantengono tale mentre lo ridimensioni. Scegli Libera per ritagliare in qualsiasi forma."],
+    ["I dati EXIF vengono mantenuti?", "No. Il file ritagliato è una nuova immagine senza metadati della fotocamera né del GPS, salvata nell'orientamento con cui viene visualizzata."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Rilascia un'immagine qui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Scegli un'immagine</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. Oppure trascinala in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Anteprima dell'immagine da ritagliare" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Area di ritaglio" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Trascina il riquadro per spostarlo e un angolo per ridimensionarlo. Con il riquadro selezionato, i tasti freccia lo spostano e Maiusc con i tasti freccia lo ridimensiona.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Proporzioni</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Libere</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Larghezza (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Altezza (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Ritaglia immagine</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Ritagliare senza perdere risoluzione</h2>
+<p>Ritagliare mantiene un rettangolo dei pixel originali e scarta il resto. L'immagine che vedi sullo schermo è un'anteprima ridotta perché stia nella pagina; il ritaglio vero e proprio viene preso dall'immagine a piena risoluzione, usando X, Y, larghezza e altezza mostrati nei campi. Quei numeri sono nei pixel dell'immagine stessa, non nei pixel dello schermo.</p>
+<p>Usa una proporzione quando il risultato deve stare in una cornice: 1:1 per un avatar quadrato, 16:9 per la miniatura di un video, 4:3 o 3:2 per le forme fotografiche comuni, 9:16 per una storia verticale. Il riquadro mantiene quella forma mentre lo ridimensioni, e digitando una larghezza o un'altezza l'altra si aggiorna.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Ritaglia prima, poi riduci le dimensioni con <a href="/tools/resize-image/">Ridimensiona immagine</a> e <a href="/tools/compress-image/">Comprimi immagine</a>.</li>
+  <li>Foto girata nel verso sbagliato? <a href="/tools/rotate-image/">Ruota immagine</a> la sistema.</li>
+  <li>Crei un'icona da una parte di un'immagine? Ritaglia in 1:1, poi usa il <a href="/tools/favicon-generator/">Generatore di favicon</a>.</li>
+</ul>

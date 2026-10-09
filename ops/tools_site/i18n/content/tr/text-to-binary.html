@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Metni ikili koda çevir ve ikiliden metne | Tanod Tools",
+  "description": "Metni ikili koda, ikili kodu yeniden metne çevirin; UTF-8 ile aksanlı harfler ve emoji de çalışır. Onaltılık, onluk ve sekizlik bayt da var. Ücretsiz, tarayıcıda.",
+  "h1": "Metni ikili koda çevirici",
+  "lede": "Metni ikili koda çevirin ya da ikili kodu okunur metne geri çözün. Her dilde ve emoji ile çalışır.",
+  "blurb": "Metin - ikili kod dönüşümü, ayrıca onaltılık ve onluk.",
+  "keywords": "metni ikili koda çevir binary çevirici ikiliden metne ikili kod çevirici ascii binary 01 binary çözücü utf-8 bayt metinden hex'e hex'ten metne onluk bayt binary to text binary code translator ascii to binary decoder",
+  "limits": "Kodlanacak metin en fazla 1 MB; çözülecek ikili kod en fazla 5 MB. Sonuç siz yazdıkça güncellenir.",
+  "howto_title": "Metin ikili koda nasıl çevrilir",
+  "howto": [
+    "<strong>Metinden ikiliye</strong> ya da <strong>İkiliden metne</strong> seçeneğini seçin.",
+    "Kutuya yazın veya yapıştırın. Sonuç siz yazdıkça görünür.",
+    "Sonucu kopyalayın veya .txt dosyası olarak indirin. Sonucu geri çevirmek için <strong>Yer değiştir</strong> düğmesini kullanın."
+  ],
+  "faq": [
+    ["Metin ikili koda nasıl çevrilir?", "Her karakter önce web'in kullandığı kodlama olan UTF-8 ile baytlara çevrilir ve her bayt sekiz ikili basamak olarak yazılır. A harfi 65 numaralı bayttır, bu da 01000001 eder. Düz İngilizce harfler birer bayt tutar; aksanlı harfler iki bayt, çoğu emoji ise dört bayt tutar."],
+    ["Bu, ASCII'den ikiliye çevirmeyle aynı mı?", "Düz İngilizce harfler, rakamlar ve noktalama işaretleri için evet: UTF-8 bu karakterlere ASCII ile aynı bayt değerlerini verir. Fark yalnızca ASCII'nin hiç gösteremediği diğer karakterlerde ortaya çıkar."],
+    ["Hangi ikili girdiyi çözebilir?", "Boşluk, virgül veya satır sonuyla ayrılmış, bayt başına bir grup olmak üzere sekize kadar 0 ve 1'den oluşan gruplar ya da uzunluğu sekizin katı olan kesintisiz bir rakam dizisi. 2 ya da bir harf gibi başka her şey, düzeltebilmeniz için konumuyla birlikte bildirilir."],
+    ["Çözme neden baytların geçerli UTF-8 olmadığını söylüyor?", "Her bayt dizisi geçerli metin değildir. Bir bayt eksik ya da fazla olabilir; ikili kod eski bir kodlamadan ya da metin olmayan bir dosyadan gelmiş olabilir. Mesaj, okunamayan ilk baytı gösterir. İkili kodu kopyalarken hiçbir grubun kaybolmadığından emin olun."],
+    ["Onaltılık, onluk ve sekizlik seçenekleri nedir?", "Aynı baytları başka bir sayı tabanında yazarlar: onaltılık bayt başına 0-9 ve a-f arasında iki hane kullanır (A, 41'dir), onluk 0 ile 255 arasını kullanır (A, 65'tir) ve sekizlik 0 ile 377 arasını kullanır (A, 101'dir). Çözme, seçtiğiniz tabanı kabul eder."],
+    ["Metnim yükleniyor mu?", "Hayır. Dönüştürme tarayıcınızda çalışır; metin yüklenmez veya saklanmaz."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Dönüştür</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="encode" checked>Metinden ikiliye</label>
+        <label><input type="radio" name="dir" value="decode">İkiliden metne</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="base">Baytların yazılış biçimi</label>
+      <select id="base">
+        <option value="2" selected>İkili (01000001)</option>
+        <option value="16">Onaltılık (41)</option>
+        <option value="10">Onluk (65)</option>
+        <option value="8">Sekizlik (101)</option>
+      </select>
+    </div>
+    <div class="field" id="sep-field">
+      <label for="sep">Baytlar arasında</label>
+      <select id="sep">
+        <option value=" " selected>Bir boşluk</option>
+        <option value="">Hiçbir şey</option>
+        <option value="\n">Yeni satır</option>
+      </select>
+    </div>
+  </div>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Metin</label>
+      <textarea id="text" spellcheck="false" placeholder="Metni buraya yazın."></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">İkili</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Başlamak için metin yazın.</p>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Sonucu kopyala</button>
+    <button class="btn" id="dl" type="button" disabled>.txt indir</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Yer değiştir: sonucu geri çevir</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Temizle</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Metin nasıl birler ve sıfırlara dönüşür</h2>
+<p>Bilgisayarlar metni sayı olarak saklar. Hangi karaktere hangi sayının verileceğini bir kodlama belirler; bu araç, hemen her web sayfasının, e-postanın ve modern dosyanın kullandığı UTF-8'i kullanır. UTF-8 ilk 128 karakteri (İngiliz alfabesi, rakamlar ve yaygın noktalama işaretleri) eski ASCII koduyla aynı değerlerle birer baytta saklar. Diğer karakterler iki ila dört bayt tutar: é, 11000011 10101001 eder ve 😀 emojisi dört bayttır.</p>
+<p>Bir bayt sekiz bittir; bu yüzden her bayt sekiz ikili basamak olarak gösterilir ve baştaki sıfırlar korunur, böylece her grup aynı genişlikte olur. Bu, çıktıyı geri okumayı kolaylaştırır: her sekizli grup bir bayttır.</p>
+<p>Çözmek için araç her grubu bir bayt olarak okur, ardından baytları UTF-8 metin olarak okur. Baytlar geçerli UTF-8 oluşturmuyorsa, bozuk karakterler göstermek yerine sorunun nerede başladığını söyler.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Baytları metin olarak taşımanın daha kısa, standart bir yolu için <a href="/tools/base64-encode-decode/">Base64 kodla ve çöz</a> aracını kullanın.</li>
+  <li>Tek bir sayıyı ikilik, onluk ve onaltılık arasında mı çeviriyorsunuz? <a href="/tools/number-base-converter/">Sayı tabanı dönüştürücü</a> aracını kullanın.</li>
+  <li>Nokta ve çizgileri mi tercih edersiniz? <a href="/tools/morse-code-translator/">Mors alfabesi çevirici</a> aracını deneyin.</li>
+</ul>

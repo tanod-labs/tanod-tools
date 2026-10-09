@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Konwerter PDF na tekst online, bezpłatny | Tanod Tools",
+  "description": "Wyodrębnij tekst z PDF w przeglądarce, strona po stronie. Skopiuj go lub pobierz jako .txt. Bezpłatnie, bez rejestracji i przesyłania. Skany wymagają OCR.",
+  "h1": "PDF na tekst",
+  "lede": "Wyciągnij tekst z pliku PDF strona po stronie, a potem skopiuj go albo zapisz jako plik .txt. Zeskanowany PDF nie ma tekstu do wydobycia: w takim przypadku użyj narzędzia <a href=\"/tools/ocr-pdf/\">OCR dla PDF</a>.",
+  "blurb": "Wyodrębnij tekst z PDF, skopiuj go lub zapisz jako .txt.",
+  "keywords": "pdf na tekst wyodrębnij tekst z pdf pdf na txt skopiuj tekst z pdf wyciągnij tekst z pdf pdf do tekstu konwerter pdf na tekst tekst strona po stronie zeskanowany pdf ocr pdf to text pdf to txt extract text from pdf",
+  "limits": "Jeden plik PDF naraz, do 200 MB i do 500 stron. Narzędzie odczytuje tekst zapisany w pliku PDF. Zeskanowany PDF to same obrazy stron i takiego tekstu nie zawiera, więc w jego przypadku trzeba zamiast tego użyć narzędzia <a href=\"/tools/ocr-pdf/\">OCR dla PDF</a>. Tabele i kolumny są zapisywane wiersz po wierszu, a plików PDF chronionych hasłem nie można otworzyć.",
+  "howto_title": "Jak wyodrębnić tekst z pliku PDF",
+  "howto": [
+    "Wybierz plik PDF albo przeciągnij go na stronę.",
+    "Poczekaj chwilę, aż każda strona zostanie odczytana. Wybierz wszystkie strony albo zakres, na przykład 1-3, 5, i zdecyduj, czy oznaczać początek każdej strony.",
+    "Naciśnij <strong>Pobierz .txt</strong>, skopiuj cały tekst albo skopiuj jedną stronę z listy."
+  ],
+  "faq": [
+    ["Czy mój plik PDF jest przesyłany?", "Nie. Przeglądarka odczytuje tekst na Twoim urządzeniu, za pomocą biblioteki pdf.js o otwartym kodzie źródłowym. Nic nie jest wysyłane na serwer, a tekst znika po zamknięciu karty."],
+    ["Dlaczego wynik jest pusty albo zawiera tekst tylko z niektórych stron?", "Narzędzie odczytuje tekst zapisany w pliku PDF. Zeskanowany PDF przechowuje każdą stronę jako obraz, za którym nie ma żadnego tekstu, więc nie ma czego odczytać. To samo dotyczy zeskanowanych stron dodanych do dokumentu, który poza tym jest zwykły. Użyj narzędzia <a href=\"/tools/ocr-pdf/\">OCR dla PDF</a>, aby rozpoznać litery na obrazach. Strony bez tekstu są oznaczone na liście strona po stronie."],
+    ["Czy formatowanie jest zachowywane?", "Nie. Dostajesz zwykły tekst: litery, cyfry i podziały wierszy. Czcionki, kolory, obrazy i układ strony są pomijane. Wiersze łamią się tam, gdzie łamią się w pliku PDF, a pusty wiersz pojawia się tam, gdzie odstęp między dwoma wierszami jest większy niż zwykle, na przykład między akapitami."],
+    ["Jak połączyć połamane wiersze w akapity?", "Wklej tekst do narzędzia <a href=\"/tools/remove-line-breaks/\">Usuń podziały wierszy</a>. Łączy ono wiersze wewnątrz każdego akapitu, zachowuje puste wiersze między akapitami i potrafi naprawić wyrazy podzielone myślnikiem na końcu wiersza."],
+    ["Dlaczego część tekstu jest w dziwnej kolejności albo pocięta na dziwne fragmenty?", "Tekst jest podawany w kolejności, w jakiej zapisano go w pliku PDF. Zwykle jest to kolejność czytania, ale nie zawsze. Tabele, strony z kilkoma kolumnami i pliki PDF wyeksportowane z programów do projektowania graficznego mogą wyjść pomieszane, a niektóre pliki PDF zapisują tekst we fragmentach, które nie pasują do widocznych słów."],
+    ["Czy działa z innymi językami niż angielski?", "Tak. Tekst jest odczytywany jako Unicode, więc litery z ogonkami i akcentami, cyrylica, alfabet grecki, hindi, znaki chińskie i inne pisma trafiają do wyniku, o ile plik PDF ma prawidłową warstwę tekstową. Jeśli PDF używa nietypowej konfiguracji czcionek, kopiowanie w dowolnym programie daje nieczytelne znaki; zwykle pomaga przepuszczenie takiego pliku przez OCR."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Upuść plik PDF tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Strony</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>Wszystkie strony</label>
+        <label><input type="radio" name="scope" value="range">Wybrane strony</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Zakres stron</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Opcje</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Oznacz początek każdej strony</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Strony</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>Z tekstem</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Słowa</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Znaki</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Wyodrębniony tekst</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}Pobierz .txt</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Kopiuj cały tekst</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+  <h3 class="util-h">Strona po stronie</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Tekst znaleziony na każdej stronie">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Strona</th><th scope="col">Słowa</th><th scope="col">Znaki</th><th scope="col"><span class="visually-hidden">Kopiuj</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Skąd bierze się tekst w pliku PDF</h2>
+<p>PDF wygenerowany przez edytor tekstu, przeglądarkę lub program do projektowania zapisuje słowa jako tekst: każdy ciąg liter ma przypisaną czcionkę i położenie na stronie. Właśnie ten zapisany tekst odczytuje to narzędzie. Przeglądarka otwiera plik za pomocą pdf.js, pobiera tekst z każdej strony i składa te ciągi liter z powrotem w wiersze, w kolejności, w jakiej wymienia je plik. Nigdy nie sprawdza, jak strona wygląda na ekranie.</p>
+<p>Zeskanowany PDF to coś innego. Skaner lub aparat w telefonie tworzy obraz każdej strony, a plik PDF zawiera tylko te obrazy, więc nie ma tekstu do odczytania: widzisz słowa, ale plik ich nie zawiera. Zamiana obrazów z powrotem na tekst to osobne zadanie, zwane optycznym rozpoznawaniem znaków, które wykonuje narzędzie <a href="/tools/ocr-pdf/">OCR dla PDF</a>. Strony bez tekstu są oznaczone na liście pod polem tekstowym, dzięki czemu w pliku zawierającym zarówno skany, jak i zwykłe strony łatwo je odróżnić.</p>
+<p>Wynikiem jest zwykły tekst bez formatowania. Wiersze kończą się tam, gdzie kończą się w pliku PDF, a pusty wiersz jest dodawany tam, gdzie odstęp między dwoma wierszami jest wyraźnie większy niż zwykły odstęp na danej stronie; w ten sposób oddziela się akapity i nagłówki. Ligatury, których niektóre czcionki używają dla par liter, takich jak fi i fl, są zamieniane z powrotem na osobne litery, a niewidoczne miękkie łączniki są pomijane.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Zeskanowane strony pojawią się jako strony bez tekstu. Przepuść je przez narzędzie <a href="/tools/ocr-pdf/">OCR dla PDF</a> i odczytaj wynik.</li>
+  <li>Wklej tekst do narzędzia <a href="/tools/remove-line-breaks/">Usuń podziały wierszy</a>, aby zamienić wiersze ułożone jeden pod drugim w płynące akapity.</li>
+  <li>Potrzebujesz tylko niektórych stron jako PDF? Narzędzie <a href="/tools/extract-pdf-pages/">Wyodrębnij strony z PDF</a> je wytnie, a <a href="/tools/word-counter/">Licznik słów</a> policzy skopiowany tekst.</li>
+</ul>

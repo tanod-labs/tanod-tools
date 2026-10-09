@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Visualizador de fatura do Vietnã: abra XML hóa đơn | Tanod Tools",
+  "description": "Abra uma hóa đơn điện tử vietnamita (XML) e leia como uma fatura comum. Imprima, salve em PDF ou exporte em JSON. Grátis, sem envio.",
+  "h1": "Visualizador de fatura eletrônica do Vietnã",
+  "lede": "Abra uma fatura eletrônica vietnamita (hóa đơn điện tử) e leia como uma fatura comum: série e número da fatura, vendedor, comprador, itens, IVA por alíquota e o código da autoridade tributária. O XML é lido no seu navegador e nunca é enviado.",
+  "blurb": "Leia uma hóa đơn điện tử vietnamita (XML do Decreto 123/2020) como uma fatura comum.",
+  "keywords": "visualizador fatura eletrônica vietnã hóa đơn điện tử abrir fatura vietnamita xml ler fatura xml vietnã decreto 123/2020 circular 78/2021 xem hoá đơn điện tử xml mở file xml hóa đơn nghị định 123/2020 thông tư 78/2021 mã của cơ quan thuế mccqt đọc hóa đơn xml",
+  "limits": "Um arquivo por vez, de até 25 MB; os primeiros 5.000 itens são exibidos. Lê o XML de fatura do Decreto 123/2020 e da Circular 78/2021 (elemento raiz HDon, também quando vem dentro de uma mensagem TDiep da autoridade tributária), com código ou sem código. As assinaturas digitais (DSCKS) não são verificadas. Apenas visualização: não valida a fatura e não consulta nada na autoridade tributária.",
+  "howto_title": "Como abrir uma fatura eletrônica do Vietnã",
+  "howto": [
+    "Escolha o XML da fatura que você salvou do seu provedor de faturas eletrônicas, do portal da autoridade tributária ou do seu software de contabilidade, ou arraste-o para a página.",
+    "Leia a fatura: série (KHHDon) e número (SHDon), o código da autoridade tributária (MCCQT) se a fatura tiver um, vendedor (NBan), comprador (NMua), itens, IVA por alíquota, totais e pagamento.",
+    "Clique em <strong>Imprimir ou salvar como PDF</strong>, em <strong>Baixar JSON</strong> ou em <strong>Mostrar XML bruto</strong>."
+  ],
+  "faq": [
+    [
+      "A fatura é enviada à autoridade tributária ou a algum servidor?",
+      "Não. Esta página não se conecta à autoridade tributária, ao seu provedor nem a nenhum servidor. O XML é lido no seu navegador e exibido nesta página, e fechar a aba apaga tudo."
+    ],
+    [
+      "A assinatura digital é verificada?",
+      "Não. As assinaturas do elemento DSCKS (a do vendedor e, em uma fatura com código, a da autoridade tributária) não são verificadas. Um arquivo que traz uma é sinalizado com uma observação, mas esta página não consegue dizer quem assinou a fatura nem se ela foi alterada depois. Use as ferramentas do seu provedor ou da autoridade tributária se precisar disso."
+    ],
+    [
+      "O que são a série da fatura e o MCCQT?",
+      "A série da fatura é formada pelo número do modelo (KHMSHDon) e pelo símbolo (KHHDon, por exemplo C24TAA), e o número é SHDon. O MCCQT é o código que a autoridade tributária dá a uma fatura com código (hóa đơn có mã). Uma fatura sem código não tem MCCQT. Todos são exibidos como o arquivo os informa; esta página não consegue verificar se um código é autêntico."
+    ],
+    [
+      "Ela consegue abrir a mensagem que volta da autoridade tributária?",
+      "Sim. Se o XML for uma mensagem TDiep com a fatura dentro de DLieu, a fatura é extraída e exibida. Outros tipos de mensagem e faturas em formatos antigos não são lidos."
+    ],
+    [
+      "Como as alíquotas de IVA são exibidas?",
+      "Alíquotas como 10%, 8%, 5% e 0% são exibidas como alíquotas. KCT (não sujeito a IVA) e KKKNT (não declarado nem pago) são exibidos como o código informado pelo arquivo, ao lado da categoria de IVA correspondente. Uma alíquota escrita como KHAC:x% é exibida como a alíquota x."
+    ],
+    [
+      "Onde consigo o XML de uma fatura?",
+      "O seu provedor de faturas eletrônicas e o portal da autoridade tributária permitem baixar a fatura como arquivo XML, e os softwares de contabilidade podem exportá-la. Esta página lê o arquivo XML que você salvou, não o PDF."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Solte uma fatura eletrônica aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Escolher arquivo</span></label>
+  <p class="drop__hint">XML, um PDF com a fatura dentro (ZUGFeRD, Factur-X) ou um .p7m assinado. Ou arraste para qualquer lugar desta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Imprimir ou salvar como PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Baixar JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Baixar XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Mostrar XML bruto</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML bruto" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Aqui aparece só o início de um arquivo longo. Baixe o XML para ter tudo.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>As faturas eletrônicas do Vietnã</h2>
+<p>Desde o Decreto 123/2020/ND-CP e a Circular 78/2021/TT-BTC, as empresas do Vietnã emitem hóa đơn điện tử, faturas eletrônicas, como arquivos XML em um formato definido pela autoridade tributária. Uma fatura traz um código da autoridade tributária (hóa đơn có mã, exibido no elemento MCCQT) ou é emitida sem ele. O XML é a fatura; a versão legível é uma visualização dele. Esta página gera essa visualização no seu navegador a partir do XML que você tem.</p>
+<h2>O que o visualizador mostra</h2>
+<p>Você vê o nome e a versão da fatura, o número do modelo (KHMSHDon), o símbolo (KHHDon), o número (SHDon), a data (NLap), o código da autoridade tributária (MCCQT) quando há um, o vendedor (NBan) e o comprador (NMua) com seus códigos fiscais (MST), endereços e contatos, cada item com unidade, quantidade, preço, desconto e alíquota de IVA, o IVA por alíquota (THTTLTSuat), os totais, o valor por extenso e os dados de pagamento. Em uma fatura de ajuste ou de substituição (TCHDon), a fatura a que ela se refere é exibida. Os valores aparecem exatamente como no arquivo.</p>
+<p>A página não verifica as assinaturas digitais (DSCKS), não valida a fatura com o esquema e as regras da autoridade tributária e não consulta a fatura. Faturas em outros formatos, como as antigas da Circular 32/2011, não são lidas.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Baixar JSON fornece a fatura como dados simples, com os nomes dos campos vietnamitas associados aos termos de negócio da EN 16931.</li>
+  <li>Outros formatos também abrem aqui: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol e a hóa đơn điện tử vietnamita. A página sugere o visualizador adequado quando você abre um deles.</li>
+  <li>Mostrar XML bruto ajuda quando você precisa de um elemento que a fatura legível não exibe.</li>
+</ul>

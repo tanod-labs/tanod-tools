@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Da JSON a CSV online, gratis | Tanod Tools",
+  "description": "Converti un array JSON in CSV nel browser. Gli oggetti annidati diventano colonne con percorso a punti, con opzione Excel. Nessun upload.",
+  "h1": "Convertitore da JSON a CSV",
+  "lede": "Incolla un array JSON o apri un file .json e ottieni un CSV da aprire in Excel, Fogli Google o Numbers.",
+  "blurb": "Trasforma un array JSON in CSV per i fogli di calcolo.",
+  "keywords": "da json a csv converti json csv excel foglio di calcolo esporta appiattire annidato array di oggetti json to csv",
+  "limits": "Input fino a circa 10 MB, incollato o da un file .json. Il risultato si aggiorna mentre scrivi.",
+  "howto_title": "Come convertire JSON in CSV",
+  "howto": [
+    "Incolla il JSON nella casella oppure apri un file .json. Un array di oggetti dà una riga per oggetto.",
+    "Scegli il separatore e come scrivere gli oggetti annidati. Attiva l'opzione Excel se il file verrà aperto in Excel.",
+    "Copia il CSV o scaricalo come file .csv."
+  ],
+  "faq": [
+    ["Il mio JSON viene caricato?", "No. Viene analizzato e convertito nel tuo browser e nulla viene inviato altrove né conservato."],
+    ["Quali strutture JSON funzionano?", "Un array di oggetti (una riga per oggetto, una colonna per chiave), un array di array (ogni array interno è una riga), un array di valori semplici (una colonna) o un singolo oggetto (una riga). Le colonne compaiono nell'ordine in cui le chiavi vengono incontrate per la prima volta, quindi un oggetto con una chiave che gli altri non hanno aggiunge una colonna, e le righe senza di essa hanno una cella vuota."],
+    ["Come vengono gestiti oggetti e array annidati?", "Con <em>Appiattisci in percorsi a punti</em>, un oggetto annidato come <code>{\"address\": {\"city\": \"Lyon\"}}</code> diventa una colonna chiamata <code>address.city</code>. Con <em>Mantieni come testo JSON</em>, l'intero oggetto annidato finisce in una cella come JSON. Gli array vengono sempre scritti come testo JSON in una sola cella, perché non esiste un unico modo giusto di distribuire un elenco su più colonne."],
+    ["Perché gli accenti sembrano sbagliati quando apro il file in Excel?", "Excel su Windows spesso presume una vecchia codifica regionale, a meno che il file inizi con un byte order mark (BOM). Attiva <em>Aggiungi un byte order mark per Excel</em> prima di scaricare e Excel leggerà il file come UTF-8. Fogli Google e Numbers leggono comunque UTF-8. Se il tuo Excel si aspetta il punto e virgola, scegli anche il separatore punto e virgola."],
+    ["Quando i valori vengono messi tra virgolette?", "Solo quando serve: un valore che contiene il separatore, un doppio apice, un'interruzione di riga, o che inizia o finisce con uno spazio viene racchiuso tra doppi apici, e ogni apice al suo interno viene raddoppiato. I numeri vengono scritti esattamente come appaiono nel JSON, quindi gli ID lunghi non vengono arrotondati. <code>null</code> diventa una cella vuota."],
+    ["Perché dice che il mio JSON non è valido?", "Il messaggio indica riga e colonna in cui la lettura si è fermata. Le cause abituali sono una virgola finale, apici singoli al posto dei doppi o una parentesi mancante. <a href=\"/tools/json-formatter/\">Formatta e valida JSON</a> mostra il punto esatto con un cursore."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text">JSON</label>
+      <textarea id="text" class="mono" spellcheck="false" wrap="off" autocomplete="off" placeholder='[{"name": "Ana", "age": 34}, {"name": "Ben", "age": 29}]'></textarea>
+    </div>
+    <div class="field">
+      <label for="out">CSV</label>
+      <textarea id="out" class="mono" readonly wrap="off"></textarea>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <label for="delim">Separatore</label>
+      <select id="delim">
+        <option value="," selected>Virgola ( , )</option>
+        <option value=";">Punto e virgola ( ; )</option>
+        <option value="&#9;">Tab</option>
+        <option value="|">Barra verticale ( | )</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="nested">Oggetti annidati</label>
+      <select id="nested">
+        <option value="flatten" selected>Appiattisci in percorsi a punti (address.city)</option>
+        <option value="json">Mantieni come testo JSON in una cella</option>
+      </select>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="headrow" checked>Includi una riga di intestazione</label>
+    <label class="check"><input type="checkbox" id="crlf">Fine riga di Windows (CRLF)</label>
+    <label class="check"><input type="checkbox" id="bom">Aggiungi un byte order mark per Excel (solo download)</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Incolla del JSON per iniziare.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Copia CSV</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Scarica .csv</button>
+    <button class="btn btn--quiet" id="clear" type="button">Cancella</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Apri un file .json</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Trasformare il JSON in un foglio di calcolo</h2>
+<p>Le API e le esportazioni ti consegnano spesso JSON, mentre chi ha bisogno dei dati vuole un foglio di calcolo. Il CSV fa da ponte: ogni oggetto dell'array diventa una riga e ogni chiave diventa una colonna. Poiché negli oggetti reali non tutte le chiavi coincidono, lo strumento raccoglie ogni chiave che incontra, nell'ordine in cui la incontra per la prima volta, e lascia vuota la cella dove un oggetto non ha valore per quella colonna.</p>
+<p>I fogli di calcolo sono piatti, quindi i dati annidati vanno in qualche modo compressi in colonne. L'appiattimento trasforma <code>user.name</code> e <code>user.email</code> in colonne separate, cosa adatta alla maggior parte dei report. Mantenere gli oggetti annidati come testo JSON tiene basso il numero di colonne e permette di ricostruire in seguito la struttura originale.</p>
+<p>Il CSV segue le regole consuete (RFC 4180): i valori vengono messi tra virgolette solo quando serve e gli apici dentro un valore vengono raddoppiati. I numeri mantengono le cifre esatte del tuo JSON invece di essere arrotondati come accadrebbe con i numeri JavaScript.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Vuoi fare il contrario? Usa <a href="/tools/csv-to-json/">Da CSV a JSON</a>.</li>
+  <li>Se il JSON non si converte, trova il problema con <a href="/tools/json-formatter/">Formatta e valida JSON</a>.</li>
+  <li>Confronta due esportazioni riga per riga con <a href="/tools/text-diff/">Confronta due testi</a>.</li>
+</ul>

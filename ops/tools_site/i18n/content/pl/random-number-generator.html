@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Generator liczb losowych: całkowite i dziesiętne | Tanod Tools",
+  "description": "Losuj liczby całkowite lub dziesiętne z dowolnego zakresu, z powtórzeniami lub bez, posortowane lub nie. Używa bezpiecznego źródła losowości przeglądarki.",
+  "h1": "Generator liczb losowych",
+  "lede": "Wybierz zakres i liczbę potrzebnych liczb. Każda jest losowana równomiernie z bezpiecznego źródła losowości przeglądarki.",
+  "blurb": "Losowe liczby całkowite lub dziesiętne w dowolnym zakresie, z trybem bez powtórzeń.",
+  "keywords": "generator liczb losowych, losowanie liczb, losowa liczba, losowanie bez powtórzeń, rzut kostką, loteria, losowanie od do, liczby całkowite i dziesiętne, random number, dice, raffle, unique, no repeat",
+  "limits": "Do 10 000 liczb na jedno losowanie, granice do 30 cyfr i do 10 miejsc po przecinku. Wyniki nie są zapisywane; przeładowanie strony je usuwa.",
+  "howto_title": "Jak wygenerować liczby losowe",
+  "howto": [
+    "Wpisz <strong>najmniejszą</strong> i <strong>największą</strong> wartość. Mogą wypaść oba końce zakresu, a liczby ujemne też działają.",
+    "Ustaw, <strong>ile</strong> liczb chcesz, i zaznacz <em>Bez powtórzeń</em>, jeśli każda liczba ma być inna.",
+    "Naciśnij <strong>Generuj</strong>, a potem skopiuj listę lub pobierz ją jako plik tekstowy."
+  ],
+  "faq": [
+    ["Czy te liczby są naprawdę losowe?", "Pochodzą z <code>crypto.getRandomValues</code>, tego samego bezpiecznego generatora, którego przeglądarki używają do kluczy szyfrowania, a nie z <code>Math.random</code>. Każda wartość w zakresie jest jednakowo prawdopodobna. Generator wystarcza do gier, loterii i wyboru próby; nie został zbadany pod kątem loterii regulowanych prawem."],
+    ["Czym jest błąd modulo i czy to narzędzie go ma?", "Wzięcie losowej liczby 32-bitowej i zachowanie reszty z dzielenia przez rozmiar zakresu sprawia, że niektóre wyniki są nieco bardziej prawdopodobne, ilekroć zakres nie dzieli równo 2<sup>32</sup>. To narzędzie odrzuca każde losowanie, które wpada w nierówną resztę, i losuje ponownie, więc każda wartość ma dokładnie takie same szanse. Dotyczy to także ogromnych zakresów, które są obsługiwane na dużych liczbach całkowitych."],
+    ["Jak działa „Bez powtórzeń” i kiedy zawodzi?", "Narzędzie losuje każdą nową liczbę i pomija te, które już wypadły, a dla małych zakresów tasuje cały zakres i bierze kilka pierwszych. Jeśli poprosisz o więcej różnych liczb, niż mieści zakres, na przykład 7 z zakresu od 1 do 6, poinformuje o tym zamiast kręcić się w nieskończoność."],
+    ["Co się stanie, jeśli minimum jest większe od maksimum?", "Obie wartości są zamieniane miejscami, a wiersz z wynikiem o tym informuje. Wpisanie 10 i 1 daje to samo losowanie co wpisanie 1 i 10."],
+    ["Jak działają liczby dziesiętne?", "Ustaw 2 miejsca po przecinku, a zakres od 0 do 1 stanie się 101 wartościami: 0,00, 0,01 aż do 1,00, każda jednakowo prawdopodobna. Wyniki zawsze pokazują pełną liczbę miejsc, więc 0,50 pozostaje 0,50. Same granice nie mogą mieć więcej miejsc po przecinku, niż wybrano."],
+    ["Czy mogę użyć tego do typowania w loterii lub rzutu kostką?", "Do rzutu kostką użyj zakresu od 1 do 6. Do kuponu loterii zaznacz <em>Bez powtórzeń</em>, na przykład 6 liczb z zakresu od 1 do 49, posortowanych od najmniejszej. Losowe typy nie dają lepszych szans niż jakiekolwiek inne liczby. Wyniki nie są zapisywane ani nigdzie wysyłane."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="rn-min">Minimum</label>
+      <input type="text" id="rn-min" class="mono" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-max">Maksimum</label>
+      <input type="text" id="rn-max" class="mono" inputmode="decimal" value="100" autocomplete="off" spellcheck="false" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-count">Ile liczb</label>
+      <input type="number" id="rn-count" min="1" max="10000" value="1" aria-invalid="false">
+    </div>
+    <div class="field">
+      <label for="rn-places">Miejsca po przecinku</label>
+      <input type="number" id="rn-places" min="0" max="10" value="0" aria-invalid="false" aria-describedby="rn-places-h">
+      <span class="help" id="rn-places-h">0 daje liczby całkowite.</span>
+    </div>
+    <div class="field">
+      <label for="rn-order">Kolejność</label>
+      <select id="rn-order">
+        <option value="drawn">Jak wylosowano</option>
+        <option value="asc">Od najmniejszej</option>
+        <option value="desc">Od największej</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="rn-unique">Bez powtórzeń</label>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="rn-gen" type="button">Generuj</button>
+    <button class="btn" id="rn-copy" type="button">Kopiuj listę</button>
+    <button class="btn" id="rn-dl" type="button">Pobierz .txt</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+  <div class="rn-big" aria-hidden="true">
+    <span class="calc-main__label" id="rn-big-label">Wynik</span>
+    <span class="rn-big__val" id="rn-big">-</span>
+  </div>
+  <pre class="out rn-out" id="rn-out" tabindex="0" aria-label="Wygenerowane liczby"></pre>
+</div>
+<!--explain-->
+<h2>Dlaczego bezpieczny generator i co tu znaczy „losowy”</h2>
+<p>Uczciwe losowanie oznacza, że każda dozwolona wartość jest jednakowo prawdopodobna, a jedno losowanie nic nie mówi o następnym. <code>Math.random()</code> jest szybki, ale to przebrana, przewidywalna sekwencja; nadaje się do animacji, nie do losowania nagród. Funkcja <code>crypto.getRandomValues</code> przeglądarki jest zasilana przez system operacyjny i jest właściwym źródłem dla wszystkiego, o co ludzie mogliby się spierać.</p>
+<p>Zamiana surowych losowych bitów na liczbę od 1 do 6 to miejsce, w którym wiele narzędzi się myli. Wartość 32-bitowa ma 4 294 967 296 możliwości, których 6 nie dzieli równo, więc użycie reszty sprawia, że niskie oczka są ułamkowo bardziej prawdopodobne. Rozwiązaniem jest odrzucanie: największa wielokrotność rozmiaru zakresu poniżej 2<sup>32</sup> jest granicą, a losowanie powyżej niej jest odrzucane i powtarzane. Dla zakresów szerszych niż 32 bity narzędzie losuje dokładnie tyle bitów, ile trzeba, i odrzuca wszystko ponad zakresem, używając dużych liczb całkowitych, tak aby wartości w pobliżu 9 007 199 254 740 991 pozostały dokładne.</p>
+<p>Liczby dziesiętne korzystają z tego samego pomysłu na siatce. Przy dwóch miejscach po przecinku zakres od 0 do 5 jest traktowany jak liczby całkowite od 0 do 500, losowana jest jedna z nich, a przecinek wraca na miejsce, co zachowuje jednakowe prawdopodobieństwo każdej wartości siatki zamiast zaokrąglać liczbę ciągłą.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Aby wylosować osoby zamiast liczb, wklej listę do narzędzia <a href="/tools/random-name-picker/">Losowanie imion</a>.</li>
+  <li>Potrzebujesz sekretu, a nie liczby? <a href="/tools/password-generator/">Generator haseł</a> używa tego samego źródła losowości ze zbiorami znaków.</li>
+  <li>Chcesz unikalny identyfikator zamiast małej liczby? Wypróbuj <a href="/tools/uuid-generator/">Generator UUID</a>.</li>
+</ul>

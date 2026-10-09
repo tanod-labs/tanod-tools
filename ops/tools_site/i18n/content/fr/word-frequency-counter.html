@@ -1,0 +1,115 @@
+<!--meta
+{
+  "title": "Compteur de fréquence des mots | Tanod Tools",
+  "description": "Trouvez les mots et les expressions de deux ou trois mots les plus fréquents d'un texte, avec effectifs et pourcentages. Mots vides et export CSV.",
+  "h1": "Compteur de fréquence des mots",
+  "lede": "Collez un texte pour voir quels mots et quelles expressions reviennent le plus souvent, avec effectifs et pourcentages, en écartant les mots vides courants de votre langue.",
+  "blurb": "Mots et expressions les plus fréquents, avec effectifs et pourcentages.",
+  "keywords": "compteur de fréquence des mots mots les plus fréquents mots les plus courants fréquence des expressions compteur de n-grammes densité de mots-clés mots vides supprimer les mots vides csv analyse de texte",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Texte jusqu'à quelques millions de caractères. Les mots sont des suites de lettres et de chiffres, les apostrophes et les traits d'union à l'intérieur d'un mot étant conservés ; les expressions ne traversent jamais une fin de phrase ni un retour à la ligne. Les listes de mots vides sont de courtes listes des mots grammaticaux les plus courants, pas des dictionnaires complets, et existent pour l'anglais, l'espagnol, le français, l'allemand, le portugais (Brésil), l'italien, l'indonésien, le turc, le vietnamien, le russe, le polonais et l'hindi.",
+  "howto_title": "Comment compter la fréquence des mots",
+  "howto": [
+    "Collez votre texte.",
+    "Choisissez les mots seuls, les expressions de deux mots ou de trois mots, et une langue de mots vides si vous voulez écarter des mots comme the, and ou of.",
+    "Lisez la liste classée avec effectifs et pourcentages, puis copiez-la ou téléchargez-la en CSV."
+  ],
+  "faq": [
+    [
+      "Qu'est-ce qui compte comme un mot ?",
+      "Une suite de lettres ou de chiffres qui peut contenir une apostrophe ou un trait d'union entre des lettres, donc don't et well-known comptent chacun pour un mot. Majuscules et minuscules sont traitées comme le même mot. La ponctuation et les espaces séparent les mots."
+    ],
+    [
+      "Comment les expressions sont-elles comptées ?",
+      "Une expression de deux mots est chaque paire de mots côte à côte, et une expression de trois mots est chaque triplet de ce type. Les expressions ne traversent ni un point, ni un point d'interrogation, ni un point-virgule, ni un retour à la ligne : le dernier mot d'une phrase n'est donc pas relié au premier de la suivante."
+    ],
+    [
+      "Que font les options de mots vides ?",
+      "Les mots vides sont des mots grammaticaux très courants comme the, and, of, el, la, le, der ou и. Pour les mots seuls, ils sont écartés de la liste. Pour les expressions, toute expression qui commence ou se termine par un mot vide est écartée, ce qui donne des expressions comme search engine plutôt que of the search. Les pourcentages sont calculés sur ce qui reste."
+    ],
+    [
+      "Comment le pourcentage est-il calculé ?",
+      "C'est l'effectif de l'élément divisé par le nombre total de mots (ou d'expressions) comptés, une fois les mots vides et les nombres écartés si vous l'avez choisi."
+    ],
+    [
+      "Que contient le fichier CSV ?",
+      "Toute la liste classée, pas seulement la partie affichée à l'écran, avec les colonnes rang, mot, effectif et pourcentage. Le fichier est en UTF-8 avec une marque d'ordre des octets pour que les tableurs affichent correctement les lettres accentuées."
+    ],
+    [
+      "Mon texte est-il envoyé ?",
+      "Non. Le texte est compté dans votre navigateur et rien ne quitte votre appareil."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="wf">
+  <div class="field">
+    <label for="wf-in">Texte à analyser</label>
+    <textarea id="wf-in" rows="9" spellcheck="false" autocomplete="off" placeholder="Collez le texte ici"></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="wf-n-l">Compter</span>
+      <div class="seg" role="radiogroup" aria-labelledby="wf-n-l">
+        <label><input type="radio" name="wf-n" value="1" checked>Mots</label>
+        <label><input type="radio" name="wf-n" value="2">Expressions de 2 mots</label>
+        <label><input type="radio" name="wf-n" value="3">Expressions de 3 mots</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="wf-stop">Écarter les mots vides</label>
+      <select id="wf-stop">
+        <option value="" selected>Aucun</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wf-top">Afficher</label>
+      <select id="wf-top">
+        <option value="10">Top 10</option>
+        <option value="25" selected>Top 25</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+        <option value="0">Tout</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="wf-num" checked>Inclure les nombres</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="wf-example" type="button">Charger un exemple</button>
+    <button class="btn btn--quiet" id="wf-clear" type="button" disabled>Effacer</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="wf-report" aria-live="polite">Collez un texte pour commencer.</p>
+  <div class="util-stack" id="wf-res" hidden>
+    <dl class="stats">
+      <div><dt>Mots dans le texte</dt><dd id="wf-words">0</dd></div>
+      <div><dt>Comptés</dt><dd id="wf-total">0</dd></div>
+      <div><dt>Distincts</dt><dd id="wf-unique">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--primary" id="wf-copy" type="button">{{mark:i-copy}}Copier la liste</button>
+      <button class="btn" id="wf-csv" type="button">{{mark:i-download}}Télécharger le CSV</button>
+    </div>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tableau des fréquences">
+      <table class="dv-table">
+        <thead><tr><th scope="col">N°</th><th scope="col" id="wf-th">Mot</th><th scope="col">Effectif</th><th scope="col">Pourcentage</th></tr></thead>
+        <tbody id="wf-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment la fréquence des mots est calculée</h2>
+<p>Le texte est découpé en mots, chaque mot est mis en minuscules et l'outil compte combien de fois chacun apparaît. La liste classée place les plus fréquents en premier et départage les ex æquo par ordre alphabétique. Compter les répétitions est un moyen rapide de voir de quoi parle vraiment un texte, de vérifier si un mot-clé est trop utilisé, de repérer les termes d'un entretien ou d'un ensemble de réponses à une enquête, ou de déceler un tic comme s'appuyer sur le même mot dans une dissertation.</p>
+<p>Sans aucun filtre, le haut de la liste est presque toujours occupé par des mots grammaticaux comme the, of et and. Choisir une langue de mots vides les retire, et les mots porteurs de sens remontent en tête. Les listes couvrent les articles, pronoms, prépositions, conjonctions et verbes auxiliaires les plus courants de la langue et sont conçues pour un coup d'œil rapide, pas pour un travail linguistique.</p>
+<p>Les expressions sont comptées comme des suites de deux ou trois mots côte à côte, à l'intérieur d'une même phrase. Les expressions répétées en disent souvent plus que les mots seuls : elles révèlent les noms de produits, les slogans et les locutions figées d'un texte. Lorsque les mots vides sont activés, les expressions qui commencent ou se terminent par un mot vide sont écartées, et ce qui reste est plus significatif.</p>
+<p>Le pourcentage d'un élément est son effectif divisé par le total compté. Ce total varie selon les options, car les mots vides et les nombres écartés ne sont pas comptés. Téléchargez le CSV pour conserver la liste complète ou en faire un graphique dans un tableur.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Pour obtenir les totaux de mots, de caractères, de phrases et le temps de lecture, utilisez le <a href="/tools/word-counter/">compteur de mots</a>.</li>
+  <li>Pour distinguer majuscules et minuscules à votre façon, changez d'abord la casse avec le <a href="/tools/case-converter/">convertisseur de casse</a>.</li>
+  <li>Nettoyez une liste d'éléments répétés avec <a href="/tools/remove-duplicate-lines/">Supprimer les lignes en double</a>.</li>
+</ul>

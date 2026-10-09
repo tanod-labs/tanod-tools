@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Generator wyrażeń cron z terminami uruchomień | Tanod Tools",
+  "description": "Zbuduj pięciopolowy harmonogram cron z gotowych ustawień i kontrolek, zobacz go prostym językiem i sprawdź terminy następnych uruchomień w dowolnej strefie.",
+  "h1": "Generator wyrażeń cron",
+  "lede": "Zbuduj harmonogram crontab z prostych wyborów, a potem sprawdź, co oznacza po polsku i kiedy uruchomi się następnym razem.",
+  "blurb": "Zbuduj harmonogram cron kontrolkami i zobacz następne uruchomienia.",
+  "keywords": "generator wyrażeń cron kreator cron generator crontab harmonogram cron zadanie cron co 5 minut składnia cron w dni robocze o 9 rano cron expression generator",
+  "limits": "Standardowy cron z pięcioma polami, używany przez Vixie cron i cronie: minuta, godzina, dzień miesiąca, miesiąc i dzień tygodnia. Formaty Quartz i inne z polem sekund nie są generowane, a wklejone wyrażenia, których kontrolki nie potrafią pokazać, są zachowywane tak, jak wpisano.",
+  "howto_title": "Jak zbudować wyrażenie cron",
+  "howto": [
+    "Zacznij od gotowego ustawienia albo ustaw każde pole tak, by uruchamiało się za każdym razem, co N jednostek od początku, dla wybranych wartości lub między dwiema wartościami.",
+    "Sprawdź wyrażenie, jego opis prostym językiem i terminy następnych uruchomień w strefie czasowej używanej przez serwer.",
+    "Skopiuj wyrażenie do crontab, harmonogramu CI lub innego planera. Możesz też wkleić istniejące wyrażenie, aby załadować je do kontrolek."
+  ],
+  "faq": [
+    ["Jak uruchamiać zadanie co 15 minut?", "Ustaw Minutę na <em>Co 15 minut, zaczynając od 0</em>, co zapisze <code>*/15 * * * *</code>. Zadanie uruchomi się w minutach 0, 15, 30 i 45 każdej godziny."],
+    ["Jak zapisywany jest początek inny niż 0?", "Początek, taki jak minuta 5 z krokiem 10, jest zapisywany jako <code>5-59/10</code>, co uruchamia się o 5, 15, 25, 35, 45 i 55. Krótsze <code>5/10</code> działa w niektórych wersjach crona, ale inne je odrzucają, więc długa forma jest przenośnym wyborem."],
+    ["Dlaczego niektóre dni są wybierane zakresami, a inne listami?", "Trzy lub więcej kolejnych wartości jest zapisywanych jako zakres, więc od poniedziałku do piątku to <code>1-5</code>, a poniedziałek, środa i piątek to <code>1,3,5</code>. Oba oznaczają dokładnie zaznaczone wartości."],
+    ["Co się dzieje, gdy ustawię jednocześnie dzień miesiąca i dzień tygodnia?", "Standardowy cron uruchamia zadanie, gdy pasuje któreś z nich, a nie oba. <code>0 9 1 * 1</code> uruchamia się pierwszego dnia miesiąca i w każdy poniedziałek. Narzędzie dodaje uwagę, gdy twoje wybory trafiają w taki przypadek."],
+    ["Jakiej strefy czasowej używają następne uruchomienia?", "Tej, którą wybierzesz pod wyrażeniem. Sam cron używa strefy czasowej maszyny lub kontenera, na którym działa, chyba że crontab ustawia <code>CRON_TZ</code>. Wiele serwerów używa UTC, więc sprawdź to, zanim zaufasz godzinie."],
+    ["Czy obsługuje sekundy, @daily lub składnię Quartz?", "Buduje tylko wyrażenia pięciopolowe. Wklejenie <code>@daily</code> lub innego skrótu działa i jest zamieniane na odpowiednie pięć pól. Wyrażenia sześciopolowe i w stylu Quartz są odrzucane, bo ich pierwsze pole to sekundy. Szczegółowo wyjaśnia to narzędzie <a href=\"/tools/cron-expression-explainer/\">Wyjaśnij wyrażenie cron</a>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Wyrażenie cron</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Kopiuj</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Gotowe ustawienia">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Co minutę</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Co 5 minut</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Co 15 minut</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Co godzinę</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Codziennie o północy</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">W dni robocze o 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Co niedzielę</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">1. i 15. dnia miesiąca</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Pierwszego dnia miesiąca</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Co roku</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Załaduj istniejące wyrażenie</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Załaduj</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Wklej wyrażenie z pięcioma polami lub skrót, taki jak @daily.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Następne uruchomienia</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Strefa czasowa</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">Od</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Zostaw puste, aby zacząć od teraz.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Ile</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Terminy następnych uruchomień"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Masz już wyrażenie i chcesz tylko, żeby ktoś je wyjaśnił? Użyj narzędzia <a href="/tools/cron-expression-explainer/">Wyjaśnij wyrażenie cron</a>.</p>
+</div>
+<!--explain-->
+<h2>Budowanie harmonogramu cron</h2>
+<p>Wyrażenie cron to pięć pól oddzielonych spacjami: minuta, godzina, dzień miesiąca, miesiąc i dzień tygodnia. Każde pole odpowiada na jedno pytanie o to, kiedy zadanie ma się uruchamiać, a zadanie uruchamia się, gdy pasują wszystkie. Pozostawienie pola jako <code>*</code> oznacza każdą wartość, dlatego <code>0 * * * *</code> uruchamia się na początku każdej godziny, a <code>0 0 * * *</code> raz dziennie o północy.</p>
+<p>Kreator daje każdemu polu cztery sposoby wyrażenia tego, czego chcesz. Krok, taki jak <code>*/15</code>, oznacza co 15. wartość, lista, taka jak <code>1,15</code>, wybiera dokładne wartości, zakres, taki jak <code>9-17</code>, obejmuje wszystko między dwiema wartościami, a <code>*</code> oznacza każdą wartość. Gdy zaznaczasz wartości, ciągi trzech lub więcej kolejnych są zapisywane jako zakres, więc od poniedziałku do piątku daje <code>1-5</code>, a nie <code>1,2,3,4,5</code>.</p>
+<p>Dwie pułapki łapią większość ludzi. Cron używa zegara maszyny, na której działa, więc zadanie ustawione na 09:00 uruchomi się o 09:00 czasu serwera, który może nie być twoim; lista następnych uruchomień pozwala sprawdzić to w kilku strefach. A gdy ograniczone są jednocześnie pola dnia miesiąca i dnia tygodnia, zadanie uruchamia się, gdy pasuje któreś z nich, co może oznaczać znacznie więcej uruchomień, niż oczekiwano.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Aby przeczytać wyrażenie napisane przez kogoś innego, wklej je do narzędzia <a href="/tools/cron-expression-explainer/">Wyjaśnij wyrażenie cron</a>.</li>
+  <li>Zamień czas uruchomienia z logu na znacznik czasu Unix i z powrotem w narzędziu <a href="/tools/unix-timestamp-converter/">Konwerter znacznika czasu Unix</a>.</li>
+  <li>Zaplanowane skrypty wymagają ustawionego bitu wykonywania; właściwy tryb ustalisz w narzędziu <a href="/tools/chmod-calculator/">Kalkulator chmod</a>.</li>
+</ul>

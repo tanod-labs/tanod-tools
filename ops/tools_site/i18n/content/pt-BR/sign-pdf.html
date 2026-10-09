@@ -1,0 +1,139 @@
+<!--meta
+{
+  "title": "Assinar PDF grátis: desenhe ou digite a assinatura | Tanod Tools",
+  "description": "Assine um PDF no navegador: desenhe ou digite a assinatura, posicione em qualquer página, inclua a data e salve. Grátis, sem cadastro; nada sai do dispositivo.",
+  "h1": "Assinar um PDF",
+  "lede": "Desenhe ou digite sua assinatura, posicione-a onde preferir na página, acrescente a data, se quiser, e salve o PDF assinado. Tudo acontece no seu dispositivo.",
+  "blurb": "Desenhe ou digite uma assinatura e coloque-a em um PDF.",
+  "keywords": "assinar pdf assinatura em pdf colocar assinatura no pdf adicionar assinatura assinatura eletronica assinatura digital assinar documento online desenhar assinatura digitar assinatura rubrica iniciais assinar pdf no celular carimbo de data preencher e assinar esign sign pdf",
+  "limits": "Um PDF por vez, de até 200 MB e 500 páginas. A assinatura é adicionada à página como uma imagem. Não é uma assinatura digital com certificado, portanto não comprova quem assinou nem que o arquivo permaneceu inalterado. PDFs protegidos por senha não podem ser editados.",
+  "howto_title": "Como assinar um PDF",
+  "howto": [
+    "Escolha um arquivo PDF ou arraste-o para a página.",
+    "Desenhe sua assinatura ou mude para <strong>Digitar</strong> e escreva seu nome. Marque a caixa para adicionar a data.",
+    "Escolha a página e arraste a assinatura até o lugar desejado, toque onde ela deve ficar ou use os controles deslizantes de posição e tamanho. Clique em <strong>Adicionar assinatura</strong> e baixe o PDF assinado."
+  ],
+  "faq": [
+    ["Meu PDF ou minha assinatura são enviados?", "Não. A página é desenhada e a assinatura é adicionada por um código executado no seu navegador, com as bibliotecas de código aberto pdf.js e pdf-lib. Nem o PDF nem a assinatura são enviados a um servidor ou armazenados, e os dois desaparecem quando você fecha a aba."],
+    ["Esta assinatura tem validade jurídica?", "Muitas pessoas e organizações aceitam uma imagem de assinatura em documentos do dia a dia, mas isso ser suficiente ou não depende do documento, de quem pediu a assinatura e da lei do lugar onde você está. Esta não é uma assinatura digital com certificado: ela não mostra quem assinou nem que o arquivo permaneceu igual depois. Se tiver dúvida, pergunte a quem pediu a assinatura o que ele aceita."],
+    ["Posso assinar mais de uma página?", "Sim. Escolha <em>Todas as páginas</em> para colocar a mesma assinatura no mesmo lugar em todas as páginas, o que serve para rubricas. A posição e o tamanho acompanham a proporção de cada página, então páginas de tamanhos diferentes também funcionam. Para assinar páginas diferentes em lugares diferentes, assine uma vez, abra o resultado e assine de novo."],
+    ["A assinatura pode ser removida depois?", "Ela passa a fazer parte da página, então qualquer leitor de PDF a exibe, mas é uma imagem comum, e alguém com um editor de PDF poderia removê-la. Seu arquivo original não é alterado: você baixa uma cópia nova. Para limitar quem pode alterar a cópia assinada, coloque uma senha nela com <a href=\"/tools/protect-pdf/\">Proteger PDF com senha</a>."],
+    ["Por que minha assinatura digitada fica diferente em outro dispositivo?", "As assinaturas digitadas usam fontes instaladas no seu dispositivo, e os estilos cursivos variam de um sistema para outro. A prévia mostra o que será salvo. A assinatura salva é uma imagem, então fica igual em qualquer lugar onde o PDF for aberto."],
+    ["Funciona em páginas giradas?", "Sim. A página é mostrada do mesmo jeito que aparece em um leitor de PDF, e a assinatura é girada junto com ela para ficar na posição certa. Páginas cortadas também funcionam: a posição é medida dentro da área visível."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Solte um PDF aqui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Escolher PDF</span></label>
+  <p class="drop__hint">Ou arraste para qualquer lugar desta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">Sua assinatura</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Como criar</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Desenhar</label>
+          <label><input type="radio" name="sg-mode" value="type">Digitar</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="Área de assinatura. Desenhe sua assinatura aqui com o mouse, o dedo ou uma caneta."></canvas>
+        <span class="help">Desenhe com o mouse, o dedo ou uma caneta. Se não puder desenhar, escolha Digitar.</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Desfazer último traço</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Limpar</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Seu nome</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Digite seu nome">
+        </div>
+        <div class="field">
+          <label for="sg-font">Estilo</label>
+          <select id="sg-font">
+            <option value="script" selected>Cursiva</option>
+            <option value="hand">Manuscrita</option>
+            <option value="serif">Itálico clássico</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Prévia da sua assinatura digitada"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Tinta</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Preta</label>
+          <label><input type="radio" name="sg-ink" value="blue">Azul</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">Adicionar a data abaixo da assinatura</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Texto da data</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Coloque-a na página</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Página anterior">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Página</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Próxima página">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">Arraste a assinatura na página, toque onde ela deve ficar ou use os controles deslizantes.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">Da esquerda para a direita: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">De cima para baixo: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Tamanho: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">Assinar</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>Esta página</label>
+            <label><input type="radio" name="sg-scope" value="all">Todas as páginas</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Adicionar assinatura</button>
+    <span class="help" id="sg-hint">Primeiro, desenhe ou digite sua assinatura.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Recomeçar</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Como uma assinatura entra em uma página de PDF</h2>
+<p>Uma página de PDF tem um layout fixo, então assiná-la significa acrescentar algo à página, e não digitar nela. Esta ferramenta transforma a sua assinatura em uma pequena imagem com fundo transparente, junto com a linha da data, se você marcou essa opção, e desenha essa imagem na página que você escolheu. O seu navegador mostra a página com a pdf.js e grava a nova cópia com a pdf-lib, então a página que você vê é a página que será assinada.</p>
+<p>A posição e o tamanho são guardados como frações da página, e não como medidas fixas. É por isso que um mesmo conjunto de controles deslizantes serve para páginas de tamanhos diferentes quando você assina todas as páginas, e que uma página gravada virada de lado ainda recebe a assinatura na posição normal de leitura. Seu arquivo original nunca é modificado; você baixa uma cópia assinada separada.</p>
+<p>O que você obtém é uma imagem de assinatura, que é como a maioria das pessoas assina formulários, cartas e contratos à mão e depois os digitaliza. Não é uma assinatura digital criptográfica. Essas usam um certificado emitido em seu nome, protegem o arquivo contra alterações depois da assinatura e exigem um serviço criado para esse fim. O tipo necessário depende do documento e de quem pediu a assinatura.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Desenhe devagar e ocupe toda a área de assinatura: a assinatura é recortada até onde há tinta, então um desenho maior dá um resultado mais nítido no mesmo tamanho na página.</li>
+  <li>Tranque a cópia assinada com <a href="/tools/protect-pdf/">Proteger PDF com senha</a> ou carimbe todas as páginas com <a href="/tools/watermark-pdf/">Marca d'água em PDF</a>.</li>
+  <li>Precisa antes acrescentar uma página assinada a outro documento? <a href="/tools/merge-pdf/">Juntar PDF</a> une os arquivos na ordem que você escolher.</li>
+</ul>

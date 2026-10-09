@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Изображение в Base64 и data URL онлайн | Tanod Tools",
+  "description": "Преобразуйте изображение PNG, JPG, WebP, GIF или SVG в Base64: data URL, фон CSS, тег HTML img или Markdown, готовые к копированию. В браузере, без загрузки.",
+  "h1": "Изображение в Base64",
+  "lede": "Превратите изображение в data URL в Base64, который можно вставить прямо в HTML, CSS, Markdown или JSON.",
+  "blurb": "Изображение в виде data URL для HTML или CSS.",
+  "keywords": "изображение в base64 картинка в base64 data uri data url png в base64 jpg в base64 svg фон css встроить изображение в код image to base64 inline embed",
+  "limits": "Одно изображение за раз, до 10 МБ. PNG, JPEG, WebP, GIF, BMP, AVIF и SVG.",
+  "howto_title": "Как преобразовать изображение в Base64",
+  "howto": [
+    "Выберите изображение или перетащите его на страницу.",
+    "Выберите нужную форму: data URL, чистый Base64, CSS, тег HTML img или Markdown.",
+    "Нажмите <strong>Копировать</strong> или скачайте текст файлом."
+  ],
+  "faq": [
+    ["Что такое data URL?", "Способ поместить байты файла прямо в ссылку. Он начинается с <code>data:</code>, затем идёт тип файла, например <code>image/png</code>, и <code>;base64,</code>, а после них — текст Base64. Браузеры показывают его так же, как если бы изображение было загружено из отдельного файла."],
+    ["Почему Base64 больше изображения?", "Base64 записывает каждые 3 байта четырьмя текстовыми символами, поэтому текст примерно на 33 процента больше файла. Веб-серверы, сжимающие текст, возвращают часть этого объёма, но встроенное изображение всё равно больше того же изображения, отдаваемого отдельно."],
+    ["Когда стоит встраивать изображение?", "Для мелочей: значков, крошечных фонов и заглушек размером до нескольких килобайт, а также когда нужен один самодостаточный файл HTML или письмо. Большие изображения лучше хранить отдельными файлами, потому что data URL нельзя кэшировать отдельно, и он загружается заново вместе с каждой страницей или таблицей стилей, где встречается. Инструмент предупредит вас, если размер превысит 100 КБ."],
+    ["Как определяется тип файла?", "По байтам внутри файла, а не по имени, поэтому PNG, сохранённый с расширением .jpg, всё равно получит <code>image/png</code>. Файлы SVG распознаются по тексту и получают тип <code>image/svg+xml</code>."],
+    ["Моё изображение загружается на сервер?", "Нет. Изображение читается и кодируется в вашем браузере, на вашем устройстве."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-base64 drop__mark}}
+  <p class="drop__title">Перетащите сюда изображение</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg">{{mark:i-plus}}<span data-pick-label>Выбрать изображение</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, AVIF или SVG. Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="work" class="b64i" hidden>
+  <div class="b64i__head">
+    <div class="preview b64i__preview"><canvas id="cv" role="img" aria-label="Предпросмотр изображения"></canvas></div>
+    <dl class="stats b64i__stats">
+      <div><dt>Тип</dt><dd id="s-type">-</dd></div>
+      <div><dt>Пиксели</dt><dd id="s-dims">-</dd></div>
+      <div><dt>Файл</dt><dd id="s-file">-</dd></div>
+      <div><dt>Base64</dt><dd id="s-b64">-</dd></div>
+    </dl>
+  </div>
+  <p class="note" id="big" hidden></p>
+  <fieldset class="field">
+    <legend>Вывод</legend>
+    <div class="seg b64i__seg">
+      <label><input type="radio" name="fmt" value="data" checked>Data URL</label>
+      <label><input type="radio" name="fmt" value="raw">Base64</label>
+      <label><input type="radio" name="fmt" value="css">CSS</label>
+      <label><input type="radio" name="fmt" value="html">HTML</label>
+      <label><input type="radio" name="fmt" value="md">Markdown</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="out">Результат</label>
+    <textarea id="out" class="mono b64i__out" rows="8" readonly spellcheck="false"></textarea>
+    <p class="help num" id="out-len"></p>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button">Копировать</button>
+    <button class="btn" id="dl" type="button">Скачать .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Встраивание изображений в виде текста</h2>
+<p>HTML, CSS, JSON, Markdown и тела писем — это текст, а изображения — двоичные данные. Base64 соединяет их: он записывает байты изображения 64 безопасными символами, и всю картинку можно поместить в правило таблицы стилей, тег <code>img</code> или файл конфигурации без отдельной загрузки.</p>
+<p>Инструмент читает файл в вашем браузере, определяет его настоящий тип по первым байтам и собирает выбранный вами фрагмент вокруг закодированного текста. Само изображение не меняется: если декодировать Base64, получится точная копия исходного файла.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Сначала уменьшите изображение инструментом «<a href="/tools/compress-image/">Сжать изображение</a>» или «<a href="/tools/resize-image/">Изменить размер изображения</a>»: каждый сэкономленный байт в Base64 даёт ещё треть сверху.</li>
+  <li>Для простых значков SVG часто меньше любого PNG, даже в виде Base64.</li>
+  <li>Чтобы декодировать Base64 обратно в файл или закодировать любой другой файл, используйте «<a href="/tools/base64-encode-decode/">Кодирование и декодирование Base64</a>».</li>
+</ul>

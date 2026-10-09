@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Tra cứu và tìm kiếm mã trạng thái HTTP | Tanod Tools",
+  "description": "Danh sách tìm kiếm mọi mã trạng thái HTTP đã đăng ký với IANA, từ 100 đến 511: ý nghĩa, khi nào gặp, nên làm gì khi là client hay chủ máy chủ, và RFC của nó.",
+  "h1": "Mã trạng thái HTTP",
+  "lede": "Tra cứu mọi mã trạng thái HTTP theo số hoặc theo từ khóa, với ý nghĩa dễ hiểu, nguyên nhân thường gặp, cách khắc phục và RFC định nghĩa nó.",
+  "blurb": "Tra cứu mọi mã trạng thái HTTP và cách khắc phục.",
+  "keywords": "mã trạng thái http lỗi 404 không tìm thấy lỗi 500 lỗi máy chủ chuyển hướng 301 302 429 quá nhiều yêu cầu 502 bad gateway 503 504 teapot 418 rfc 9110 danh sách mã http status codes redirect",
+  "limits": "Liệt kê các mã trong IANA HTTP Status Code Registry, trong đó 306 và 418 được hiển thị là các mã dành riêng, cùng một nhóm nhỏ mã không chính thức thường gặp từ nginx, Cloudflare và Laravel, có ghi rõ nguồn. Các mã riêng của nhà cung cấp khác không được đề cập.",
+  "howto_title": "Cách tra cứu mã trạng thái",
+  "howto": [
+    "Nhập số, chẳng hạn <code>502</code>, hoặc một từ, chẳng hạn <em>rate limit</em> hay <em>redirect</em>, vào ô tìm kiếm.",
+    "Thu hẹp danh sách bằng các nút lớp: 1xx đến 5xx cho các mã tiêu chuẩn, hoặc Không chính thức cho các mã của nginx, Cloudflare và Laravel.",
+    "Mở một mã để xem khi nào nó xuất hiện và cần làm gì, cả khi bạn là client lẫn chủ máy chủ. Dùng liên kết # để chia sẻ đường dẫn trực tiếp đến mã đó."
+  ],
+  "faq": [
+    ["Năm nhóm mã trạng thái có ý nghĩa gì?", "Chữ số đầu tiên xác định nhóm. 1xx là thông tin và yêu cầu vẫn đang được xử lý, 2xx là thành công, 3xx nghĩa là client phải thực hiện thêm một bước (thường là chuyển hướng), 4xx nghĩa là yêu cầu có vấn đề từ phía client, và 5xx nghĩa là máy chủ thất bại với một yêu cầu trông có vẻ hợp lệ."],
+    ["401 và 403 khác nhau thế nào?", "401 nghĩa là máy chủ không biết bạn là ai: thông tin xác thực bị thiếu, sai hoặc hết hạn, và đăng nhập có thể giải quyết được. 403 nghĩa là máy chủ biết bạn là ai và bạn không được phép làm việc này, nên gửi lại cùng thông tin xác thực sẽ không giúp ích."],
+    ["Nên dùng 301 hay 302 để chuyển hướng?", "Dùng 301 (hoặc 308) khi việc chuyển là vĩnh viễn, để trình duyệt và công cụ tìm kiếm chuyển sang địa chỉ mới. Dùng 302 (hoặc 307) khi địa chỉ cũ sẽ quay lại. 307 và 308 giữ nguyên phương thức yêu cầu, còn 301 và 302 cho phép các client cũ biến POST thành GET."],
+    ["418 I'm a teapot có phải là mã trạng thái thật không?", "Nó khởi đầu là trò đùa Cá tháng Tư trong RFC 2324 cho một giao thức điều khiển ấm pha cà phê. IANA hiện liệt kê 418 là không dùng, được dành riêng để nó không bị gán một ý nghĩa thật. Một số trang vẫn trả về mã này cho vui hoặc để từ chối công cụ cào dữ liệu, nhưng đây không phải là phản hồi tiêu chuẩn."],
+    ["520 đến 526 và 499 là gì?", "Chúng không nằm trong các tiêu chuẩn HTTP. 520 đến 526 là lỗi của Cloudflare báo cáo sự cố giữa Cloudflare và máy chủ của bạn, còn 499 là mã log của nginx cho client ngắt kết nối trước khi nhận phản hồi. Chúng được hiển thị trong nhóm Không chính thức cùng nguồn của chúng."],
+    ["Vì sao lỗi 5xx đôi khi tự hết khi tôi thử lại?", "Nhiều lỗi 5xx đến từ quá tải, backend đang khởi động lại hoặc sự cố mạng ngắn, và có thể tự hết trong vài giây. Thử lại với thời gian chờ tăng dần là an toàn với các yêu cầu idempotent như GET; với POST, hãy kiểm tra xem lần thử đầu tiên đã thành công chưa."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="h-q">Tìm theo số hoặc từ khóa</label>
+    <input type="search" id="h-q" class="hs-q" placeholder="404, redirect, rate limit, timeout" autocomplete="off" spellcheck="false" aria-describedby="h-count">
+  </div>
+  <fieldset class="hs-groups">
+    <legend class="visually-hidden">Lọc theo nhóm</legend>
+    <div class="seg">
+      <label><input type="radio" name="h-group" id="h-g-all" value="all" checked>Tất cả</label>
+      <label><input type="radio" name="h-group" id="h-g-1" value="1">1xx</label>
+      <label><input type="radio" name="h-group" id="h-g-2" value="2">2xx</label>
+      <label><input type="radio" name="h-group" id="h-g-3" value="3">3xx</label>
+      <label><input type="radio" name="h-group" id="h-g-4" value="4">4xx</label>
+      <label><input type="radio" name="h-group" id="h-g-5" value="5">5xx</label>
+      <label><input type="radio" name="h-group" id="h-g-u" value="u">Không chính thức</label>
+    </div>
+  </fieldset>
+  <p class="tt__report" id="h-count" aria-live="polite"></p>
+  <p class="note" id="h-none" role="status" hidden></p>
+  <div class="hs-list" id="h-list"></div>
+</div>
+<!--explain-->
+<h2>Đọc mã trạng thái HTTP</h2>
+<p>Mỗi phản hồi HTTP bắt đầu bằng một mã trạng thái ba chữ số cho client biết điều gì đã xảy ra với yêu cầu của nó. Chữ số đầu tiên cho biết họ mã: 1xx cho thông báo tiến trình, 2xx cho thành công, 3xx cho chuyển hướng, 4xx cho vấn đề ở yêu cầu và 5xx cho lỗi ở phía máy chủ. Một chương trình không biết một mã cụ thể vẫn có thể xử lý đúng bằng cách nhìn vào chữ số đầu đó, và vì vậy có thể thêm mã mới mà không làm hỏng các client cũ.</p>
+<p>Danh sách chính thức được lưu trong IANA HTTP Status Code Registry, còn ý nghĩa được ghi trong RFC 9110 (HTTP Semantics) và một số RFC khác cho WebDAV và các phần mở rộng. Cụm từ lý do sau con số, chẳng hạn Not Found, chỉ là nhãn; HTTP/2 và HTTP/3 không mang theo nó. Một vài cụm từ đã được đổi tên năm 2022, nên 413 nay là Content Too Large và 422 là Unprocessable Content.</p>
+<p>Các máy chủ ngoài tiêu chuẩn cũng tự đặt ra mã. nginx ghi log 499 khi client ngắt kết nối, còn Cloudflare dùng 520 đến 526 để mô tả sự cố giữa mạng của họ và máy chủ gốc của bạn. Chúng xuất hiện ở đây trong một nhóm riêng để không bị nhầm với các mã đã đăng ký. Khi gỡ lỗi, hãy nhớ rằng mã bạn thấy có thể đến từ proxy hoặc CDN phía trước ứng dụng, chứ không phải từ chính ứng dụng.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Có một yêu cầu bị lỗi với địa chỉ chứa ký tự đặc biệt? Mã hóa hoặc giải mã bằng <a href="/tools/url-encode-decode/">Mã hóa và giải mã URL</a>.</li>
+  <li>Đọc nội dung phản hồi của một lỗi API bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+  <li>Gặp lỗi 403 với một trình duyệt hoặc bot cụ thể? Kiểm tra những gì client gửi bằng <a href="/tools/user-agent-parser/">Phân tích user agent</a>.</li>
+</ul>

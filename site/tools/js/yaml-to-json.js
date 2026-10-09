@@ -1,5 +1,5 @@
-import { initFormatter, FmtError, $, $$ } from "./fmtcore.js?v=5";
-import { fmtNum, tx, txn } from "./core.js?v=5";
+import { initFormatter, FmtError, $, $$ } from "./fmtcore.js?v=11";
+import { fmtNum, tx, txn } from "./core.js?v=11";
 
 const MAX_ALIASES = 10000;
 const MAX_OUT = 20 * 1024 * 1024;

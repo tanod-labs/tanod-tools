@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Tính subnet IPv4 và IPv6 (CIDR) online | Tanod Tools",
+  "description": "Nhập địa chỉ IPv4 hoặc IPv6 kèm prefix hoặc netmask để nhận network, broadcast, dải host, số lượng, wildcard mask và dạng nhị phân, rồi chia thành các subnet nhỏ hơn.",
+  "h1": "Tính subnet",
+  "lede": "Tính network, dải host và số lượng cho mọi subnet IPv4 hoặc IPv6, rồi chia nhỏ thành các subnet nhỏ hơn.",
+  "blurb": "Tính CIDR cho IPv4 và IPv6 với dải host và bảng chia subnet.",
+  "keywords": "tính subnet tính cidr tính ip netmask wildcard mask địa chỉ broadcast số host khả dụng ipv6 prefix chia subnet chia mạng con subnet calculator cidr calculator ip calculator subnetting rfc 1918",
+  "limits": "Chỉ hỗ trợ IPv4 và IPv6, mỗi lần một subnet. Loại địa chỉ được xác định từ các dải đặc biệt của IANA tích hợp sẵn trong trang, nên công cụ không biết ai sở hữu một địa chỉ công cộng. Bảng chia subnet dừng ở 256 hàng.",
+  "howto_title": "Cách tính một subnet",
+  "howto": [
+    "Nhập một địa chỉ kèm độ dài prefix, chẳng hạn <code>192.168.1.10/24</code> hoặc <code>2001:db8::/32</code>. Địa chỉ IPv4 kèm netmask dạng chấm, như <code>192.168.1.10 255.255.255.0</code>, cũng dùng được.",
+    "Đọc địa chỉ network, dải host và số lượng. Nếu địa chỉ có các bit host khác 0, trang sẽ cho bạn biết nó đã được chuẩn hóa về network nào.",
+    "Để lập kế hoạch các mạng nhỏ hơn, hãy nhập prefix dài hơn ở mục <strong>Chia thành</strong> và đọc bảng các subnet."
+  ],
+  "faq": [
+    ["Tại sao số host khả dụng ít hơn số địa chỉ hai đơn vị?", "Trong một subnet IPv4 thông thường, địa chỉ đầu tiên là tên của network và địa chỉ cuối cùng là địa chỉ broadcast, nên không thể gán cho thiết bị nào. Một /24 có 256 địa chỉ và 254 host khả dụng. Có hai ngoại lệ: /31 có hai địa chỉ và cả hai đều dùng được trên liên kết điểm-điểm (RFC 3021), còn /32 là một host duy nhất."],
+    ["Wildcard mask cho biết điều gì?", "Nó là netmask được đảo ngược: các bit 0 phải khớp còn các bit 1 bị bỏ qua. Với 255.255.255.0 thì wildcard là 0.0.0.255. Access list trên thiết bị Cisco và câu lệnh network của OSPF dùng dạng này."],
+    ["Tại sao 010.0.0.1 bị từ chối?", "Số 0 đứng đầu khiến một số hệ thống đọc phần đó theo hệ bát phân, nên 010 nghĩa là 8, trong khi những hệ thống khác đọc là số thập phân 10. Cùng một dòng văn bản có thể trỏ đến hai máy khác nhau, vì vậy trang yêu cầu bạn viết số không có số 0 đứng đầu."],
+    ["IPv6 khác gì trong cách tính subnet?", "IPv6 không có địa chỉ broadcast, nên mọi địa chỉ trong một prefix đều có thể được gán và số lượng đơn giản là 2 mũ (128 trừ prefix). Subnet LAN thông thường là /64. Trang hiển thị địa chỉ ở dạng rút gọn theo RFC 5952 và ở dạng đầy đủ, với đủ tám nhóm gồm 4 chữ số."],
+    ["Dạng rút gọn của địa chỉ IPv6 là gì?", "Các số 0 đứng đầu trong mỗi nhóm được bỏ đi, và chuỗi dài nhất gồm từ hai nhóm toàn số 0 trở lên được thay bằng <code>::</code>, lấy chuỗi ngoài cùng bên trái nếu có hai chuỗi bằng nhau. Một nhóm số 0 đơn lẻ không bao giờ được rút gọn, nên <code>2001:db8:0:1:1:1:1:1</code> giữ nguyên số 0 của nó."],
+    ["Công cụ này có gửi địa chỉ của tôi đi đâu không?", "Không. Phép tính được thực hiện trong trình duyệt của bạn bằng số nguyên lớn, không có gì bạn gõ được gửi đi, và công cụ hoạt động ngoại tuyến sau khi trang đã tải xong."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Địa chỉ IP kèm prefix hoặc netmask</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Ví dụ">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + netmask</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Chi tiết subnet"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Chia thành các subnet nhỏ hơn</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Chia theo độ dài prefix /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="ví dụ 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Để trống nếu không chia. Phải dài hơn prefix ở trên.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Các subnet</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Subnet và ký hiệu CIDR</h2>
+<p>Một địa chỉ IP có hai phần: các bit đứng đầu xác định network và các bit còn lại xác định host bên trong nó. Độ dài prefix sau dấu gạch chéo cho biết có bao nhiêu bit đầu thuộc về network, nên <code>192.168.1.10/24</code> nghĩa là 24 trong 32 bit đầu là network và 8 bit cuối xác định một trong 256 địa chỉ. Đặt mọi bit host về 0 sẽ ra địa chỉ network; đặt tất cả về 1 sẽ ra địa chỉ broadcast, đó là lý do chúng thường không được gán cho thiết bị.</p>
+<p>Netmask là cùng thông tin đó được viết như một địa chỉ: 24 bit 1 theo sau là 8 bit 0 là 255.255.255.0. Chỉ các mask liền mạch mới hợp lệ, nên thứ như 255.0.255.0 bị từ chối. IPv6 hoạt động tương tự với 128 bit, nhưng không có địa chỉ broadcast và có dải lớn hơn nhiều: một subnet LAN chuẩn /64 chứa 2<sup>64</sup> địa chỉ, khoảng 18 tỷ tỷ.</p>
+<p>Một số dải có ý nghĩa đặc biệt ở bất cứ đâu chúng xuất hiện. 10.0.0.0/8, 172.16.0.0/12 và 192.168.0.0/16 là dải riêng, không được định tuyến trên internet công cộng; 100.64.0.0/10 là không gian địa chỉ dùng chung cho CGNAT; 169.254.0.0/16 là link-local; còn các khối 192.0.2.0, 198.51.100.0 và 203.0.113.0 được dành riêng cho tài liệu. Trang gắn nhãn dải mà địa chỉ của bạn thuộc về.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Chuyển một octet hoặc cả địa chỉ giữa nhị phân và thập phân bằng <a href="/tools/number-base-converter/">Chuyển đổi hệ cơ số</a>.</li>
+  <li>Cũng đang đặt quyền tệp trên máy chủ? <a href="/tools/chmod-calculator/">Tính chmod</a> đổi 755 thành rwxr-xr-x và ngược lại.</li>
+  <li>Đọc mã trạng thái từ một health check bị lỗi trong <a href="/tools/http-status-codes/">Mã trạng thái HTTP</a>.</li>
+</ul>

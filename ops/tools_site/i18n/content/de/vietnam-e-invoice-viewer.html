@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Vietnam-E-Rechnung-Viewer: XML hóa đơn öffnen | Tanod Tools",
+  "description": "Öffnen Sie eine vietnamesische hóa đơn điện tử (XML) und lesen Sie sie wie eine normale Rechnung. Drucken, PDF oder JSON. Kostenlos, ohne Upload.",
+  "h1": "Vietnam-E-Rechnung-Viewer",
+  "lede": "Öffnen Sie eine vietnamesische elektronische Rechnung (hóa đơn điện tử) und lesen Sie sie wie eine gewöhnliche Rechnung: Rechnungsserie und -nummer, Verkäufer, Käufer, Positionen, Umsatzsteuer nach Satz und den Code der Steuerbehörde. Das XML wird in Ihrem Browser gelesen und nie hochgeladen.",
+  "blurb": "Vietnamesische hóa đơn điện tử (XML nach Dekret 123/2020) als normale Rechnung lesen.",
+  "keywords": "vietnam e-rechnung viewer vietnamesische e-rechnung anzeigen hóa đơn điện tử xml öffnen vietnam rechnung xml lesen xem hoá đơn điện tử mở file xml hóa đơn nghị định 123/2020 thông tư 78/2021 mã của cơ quan thuế mccqt đọc hóa đơn xml",
+  "limits": "Eine Datei auf einmal, bis 25 MB; angezeigt werden die ersten 5.000 Rechnungspositionen. Gelesen wird das Rechnungs-XML nach Dekret 123/2020 und Rundschreiben 78/2021 (Wurzelelement HDon, auch wenn es in einer TDiep-Nachricht der Steuerbehörde eingebettet ist), mit oder ohne Code. Die digitalen Signaturen (DSCKS) werden nicht geprüft. Nur Viewer: Die Rechnung wird nicht validiert, und bei der Steuerbehörde wird nichts abgefragt.",
+  "howto_title": "So öffnen Sie eine vietnamesische E-Rechnung",
+  "howto": [
+    "Wählen Sie das Rechnungs-XML aus, das Sie von Ihrem Anbieter für E-Rechnungen, aus dem Portal der Steuerbehörde oder aus Ihrer Buchhaltungssoftware gespeichert haben, oder ziehen Sie es auf die Seite.",
+    "Lesen Sie die Rechnung: Serie (KHHDon) und Nummer (SHDon), den Code der Steuerbehörde (MCCQT), falls die Rechnung einen hat, Verkäufer (NBan), Käufer (NMua), Positionen, Umsatzsteuer nach Satz, Summen und Zahlung.",
+    "Mit <strong>Drucken oder als PDF speichern</strong>, <strong>JSON herunterladen</strong> oder <strong>Roh-XML anzeigen</strong> geht es weiter."
+  ],
+  "faq": [
+    [
+      "Wird die Rechnung hochgeladen oder an die Steuerbehörde gesendet?",
+      "Nein. Diese Seite stellt keine Verbindung zur Steuerbehörde, zu Ihrem Anbieter oder zu irgendeinem Server her. Das XML wird in Ihrem Browser gelesen und auf dieser Seite angezeigt, und beim Schließen des Tabs ist alles gelöscht."
+    ],
+    [
+      "Wird die digitale Signatur geprüft?",
+      "Nein. Die Signaturen im Element DSCKS (die des Verkäufers und, bei einer Rechnung mit Code, die der Steuerbehörde) werden nicht geprüft. Eine Datei, die eine trägt, wird mit einem Hinweis gekennzeichnet, aber diese Seite kann Ihnen nicht sagen, wer die Rechnung signiert hat oder ob sie danach geändert wurde. Nutzen Sie dafür die Werkzeuge Ihres Anbieters oder der Steuerbehörde."
+    ],
+    [
+      "Was sind die Rechnungsserie und der MCCQT?",
+      "Die Rechnungsserie besteht aus der Formularnummer (KHMSHDon) und dem Zeichen (KHHDon, zum Beispiel C24TAA), und die Nummer ist SHDon. Der MCCQT ist der Code, den die Steuerbehörde einer Rechnung mit Code (hóa đơn có mã) vergibt. Eine Rechnung ohne Code hat keinen MCCQT. Alle werden so angezeigt, wie die Datei sie angibt; diese Seite kann nicht prüfen, ob ein Code echt ist."
+    ],
+    [
+      "Kann sie die Nachricht öffnen, die von der Steuerbehörde zurückkommt?",
+      "Ja. Ist das XML eine TDiep-Nachricht mit der Rechnung in DLieu, wird die Rechnung herausgelöst und angezeigt. Andere Nachrichtentypen und Rechnungen in älteren Formaten werden nicht gelesen."
+    ],
+    [
+      "Wie werden die Umsatzsteuersätze angezeigt?",
+      "Sätze wie 10%, 8%, 5% und 0% werden als Sätze angezeigt. KCT (nicht umsatzsteuerpflichtig) und KKKNT (nicht erklärt und nicht entrichtet) werden als der Code angezeigt, den die Datei angibt, neben der passenden Umsatzsteuer-Kategorie. Ein Satz, der als KHAC:x% geschrieben ist, wird als Satz x angezeigt."
+    ],
+    [
+      "Wo bekomme ich das XML einer Rechnung?",
+      "Ihr Anbieter für E-Rechnungen und das Portal der Steuerbehörde lassen Sie die Rechnung als XML-Datei herunterladen, und Buchhaltungssoftware kann sie exportieren. Diese Seite liest die XML-Datei, die Sie gespeichert haben, nicht das PDF."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Vietnams elektronische Rechnungen</h2>
+<p>Seit dem Dekret 123/2020/ND-CP und dem Rundschreiben 78/2021/TT-BTC stellen Unternehmen in Vietnam hóa đơn điện tử, also elektronische Rechnungen, als XML-Dateien in einem von der Steuerbehörde festgelegten Format aus. Eine Rechnung trägt entweder einen Code der Steuerbehörde (hóa đơn có mã, angezeigt im Element MCCQT) oder wird ohne einen ausgestellt. Das XML ist die Rechnung; die lesbare Fassung ist eine Visualisierung davon. Diese Seite erstellt diese Visualisierung in Ihrem Browser aus dem XML, das Sie haben.</p>
+<h2>Was der Viewer anzeigt</h2>
+<p>Sie sehen den Namen und die Version der Rechnung, die Formularnummer (KHMSHDon), die Serie (KHHDon), die Nummer (SHDon), das Datum (NLap), den Code der Steuerbehörde (MCCQT), wenn es einen gibt, den Verkäufer (NBan) und den Käufer (NMua) mit ihren Steuernummern (MST), Adressen und Kontaktdaten, jede Position mit Einheit, Menge, Preis, Rabatt und Umsatzsteuersatz, die Umsatzsteuer nach Satz (THTTLTSuat), die Summen, den Betrag in Worten und die Zahlungsangaben. Bei einer Berichtigungs- oder Ersatzrechnung (TCHDon) wird die Rechnung angezeigt, auf die sie sich bezieht. Beträge werden genau so angezeigt, wie sie in der Datei stehen.</p>
+<p>Die digitalen Signaturen (DSCKS) werden nicht geprüft, die Rechnung wird nicht gegen das Schema und die Regeln der Steuerbehörde validiert, und die Rechnung wird nicht abgefragt. Rechnungen in anderen Formaten, etwa die älteren Rechnungen nach Rundschreiben 32/2011, werden nicht gelesen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>„JSON herunterladen“ liefert die Rechnung als reine Daten, wobei die vietnamesischen Feldnamen den Geschäftsbegriffen der EN 16931 zugeordnet sind.</li>
+  <li>Auch andere Formate lassen sich hier öffnen: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol und die türkische e-Fatura. Die Seite schlägt beim Öffnen den passenden Viewer vor.</li>
+  <li>„Roh-XML anzeigen“ hilft, wenn Sie ein Element brauchen, das die lesbare Rechnung nicht zeigt.</li>
+</ul>

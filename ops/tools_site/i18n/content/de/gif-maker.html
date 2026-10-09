@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "GIF erstellen – animiertes GIF aus Bildern | Tanod Tools",
+  "description": "Animiertes GIF aus mehreren Bildern im Browser erstellen: Reihenfolge, Verzögerung und Größe festlegen, Vorschau ansehen, herunterladen. Kostenlos, kein Upload.",
+  "h1": "GIF aus Bildern erstellen",
+  "lede": "Machen Sie aus ein paar Bildern ein animiertes GIF. Bringen Sie sie in die richtige Reihenfolge, legen Sie fest, wie lange jedes Bild zu sehen ist und wie groß das GIF wird, sehen Sie sich die Vorschau an und laden Sie das GIF dann herunter.",
+  "blurb": "Animiertes GIF aus mehreren Bildern erstellen.",
+  "keywords": "gif erstellen gif ersteller gif generator gif maker animiertes gif erstellen gif aus bildern gif aus fotos bilder in gif umwandeln animation erstellen diashow einzelbilder frames verzögerung verzoegerung endlosschleife loop animated gif creator",
+  "limits": "2 bis 60 Bilder, je 50 MB. Das GIF kann bis zu 1.200 Pixel breit sein, und jedes Einzelbild hat das Seitenverhältnis des ersten Bildes. Ein GIF-Einzelbild enthält höchstens 256 Farben, daher zeigen Fotos etwas Streifenbildung, und Transparenz gibt es nicht: Durchsichtige Bereiche erhalten die Hintergrundfarbe. Bei animierten Bildern, die Sie hinzufügen, wird nur das erste Einzelbild verwendet.",
+  "howto_title": "So erstellen Sie ein animiertes GIF",
+  "howto": [
+    "Wählen Sie zwei oder mehr Bilder aus oder ziehen Sie sie auf die Seite. Legen Sie mit den Pfeilen nach oben und unten die Reihenfolge fest.",
+    "Stellen Sie die Verzögerung zwischen den Einzelbildern und die Breite ein und legen Sie fest, wie Bilder mit anderem Seitenverhältnis eingepasst werden. Sehen Sie sich die Vorschau an.",
+    "Klicken Sie auf <strong>GIF erstellen</strong>, prüfen Sie das Ergebnis und laden Sie es herunter."
+  ],
+  "faq": [
+    ["Werden meine Bilder hochgeladen?", "Nein. Die Bilder werden gezeichnet und das GIF wird von Code geschrieben, der in Ihrem Browser läuft und den Open-Source-Encoder gifenc nutzt. Nichts wird an einen Server gesendet."],
+    ["Wie mache ich die Animation schneller oder langsamer?", "Ändern Sie die Verzögerung zwischen den Einzelbildern, in Millisekunden: 1000 ist eine Sekunde, 100 sind zehn Einzelbilder pro Sekunde. Die kürzeste angebotene Verzögerung beträgt 20 ms, weil Browser kürzere Verzögerungen deutlich langsamer abspielen."],
+    ["Warum sieht mein GIF körnig oder gestreift aus?", "Ein GIF-Einzelbild kann höchstens 256 Farben verwenden, daher zeigen Fotos und weiche Farbverläufe Streifen. Dieses Tool wählt für jedes Einzelbild getrennt die besten 256 Farben aus, sodass jedes Einzelbild seinem Bild so nahe kommt, wie das Format es erlaubt. Flächige Grafiken und Screenshots sehen am besten aus."],
+    ["Warum ist mein GIF so groß?", "GIF komprimiert schlecht und speichert jedes Einzelbild vollständig, daher wächst die Größe mit Breite, Höhe und Anzahl der Einzelbilder. Zum Verkleinern wählen Sie eine geringere Breite, weniger Bilder oder weniger Farben pro Einzelbild."],
+    ["Was passiert mit Bildern in anderer Größe oder mit anderem Seitenverhältnis?", "Jedes Einzelbild hat das Seitenverhältnis des ersten Bildes. <em>Einpassen</em> zeigt jedes Bild vollständig und füllt den übrigen Platz mit der Hintergrundfarbe, <em>Füllen und zuschneiden</em> füllt das ganze Einzelbild aus und schneidet Überstehendes ab, wobei die Mitte erhalten bleibt, und <em>Strecken</em> verzerrt jedes Bild so, dass es genau ins Einzelbild passt."],
+    ["Bleibt die Transparenz erhalten?", "Nein. Ein GIF kann nur eine Farbe als durchsichtig kennzeichnen, daher füllt das Tool transparente Bereiche mit der Hintergrundfarbe, die Sie wählen. So sieht jedes Einzelbild überall gleich aus."],
+    ["Was bewirkt „Erst vorwärts, dann rückwärts abspielen“?", "Nach dem letzten Einzelbild werden die Einzelbilder noch einmal in umgekehrter Reihenfolge angehängt, ohne das erste und das letzte zu wiederholen. So bewegt sich die Animation gleichmäßig vor und zurück, statt an den Anfang zurückzuspringen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Zwei oder mehr Bilder hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Bilder auswählen</span></label>
+  <p class="drop__hint">PNG, JPG, WebP, GIF, BMP oder AVIF. Oder ziehen Sie sie an eine beliebige Stelle dieser Seite.</p>
+</div>
+<ol class="files files--img gm-list" id="files" aria-label="Einzelbilder in Reihenfolge" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts gm-opts">
+    <div class="field">
+      <label for="gm-delay">Verzögerung zwischen den Einzelbildern (ms)</label>
+      <input type="number" id="gm-delay" min="20" max="60000" step="10" value="500" inputmode="numeric">
+      <p class="help">1000 ms sind eine Sekunde. Die kürzeste Verzögerung beträgt 20 ms.</p>
+    </div>
+    <div class="field">
+      <label for="gm-width">Breite (px)</label>
+      <input type="number" id="gm-width" min="16" max="1200" step="1" value="480" inputmode="numeric">
+      <p class="help">Die Höhe richtet sich nach dem ersten Bild: <span id="gm-size"></span></p>
+    </div>
+    <fieldset class="field gm-fit">
+      <legend>Bilder mit anderem Seitenverhältnis</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-fit" value="contain" checked>Einpassen</label>
+        <label><input type="radio" name="gm-fit" value="cover">Füllen und zuschneiden</label>
+        <label><input type="radio" name="gm-fit" value="stretch">Strecken</label>
+      </div>
+    </fieldset>
+    <div class="field" id="gm-bg-field">
+      <label for="gm-bg">Hintergrundfarbe</label>
+      <input type="color" id="gm-bg" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Wiederholung</legend>
+      <div class="seg">
+        <label><input type="radio" name="gm-loop" value="forever" checked>Endlos</label>
+        <label><input type="radio" name="gm-loop" value="once">Einmal</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="gm-colors">Farben pro Einzelbild</label>
+      <select id="gm-colors">
+        <option value="256" selected>256 (beste Qualität)</option>
+        <option value="128">128</option>
+        <option value="64">64</option>
+        <option value="32">32 (kleinste Datei)</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="label">Reihenfolge</span>
+      <label class="check"><input type="checkbox" id="gm-pingpong">Erst vorwärts, dann rückwärts abspielen</label>
+    </div>
+  </div>
+  <div class="gm-preview">
+    <p class="label">Vorschau</p>
+    <div class="preview"><canvas id="gm-view" role="img" aria-label="Vorschau der Animation"></canvas></div>
+    <div class="actions"><button class="btn btn--sm" id="gm-play" type="button"></button></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">GIF erstellen</button>
+  <span class="help num" id="summary" aria-live="polite"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Alle entfernen</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Wie ein animiertes GIF aufgebaut ist</h2>
+<p>Ein GIF ist ein Stapel gewöhnlicher Bilder, die nacheinander gezeigt werden. Jedes Einzelbild bringt eine eigene kleine Farbtabelle mit höchstens 256 Farben und eine Verzögerung mit, also eine Zeit in Hundertstelsekunden, bevor das nächste Einzelbild erscheint. Eine Wiederholungseinstellung am Anfang sagt dem Anzeigeprogramm, ob es endlos wiederholen oder nach einem Durchlauf stoppen soll. Es gibt keine Videokomprimierung: Jedes Einzelbild wird vollständig gespeichert und mit einem einfachen verlustfreien Verfahren gepackt, weshalb GIFs schnell groß werden.</p>
+<p>Ein GIF aus Fotos zu erstellen heißt, für jedes Bild die 256 Farben zu wählen, die es am besten darstellen, und dann jeden Pixel durch die nächstliegende davon zu ersetzen. Dieses Tool macht das für jedes Einzelbild getrennt mit dem Open-Source-Encoder gifenc, nachdem es jedes Bild in derselben Größe gezeichnet hat, damit die Einzelbilder deckungsgleich sind. Die Größe ergibt sich aus der gewählten Breite und den Proportionen des ersten Bildes; die übrigen Bilder werden darin eingepasst, zum Füllen zugeschnitten oder gestreckt, je nach Ihrer Wahl.</p>
+<p>Ihre Bilder werden eines nach dem anderen gelesen, während das GIF geschrieben wird, sodass eine lange Liste großer Fotos nicht gleichzeitig in den Arbeitsspeicher passen muss. Die Vorschau über der Schaltfläche spielt dieselben Einzelbilder in kleinerer Größe ab, damit Sie Reihenfolge, Tempo und Einpassung beurteilen können, bevor Sie sich festlegen; sie lässt sich mit einer Schaltfläche anhalten und startet angehalten, wenn Ihr System „Bewegung reduzieren“ eingestellt hat.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Halten Sie es kurz: Ein paar Sekunden mit 10 Einzelbildern pro Sekunde reichen völlig, und weniger, kleinere Einzelbilder ergeben eine viel kleinere Datei.</li>
+  <li>Bringen Sie die Bilder zuerst mit <a href="/tools/crop-image/">Bild zuschneiden</a> auf dasselbe Seitenverhältnis oder verkleinern Sie große Fotos mit <a href="/tools/resize-image/">Bildgröße ändern</a>.</li>
+  <li>Sie möchten statt einer Animation ein einzelnes Bild? <a href="/tools/merge-images/">Bilder zusammenfügen</a> setzt sie nebeneinander oder in einem Raster zusammen.</li>
+</ul>

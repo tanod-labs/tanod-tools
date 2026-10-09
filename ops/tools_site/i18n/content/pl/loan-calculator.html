@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Kalkulator kredytowy z harmonogramem spłat | Tanod Tools",
+  "description": "Kalkulator kredytu i hipoteki: rata miesięczna, łączne odsetki i pełny harmonogram spłat do pobrania jako CSV. Bezpłatnie, w Twojej przeglądarce.",
+  "h1": "Kalkulator kredytowy",
+  "lede": "Wpisz kwotę, roczne oprocentowanie i okres kredytowania, aby zobaczyć ratę miesięczną, łączne odsetki i harmonogram spłat rata po racie, który możesz pobrać.",
+  "blurb": "Rata miesięczna, łączne odsetki i harmonogram spłat.",
+  "keywords": "kalkulator kredytowy kalkulator kredytu hipotecznego rata miesięczna harmonogram spłat amortyzacja kredytu łączne odsetki kredyt samochodowy kredyt gotówkowy nadpłata pobierz csv zerowe oprocentowanie",
+  "local_text": "Działa w przeglądarce; nic, co wpiszesz, nie opuszcza Twojego urządzenia",
+  "limits": "Kredyty o stałym oprocentowaniu z równymi ratami miesięcznymi; odsetki liczone co miesiąc jako jedna dwunasta stopy rocznej, a kwoty zaokrąglane co miesiąc do grosza. Okres do 100 lat. Nie uwzględniamy opłat, ubezpieczenia, podatków, rat balonowych ani zmiennego oprocentowania, więc liczby podane przez bank mogą się nieco różnić. Kwoty to zwykłe liczby w dowolnej walucie, której używasz.",
+  "howto_title": "Jak obliczyć ratę kredytu",
+  "howto": [
+    "Wpisz kwotę kredytu, roczne oprocentowanie i okres w latach lub miesiącach.",
+    "Opcjonalnie dodaj kwotę, którą będziesz wpłacać co miesiąc ponad wymaganą ratę.",
+    "Odczytaj ratę miesięczną, łączne odsetki i łączną kwotę do zapłaty, a potem przewiń harmonogram spłat lub pobierz go jako plik CSV."
+  ],
+  "faq": [
+    [
+      "Jak obliczana jest rata miesięczna?",
+      "Według standardowego wzoru annuitetowego: rata = P × r ÷ (1 − (1 + r)^−n), gdzie P to pożyczona kwota, r to stopa miesięczna (stopa roczna podzielona przez 12), a n to liczba rat miesięcznych. Rata jest zaokrąglana do grosza, a ostatnia jest korygowana tak, aby saldo wyniosło dokładnie zero."
+    ],
+    [
+      "A jeśli oprocentowanie wynosi 0%?",
+      "Kredyt jest po prostu dzielony na równe raty: kwota podzielona przez liczbę miesięcy. Łączne odsetki wynoszą wtedy zero. Ewentualne różnice z zaokrągleń trafiają do ostatniej raty."
+    ],
+    [
+      "Co pokazuje harmonogram spłat?",
+      "Jeden wiersz na każdą ratę: ile z niej idzie na odsetki, ile zmniejsza kapitał i jakie saldo zostaje potem. Na początku większość każdej raty to odsetki, pod koniec — niemal sam kapitał."
+    ],
+    [
+      "Jak pomagają nadpłaty?",
+      "Dodatkowa kwota co miesiąc idzie prosto na kapitał, więc saldo spada szybciej, narasta mniej odsetek, a kredyt kończy się wcześniej. Wynik pokazuje, ile rat jest potrzebnych i jakie są łączne odsetki z Twoją nadpłatą."
+    ],
+    [
+      "Dlaczego liczba z mojego banku jest inna?",
+      "Banki mogą pobierać opłaty, inaczej kapitalizować odsetki, liczyć dni zamiast miesięcy albo inaczej zaokrąglać. Traktuj to jako zbliżone oszacowanie, a nie ofertę."
+    ],
+    [
+      "Czy to, co wpisuję, jest przesyłane?",
+      "Nie. Wszystko jest liczone w Twojej przeglądarce i nic nie opuszcza urządzenia."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Kwota kredytu</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Roczne oprocentowanie (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Okres kredytowania</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Jednostka okresu">
+          <option value="years" selected>lat</option>
+          <option value="months">miesięcy</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Nadpłata co miesiąc (opcjonalnie)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Rata miesięczna</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Odsetki łącznie</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Łącznie zapłacono</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Liczba rat</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Pobierz harmonogram (CSV)</button>
+    </div>
+    <h3 class="util-h">Harmonogram spłat</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Harmonogram spłat">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Lp.</th><th scope="col">Rata</th><th scope="col">Kapitał</th><th scope="col">Odsetki</th><th scope="col">Saldo</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak oblicza się ratę kredytu</h2>
+<p>Większość kredytów i hipotek jest spłacana w ratach annuitetowych: płacisz co miesiąc tę samą kwotę, a każda rata najpierw pokrywa odsetki naliczone od salda, a potem zmniejsza część kapitału. Ponieważ saldo jest najwyższe na początku, część odsetkowa pierwszych rat jest duża, a kapitałowa mała. Gdy saldo maleje, odsetki się zmniejszają i coraz większa część każdej raty idzie na kapitał.</p>
+<p>Kalkulator zamienia stopę roczną na miesięczną, dzieląc ją przez 12, wyznacza stałą ratę standardowym wzorem annuitetowym, a następnie buduje harmonogram miesiąc po miesiącu. Odsetki za miesiąc to saldo razy stopa miesięczna, zaokrąglone do grosza tak jak robi to bank. Reszta raty zmniejsza saldo. Ostatnia rata to ta, która wyzerowuje saldo, więc może różnić się od pozostałych o kilka groszy. Oprocentowanie 0% nie wymaga wzoru: kwota jest dzielona równo na miesiące.</p>
+<p>Płacenie co miesiąc nieco więcej to jeden z najtańszych sposobów na zmniejszenie odsetek. Nadpłata w całości idzie na kapitał, więc saldo spada szybciej, a kredyt kończy się wcześniej. Wpisz nadpłatę, aby zobaczyć, ile rat zostanie i ile odsetek zaoszczędzisz w porównaniu z brakiem nadpłat.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Sprawdź, ile mogą urosnąć oszczędności lub inwestycja, w <a href="/tools/compound-interest-calculator/">kalkulatorze procentu składanego</a>.</li>
+  <li>Porównaj dwie stopy lub oblicz zmianę raty w <a href="/tools/percentage-calculator/">kalkulatorze procentowym</a>.</li>
+  <li>Wypisujesz kwotę na czeku? <a href="/tools/number-to-words/">Liczba słownie</a> zapisze ją słowami.</li>
+</ul>

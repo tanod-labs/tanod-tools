@@ -1,6 +1,6 @@
 // Percentage calculator: five question forms, each answered live with its formula.
-import { $, el, announce, tx } from "./core.js?v=5";
-import { parseNum, fmt } from "./calccore.js?v=5";
+import { $, el, announce, tx } from "./core.js?v=11";
+import { parseNum, fmt } from "./calccore.js?v=11";
 
 const f = (n) => fmt(n, 10);
 

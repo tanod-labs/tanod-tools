@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Konwerter JSON na interfejsy TypeScript | Tanod Tools",
+  "description": "Wklej próbkę JSON i uzyskaj interfejsy lub typy TypeScript z nazwanymi obiektami, polami opcjonalnymi i unią dla tablic mieszanych. W przeglądarce.",
+  "h1": "JSON na TypeScript",
+  "lede": "Zamień przykładowy dokument JSON na interfejsy lub aliasy typów TypeScript, z polami opcjonalnymi i unionami wyznaczonymi na podstawie danych.",
+  "blurb": "Próbka JSON na interfejsy lub typy TypeScript.",
+  "keywords": "json na typescript json do ts generator interfejsów generator typów quicktype json2ts typy odpowiedzi api typy typescript z json json to typescript",
+  "limits": "Typy są wnioskowane z wklejonej próbki, więc opisują tę próbkę, a nie schemat: pole będące w przykładzie ciągiem znaków może być gdzie indziej liczbą. Wszystkie liczby to <code>number</code>, a daty pozostają <code>string</code>. Kolejność właściwości wynika z JSON.parse, który wymienia klucze będące liczbami całkowitymi jako pierwsze.",
+  "howto_title": "Jak wygenerować TypeScript z JSON",
+  "howto": [
+    "Wklej odpowiedź JSON lub plik do pola. Kilka elementów tablicy poprawia wynik, ponieważ pola brakujące w niektórych elementach stają się opcjonalne.",
+    "Ustaw nazwę typu najwyższego poziomu, wybierz <code>interface</code> lub <code>type</code> i zaznacz <strong>export</strong>, <strong>readonly</strong> lub wykrywanie pól opcjonalnych według potrzeb.",
+    "Skopiuj deklaracje lub pobierz je jako plik <code>.ts</code>. Przejrzyj nazwy, ponieważ pochodzą z nazw Twoich kluczy."
+  ],
+  "faq": [
+    ["Jak narzędzie decyduje, że pole jest opcjonalne?", "Gdy masz tablicę obiektów, obiekty są scalane w jeden kształt. Klucz, który występuje w niektórych elementach, ale nie we wszystkich, dostaje <code>?</code>. Klucz obecny, ale zawierający <code>null</code> w niektórych elementach, nie jest opcjonalny; staje się <code>T | null</code>. Wyłącz wykrywanie opcjonalności, jeśli wolisz, by każdy klucz był wymagany."],
+    ["Jak nazywane są typy zagnieżdżone?", "Każdy zagnieżdżony obiekt dostaje nazwę z klucza w PascalCase, więc <code>billing_address</code> staje się <code>BillingAddress</code>. W przypadku tablicy typ elementu traci końcowe „s”, gdy klucz jest dłuższy niż 3 litery i nie kończy się na ss, us ani is: <code>users</code> daje <code>User</code>, a <code>address</code> daje <code>AddressItem</code>. Jeśli dwa różne kształty chcą tej samej nazwy, drugi jest numerowany, co daje <code>User</code> i <code>User2</code>."],
+    ["Co dzieje się z obiektami o tym samym kształcie?", "Współdzielą jedną deklarację. Jeśli <code>billing</code> i <code>shipping</code> zawierają <code>{ street, city }</code>, powstaje jeden interfejs, nazwany od pierwszego miejsca, w którym się pojawia. Dwa obiekty o tych samych kluczach, ale różnych typach wartości, to różne kształty i dostają osobne nazwy."],
+    ["Dlaczego pusta tablica ma typ unknown[]?", "Pusta tablica nie zawiera przykładów, więc nic nie da się wywnioskować o jej elementach. <code>unknown[]</code> to uczciwa odpowiedź; zmień ją ręcznie, gdy poznasz typ elementu. Tablica mieszająca wartości staje się unią, na przykład <code>(string | number)[]</code>."],
+    ["Czy wynik może różnić się od prawdziwego API?", "Tak. Próbka pokazuje tylko zawarte w niej wartości. Pole, które w próbce jest zawsze obecne, a na produkcji bywa pominięte, będzie tutaj wymagane, a ciąg przypominający enum będzie zwykłym <code>string</code>. Do ścisłej walidacji użyj schematu; na szybki start użyj tego wyniku i dostosuj go."],
+    ["Czy mój JSON jest przesyłany?", "Nie. Nic, co wkleisz, nie jest nigdzie wysyłane; konwersja odbywa się w Twojej przeglądarce i po załadowaniu strony możesz odłączyć się od sieci."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">Próbka JSON</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "name": "Ada Lovelace",
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Nazwa typu najwyższego poziomu</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Deklaruj za pomocą</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Modyfikatory</span>
+      <label class="check"><input type="checkbox" id="t-export" checked>Dodaj <code>export</code></label>
+      <label class="check"><input type="checkbox" id="t-readonly">Oznacz właściwości jako <code>readonly</code></label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Wykrywaj pola opcjonalne</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">Kopiuj TypeScript</button>
+    <button class="btn" id="t-dl" type="button">Pobierz .ts</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Wnioskowanie typów z próbki JSON</h2>
+<p>Typy TypeScript opisują kształt danych, a odpowiedź JSON już zawiera kształt: każdy klucz, rodzaj wartości, która za nim stoi, i sposób zagnieżdżenia obiektów. Konwerter przechodzi po próbce i zapisuje ten kształt jako deklaracje, więc nie musisz ręcznie wypisywać czterdziestu pól, zanim będziesz mógł pewnie wywołać API.</p>
+<p>Najważniejsze jest to, co zrobić z tablicami. Każdy element tablicy obiektów jest odczytywany, a ich kształty są scalane: klucz znaleziony w każdym elemencie pozostaje wymagany, klucz znaleziony tylko w niektórych staje się opcjonalny, a wartości różnego rodzaju tworzą unię. Dlatego próbka z kilkoma rekordami daje znacznie lepsze typy niż próbka z jednym. Wartość <code>null</code> traktowana jest inaczej niż brakujący klucz, bo dla kodu czytającego pole znaczą one co innego.</p>
+<p>Wywnioskowane typy to punkt wyjścia, a nie umowa. Nie wiedzą, że ciąg zawsze jest jedną z trzech wartości, że liczba to w rzeczywistości całkowity identyfikator ani że pole obecne we wszystkich przykładach może zniknąć na produkcji. Przeczytaj wynik, zmień nazwy, które wyszły niezręcznie, i dopracuj typy, na których ci zależy.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Najpierw sprawdź poprawność próbki w narzędziu <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>, które wskazuje dokładny znak błędu składni.</li>
+  <li>Pracujesz raczej z konfiguracją YAML? Zamień ją narzędziem <a href="/tools/yaml-to-json/">Konwertuj YAML na JSON</a> i wklej wynik tutaj.</li>
+  <li>Chcesz zajrzeć do zawartości tokenu, zanim zaczniesz pisać typy? Zdekoduj go w narzędziu <a href="/tools/jwt-decoder/">Dekoder JWT</a>.</li>
+</ul>

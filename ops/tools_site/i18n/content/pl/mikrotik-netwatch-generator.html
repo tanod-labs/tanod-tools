@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Generator Netwatch MikroTik: alerty up/down | Tanod Tools",
+  "description": "Wygeneruj skrypt /tool netwatch dla RouterOS, który monitoruje hosty i wysyła alerty przez ntfy, Telegram lub e-mail, gdy padną i wrócą. W przeglądarce.",
+  "h1": "Generator Netwatch MikroTik",
+  "lede": "Monitoruj bramę dostawcy i inne hosty z samego routera: wypisz hosty, wybierz interwał i sposób powiadamiania, a dostaniesz gotowy do wklejenia skrypt Netwatch z alertami o awarii i powrocie.",
+  "blurb": "Wpisy Netwatch z alertami przez ntfy, Telegram lub e-mail.",
+  "keywords": "mikrotik netwatch generator routeros tool netwatch up-script down-script ntfy telegram bot e-mail alert tool fetch ping monitoring brama dostawcy awaria powiadomienie v7 v6",
+  "local_text": "Działa w Twojej przeglądarce; nic, co wpisujesz, nie opuszcza Twojego urządzenia",
+  "limits": "Generuje wpisy RouterOS /tool netwatch, które pingują hosty IPv4 (type=icmp w v7, starsza forma host= w v6) i przy każdej zmianie stanu uruchamiają skrypt. Nie da się tu przetestować tego na Twoim routerze, więc przejrzyj każdą linię przed użyciem. Token bota i ustawienia poczty są na routerze zapisane jawnym tekstem. Netwatch działa na routerze i nie zgłosi, że sam router przeszedł w tryb offline. MikroTik i RouterOS są znakami towarowymi SIA Mikrotīkls. To narzędzie jest niezależne i nie jest powiązane z MikroTik ani przez MikroTik zatwierdzone.",
+  "howto_title": "Jak ustawić alerty Netwatch na MikroTik",
+  "howto": [
+    "Wypisz hosty do monitorowania, każdy z etykietą: najpierw bramę dostawcy, potem wiarygodne adresy publiczne, takie jak 8.8.8.8 i 1.1.1.1.",
+    "Wybierz interwał i timeout, wersję RouterOS (v7 lub v6) oraz sposób powiadamiania: temat ntfy, bot Telegram lub e-mail.",
+    "Skopiuj skrypt lub pobierz plik .rsc, wklej go do terminala routera i sprawdź /tool netwatch print oraz /log print."
+  ],
+  "faq": [
+    [
+      "Co robi Netwatch?",
+      "Netwatch pinguje każdy host co ustawiony interwał. Gdy host przestaje odpowiadać w czasie timeoutu, zostaje oznaczony jako niedostępny i jednokrotnie uruchamia się jego down-script; gdy znów odpowiada, uruchamia się up-script. Wygenerowane skrypty zapisują linię w logu i, jeśli wybrałeś sposób powiadamiania, wysyłają wiadomość przez /tool fetch lub /tool e-mail."
+    ],
+    [
+      "Dlaczego Netwatch nie może poinformować, że sam router jest offline?",
+      "Netwatch jest częścią routera. Jeśli router straci zasilanie, zawiesi się lub straci łącze, nie ma już niczego, co uruchomi skrypt lub wyśle wiadomość. Do tego potrzebna jest kontrola z zewnątrz, która zauważy, że router przestał odpowiadać. Zobacz <a href=\"https://tanod.dev/learn/mikrotik-router-offline-alert.html\">poradnik o alertach o niedostępnym routerze</a> i darmowy <a href=\"https://tanod.dev/monitor/\">zewnętrzny heartbeat</a>."
+    ],
+    [
+      "Czy dostanę wiadomość o awarii, gdy padnie moje łącze internetowe?",
+      "Często nie w tym momencie. Wiadomość wychodzi przez ten sam router, więc jeśli monitorowany host to brama Twojego jedynego łącza, down-script się uruchomi, ale wiadomość wyjdzie dopiero po powrocie łącza. Wiadomość UP poinformuje wtedy, że łącze wróciło. Monitorowanie drugiego łącza lub hosta w sieci LAN daje alerty niezależne od uszkodzonego łącza."
+    ],
+    [
+      "Czym różni się wynik dla v7 i v6?",
+      "W RouterOS v7 wpisy zawierają type=icmp, który wybiera sondę ping. RouterOS v6 nie ma parametru type, więc wpisy używają tylko host, interval i timeout. Jeśli Twoja wersja v7 jest stara i odrzuca type=icmp, usuń go z każdej linii."
+    ],
+    [
+      "Jak traktowane są cudzysłowy, ukośniki odwrotne i znaki dolara w etykietach?",
+      "Etykiety i nazwa routera są escapowane dla ciągów RouterOS: ukośnik odwrotny, cudzysłów, znak dolara i znak zapytania dostają po jednym ukośniku odwrotnym. Skrypty są zapisane jako ciągi wewnątrz wpisu Netwatch, więc escapowanie stosuje się dwa razy: raz dla wiadomości i raz dla zapisanego skryptu."
+    ],
+    [
+      "Czy moja konfiguracja lub token bota są dokądś wysyłane?",
+      "Nie. Wszystko jest generowane w Twojej przeglądarce. Po wklejeniu skryptu z ntfy lub Telegramem łączy się sam router, gdy host zmieni stan."
+    ]
+  ]
+}
+-->
+<!--tool-->
+
+<div class="ros-gen" id="nw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Hosty do monitorowania</legend>
+      <ul class="ros-rows" id="nw-hosts"></ul>
+      <button class="btn btn--sm ros-add" id="nw-add" type="button">{{mark:i-plus}}Dodaj host</button>
+      <span class="help">Zamień 203.0.113.1 na adres bramy Twojego dostawcy.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Czasy i wersja</legend>
+      <div class="opts">
+        <div class="field"><label for="nw-interval">Interwał</label><input type="text" id="nw-interval" class="mono" value="30s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-timeout">Timeout</label><input type="text" id="nw-timeout" class="mono" value="1s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-router">Nazwa routera (widoczna w wiadomościach)</label><input type="text" id="nw-router" class="mono" value="MikroTik" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Wersja RouterOS">
+        <label><input type="radio" name="nw-ver" value="v7" checked>RouterOS v7</label>
+        <label><input type="radio" name="nw-ver" value="v6">RouterOS v6</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Powiadomienia</legend>
+      <div class="seg" role="radiogroup" aria-label="Sposób powiadamiania">
+        <label><input type="radio" name="nw-notify" value="none">Brak (tylko log)</label>
+        <label><input type="radio" name="nw-notify" value="ntfy" checked>ntfy</label>
+        <label><input type="radio" name="nw-notify" value="telegram">Telegram</label>
+        <label><input type="radio" name="nw-notify" value="email">E-mail</label>
+      </div>
+      <div class="field" id="nw-ntfy-f">
+        <label for="nw-ntfy">URL tematu ntfy</label>
+        <input type="text" id="nw-ntfy" class="mono" value="https://ntfy.sh/my-router-alerts" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="nw-telegram-f" hidden>
+        <div class="field"><label for="nw-tg-token">Token bota</label><input type="text" id="nw-tg-token" class="mono" value="" placeholder="123456789:ABC-DEF" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-tg-chat">ID czatu</label><input type="text" id="nw-tg-chat" class="mono" value="" placeholder="-1001234567890" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="field" id="nw-email-f" hidden>
+        <label for="nw-mail-to">Wysyłaj alerty na</label>
+        <input type="text" id="nw-mail-to" class="mono" value="" placeholder="ops@example.com" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="nw-out" class="label">Skrypt RouterOS</label>
+    <textarea id="nw-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="nw-copy" type="button">Kopiuj skrypt</button>
+      <button class="btn" id="nw-dl" type="button">{{mark:i-download}}Pobierz .rsc</button>
+    </div>
+    <ul class="ros-notes" id="nw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Netwatch w RouterOS</h2>
+<p>Netwatch, w <code>/tool netwatch</code>, sprawdza host co <code>interval</code> i zapamiętuje jego stan jako działający lub niedziałający. Host uznaje się za niedziałający, jeśli nie odpowie w czasie <code>timeout</code>. Przy każdej zmianie RouterOS uruchamia <code>down-script</code> lub <code>up-script</code> wpisu i właśnie tam wysyłany jest alert: <code>/tool fetch</code> publikuje w temacie ntfy albo wywołuje adres Telegrama <code>sendMessage</code>, a <code>/tool e-mail send</code> korzysta z ustawień poczty już skonfigurowanych na routerze.</p>
+<p>Monitoruj więcej niż jeden host. Pojedynczy adres publiczny może zawieść z powodów niezwiązanych z Twoim łączem, więc połączenie bramy dostawcy z dwoma niezależnymi adresami publicznymi pokazuje, czy problem leży na ostatniej mili, czy w szerszym internecie. Utrzymuj timeout krótszy niż interwał i unikaj bardzo krótkich interwałów przy wielu hostach.</p>
+<h3>Czego Netwatch nie powie</h3>
+<p>Netwatch działa na routerze, więc nie zgłosi, że sam router przeszedł w tryb offline: brak prądu, awaria lub martwe łącze nie zostawiają niczego, co uruchomiłoby skrypt. Do tego potrzebna jest kontrola z zewnątrz, która zauważy, że router przestał odpowiadać. Przeczytaj <a href="https://tanod.dev/learn/mikrotik-router-offline-alert.html">jak dostać alert, gdy router MikroTik przechodzi w tryb offline</a> i skorzystaj z darmowego <a href="https://tanod.dev/monitor/">zewnętrznego heartbeatu</a>. Jeśli zarządzasz też ruchem na tych samych łączach, porównaj <a href="/tools/mikrotik-load-balancing/">generator równoważenia obciążenia</a>, którego failover używa własnych hostów kontrolnych.</p>

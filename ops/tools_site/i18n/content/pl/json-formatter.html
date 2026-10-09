@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Formatuj i waliduj JSON online | Tanod Tools",
+  "description": "Formatuj, minifikuj i waliduj JSON w przeglądarce. Błędy pokazują dokładny wiersz i kolumnę ze znacznikiem pod problemem. Sortuj klucze, kopiuj, pobieraj.",
+  "h1": "Formatuj i waliduj JSON",
+  "lede": "Wklej JSON, aby go uporządkować, zmniejszyć lub sprawdzić, z dokładnym wierszem i kolumną każdego błędu.",
+  "blurb": "Formatuj, minifikuj i waliduj JSON.",
+  "keywords": "formatuj json walidator json upiększanie json minifikacja json sprawdzanie json sortowanie kluczy pretty print beautify minify lint validate",
+  "limits": "Dane wejściowe do ok. 10 MB, wklejone lub z pliku .json.",
+  "howto_title": "Jak sformatować i zwalidować JSON",
+  "howto": [
+    "Wklej JSON do pola albo upuść plik .json na stronę.",
+    "Wybierz układ: 2 spacje, 4 spacje, tabulatory lub minifikację. Włącz Sortuj klucze, jeśli mają być w kolejności alfabetycznej.",
+    "Jeśli JSON jest niepoprawny, zobaczysz wiersz i kolumnę ze znacznikiem pod problemem. W przeciwnym razie skopiuj wynik lub pobierz go."
+  ],
+  "faq": [
+    ["Czy mój JSON jest przesyłany?", "Nie. Jest parsowany i formatowany w Twojej przeglądarce i nigdy nie jest wysyłany ani zapisywany, więc można bezpiecznie wklejać konfigurację lub dane, których nie chcesz udostępniać."],
+    ["Co jest poprawnym JSON?", "Standardowy format: klucze i ciągi znaków w cudzysłowach podwójnych, bez komentarzy, bez końcowych przecinków, bez apostrofów, bez <code>undefined</code> i <code>NaN</code>. Wiele plików wyglądających jak JSON, na przykład literały obiektów JavaScriptu albo pliki konfiguracyjne z komentarzami, nie jest ściśle poprawnych i zostanie oznaczonych."],
+    ["Czy formatowanie zmienia moje dane?", "Nie. Liczby są zachowywane dokładnie tak, jak zapisano (także bardzo długie, których JavaScript nie utrzymałby precyzyjnie), ciągi znaków zachowują sekwencje ucieczki, a klucze zachowują kolejność, chyba że włączysz Sortuj klucze. Zmieniają się tylko białe znaki."],
+    ["Jak działa Sortuj klucze?", "Klucze w każdym obiekcie, na każdym poziomie, są sortowane alfabetycznie według znaków. Tablice zachowują kolejność, ponieważ kolejność elementów tablicy zwykle ma znaczenie."],
+    ["Co pokazują statystyki?", "Rozmiar wejścia i wyjścia w bajtach, łączną liczbę kluczy obiektów na wszystkich poziomach oraz maksymalną głębokość zagnieżdżenia, gdzie płaski obiekt ma głębokość 1."],
+    ["Jak duże mogą być dane wejściowe?", "Około 10 MB. Większe dane są odrzucane, aby nie ryzykować zawieszenia karty. Pole wyniku pokazuje pierwsze dwa miliony znaków; Kopiuj i Pobierz zawsze obejmują całość."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop is-compact" id="drop">
+  <label class="btn btn--sm"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>Otwórz plik .json</span></label>
+  <span class="drop__hint">Lub wklej poniżej, albo upuść plik w dowolnym miejscu na tej stronie.</span>
+</div>
+<div class="field">
+  <label for="j-in">JSON</label>
+  <textarea id="j-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder='{"name": "example", "tags": [1, 2, 3]}'></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="j-lay-l">Układ</span>
+    <div class="seg" role="radiogroup" aria-labelledby="j-lay-l">
+      <label><input type="radio" name="layout" value="2" checked>2 spacje</label>
+      <label><input type="radio" name="layout" value="4">4 spacje</label>
+      <label><input type="radio" name="layout" value="tab">Tabulator</label>
+      <label><input type="radio" name="layout" value="min">Minifikuj</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Klucze</span>
+    <label class="check"><input type="checkbox" id="j-sort">Sortuj klucze (wszystkie poziomy)</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="j-err" hidden></pre>
+<div id="j-result" hidden>
+  <dl class="stats" id="j-stats">
+    <div><dt>Wejście</dt><dd id="j-s-in">0</dd></div>
+    <div><dt>Wyjście</dt><dd id="j-s-out">0</dd></div>
+    <div><dt>Klucze</dt><dd id="j-s-keys">0</dd></div>
+    <div><dt>Głębokość</dt><dd id="j-s-depth">0</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="j-out-l">Wynik</span>
+    <pre class="out util-json" id="j-out" tabindex="0" aria-labelledby="j-out-l"></pre>
+    <span class="help" id="j-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="j-copy" type="button">Kopiuj</button>
+    <button class="btn" id="j-dl" type="button">Pobierz .json</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="j-clear" type="button">Wyczyść</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Formatowanie i sprawdzanie JSON</h2>
+<p>JSON to mały, rygorystyczny format tekstowy danych: obiekty w nawiasach klamrowych, tablice w nawiasach kwadratowych, a wartości to ciągi znaków, liczby, <code>true</code>, <code>false</code> lub <code>null</code>. Maszynom białe znaki nie przeszkadzają, ale ludziom tak, dlatego formater dodaje wcięcia i podziały wierszy, aby zagnieżdżone dane były czytelne, a minifikator je usuwa, by zaoszczędzić miejsce.</p>
+<p>To narzędzie czyta tekst własnym parserem, więc potrafi wskazać dokładny znak, w którym coś idzie źle. Najczęstsze błędy to końcowy przecinek po ostatnim elemencie, apostrofy zamiast cudzysłowów podwójnych, klucz bez cudzysłowu, komentarz lub brakujący nawias na końcu. Błąd pokazuje wiersz i kolumnę, kopię tego wiersza oraz znacznik pod odpowiednią pozycją.</p>
+<p>Formatowanie zmienia tylko białe znaki. Liczby i sekwencje ucieczki w ciągach są zachowywane tak, jak zapisano, więc długi identyfikator, taki jak 12345678901234567890, nie jest zaokrąglany, jak byłby po wczytaniu danych do liczb JavaScriptu.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Porównujesz dwie wersje konfiguracji? Sformatuj obie z tymi samymi opcjami, a potem użyj narzędzia <a href="/tools/text-diff/">Porównaj teksty</a>.</li>
+  <li>Masz w JSON wartość Base64? Zdekoduj ją w narzędziu <a href="/tools/base64-encode-decode/">Koduj i dekoduj Base64</a>.</li>
+  <li>Potrzebujesz danych w arkuszu kalkulacyjnym? Użyj narzędzia <a href="/tools/json-to-csv/">JSON na CSV</a>, a w drugą stronę <a href="/tools/csv-to-json/">CSV na JSON</a>.</li>
+</ul>

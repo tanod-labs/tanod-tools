@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Cắt ảnh trực tuyến: miễn phí, cắt chính xác từng pixel | Tanod Tools",
+  "description": "Cắt ảnh JPG, PNG hoặc WebP ngay trong trình duyệt. Kéo khung, dùng tỷ lệ khung hình có sẵn hoặc nhập giá trị pixel chính xác. Không tải lên gì và giữ nguyên định dạng.",
+  "h1": "Cắt ảnh",
+  "lede": "Kéo khung cắt trên ảnh của bạn, hoặc nhập giá trị pixel chính xác, rồi lưu bản đã cắt.",
+  "blurb": "Cắt ảnh lấy phần bạn cần.",
+  "keywords": "cắt ảnh cắt hình crop ảnh xén ảnh cắt ảnh theo tỷ lệ cắt ảnh vuông 16:9 4:3 khung cắt ảnh chụp aspect ratio square crop box",
+  "limits": "Từng ảnh một, tối đa 50 MB và khoảng 100 megapixel. PNG, JPEG, WebP, GIF, BMP và AVIF (nếu trình duyệt của bạn mở được).",
+  "howto_title": "Cách cắt ảnh",
+  "howto": [
+    "Chọn một ảnh, hoặc kéo thả vào trang.",
+    "Kéo khung để di chuyển và kéo các điểm ở góc để đổi kích thước. Chọn một tỷ lệ khung hình nếu cần, hoặc nhập X, Y, chiều rộng và chiều cao theo pixel.",
+    "Bấm <strong>Cắt ảnh</strong>, rồi tải kết quả xuống."
+  ],
+  "faq": [
+    ["Ảnh của tôi có bị tải lên không?", "Không. Việc cắt được thực hiện trong trình duyệt từ tệp trên thiết bị của bạn. Không có gì được gửi đến máy chủ."],
+    ["Tôi có thể dùng bàn phím thay vì chuột không?", "Có. Chọn khung cắt (nhấn Tab đến nó, hoặc nhấp vào nó), rồi dùng phím mũi tên để di chuyển và Shift cùng phím mũi tên để đổi kích thước. Các ô X, Y, chiều rộng và chiều cao cũng nhận giá trị pixel chính xác."],
+    ["Cắt ảnh có làm giảm chất lượng không?", "Các điểm ảnh bên trong khung được sao chép nguyên vẹn, ở độ phân giải đầy đủ, chứ không phải bản xem trước cỡ màn hình. JPEG và WebP được lưu lại ở chất lượng 92, nên có một lượng nhỏ nén lại; PNG vẫn không bị mất dữ liệu."],
+    ["Kết quả có định dạng nào?", "Giống bản gốc: PNG vẫn là PNG, JPEG vẫn là JPEG và WebP vẫn là WebP. GIF, BMP và AVIF được lưu thành PNG (GIF trở thành khung hình đầu tiên)."],
+    ["Các tỷ lệ khung hình có sẵn làm gì?", "Chúng khóa khung theo một tỷ lệ rộng trên cao như 1:1 cho hình vuông hoặc 16:9 cho khung màn ảnh rộng, và giữ như vậy khi bạn đổi kích thước. Chọn Tự do để cắt theo hình dạng bất kỳ."],
+    ["Dữ liệu EXIF có được giữ lại không?", "Không. Tệp đã cắt là một ảnh mới không có metadata máy ảnh hay GPS, được lưu theo hướng mà nó hiển thị."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Thả ảnh vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP hoặc AVIF. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Xem trước ảnh đang được cắt" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Vùng cắt" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Kéo khung để di chuyển và kéo một góc để đổi kích thước. Khi khung đang được chọn, phím mũi tên di chuyển nó và Shift cùng phím mũi tên đổi kích thước.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Tỷ lệ khung hình</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Tự do</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Chiều rộng (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Chiều cao (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Cắt ảnh</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cắt ảnh mà không mất độ phân giải</h2>
+<p>Cắt ảnh giữ lại một hình chữ nhật gồm các điểm ảnh gốc và bỏ phần còn lại. Bức ảnh bạn thấy trên màn hình là bản xem trước đã thu nhỏ để vừa trang; việc cắt thực sự lấy từ ảnh ở độ phân giải đầy đủ, dùng X, Y, chiều rộng và chiều cao hiển thị trong các ô. Những con số đó tính theo điểm ảnh của chính bức ảnh, không phải điểm ảnh trên màn hình.</p>
+<p>Hãy dùng tỷ lệ khung hình khi kết quả phải vừa một khung: 1:1 cho ảnh đại diện hình vuông, 16:9 cho ảnh thu nhỏ video, 4:3 hoặc 3:2 cho các khổ ảnh phổ biến, 9:16 cho story dọc. Khung giữ nguyên hình dạng đó khi bạn đổi kích thước, và nhập chiều rộng hoặc chiều cao sẽ cập nhật cái còn lại.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Hãy cắt trước, rồi giảm kích thước bằng <a href="/tools/resize-image/">Đổi kích thước ảnh</a> và <a href="/tools/compress-image/">Nén ảnh</a>.</li>
+  <li>Ảnh bị lật sai hướng? <a href="/tools/rotate-image/">Xoay ảnh</a> sẽ sửa được.</li>
+  <li>Làm biểu tượng từ một phần của bức ảnh? Hãy cắt theo tỷ lệ 1:1, rồi dùng <a href="/tools/favicon-generator/">Tạo favicon</a>.</li>
+</ul>

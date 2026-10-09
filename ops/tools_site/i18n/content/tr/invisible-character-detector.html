@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "Görünmez karakter bulucu ve ASCII smuggling çözücü | Tanod Tools",
+  "description": "Sıfır genişlikli, çift yönlü ve Unicode etiket karakterlerini bulun, gizli ASCII metni çözün, benzer görünen sözcükleri yakalayın. Ücretsiz, tarayıcınızda.",
+  "h1": "Görünmez karakter bulucu ve ASCII smuggling çözücü",
+  "lede": "Göremediğiniz karakterleri bulmak ve görünmez Unicode etiket karakterlerinde saklı metni okumak için bir metin yapıştırın: sıfır genişlikli boşluklar, metin yönü denetimleri, gizli Unicode etiket karakterleri ve Latin harflerini benzer görünen Kiril veya Yunan harfleriyle karıştıran sözcükler.",
+  "blurb": "Görünmez Unicode'u bulun, gizli ASCII metni çözün, benzer görünen sözcükleri yakalayın.",
+  "keywords": "görünmez karakter bulucu ascii smuggling çözücü sıfır genişlikli boşluk bulucu gizli unicode karakterler bidi trojan source unicode etiket karakterleri ascii smuggling prompt injection homoglif kiril benzer sözcükler sıfır genişlikli karakterleri kaldır",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "Birkaç milyon karaktere kadar metin. Denetim Unicode kod noktalarına bakar; gizli karakterleri bulur ama belirli bir karakterin metninizde zararsız olup olmadığını söyleyemez. Bayraklar ve aile emojileri gibi gerçek emoji dizileri işaretlenmez.",
+  "howto_title": "Görünmez karakterler nasıl bulunur",
+  "howto": [
+    "Denetlemek istediğiniz metni yapıştırın ya da aracın neler bulduğunu görmek için <em>Örnek yükle</em>'yi seçin.",
+    "Her karakter türünün sayısını, vurgulanmış metni ve her bulgunun satırını, sütununu ve kod noktasını gösteren tabloyu okuyun.",
+    "Görünmez karakterleri kaldırılmış metni almak için <em>Temiz metni kopyala</em>'yı seçin."
+  ],
+  "faq": [
+    [
+      "Sıfır genişlikli karakterler nedir?",
+      "Ekranda yer kaplamayan karakterlerdir; örneğin sıfır genişlikli boşluk (U+200B), sıfır genişlikli ayırıcı (U+200C), sözcük birleştirici (U+2060) ve bayt sırası işareti (U+FEFF). Web sayfalarından ve sohbet uygulamalarından kopyalanan metne sızar; görünür hiçbir iz bırakmadan aramaları, parolaları, kodu ve dosya adlarını bozabilir. Birleştirici ve ayırıcı, Farsça ve Hintçe gibi bazı yazılarda bilerek de kullanılır, bu yüzden kaldırmadan önce kontrol edin."
+    ],
+    [
+      "Trojan Source saldırısı nedir?",
+      "Unicode'da metnin görüntülenme yönünü değiştiren denetimler vardır; örneğin sağdan sola geçersiz kılma (U+202E). Kaynak kodda bunlar bir satırın derleyicinin okuduğundan farklı görünmesine yol açabilir; böylece zararsız görünen bir yorum gerçek kodu gizleyebilir. Araç, görebilmeniz için her çift yönlü denetimi listeler."
+    ],
+    [
+      "Unicode etiket karakterleri nedir ve neden önemlidir?",
+      "Etiket karakterleri (U+E0000 – U+E007F) ASCII'yi yansıtır ama hiçbir şey olarak görüntülenir. Bunlarla yazılan metin okuyucuya görünmezdir ama yazılım, yapay zekâ asistanları dahil, onu okuyabilir; bu da bir isteme veya belgeye gizli talimat sokmanın yoludur. Araç, her etiket karakteri dizisini yazdığı ASCII metne çözer ve belirgin biçimde gösterir. Buna ASCII smuggling denir. İngiltere, İskoçya veya Galler bayrağı bilerek birkaç etiket karakteriyle yapılır; bu yüzden eksiksiz bir bayrak dizisi işaretlenmez."
+    ],
+    [
+      "Bir sözcük neden karışık yazı sistemli olarak işaretlenir?",
+      "Kiril ve Yunan alfabelerinde Latin harfleriyle aynı görünen harfler vardır; örneğin Kiril а ile Latin a. Bunları karıştıran bir sözcük, örneğin Kiril а içeren pаypal, gerçek bir ada benzeyip başka yere gidebilir. Araç, Latin harflerini Kiril, Yunan veya Ermeni harfleriyle birleştiren her sözcüğü listeler ve hangi harflerin ait olmadığını gösterir."
+    ],
+    [
+      "Emojileri işaretler mi?",
+      "Hayır. Aile veya meslek emojilerinde olduğu gibi iki emoji arasındaki sıfır genişlikli birleştirici ve bir emojiyi izleyen varyasyon seçici, emojilerin nasıl oluşturulduğunun parçasıdır; bu yüzden dokunulmaz. Aynı karakterler başka yerlerde, örneğin iki harf arasında, bildirilir."
+    ],
+    [
+      "Metnim yükleniyor mu?",
+      "Hayır. Metin tarayıcınızda denetlenir ve cihazınızdan asla çıkmaz."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Denetlenecek metin</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Metni buraya yapıştırın"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Örnek yükle</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Temizle</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Denetlemek için metin yapıştırın.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Etiket karakterlerinden çözülen gizli metin</h3>
+    <p class="help">Bu görünmez karakterler aşağıdaki okunabilir metni yazıyor. Güvenilmez kabul edin, özellikle metin bir yapay zekâ asistanına gidecekse.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Sıfır genişlikli karakterler</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Metin yönü denetimleri</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Unicode etiket karakterleri</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Denetim karakterleri</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Diğer görünmez karakterler</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Alışılmadık boşluklar</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Karışık yazı sistemli sözcükler</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Vurgulanmış metin</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Gizli karakterleri işaretlenmiş metin"></div>
+    <h3 class="util-h">Temiz metin</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Alışılmadık boşlukları da normal boşluğa çevir</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Görünmez karakterleri kaldırılmış metin</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Temiz metni kopyala</button>
+    </div>
+    <h3 class="util-h">Bulgular</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Bulgular tablosu">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Satır:sütun</th><th scope="col">Karakter no.</th><th scope="col">Kod noktası</th><th scope="col">Ne olduğu</th><th scope="col">Tür</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Gizli karakterler nasıl bulunur</h2>
+<p>Unicode, hiçbir şey yazdırmayan birçok karakter tanımlar: sıfır genişlikli boşluklar ve birleştiriciler, metnin yönünü çeviren işaretler, yumuşak tireler, alışılmadık genişlikte boşluklar ve ASCII'yi yansıtan etiket karakterleri. Doğru yerde yararlıdırlar; yanlış yerde baş belası ya da silahtırlar. Bu araç metninizi kod noktası kod noktası okur ve her bulguyu bir türe ayırır; böylece ne yapacağınıza karar vermeden önce orada ne olduğunu görürsünüz.</p>
+<p>Yedi tür bildirilir. <strong>Sıfır genişlikli karakterler</strong> sıfır genişlikli boşluğu, birleştiricileri ve bayt sırası işaretini içerir. <strong>Metin yönü denetimleri</strong>, kaynak koda yönelik Trojan Source saldırılarında kullanılan gömmeler, geçersiz kılmalar, yalıtımlar ve işaretlerdir. <strong>Unicode etiket karakterleri</strong>, yapay zekâ asistanlarına giden metne görünmez talimat sokmak için kullanılan U+E0000 bloğudur; her dizi çözülür, böylece yazdığı ASCII'yi okuyabilirsiniz. <strong>Denetim karakterleri</strong>, sekme ve satır sonları dışındaki C0 ve C1 kodlarıdır. <strong>Diğer görünmez karakterler</strong> yumuşak tireyi, görünmez matematik işleçlerini, dolgu karakterlerini ve varyasyon seçicileri kapsar; <strong>alışılmadık boşluklar</strong> ise bölünemez boşluk, em ve en boşlukları ile ideografik boşluktur. Son olarak <strong>karışık yazı sistemli sözcükler</strong>, Latin harflerini Kiril, Yunan veya Ermeni harfleriyle birleştiren sözcüklerdir; alan adı ya da kullanıcı adı taklit etmenin olağan yoludur.</p>
+<p>Sıfır genişlikli boşluklar yapay zekâ üretimi metinde de görülür. Sohbet asistanları ve metin işleme hatları bazen çıktılarında sıfır genişlikli boşluk veya birleştirici bırakır; aynı karakterler görünmez bir filigran olarak da kullanılabilir, bu yüzden yapıştırdığınız bir yanıt göründüğünden fazlasını taşıyor olabilir. Metni bu denetimden geçirmek, içinde tam olarak neyin saklı olduğunu gösterir.</p>
+<p>Bu karakterlerden bazıları gerçek metne aittir; bu yüzden araç, yerinde olanlara dokunmaz. İngiltere, İskoçya veya Galler'in eksiksiz bayrağı (siyah bir bayrak, ardından birkaç etiket harfi ve bir iptal etiketi), iki emoji arasındaki sıfır genişlikli birleştirici ve bir emojiden sonraki emoji görünüm seçici normaldir. Farsça, Hintçe veya Arapça sözcüklerin içindeki birleştirici ya da ayırıcı da normaldir ama bildirilir, çünkü araç metninizin dilini bilemez.</p>
+<p>Temiz kopya; sıfır genişlikli, yön, etiket, denetim ve diğer görünmez karakterleri kaldırır. Karışık yazı sistemli sözcüklere asla dokunmaz, çünkü bir harfi değiştirmek metni değiştirirdi; vurgulanan sözcüğü kontrol ettikten sonra bunları elle düzeltin.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Geriye kalanı karakterleri, baytları ve satırları sayan <a href="/tools/character-counter/">karakter sayacı</a> ile sayın.</li>
+  <li>Aslını temiz metinle <a href="/tools/text-diff/">Metinleri karşılaştır</a> aracında karşılaştırın.</li>
+  <li>Belirli bir karakteri her yerden kaldırmak için <a href="/tools/find-and-replace/">Bul ve değiştir</a> aracını kullanın.</li>
+</ul>

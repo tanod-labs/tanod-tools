@@ -1,6 +1,6 @@
-import { $, $$, el, icon, fmtBytes, setStatus, runJob, showResults, clearNode, announce, dropzone, friendlyError, UserError, tx, txn, fmtNum } from "./core.js?v=5";
-import { validateFile, decode, newCanvas, ctx2d, scaleTo, release, encodeCanvas, outName, ACCEPT, MAX_BYTES, LABEL, dims } from "./imgcore.js?v=5";
-import { thumbOf, sizeProblem, clamp } from "./imgcore3.js?v=5";
+import { $, $$, el, icon, fmtBytes, setStatus, runJob, showResults, clearNode, announce, dropzone, friendlyError, UserError, tx, txn, fmtNum } from "./core.js?v=11";
+import { validateFile, decode, newCanvas, ctx2d, scaleTo, release, encodeCanvas, outName, ACCEPT, MAX_BYTES, LABEL, dims } from "./imgcore.js?v=11";
+import { thumbOf, sizeProblem, clamp } from "./imgcore3.js?v=11";
 
 const MAX_IMAGES = 20;
 const drop = $("#drop"), list = $("#files"), optsBox = $("#opts"), goRow = $("#go-row"), go = $("#go");

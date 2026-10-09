@@ -1,0 +1,43 @@
+<!--meta
+{
+  "title": "METAR ve TAF çözücü: havacılık hava raporu | Tanod Tools",
+  "description": "Ham METAR, SPECI veya TAF raporunu yapıştırın; rüzgâr, görüş, hava olayları, bulutlar, sıcaklık, basınç ve uçuş kategorisi sade dille açıklansın.",
+  "h1": "METAR ve TAF çözücü",
+  "lede": "Ham METAR veya TAF raporunu yapıştırın ve sade bir dille okuyun: rüzgâr, görüş, hava olayları, bulutlar, sıcaklık, altimetre ve tahmin dönemleri.",
+  "blurb": "Ham METAR ve TAF hava raporları, açıklamalı.",
+  "keywords": "metar taf çözücü havacılık hava durumu speci cavok rüzgar rüzgâr görüş tavan uçuş kategorisi vfr ifr altimetre qnh çöz çevir havalimanı hava raporu metar decoder",
+  "limits": "Yalnızca öğrenme ve hızlı okuma içindir. Uçuş planlaması veya seyrüsefer için kullanılmaz: her zaman resmî brifingleri kullanın. Notlar (RMK) yazıldığı gibi gösterilir; çözücünün anlamadığı gruplar tahmin edilmez, listelenir.",
+  "howto_title": "METAR veya TAF nasıl çözülür",
+  "howto": [
+    "Ham raporu METAR, SPECI, TAF ya da dört harfli istasyon koduyla başlayarak kutuya yapıştırın. = ile ayrılmış veya ayrı satırlardaki birkaç rapor sırayla çözülür.",
+    "Aşağıdaki dökümü okuyun: kodun her grubu kelimelere çevrilir; birimler knot, km/h, fit ve metre, °C ve °F, hPa ve inHg olarak dönüştürülür.",
+    "Uçuş kategorisine ve çözülmedi olarak işaretlenen satırlara bakın. Bilinmeyen gruplar yazıldığı gibi gösterilir."
+  ],
+  "faq": [
+    ["METAR ile TAF arasındaki fark nedir?", "METAR, bir havalimanındaki hava durumunun şu anki gözlemidir ve genellikle saatte bir yayımlanır (SPECI, önemli bir değişiklikten sonra programsız yapılan güncellemedir). TAF ise havalimanı için genellikle 24 ila 30 saati kapsayan, temel tahmin ve değişim gruplarına ayrılmış bir tahmindir."],
+    ["29016G25KT gibi rüzgâr grubu nasıl okunur?", "İlk üç rakam rüzgârın estiği yönü gerçek derece olarak verir (290 batı-kuzeybatıdır), sonraki iki veya üç rakam hızdır (16), G esinti hızını ekler (25), son harfler ise birimdir: KT knot, MPS saniyede metre, KMH saatte kilometre. VRB değişken yön demektir; 00000KT sakin demektir."],
+    ["TAF değişim grupları ne anlama gelir?", "FM (from), belirli bir saatte yeni bir koşullar kümesi başlatır ve öncesindeki her şeyin yerini alır. BECMG, belirtilen dönem boyunca kademeli bir değişim demektir. TEMPO, her seferinde bir saatten kısa süren ve dönemin yarısından azını kapsayan kısa süreli dalgalanmalardır. PROB30 ve PROB40 sonrasındaki koşulların olasılığını verir. INTER, TEMPO için kullanılan eski bir sözcüktür."],
+    ["Uçuş kategorileri nasıl belirlenir?", "Çözücü, en alçaktaki parçalı veya kapalı bulut katmanından (tavan) ve görüşten yola çıkarak ABD FAA eşiklerini kullanır: VFR 3.000 ft ve 5 SM üzerinde, MVFR 1.000 ile 3.000 ft veya 3 ile 5 SM arasında, IFR 500 ile 1.000 ft altı veya 1 ile 3 SM altı, LIFR ise 500 ft veya 1 SM altındadır. CAVOK, VFR sayılır. Diğer ülkeler farklı sınırlar kullanır, bu yüzden bunu bir kılavuz olarak değerlendirin."],
+    ["Raporumun bir kısmı neden çözülmedi olarak gösteriliyor?", "Çözücü temel ICAO ve FAA gruplarını kapsar. Bölgesel gruplar, askerî renk kodları, pist durumu grupları ve yanlış yazılmış her şey tahmin edilmek yerine yazıldığı gibi listelenir. RMK sonrasındaki notlar hiçbir zaman yorumlanmaz."],
+    ["Sayfa raporumu bir yere gönderiyor mu?", "Hayır. Rapor tarayıcınızda JavaScript ile çözülür ve hiçbir şey yüklenmez. Raporları kodla çözmek isterseniz aşağıdaki kılavuzdaki çözme API'si aynı işi yapar."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">Ham METAR veya TAF</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Tek bir rapor veya = ile ya da METAR, SPECI veya TAF ile başlayan satırlarla ayrılmış birkaç rapor.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Başka bir örnek deneyin</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Temizle</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>Çözücü bir raporu nasıl okur</h2>
+<p>METAR veya TAF, boşlukla ayrılmış ve sabit bir sırada dizilmiş gruplardan oluşan bir metindir; ICAO Ek 3 ve WMO Kodlar El Kitabı No. 306 (FM 15 METAR ve FM 51 TAF) ile, Amerika Birleşik Devletleri için FAA Havacılık Bilgi El Kitabı 7-1-30 tarafından tanımlanır. Çözücü istasyon kodunu, UTC cinsinden günü ve saati (DDHHMMZ), rüzgârı (yön, hız, esintiler ve değişim), metre veya kara mili cinsinden görüşü, pist görüş mesafesini, mevcut hava olaylarını, bulut katmanlarını, dikey görüşü, sıcaklık ve çiy noktasını ile altimetre ayarını okur (Q hPa, A yüzde bir inHg cinsindendir).</p>
+<p>Hava olayı kodları bir şiddeti (- hafif, + şiddetli, VC yakın çevrede), tanımlayıcıları (TS, SH, FZ ve diğerleri) ve olayları (RA yağmur, SN kar, FG sis, BR pus vb.) birleştirir. Bulut grupları miktarı (FEW, SCT, BKN, OVC) ve yerden yüzlerce fit cinsinden tabanı verir; konvektif bulutlar için CB veya TCU eklenir. Bağıl nem, sıcaklık ve çiy noktasından Magnus formülüyle, es = 6,1094 e^(17,625 T / (T + 243,04)), tahmin edilir; bu yüzden yaklaşıktır.</p>
+<p>Uçuş kategorileri FAA tanımlarını izler: tavan, en alçaktaki parçalı veya kapalı katman ya da dikey görüştür ve kategoriyi tavan ile görüşün kötü olanı belirler. TAF için her temel veya değişim grubu kendi başına, UTC cinsinden zaman aralığı ve kendi kategorisiyle çözülür. Raporlar ay veya yıl taşımadığı için zamanlar ayın günü ve UTC saati olarak verilir.</p>
+<p><strong>Uçuş planlaması veya seyrüsefer için kullanılmaz.</strong> Bu bir eğitim amaçlı okuyucudur. Uçmadan önce hava durumunu her zaman resmî bir kaynaktan alın.</p>

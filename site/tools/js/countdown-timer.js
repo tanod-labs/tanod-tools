@@ -1,5 +1,5 @@
-import { $, $$, copyText, prefs, tx, txn, EN, fmtNum, dateFormat, listText } from "./core.js?v=5";
-import { LOCAL_ZONE, fillZoneSelect, zoneOf, isZone, resolveWall, wallFields, fmtWall, fmtOffset, offsetMinutes, weekday, pad } from "./tzcore.js?v=5";
+import { $, $$, copyText, prefs, tx, txn, EN, fmtNum, dateFormat, listText } from "./core.js?v=11";
+import { LOCAL_ZONE, fillZoneSelect, zoneOf, isZone, resolveWall, wallFields, fmtWall, fmtOffset, offsetMinutes, weekday, pad } from "./tzcore.js?v=11";
 
 const MAX_SECONDS = 99 * 3600 + 59 * 60 + 59;
 const BASE_TITLE = document.title;

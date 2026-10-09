@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Generatore di QR code vCard: biglietto da visita QR | Tanod Tools",
+  "description": "Trasforma i dati di contatto in un QR code vCard che i telefoni scansionano per salvare un contatto. Scarica PNG, SVG o .vcf e vedi il testo della vCard. Gratis.",
+  "h1": "Generatore di QR code vCard",
+  "lede": "Inserisci i dati di contatto e ottieni un QR code vCard 3.0 che i telefoni scansionano per aggiungere il contatto, più il testo della vCard e un download .vcf.",
+  "blurb": "Dati di contatto come QR code vCard, con download .vcf.",
+  "keywords": "qr code vcard biglietto da visita qr contatto vcf salvare contatto rubrica biglietto da visita digitale telefono email azienda generatore vcard qr",
+  "limits": "Scrive testo vCard 3.0 con un solo telefono per tipo, un'email, un sito web e un indirizzo. Foto, voci multiple e varianti del nome in alfabeti non latini non sono incluse. Le righe lunghe non vengono spezzate.",
+  "howto_title": "Come creare un QR code vCard",
+  "howto": [
+    "Compila il nome e i dati che vuoi condividere. I campi vuoti vengono lasciati fuori dal biglietto.",
+    "Leggi il testo della vCard sotto il modulo. Se il codice sembra fitto, rimuovi un campo o abbassa la correzione degli errori.",
+    "Scarica il QR code come PNG o SVG, oppure scarica il contatto come file <code>.vcf</code> che puoi aprire direttamente."
+  ],
+  "faq": [
+    ["Cos'è una vCard?", "Una vCard è un formato di contatto in testo semplice, con file che terminano in .vcf, letto da telefoni, Outlook, Contatti di Apple e Contatti Google. Questo strumento scrive la versione 3.0, quella che ogni rubrica diffusa accetta."],
+    ["I dati di contatto vengono caricati?", "No. Il testo della vCard e il QR code vengono creati nel tuo browser. Nulla di ciò che scrivi viene conservato o inviato, e il file .vcf viene creato sul tuo dispositivo quando premi il pulsante di download."],
+    ["Perché il QR code diventa fitto con una nota o un indirizzo lunghi?", "Il codice contiene ogni carattere della vCard, quindi ogni campo aggiunge moduli e la griglia cresce. I telefoni scansionano le griglie grandi in modo meno affidabile se stampate in piccolo. Lo strumento mostra la versione del QR e suggerisce di eliminare la nota, l'indirizzo o la qualifica quando il codice è fitto."],
+    ["Come vengono gestiti virgole, punti e virgola e a capo?", "Il formato vCard li usa come separatori, quindi nei valori ricevono l'escape con una barra rovesciata, e un a capo nella nota diventa i due caratteri barra rovesciata e n. Le parti di nome e indirizzo restano nelle loro posizioni distinte. Gli indirizzi web sono scritti come digitati."],
+    ["Funzionano gli accenti e le lettere non inglesi?", "Sì. Il testo è codificato in UTF-8 sia nel file .vcf sia nel QR code, quindi nomi accentati come José o Zoë sopravvivono. Alcune rubriche molto vecchie potrebbero non leggere correttamente i file UTF-8."],
+    ["Perché devo indicare un nome o un'organizzazione?", "Il formato richiede un nome formattato, e altrimenti il QR code sarebbe vuoto. Se si inserisce solo un'organizzazione, questa viene usata come nome visualizzato."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-split gen-qr gen-vc">
+  <div class="util-split__main">
+    <div class="opts">
+      <div class="field"><label for="v-first">Nome</label><input type="text" id="v-first" autocomplete="off"></div>
+      <div class="field"><label for="v-last">Cognome</label><input type="text" id="v-last" autocomplete="off"></div>
+      <div class="field"><label for="v-org">Organizzazione</label><input type="text" id="v-org" autocomplete="off"></div>
+      <div class="field"><label for="v-title">Qualifica</label><input type="text" id="v-title" autocomplete="off"></div>
+      <div class="field"><label for="v-mobile">Cellulare</label><input type="text" id="v-mobile" inputmode="tel" autocomplete="off" placeholder="+39 333 123 4567"></div>
+      <div class="field"><label for="v-work">Telefono di lavoro</label><input type="text" id="v-work" inputmode="tel" autocomplete="off"></div>
+      <div class="field"><label for="v-email">Email</label><input type="text" id="v-email" inputmode="email" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="v-url">Sito web</label><input type="text" id="v-url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com"></div>
+      <div class="field"><label for="v-street">Via</label><input type="text" id="v-street" autocomplete="off"></div>
+      <div class="field"><label for="v-city">Città</label><input type="text" id="v-city" autocomplete="off"></div>
+      <div class="field"><label for="v-region">Provincia o regione</label><input type="text" id="v-region" autocomplete="off"></div>
+      <div class="field"><label for="v-post">CAP</label><input type="text" id="v-post" autocomplete="off"></div>
+      <div class="field"><label for="v-country">Paese</label><input type="text" id="v-country" autocomplete="off"></div>
+      <div class="field"><label for="v-ec">Correzione degli errori</label>
+        <select id="v-ec"><option value="L">L: bassa (7%)</option><option value="M" selected>M: media (15%)</option><option value="Q">Q: quartile (25%)</option><option value="H">H: alta (30%)</option></select></div>
+    </div>
+    <div class="field"><label for="v-note">Nota</label><textarea id="v-note" rows="3" autocomplete="off"></textarea></div>
+    <p class="gen-warn is-on" id="v-warn" hidden></p>
+    <div class="field">
+      <span class="label" id="v-text-l">Testo della vCard</span>
+      <pre class="gen-readout" id="v-text" tabindex="0" aria-labelledby="v-text-l"></pre>
+    </div>
+  </div>
+
+  <div class="util-split__side">
+    <div class="preview" id="v-preview"><canvas id="v-canvas" width="1" height="1" role="img" aria-label="Anteprima del QR code vCard"></canvas></div>
+    <p class="help" id="v-info" aria-live="polite"></p>
+    <div class="field"><label for="v-size">Dimensione dell'immagine (px)</label><input type="number" id="v-size" min="64" max="4096" step="1" value="512"></div>
+    <div class="actions">
+      <button class="btn btn--primary" id="v-png" type="button" disabled>Scarica PNG</button>
+      <button class="btn" id="v-svg" type="button" disabled>Scarica SVG</button>
+      <button class="btn" id="v-vcf" type="button" disabled>Scarica .vcf</button>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Cosa c'è dentro un QR code di contatto</h2>
+<p>Un QR code vCard è una vCard scritta come testo e disegnata come QR code. Il biglietto inizia con <code>BEGIN:VCARD</code> e finisce con <code>END:VCARD</code>, e ogni riga è una proprietà: <code>N</code> contiene il nome strutturato, <code>FN</code> il nome come deve essere visualizzato, <code>TEL</code> un numero di telefono con un tipo come CELL, e così via. Scansionare il codice passa al telefono lo stesso testo che conterrebbe un file .vcf, e il telefono propone di salvare il contatto.</p>
+<p>Lo standard richiede che le righe terminino con un ritorno a capo e un avanzamento riga, quindi file e codice usano questa forma. I valori hanno l'escape: una barra rovesciata, una virgola o un punto e virgola ricevono una barra rovesciata davanti, e un a capo nella nota diventa <code>\n</code>. Nome e indirizzo sono elenchi di parti separate da punti e virgola, quindi un punto e virgola digitato in una parte non può riversarsi nella successiva.</p>
+<p>I QR code crescono a gradini chiamati versioni, dalla 1 (21 per 21 moduli) alla 40 (177 per 177). Ogni carattere in più può spingere un codice alla versione successiva. Un biglietto con solo nome, telefono ed email è una versione modesta e si scansiona facilmente anche in stampa piccola. Aggiungere un indirizzo e una nota lunga può raddoppiare la larghezza. Se il codice è fitto, elimina i campi di cui puoi fare a meno o scegli un livello di correzione degli errori più basso.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Un sito web o un testo semplice al posto di un contatto? Usa il <a href="/tools/qr-code-generator/">Generatore di QR code</a>.</li>
+  <li>Metti il codice su un cartello per gli ospiti? Abbinalo al <a href="/tools/wifi-qr-code-generator/">Generatore di QR code per il Wi-Fi</a>.</li>
+  <li>Vuoi un indirizzo web ordinato per il campo del sito? Crea uno slug con il <a href="/tools/text-to-slug/">Generatore di slug</a>.</li>
+</ul>

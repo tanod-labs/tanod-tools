@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Generador de balanceo PCC y failover para MikroTik | Tanod Tools",
+  "description": "Genera balanceo PCC para RouterOS v7 sobre 2 a 8 WAN con failover recursivo, hosts de verificación, tablas de enrutamiento y masquerade. En tu navegador.",
+  "h1": "Generador de balanceo de carga y failover para MikroTik",
+  "lede": "Ingresa tus enlaces WAN y obtén balanceo de carga PCC para RouterOS v7 con failover por rutas recursivas, o solo failover, con cada bloque explicado.",
+  "blurb": "PCC sobre varias WAN con failover por rutas recursivas.",
+  "keywords": "balanceo de carga mikrotik pcc per connection classifier dual wan failover enrutamiento recursivo check-gateway ping routeros v7 routing table mark-routing multi wan dos proveedores isp balanceo de enlaces",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Genera sintaxis de RouterOS v7 (tablas de enrutamiento con fib, routing-table en las rutas). Solo IPv4. Las WAN cuyo gateway cambia por DHCP necesitan que actualices el gateway a mano o con un script del cliente DHCP. MikroTik y RouterOS son marcas registradas de SIA Mikrotīkls. Esta herramienta es independiente y no está afiliada ni respaldada por MikroTik.",
+  "howto_title": "Cómo configurar el balanceo de carga PCC en MikroTik",
+  "howto": [
+    "Elige balanceo de carga PCC con failover, o solo failover.",
+    "Agrega cada WAN con su interfaz, su gateway (o el nombre de la interfaz para PPPoE y LTE), un host público de verificación que responda ping y un peso para su parte de las conexiones.",
+    "Lista las redes locales y la interface list LAN, desactiva add-default-route en los clientes WAN y aplica el script con Safe Mode (modo seguro) activo."
+  ],
+  "faq": [
+    ["¿Cómo divide el tráfico PCC?", "per-connection-classifier calcula un hash de los campos de cada conexión nueva (ambas direcciones, o direcciones y puertos) en N grupos, y cada WAN toma algunos de los grupos. La conexión conserva su marca, así que todos sus paquetes usan la misma WAN. Un peso de 2 le da a una WAN dos grupos, el doble de la parte de una WAN con peso 1. La división es por conexión, no por byte, así que una descarga grande sigue usando un solo enlace."],
+    ["¿Qué es el failover recursivo y por qué usarlo?", "check-gateway=ping en una ruta por defecto normal solo prueba el primer salto del ISP, que a menudo sigue activo mientras la red del ISP detrás de él está caída. Aquí cada WAN recibe una ruta de host hacia un host público de verificación, y las rutas por defecto apuntan a ese host en lugar del gateway. Cuando el host deja de responder por esa WAN, RouterOS desactiva las rutas que pasan por ella y el tráfico se mueve a la siguiente WAN."],
+    ["¿Por qué hay reglas output drop para los hosts de verificación?", "Si el enlace de una WAN se cae, su ruta de host desaparece y el router llegaría al host de verificación por otra WAN, así que la WAN caída parecería sana. Las reglas drop impiden que los pings a cada host de verificación salgan por cualquier interfaz que no sea su propia WAN."],
+    ["¿Necesito desactivar FastTrack?", "Para PCC, sí. Las marcas de enrutamiento las aplica mangle a cada paquete, y los paquetes con fasttrack se saltan mangle, así que seguirían la tabla main en lugar de su WAN. El failover simple funciona con FastTrack activado."],
+    ["¿Qué cambió respecto a las guías de PCC de RouterOS v6?", "Las rutas de v6 usaban routing-mark=, y las marcas se creaban implícitamente. En v7 cada marca debe ser una tabla de enrutamiento creada en /routing table con fib, y las rutas se refieren a ella con routing-table=. Mangle sigue usando new-routing-mark. El asistente de migración de v6 a v7 convierte las rutas antiguas y agrega las tablas."],
+    ["¿Algo de lo que escribo se envía a algún lado?", "No. El script se genera en tu navegador."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="lb">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Modo</legend>
+      <div class="seg" role="radiogroup" aria-label="Modo">
+        <label><input type="radio" name="lb-mode" value="pcc" checked>Balanceo de carga PCC + failover</label>
+        <label><input type="radio" name="lb-mode" value="failover">Solo failover</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Enlaces WAN</legend>
+      <ul class="ros-rows" id="lb-wans"></ul>
+      <button class="btn btn--sm ros-add" id="lb-add" type="button">{{mark:i-plus}}Agregar una WAN</button>
+      <span class="help">Se listan en orden de preferencia para el failover y para el tráfico del propio router.</span>
+    </fieldset>
+    <fieldset class="gen-fs" id="lb-pcc-f">
+      <legend>Balanceo</legend>
+      <div class="opts">
+        <div class="field"><label for="lb-lan">Interface list LAN</label><input type="text" id="lb-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="lb-local">Redes locales</label><input type="text" id="lb-local" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field">
+          <label for="lb-class">Clasificador</label>
+          <select id="lb-class">
+            <option value="both-addresses" selected>both-addresses (fijo por cliente y servidor)</option>
+            <option value="both-addresses-and-ports">both-addresses-and-ports (reparto más fino)</option>
+            <option value="src-address">src-address (una WAN por cliente)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opciones</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="lb-fast" checked>Desactivar FastTrack (necesario para PCC)</label>
+        <label class="check"><input type="checkbox" id="lb-nat" checked>Masquerade en cada WAN</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Riesgo de quedarte fuera.</strong> Cambiar rutas en un router remoto puede dejarte sin acceso. Prueba en un laboratorio, o activa antes Safe Mode (modo seguro) (<kbd>Ctrl</kbd>+<kbd>X</kbd> en la terminal).</span></p>
+    <label for="lb-out" class="label">Script de RouterOS v7</label>
+    <textarea id="lb-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="lb-copy" type="button">Copiar script</button>
+      <button class="btn" id="lb-dl" type="button">{{mark:i-download}}Descargar .rsc</button>
+    </div>
+    <ul class="ros-notes" id="lb-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Cómo funciona la configuración generada</h2>
+<p>El balanceo de carga PCC tiene tres partes. <strong>Mangle</strong> marca cada conexión nueva desde la LAN con una marca de conexión elegida por el per-connection classifier, y marca las conexiones que llegan por una WAN con esa WAN, de modo que las respuestas a los port forwards salen por donde entraron. Un segundo conjunto de reglas mangle convierte cada marca de conexión en una <strong>marca de enrutamiento</strong> (routing mark) en cada paquete. Las <strong>tablas de enrutamiento</strong>, una por WAN, contienen entonces una ruta por defecto a través de esa WAN, con las otras WAN a una distancia mayor como respaldo.</p>
+<p>El failover usa <strong>rutas recursivas</strong>. Una ruta de host envía un host público de verificación solo por cada WAN. Las rutas por defecto usan el host de verificación como gateway con <code>target-scope=11</code>, así que RouterOS lo resuelve a través de esa ruta de host, y <code>check-gateway=ping</code> hace ping al host de verificación cada diez segundos. Dos respuestas perdidas dan de baja la ruta, y la siguiente distancia toma el control; cuando el host vuelve a responder, la ruta regresa.</p>
+<h3>Antes de aplicarlo</h3>
+<ul>
+  <li>Pon <code>add-default-route=no</code> en los clientes DHCP o PPPoE de las WAN, o sus propias rutas por defecto tendrán prioridad.</li>
+  <li>¿Estás actualizando una configuración PCC antigua de v6? Pasa su export por el <a href="/tools/routeros-v7-migration-helper/">asistente de migración de v6 a v7</a> para ver qué cambia.</li>
+  <li>Mantén las cadenas input y forward del firewall; el <a href="/tools/mikrotik-firewall-generator/">generador de firewall</a> usa interface lists, así que agrega cada WAN a la lista WAN.</li>
+</ul>

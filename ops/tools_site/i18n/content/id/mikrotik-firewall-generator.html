@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Generator firewall MikroTik untuk RouterOS v7 | Tanod Tools",
+  "description": "Buat firewall RouterOS v7 yang diperkuat: input dan forward chain, FastTrack, drop invalid, ping dibatasi laju, NAT, dan penguncian layanan. Berjalan di browser.",
+  "h1": "Generator firewall MikroTik",
+  "lede": "Pilih interface WAN dan LAN serta subnet manajemen, lalu dapatkan baseline firewall RouterOS v7 berkomentar yang bisa Anda tinjau dan tempel.",
+  "blurb": "Baseline firewall RouterOS v7 yang diperkuat dengan penguncian layanan.",
+  "keywords": "aturan firewall mikrotik firewall routeros v7 firewall filter input chain forward chain fasttrack drop invalid winbox batasi ip service hardening mikrotik amankan router skrip rsc",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 untuk IPv4, dengan baseline IPv6 opsional. Nama interface dan list diperiksa; skrip tidak diuji pada router Anda, jadi bacalah sebelum diterapkan. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara membuat firewall MikroTik",
+  "howto": [
+    "Masukkan interface yang menghadap internet (misalnya <code>ether1</code> atau <code>pppoe-out1</code>) dan interface lokal (biasanya <code>bridge</code>).",
+    "Tuliskan subnet tempat Anda mengelola router. Hanya subnet itu yang bisa menjangkau WinBox dan SSH, jadi sertakan alamat tempat Anda terhubung sekarang.",
+    "Pilih opsinya, baca skrip dan catatan di sampingnya, lalu aktifkan Safe Mode (mode aman) (<kbd>Ctrl</kbd>+<kbd>X</kbd> di terminal) dan tempel, atau unduh file .rsc lalu import."
+  ],
+  "faq": [
+    ["Mengapa input chain dipisah dari forward chain?", "Input chain menyaring paket yang ditujukan ke router itu sendiri: WinBox, SSH, DNS, API. Forward chain menyaring paket yang melewati router antara LAN dan internet. Router bisa terbuka lebar di input sementara LAN di belakangnya sangat aman, dan begitulah banyak perangkat MikroTik berakhir sebagai DNS resolver atau proxy terbuka."],
+    ["Mengapa koneksi established dan related diterima lebih dulu?", "Hampir semua paket milik koneksi yang sudah diizinkan firewall. Menerimanya di aturan pertama berarti setiap paket diperiksa sekali, bukan menelusuri seluruh chain, dan balasan atas query DNS atau NTP milik router sendiri lewat tanpa aturan tambahan. Paket invalid di-drop tepat sesudahnya."],
+    ["Apa fungsi FastTrack, dan kapan sebaiknya dimatikan?", "FastTrack menandai koneksi established agar paketnya melewati sebagian besar firewall, yang bisa melipatgandakan throughput pada router kecil. Syaratnya: paket yang di-fasttrack juga melewati simple queue, queue tree, aturan mangle, dan kebijakan IPsec. Jika Anda membatasi bandwidth per pelanggan atau memakai policy routing, biarkan FastTrack mati atau kecualikan koneksi tersebut."],
+    ["Apakah ini akan mengunci saya di luar?", "Bisa, jika komputer yang Anda pakai untuk mengelola tidak ada di subnet manajemen dan LAN tidak dipercaya. Aktifkan Safe Mode (mode aman) lebih dulu (<kbd>Ctrl</kbd>+<kbd>X</kbd> di terminal, atau tombol Safe Mode di WinBox): jika sesi Anda terputus, RouterOS membatalkan semua perubahan sejak Safe Mode dimulai."],
+    ["Bisakah saya menempel ini di router yang masih berkonfigurasi default?", "Bisa. Interface list, anggota list, dan entri address list hanya ditambahkan bila belum ada. Tanpa replace mode, aturan baru ditambahkan setelah aturan default, sehingga aturan default \"drop all not coming from LAN\" mungkin berada di depan; tinjau urutannya, atau gunakan replace mode pada router yang bisa Anda jangkau secara lokal."],
+    ["Apakah konfigurasi saya dikirim ke suatu tempat?", "Tidak. Skrip dirakit oleh JavaScript di halaman ini. Apa pun yang Anda ketik tidak diunggah, disimpan, atau dicatat, dan halaman ini bekerja offline setelah dimuat."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Interface</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">Interface WAN</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">Yang menghadap internet, dipisahkan koma. Masuk ke interface list WAN.</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">Interface LAN</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">Biasanya bridge. Masuk ke interface list LAN.</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Manajemen</legend>
+      <div class="field">
+        <label for="fw-mgmt">Subnet manajemen</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">Hanya subnet ini yang bisa menjangkau WinBox (8291) dan SSH (22). Sertakan alamat tempat Anda terhubung.</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">Port yang dibuka di router</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">Opsional, untuk layanan yang ditawarkan router sendiri ke internet, seperti WireGuard.</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>Percayai LAN (terima semuanya dari LAN ke router)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>Batasi WinBox dan SSH ke subnet manajemen dan matikan telnet, FTP, WebFig, dan API</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>Batasi neighbour discovery dan akses MAC ke LAN; matikan server bandwidth test, proxy, SOCKS, dan UPnP</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opsi</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>FastTrack untuk koneksi established</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>Jawab ping, dibatasi lajunya</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>Masquerade (source NAT) ke WAN</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">Tunnel IPsec berakhir di router ini</label>
+        <label class="check"><input type="checkbox" id="fw-v6">Tambahkan juga firewall IPv6</label>
+        <label class="check"><input type="checkbox" id="fw-replace">Replace mode: hapus dulu aturan filter dan NAT yang ada</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Risiko terkunci.</strong> Uji di lab, atau aktifkan Safe Mode (mode aman) (<kbd>Ctrl</kbd>+<kbd>X</kbd> di terminal) sebelum menerapkannya ke router jarak jauh.</span></p>
+    <label for="fw-out" class="label">Skrip RouterOS v7</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">Salin skrip</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Apa yang dilakukan firewall yang dihasilkan</h2>
+<p>Skrip ini mengikuti struktur yang sama dengan konfigurasi default MikroTik sendiri, tetapi lebih ketat. <strong>Input chain</strong> melindungi router: menerima paket milik koneksi yang sudah diizinkan, men-drop paket invalid, menjawab ping dengan laju terbatas, mengizinkan subnet manajemen menjangkau WinBox dan SSH, menerima LAN (atau hanya DNS, DHCP, NTP, dan ICMP darinya), dan men-drop semua yang lain dengan aturan akhir tanpa kondisi. Drop akhir tanpa kondisi itulah yang mengubah daftar pengecualian menjadi kebijakan default-deny.</p>
+<p><strong>Forward chain</strong> melindungi jaringan di belakang router. Lalu lintas established dan related diterima (dan opsional di-fasttrack), paket invalid di-drop, dan koneksi baru dari WAN di-drop kecuali dibuat oleh aturan destination NAT (port forward). Aturan terakhir itulah yang mencegah internet menjangkau alamat privat di belakang router secara langsung, sesuatu yang tidak dilakukan masquerade saja.</p>
+<h3>Layanan dan helper</h3>
+<p>RouterOS mendengarkan beberapa layanan manajemen secara default. Skrip ini mematikan yang berupa teks polos (telnet, FTP, WebFig lewat HTTP) dan API, serta menambahkan pembatasan alamat pada WinBox dan SSH sebagai lapisan kedua di belakang firewall. MAC Telnet, MAC WinBox, dan neighbour discovery bekerja di layer 2 dan mengabaikan aturan firewall IP, jadi dibatasi ke interface list LAN. Server bandwidth test, web proxy, SOCKS, dan UPnP dimatikan; nyalakan kembali hanya yang Anda pakai.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Sudah punya firewall? Tempel export Anda ke <a href="/tools/mikrotik-firewall-auditor/">auditor firewall MikroTik</a> untuk melihat apa yang terlewat.</li>
+  <li>Mempublikasikan server di belakang router? <a href="/tools/mikrotik-port-forwarding/">Generator port forwarding</a> menuliskan aturan dst-nat, lengkap dengan hairpin NAT.</li>
+  <li>Butuh daftar blokir atau daftar izin? Buat dengan <a href="/tools/mikrotik-address-list-generator/">generator address list</a>.</li>
+</ul>

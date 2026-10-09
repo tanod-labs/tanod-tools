@@ -1,0 +1,55 @@
+<!--meta
+{
+  "title": "Obraz na tekst: skopiuj tekst ze zdjęcia | Tanod Tools",
+  "description": "Skopiuj tekst ze zdjęcia, skanu lub zrzutu ekranu za pomocą OCR. Działa z JPG, PNG i WebP. Bezpłatnie, bez rejestracji; obraz jest zaraz usuwany.",
+  "h1": "Obraz na tekst (OCR)",
+  "lede": "Wydobądź słowa ze zdjęcia, zeskanowanej strony lub zrzutu ekranu, gotowe do skopiowania, edycji lub zapisania.",
+  "blurb": "Wyodrębnij tekst ze zdjęcia lub zrzutu ekranu za pomocą OCR.",
+  "keywords": "ocr obraz na tekst zdjęcie na tekst rozpoznawanie tekstu ze zdjęcia wyodrębnij tekst z obrazu zrzut ekranu na tekst jpg na tekst png na tekst skopiuj tekst z obrazu image to text",
+  "limits": "Jeden obraz naraz: JPG, PNG, WebP i inne formaty otwierane przez przeglądarkę, na początek do 40 MB (jest przygotowywany na Twoim urządzeniu, a potem wysyłany w rozmiarze do 10 MB). Tekst angielski. Przetwarzane na naszym serwerze, potem usuwane. 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich narzędzi serwerowych. Więcej: <a href=\"/learn/ocr-image-api.html\">API OCR</a> (płatne za wywołanie).",
+  "howto_title": "Jak uzyskać tekst z obrazu",
+  "howto": [
+    "Wybierz obraz, przeciągnij go na stronę albo wklej zrzut ekranu skrótem Ctrl+V (Cmd+V na Macu).",
+    "Sprawdź podgląd: tekst powinien być ustawiony we właściwą stronę.",
+    "Kliknij <strong>Wyodrębnij tekst</strong>, a potem skopiuj tekst lub zapisz go jako plik .txt."
+  ],
+  "faq": [
+    ["Czy mój obraz jest przesyłany?", "Tak. W przeciwieństwie do większości narzędzi na tej stronie, to działa na naszym serwerze. Przeglądarka najpierw przygotowuje kopię obrazu (obróconą do pionu i przeskalowaną do odczytu), a potem wysyła ją przez HTTPS. Serwer odczytuje tekst i od razu odsyła go z powrotem. Obraz istnieje na serwerze tylko podczas wykonywania zadania, w pamięci i w prywatnym folderze tymczasowym, który jest usuwany z chwilą zakończenia zadania. Nie zapisujemy obrazu ani tekstu i nigdy nie rejestrujemy w logach zawartości plików."],
+    ["Jak odczytywany jest tekst?", "Za pomocą silnika OCR Tesseract o otwartym kodzie źródłowym. Przeglądarka skaluje obraz tak, aby litery miały rozmiar dobrze odczytywany przez Tesseract (dłuższy bok od 1600 do 3200 pikseli), nasz serwer go odczytuje i zwraca słowa w kolejności czytania, wiersz po wierszu."],
+    ["Jakie języki działają?", "Angielski oraz inne języki zapisywane tymi samymi literami łacińskimi bez znaków diakrytycznych, z niższą dokładnością. Litery z akcentami, inne alfabety i pismo odręczne nie są jeszcze rozpoznawane wiarygodnie."],
+    ["Dlaczego niektóre słowa są błędne?", "OCR działa najlepiej na ostrym, prostym, dobrze oświetlonym tekście. Rozmyte zdjęcia, tekst pod kątem, ozdobne czcionki, niski kontrast i tekst na tle obrazów powodują błędy. Wynik można edytować przed skopiowaniem, więc możesz poprawić słowo czy dwa."],
+    ["Czy mogę wkleić zrzut ekranu?", "Tak. Skopiuj zrzut ekranu do schowka i naciśnij Ctrl+V (Cmd+V na Macu) w dowolnym miejscu tej strony."],
+    ["Czy jest jakiś limit?", "Jeden obraz na zadanie, 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich naszych narzędzi serwerowych. Liczą się tylko zadania zakończone sukcesem, a licznik odnawia się o północy UTC. Jeśli potrzebujesz więcej, <a href=\"/learn/ocr-image-api.html\">API OCR</a> jest płatne za wywołanie."],
+    ["Czym jest weryfikacja, że nie jesteś botem?", "Przed uruchomieniem zadania Cloudflare Turnstile sprawdza, czy z narzędzia korzysta człowiek, a nie bot. Zwykle jest niewidoczna; czasem prosi o zaznaczenie pola."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-text drop__mark}}
+  <p class="drop__title">Upuść obraz tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/*">{{mark:i-plus}}<span data-pick-label>Wybierz obraz</span></label>
+  <p class="drop__hint">JPG, PNG lub WebP. Możesz też przeciągnąć obraz tutaj albo wkleić zrzut ekranu (<kbd>Ctrl</kbd>+<kbd>V</kbd>).</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="preview ocr-preview" id="preview" aria-label="Podgląd obrazu"></div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Wyodrębnij tekst</button>
+    <span class="help">Język: angielski.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Od obrazu do tekstu</h2>
+<p>Dla komputera zdjęcie strony to tylko kolorowe kropki. OCR, czyli optyczne rozpoznawanie znaków, znajduje w tych kropkach kształty liter i zamienia je z powrotem w tekst, który można przeszukiwać, edytować i wklejać. To narzędzie wysyła jedną przygotowaną kopię obrazu na nasz serwer, gdzie odczytuje ją silnik Tesseract, i w kilka sekund pokazuje słowa.</p>
+<h3>Wskazówki dla lepszych wyników</h3>
+<ul>
+  <li>Trzymaj telefon prosto nad stroną, w dobrym świetle, i wypełnij kadr tekstem.</li>
+  <li>Odetnij wszystko, co nie jest tekstem, narzędziem <a href="/tools/crop-image/">Przytnij obraz</a>, a zdjęcia obrócone bokiem obróć narzędziem <a href="/tools/rotate-image/">Obróć obraz</a>. Oba działają w przeglądarce.</li>
+  <li>Masz cały zeskanowany dokument? <a href="/tools/ocr-pdf/">OCR dla PDF</a> sprawia, że sam plik PDF można przeszukiwać.</li>
+</ul>

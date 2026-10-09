@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Générateur WireGuard MikroTik (RouterOS v7) | Tanod Tools",
+  "description": "Générez un serveur WireGuard RouterOS v7 et les configurations des pairs. Les clés sont créées dans votre navigateur avec Web Crypto et ne le quittent jamais.",
+  "h1": "Générateur WireGuard MikroTik",
+  "lede": "Définissez le réseau du tunnel et vos pairs, et obtenez la configuration WireGuard RouterOS v7 ainsi qu'un fichier de configuration pour chaque portable, téléphone ou site distant.",
+  "blurb": "Serveur WireGuard RouterOS v7 et fichiers de configuration des pairs.",
+  "keywords": "configuration wireguard mikrotik routeros v7 interface wireguard peers allowed-address clé publique clé privée générateur configuration client wg-quick road warrior vpn site à site vpn",
+  "local_text": "Les clés sont générées dans votre navigateur et ne le quittent jamais",
+  "limits": "Nécessite RouterOS v7 (WireGuard n'existe pas en v6). Les clés sont générées avec le X25519 de Web Crypto de votre navigateur ; s'il ne le propose pas, le routeur génère sa propre clé et les configurations reçoivent des valeurs fictives. Adresses de tunnel IPv4 uniquement. MikroTik et RouterOS sont des marques de SIA Mikrotīkls. Cet outil est indépendant : il n'est ni affilié à MikroTik ni approuvé par MikroTik.",
+  "howto_title": "Comment configurer WireGuard sur MikroTik",
+  "howto": [
+    "Saisissez le nom de l'interface, le port d'écoute, l'adresse de tunnel du routeur (par exemple <code>10.66.0.1/24</code>) et l'adresse publique à laquelle les clients se connecteront.",
+    "Ajoutez une ligne par pair avec son adresse de tunnel ; pour les liaisons site à site, ajoutez les réseaux situés derrière lui. Choisissez le tunnel complet ou le split tunnel.",
+    "Collez le script RouterOS, déplacez la règle de firewall au-dessus de vos règles de drop, et importez le fichier .conf de chaque pair dans son application WireGuard."
+  ],
+  "faq": [
+    ["Les clés sont-elles sûres si elles sont créées dans une page web ?", "Elles sont créées par l'implémentation X25519 intégrée à Web Crypto de votre navigateur, la même courbe que WireGuard, et n'existent que dans la mémoire de cette page et dans le texte qu'elle vous affiche. Rien n'est envoyé : la page n'a aucun composant serveur, et sa politique de sécurité bloque les connexions vers d'autres sites. Fermez l'onglet et elles disparaissent : enregistrez donc d'abord les configurations dont vous avez besoin."],
+    ["Que faire si mon navigateur ne sait pas générer de clés X25519 ?", "La page vous le signale et passe à des clés créées ailleurs : le script RouterOS omet la clé privée, et le routeur génère la sienne à la création de l'interface. Exécutez /interface wireguard print pour lire sa clé publique, collez-la dans les configurations des pairs, et collez la clé publique de chaque pair (depuis son application WireGuard) dans le tableau ici."],
+    ["Qu'est-ce que allowed-address sur un pair MikroTik ?", "Cela joue à la fois le rôle de liste d'accès et de table de routage : le routeur n'accepte les paquets du pair qu'avec ces adresses source, et envoie à ce pair le trafic destiné à ces adresses. Pour un seul appareil, c'est le /32 de l'appareil. Pour un site distant, ajoutez le LAN du site, et le script ajoute aussi une route vers lui."],
+    ["Tunnel complet ou split tunnel ?", "Le tunnel complet (AllowedIPs 0.0.0.0/0 sur le pair) fait passer tout le trafic de l'appareil par le routeur, utile sur un Wi-Fi non fiable ; le routeur doit alors faire du masquerade des adresses du tunnel vers internet. Le split tunnel n'envoie que le réseau du tunnel et les réseaux que vous listez : la navigation normale reste locale."],
+    ["Pourquoi le pair a-t-il besoin de PersistentKeepalive ?", "Un téléphone ou un portable derrière un NAT ne peut recevoir des paquets que tant que son entrée NAT est active. Un keepalive toutes les 25 secondes la maintient ouverte, pour que le routeur puisse joindre le pair et que le tunnel revienne vite après une pause."],
+    ["Qu'apporte la clé pré-partagée (preshared key) ?", "Un secret symétrique supplémentaire mêlé à l'échange initial (handshake), qui ajoute une couche de protection contre de futures attaques quantiques sur l'échange de clés publiques. Elle est facultative et doit être identique des deux côtés."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="wg">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Routeur</legend>
+      <div class="opts">
+        <div class="field"><label for="wg-if">Nom de l'interface</label><input type="text" id="wg-if" class="mono" value="wireguard1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-port">Port d'écoute (UDP)</label><input type="text" id="wg-port" class="mono" value="13231" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="wg-tun">Adresse de tunnel du routeur</label><input type="text" id="wg-tun" class="mono" value="10.66.0.1/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-end">Adresse publique (endpoint)</label><input type="text" id="wg-end" class="mono" value="vpn.example.com" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-dns">DNS pour les pairs</label><input type="text" id="wg-dns" class="mono" value="10.66.0.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="wg-mtu">MTU</label><input type="text" id="wg-mtu" class="mono" value="1420" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Clés</legend>
+      <div class="seg" role="radiogroup" aria-label="Clés">
+        <label><input type="radio" name="wg-keys" value="browser" checked>Générer dans ce navigateur</label>
+        <label><input type="radio" name="wg-keys" value="elsewhere">Créées ailleurs</label>
+      </div>
+      <p class="help" id="wg-nokeys" hidden>Ce navigateur ne sait pas générer de clés X25519 : le routeur créera donc les siennes et vous collerez ci-dessous les clés publiques des pairs.</p>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-psk" checked>Ajouter une clé pré-partagée par pair</label></div>
+      <button class="btn btn--sm ros-add" id="wg-regen" type="button" hidden>{{mark:i-refresh}}Nouvelles clés</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Pairs</legend>
+      <ul class="ros-rows" id="wg-peers"></ul>
+      <button class="btn btn--sm ros-add" id="wg-add" type="button">{{mark:i-plus}}Ajouter un pair</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Trafic des pairs</legend>
+      <div class="seg" role="radiogroup" aria-label="Trafic des pairs">
+        <label><input type="radio" name="wg-route" value="full" checked>Tunnel complet (tout le trafic)</label>
+        <label><input type="radio" name="wg-route" value="split">Split tunnel</label>
+      </div>
+      <div class="field" id="wg-nets-f" hidden>
+        <label for="wg-nets">Réseaux que les pairs atteignent par le tunnel</label>
+        <input type="text" id="wg-nets" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="wg-lan" checked>Ajouter le tunnel à l'interface list LAN</label></div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="wg-out" class="label">Script RouterOS v7</label>
+    <textarea id="wg-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="wg-copy" type="button">Copier le script</button>
+      <button class="btn" id="wg-dl" type="button">{{mark:i-download}}Télécharger en .rsc</button>
+    </div>
+    <ul class="ros-notes" id="wg-notes" aria-live="polite" hidden></ul>
+    <div class="ros-confs" id="wg-confs" hidden></div>
+  </div>
+</div>
+<!--explain-->
+<h2>WireGuard sur RouterOS v7</h2>
+<p>WireGuard est arrivé avec RouterOS 7 et se configure à deux endroits : <code>/interface wireguard</code> contient la paire de clés du routeur et son port d'écoute, et <code>/interface wireguard peers</code> contient une entrée par appareil ou site distant, identifiée par sa clé publique. L'interface du tunnel reçoit ensuite une adresse IP comme n'importe quelle autre interface, et les règles de firewall, les routes et les interface lists s'y appliquent normalement. Il n'y a ni nom d'utilisateur ni mot de passe : un pair est quiconque détient la clé privée correspondant à une clé publique configurée.</p>
+<p>Le <code>allowed-address</code> de chaque pair est le cœur de la configuration. Il liste les adresses source que le routeur accepte de ce pair et, en même temps, les destinations qu'il envoie à ce pair. Côté appareil, <code>AllowedIPs</code> joue le même rôle en sens inverse : 0.0.0.0/0 envoie tout dans le tunnel, tandis qu'une liste de réseaux limite le tunnel à ces seuls réseaux.</p>
+<h3>Avant de vous connecter</h3>
+<ul>
+  <li>Le routeur doit accepter l'UDP sur le port d'écoute dans sa chaîne input, au-dessus de toute règle de drop. Le <a href="/tools/mikrotik-firewall-generator/">générateur de firewall</a> peut l'ouvrir pour vous avec <code>udp/13231</code>.</li>
+  <li>Si le routeur se trouve derrière un autre équipement NAT, redirigez le port UDP vers lui, comme le montre le <a href="/tools/mikrotik-port-forwarding/">générateur de redirection de ports</a>.</li>
+  <li>Les configurations des pairs contiennent des clés privées. Transférez-les aux appareils par un canal de confiance et supprimez les copies perdues.</li>
+</ul>

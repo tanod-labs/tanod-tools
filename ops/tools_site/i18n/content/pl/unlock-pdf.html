@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "Odblokuj PDF: usuń znane hasło z pliku, za darmo | Tanod Tools",
+  "description": "Usuń hasło oraz ograniczenia drukowania i kopiowania z pliku PDF, używając znanego hasła. Za darmo, bez rejestracji; plik i hasło są usuwane zaraz po zadaniu.",
+  "h1": "Odblokuj plik PDF",
+  "lede": "Zapisz kopię chronionego pliku PDF, która otwiera się bez hasła i nie ma ograniczeń drukowania ani kopiowania. Potrzebne jest hasło do pliku.",
+  "blurb": "Usuń znane hasło z pliku PDF i ograniczenia drukowania.",
+  "keywords": "usuń hasło z pdf odblokuj pdf odszyfruj pdf zdejmij zabezpieczenie pdf ograniczenia drukowania kopiowania remove pdf password unlock pdf decrypt unsecure restrictions",
+  "limits": "Jeden plik PDF do 10 MB. Potrzebne jest hasło do pliku (albo żadne, jeśli plik tylko ogranicza drukowanie lub kopiowanie); to narzędzie nie łamie haseł. Przetwarzane na naszym serwerze, potem usuwane. 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich narzędzi serwerowych.",
+  "howto_title": "Jak usunąć hasło z pliku PDF",
+  "howto": [
+    "Wybierz chroniony plik PDF o rozmiarze do 10 MB albo przeciągnij go na stronę.",
+    "Wpisz jego hasło. Jeśli plik PDF otwiera się bez hasła, ale nie da się go wydrukować ani skopiować, zostaw pole puste.",
+    "Kliknij <strong>Odblokuj PDF</strong>, a potem pobierz odblokowaną kopię."
+  ],
+  "faq": [
+    ["Czy mój plik PDF i hasło są przesyłane?", "Tak. W przeciwieństwie do większości narzędzi na tej stronie to działa na naszym serwerze: plik PDF i hasło są wysyłane przez HTTPS, szyfrowanie jest usuwane, a odblokowana kopia wraca prosto do przeglądarki. Plik i hasło istnieją na serwerze tylko w czasie trwania zadania, w pamięci i w prywatnym folderze tymczasowym, który jest usuwany w chwili zakończenia zadania. Nigdy nie zapisujemy pliku ani hasła ani nie rejestrujemy ich w logach."],
+    ["Hasło zostało zapomniane. Czy to narzędzie otworzy plik PDF?", "Nie. Usuwa ono ochronę tylko za pomocą hasła, które otwiera plik. Nie zgaduje ani nie łamie haseł, a my nie mamy sposobu na odzyskanie hasła."],
+    ["Mój plik PDF otwiera się normalnie, ale nie da się go drukować ani kopiować z niego tekstu. Co zrobić?", "Taki plik PDF ma hasło właściciela, które ustawia ograniczenia, ale nie ma hasła do otwarcia. Zostaw pole hasła puste i kliknij Odblokuj PDF: kopia będzie miała ograniczenia usunięte."],
+    ["Czy wolno mi odblokować plik PDF?", "Odblokowuj tylko pliki, które są twoje albo do których masz prawo korzystać bez ograniczeń, takie jak własne wyciągi bankowe lub dokumenty udostępnione ci razem z hasłem."],
+    ["Dlaczego inne narzędzia nie mogą otworzyć mojego pliku PDF?", "Większość narzędzi na tej stronie, a także wiele innych aplikacji, odmawia pracy z zaszyfrowanymi plikami PDF. Najpierw odblokuj tutaj kopię, a potem połącz ją, podziel, skompresuj lub edytuj."],
+    ["Czy jest limit?", "Pliki do 10 MB i 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich naszych narzędzi serwerowych. Liczą się tylko udane zadania, więc błędne hasło nie zużywa limitu. Licznik odnawia się o północy UTC."],
+    ["Czym jest weryfikacja, że nie jesteś botem?", "Przed uruchomieniem zadania Cloudflare Turnstile sprawdza, czy z narzędzia korzysta człowiek, a nie bot. Zwykle jest niewidoczna; czasem prosi o zaznaczenie pola."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:unlock-pdf drop__mark}}
+  <p class="drop__title">Upuść chroniony plik PDF tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie. Do 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts">
+    <div class="field">
+      <label for="pw">Hasło</label>
+      <input id="pw" type="password" autocomplete="off" spellcheck="false" maxlength="127" aria-describedby="pw-help">
+      <span class="help" id="pw-help">Zostaw puste, jeśli plik PDF otwiera się bez hasła, ale blokuje drukowanie lub kopiowanie.</span>
+    </div>
+    <div class="field">
+      <span class="label">&nbsp;</span>
+      <label class="check"><input type="checkbox" id="show">Pokaż hasło</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Odblokuj PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Co robi odblokowanie</h2>
+<p>Chroniony plik PDF jest zaszyfrowany. Po podaniu właściwego hasła nasz serwer otwiera go za pomocą biblioteki qpdf o otwartym kodzie i zapisuje kopię bez szyfrowania i bez ograniczeń właściciela dotyczących drukowania, kopiowania i edycji. Same strony się nie zmieniają.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Zachowaj chroniony oryginał, jeśli trzeba będzie przesłać go ponownie w bezpieczny sposób, albo zabezpiecz kopię później za pomocą narzędzia <a href="/tools/protect-pdf/">Zabezpiecz PDF hasłem</a>.</li>
+  <li>Po odblokowaniu plik działa ze wszystkimi narzędziami PDF tutaj, takimi jak <a href="/tools/merge-pdf/">Połącz pliki PDF</a> i <a href="/tools/split-pdf/">Podziel PDF</a>, które działają w przeglądarce.</li>
+</ul>

@@ -1,0 +1,90 @@
+<!--meta
+{
+  "title": "Générateur de serveur PPPoE MikroTik pour FAI et WISP | Tanod Tools",
+  "description": "Générez un serveur PPPoE RouterOS : pool d'adresses, profils de forfaits avec rate-limit, serveur, secrets fictifs, RADIUS et NAT en option. Dans votre navigateur.",
+  "h1": "Générateur de serveur PPPoE MikroTik",
+  "lede": "Définissez l'interface côté clients, le pool d'adresses et les forfaits de débit, et obtenez un serveur PPPoE RouterOS complet avec profils, modèle de secrets et RADIUS en option.",
+  "blurb": "Pool, profils de forfaits, serveur PPPoE, secrets et RADIUS.",
+  "keywords": "configuration serveur pppoe mikrotik routeros pppoe-server ppp profile rate-limit ppp secret radius wisp fai forfaits clients ip pool local-address remote-address change-tcp-mss",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Génère de la syntaxe RouterOS v7 (valable aussi en v6). Les secrets reçoivent volontairement des mots de passe fictifs ; la page ne demande jamais de vrais mots de passe. IPv4 uniquement ; la délégation de préfixe IPv6 pour PPPoE n'est pas couverte. MikroTik et RouterOS sont des marques de SIA Mikrotīkls. Cet outil est indépendant : il n'est ni affilié à MikroTik ni approuvé par MikroTik.",
+  "howto_title": "Comment configurer un serveur PPPoE sur MikroTik",
+  "howto": [
+    "Saisissez l'interface côté clients (un port Ethernet, un bridge ou un VLAN) et un nom de service.",
+    "Indiquez le pool d'adresses des clients sous forme de réseau, les serveurs DNS, et un profil par forfait de débit avec son débit d'upload et de download.",
+    "Choisissez l'authentification, RADIUS et le NAT, définissez le nombre de comptes fictifs à créer, puis copiez ou téléchargez le script. Remplacez chaque CHANGE_ME avant que les clients ne se connectent."
+  ],
+  "faq": [
+    ["Comment fonctionnent les débits d'un profil PPP ?", "Le rate-limit du profil s'écrit rx/tx du point de vue du routeur : rx est ce que le routeur reçoit du client (son upload) et tx ce qu'il lui envoie (son download). Quand une session s'établit, RouterOS crée une simple queue dynamique avec ces limites. RADIUS peut la remplacer par client grâce à l'attribut Mikrotik-Rate-Limit."],
+    ["Pourquoi les mots de passe valent-ils CHANGE_ME ?", "Les mots de passe des clients sont des secrets, et un générateur de configuration n'a pas à les connaître. Le script crée les comptes avec des valeurs fictives évidentes pour que la structure soit prête ; définissez les vrais mots de passe sur le routeur, importez-les depuis votre système de facturation, ou laissez un serveur RADIUS gérer l'authentification."],
+    ["Que font only-one et one-session-per-host ?", "only-one sur le profil empêche un même nom d'utilisateur d'avoir deux sessions simultanées. one-session-per-host sur le serveur empêche une même adresse MAC d'ouvrir plusieurs sessions. Ensemble, ils préviennent l'essentiel du partage de comptes."],
+    ["Pourquoi le MTU vaut-il 1480 ?", "PPPoE ajoute un en-tête de 8 octets dans la trame Ethernet : une session ne peut donc transporter au maximum que 1492 sur un lien standard de 1500 octets. RouterOS utilise 1480 par défaut, ce qui laisse de la marge pour les balises VLAN et les comportements particuliers de certains CPE ; change-tcp-mss dans le profil ajuste alors le TCP pour que les gros paquets ne soient pas fragmentés."],
+    ["Quelles méthodes d'authentification autoriser ?", "CHAP et MS-CHAPv2 n'envoient pas le mot de passe en clair. PAP le fait, et ne vaut la peine d'être activé que pour d'anciens CPE qui ne gèrent rien d'autre. RADIUS fonctionne avec toutes, même si certains backends RADIUS exigent PAP pour vérifier des mots de passe hachés."],
+    ["Quelque chose est-il envoyé quelque part ?", "Non. Le script est généré dans votre navigateur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pp">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Serveur</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-if">Interface côté clients</label><input type="text" id="pp-if" class="mono" value="ether2" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-svc">Nom du service</label><input type="text" id="pp-svc" class="mono" value="isp" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-net">Réseau du pool clients</label><input type="text" id="pp-net" class="mono" value="10.10.0.0/22" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-dns">Serveurs DNS</label><input type="text" id="pp-dns" class="mono" value="1.1.1.1, 8.8.8.8" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <fieldset class="field">
+        <legend>Authentification</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="pp-auth" value="pap">PAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="chap" checked>CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap1" checked>MS-CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap2" checked>MS-CHAPv2</label>
+        </div>
+      </fieldset>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Forfaits de débit (profils)</legend>
+      <ul class="ros-rows" id="pp-profiles"></ul>
+      <button class="btn btn--sm ros-add" id="pp-add" type="button">{{mark:i-plus}}Ajouter un forfait</button>
+      <span class="help">Le premier forfait est le profil par défaut du serveur et celui qu'utilisent les comptes générés.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Comptes et options</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-count">Comptes fictifs</label><input type="text" id="pp-count" class="mono" value="3" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pp-user">Modèle de nom d'utilisateur</label><input type="text" id="pp-user" class="mono" value="customer{n}" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pp-one" checked>Une session par nom d'utilisateur (only-one)</label>
+        <label class="check"><input type="checkbox" id="pp-nat" checked>Masquerade des clients vers le WAN</label>
+        <label class="check"><input type="checkbox" id="pp-radius">Utiliser un serveur RADIUS</label>
+      </div>
+      <div class="opts" id="pp-radius-f" hidden>
+        <div class="field"><label for="pp-rad-ip">Adresse du serveur RADIUS</label><input type="text" id="pp-rad-ip" class="mono" value="10.0.0.5" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <label class="check"><input type="checkbox" id="pp-coa" checked>Accepter les requêtes CoA et de déconnexion</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pp-out" class="label">Script RouterOS</label>
+    <textarea id="pp-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pp-copy" type="button">Copier le script</button>
+      <button class="btn" id="pp-dl" type="button">{{mark:i-download}}Télécharger en .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pp-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Anatomie d'un serveur PPPoE RouterOS</h2>
+<p>Un serveur PPPoE sur RouterOS se compose de quatre éléments. Un <strong>IP pool</strong> contient les adresses des clients. Les <strong>profils PPP</strong> décrivent chaque forfait : l'adresse locale du routeur sur chaque session, le pool où prendre les adresses distantes, les serveurs DNS à distribuer et le <code>rate-limit</code> qui devient la queue du client. Le <strong>serveur PPPoE</strong> lui-même écoute les requêtes de découverte sur l'interface côté clients. Les <strong>secrets</strong>, ou un serveur RADIUS, décident qui peut se connecter et avec quel profil.</p>
+<p>Chaque session est une liaison point à point : les clients n'ont donc pas besoin de sous-réseau propre, le routeur utilise une seule adresse locale pour toutes les sessions et chaque client reçoit une adresse unique du pool. C'est pourquoi l'interface côté clients n'a besoin ni d'adresse IP ni de serveur DHCP ; sur un bridge ou un VLAN partagé avec d'autres services, séparez le trafic PPPoE du trafic IP.</p>
+<h3>Conseils</h3>
+<ul>
+  <li>Vous voulez des forfaits avec burst ? Calculez les valeurs avec le <a href="/tools/mikrotik-burst-calculator/">calculateur de burst</a> ; il affiche la chaîne rate-limit complète pour un profil ou pour RADIUS.</li>
+  <li>Des clients derrière des VLAN distincts par tour ou par bâtiment ? Créez les VLAN avec le <a href="/tools/mikrotik-vlan-generator/">générateur de VLAN</a> et lancez un serveur PPPoE par VLAN, ou un bridge au-dessus.</li>
+  <li>Protégez le routeur lui-même avec le <a href="/tools/mikrotik-firewall-generator/">générateur de firewall</a> : les interfaces côté clients ne doivent pas atteindre WinBox ni SSH.</li>
+</ul>

@@ -1,5 +1,5 @@
 // Pure logic for developer tools set 3 (no DOM): JSON to TypeScript, IPv4/IPv6 subnets, chmod modes and the cron builder.
-import { tx, txn, fmtNum, EN } from "./i18n.js?v=5";
+import { tx, txn, fmtNum, EN } from "./i18n.js?v=11";
 
 /* ================================================================== JSON to TypeScript */
 

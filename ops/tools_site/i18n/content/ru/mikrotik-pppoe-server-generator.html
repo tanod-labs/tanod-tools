@@ -1,0 +1,90 @@
+<!--meta
+{
+  "title": "Генератор PPPoE-сервера MikroTik для ISP и WISP | Tanod Tools",
+  "description": "Создайте PPPoE-сервер RouterOS: пул адресов, профили тарифов с rate-limit, сам сервер, учётные записи-заглушки, а также RADIUS и NAT. В браузере.",
+  "h1": "Генератор PPPoE-сервера MikroTik",
+  "lede": "Укажите интерфейс абонентов, пул адресов и тарифы по скорости и получите готовый PPPoE-сервер RouterOS с профилями, шаблоном учётных записей и при желании RADIUS.",
+  "blurb": "Пул, профили тарифов, PPPoE-сервер, секреты и RADIUS.",
+  "keywords": "настройка pppoe сервера mikrotik микротик routeros pppoe-server ppp profile rate-limit ppp secret radius wisp isp провайдер тарифы абонентов ip pool local-address remote-address change-tcp-mss",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт синтаксис RouterOS v7 (подходит и для v6). Учётным записям намеренно выдаются пароли-заглушки; страница никогда не запрашивает настоящие. Только IPv4; делегирование префиксов IPv6 для PPPoE не поддерживается. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен компанией.",
+  "howto_title": "Как настроить PPPoE-сервер на MikroTik",
+  "howto": [
+    "Укажите интерфейс, обращённый к абонентам (порт Ethernet, bridge или VLAN), и имя службы.",
+    "Задайте пул адресов абонентов в виде сети, DNS-серверы и по одному профилю на каждый тариф со скоростями отдачи и загрузки.",
+    "Выберите аутентификацию, RADIUS и NAT, укажите, сколько учётных записей-заглушек создать, и скопируйте или скачайте скрипт. Прежде чем абоненты начнут подключаться, замените каждое CHANGE_ME."
+  ],
+  "faq": [
+    ["Как работают скорости в профиле PPP?", "Параметр rate-limit профиля записывается как rx/tx с точки зрения маршрутизатора: rx — это то, что маршрутизатор получает от абонента (его отдача), а tx — то, что он отправляет (загрузка абонента). Когда сессия поднимается, RouterOS создаёт динамическую simple queue с этими ограничениями. RADIUS может переопределить их для конкретного абонента атрибутом Mikrotik-Rate-Limit."],
+    ["Почему у паролей значение CHANGE_ME?", "Пароли абонентов — секретные данные, и генератору конфигураций знать их незачем. Скрипт создаёт учётные записи с очевидными заглушками, чтобы структура была готова; задайте настоящие пароли на маршрутизаторе, импортируйте их из биллинга или поручите аутентификацию RADIUS-серверу."],
+    ["Что делают only-one и one-session-per-host?", "Параметр only-one в профиле не позволяет одному имени пользователя иметь сразу две сессии. Параметр one-session-per-host на сервере не позволяет одному MAC-адресу открывать несколько сессий. Вместе они не дают большинству абонентов делиться учётной записью."],
+    ["Почему MTU равен 1480?", "PPPoE добавляет внутри кадра Ethernet заголовок в 8 байт, поэтому по обычному каналу с MTU 1500 сессия может нести не больше 1492. RouterOS по умолчанию использует 1480: так остаётся запас для тегов VLAN и странностей клиентского оборудования; change-tcp-mss в профиле при этом ограничивает TCP, чтобы большие пакеты не фрагментировались."],
+    ["Какие методы аутентификации разрешить?", "CHAP и MS-CHAPv2 не передают пароль открытым текстом. PAP передаёт, и включать его стоит только ради старого клиентского оборудования, которое больше ничего не поддерживает. RADIUS работает со всеми методами, хотя некоторым RADIUS-серверам для проверки хешированных паролей нужен PAP."],
+    ["Отправляется ли что-нибудь из этого куда-либо?", "Нет. Скрипт создаётся в вашем браузере."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pp">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Сервер</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-if">Интерфейс абонентов</label><input type="text" id="pp-if" class="mono" value="ether2" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-svc">Имя службы</label><input type="text" id="pp-svc" class="mono" value="isp" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-net">Сеть пула абонентов</label><input type="text" id="pp-net" class="mono" value="10.10.0.0/22" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-dns">DNS-серверы</label><input type="text" id="pp-dns" class="mono" value="1.1.1.1, 8.8.8.8" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <fieldset class="field">
+        <legend>Аутентификация</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="pp-auth" value="pap">PAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="chap" checked>CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap1" checked>MS-CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap2" checked>MS-CHAPv2</label>
+        </div>
+      </fieldset>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Тарифы по скорости (профили)</legend>
+      <ul class="ros-rows" id="pp-profiles"></ul>
+      <button class="btn btn--sm ros-add" id="pp-add" type="button">{{mark:i-plus}}Добавить тариф</button>
+      <span class="help">Первый тариф становится профилем сервера по умолчанию и используется созданными учётными записями.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Учётные записи и параметры</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-count">Учётных записей-заглушек</label><input type="text" id="pp-count" class="mono" value="3" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pp-user">Шаблон имени пользователя</label><input type="text" id="pp-user" class="mono" value="customer{n}" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pp-one" checked>Одна сессия на имя пользователя (only-one)</label>
+        <label class="check"><input type="checkbox" id="pp-nat" checked>Маскарадинг абонентов в сторону WAN</label>
+        <label class="check"><input type="checkbox" id="pp-radius">Использовать RADIUS-сервер</label>
+      </div>
+      <div class="opts" id="pp-radius-f" hidden>
+        <div class="field"><label for="pp-rad-ip">Адрес RADIUS-сервера</label><input type="text" id="pp-rad-ip" class="mono" value="10.0.0.5" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <label class="check"><input type="checkbox" id="pp-coa" checked>Принимать запросы CoA и отключения</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pp-out" class="label">Скрипт RouterOS</label>
+    <textarea id="pp-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pp-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="pp-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pp-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Устройство PPPoE-сервера в RouterOS</h2>
+<p>PPPoE-сервер в RouterOS состоит из четырёх частей. <strong>Пул IP</strong> хранит адреса абонентов. <strong>Профили PPP</strong> описывают каждый тариф: локальный адрес маршрутизатора в каждой сессии, пул, из которого берутся удалённые адреса, выдаваемые DNS-серверы и <code>rate-limit</code>, который превращается в очередь абонента. Сам <strong>PPPoE-сервер</strong> слушает запросы обнаружения на интерфейсе, обращённом к абонентам. А <strong>секреты</strong> (или RADIUS-сервер) решают, кто может войти и с каким профилем.</p>
+<p>Каждая сессия — это канал «точка–точка», поэтому отдельная подсеть абонентам не нужна: маршрутизатор использует один локальный адрес для всех сессий, а каждый абонент получает из пула единственный адрес. Поэтому интерфейсу абонентов не нужны ни IP-адрес, ни DHCP-сервер; если bridge или VLAN общие с другими службами, держите трафик PPPoE и IP раздельно.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Нужны тарифы с burst? Рассчитайте значения в инструменте <a href="/tools/mikrotik-burst-calculator/">Калькулятор Burst для MikroTik</a>: он выводит полную строку rate-limit для профиля или RADIUS.</li>
+  <li>У абонентов отдельные VLAN на каждую вышку или здание? Создайте VLAN в инструменте <a href="/tools/mikrotik-vlan-generator/">Генератор VLAN для MikroTik</a> и запустите по одному PPPoE-серверу на VLAN или один поверх bridge.</li>
+  <li>Защитите сам маршрутизатор с помощью инструмента <a href="/tools/mikrotik-firewall-generator/">Генератор файрвола MikroTik</a>: интерфейсы абонентов не должны иметь доступа к WinBox и SSH.</li>
+</ul>

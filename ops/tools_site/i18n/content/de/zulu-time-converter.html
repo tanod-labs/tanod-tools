@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Zulu-Zeit umrechnen: Ortszeit in UTC | Tanod Tools",
+  "description": "Rechnen Sie Ortszeit in Zulu (UTC) und zurück um, für jede Zeitzone, mit Zeitgruppen im METAR-Format DDHHMMZ. Nutzt die Zeitzonendatenbank Ihres Browsers.",
+  "h1": "Zulu-Zeit (UTC) umrechnen",
+  "lede": "Rechnen Sie eine Ortszeit in Zulu (UTC) um oder umgekehrt, für jede Zeitzone, und lesen Sie Zeitgruppen im METAR-Format DDHHMMZ.",
+  "blurb": "Ortszeit in Zulu (UTC) und METAR-Gruppen im Format DDHHMMZ.",
+  "keywords": "zulu zeit umrechnen utc gmt ortszeit luftfahrt z-zeit ddhhmmz metar zeitgruppe zeitzonen umrechner weltzeit 24 stunden sommerzeit winterzeit mez mesz",
+  "limits": "Nutzt die in Ihrem Browser eingebauten Zeitzonendaten, einschließlich der Sommerzeitregeln. Nicht für die Flugplanung oder Navigation geeignet: Prüfen Sie die offizielle Uhrzeit und die Gültigkeit von NOTAM selbst.",
+  "howto_title": "So rechnen Sie Ortszeit in Zulu um",
+  "howto": [
+    "Wählen Sie das Datum, die Uhrzeit und die Zeitzone, in der sie gilt. Das erste Feld beginnt mit Ihrer eigenen Zeitzone.",
+    "Wählen Sie die Zone, in der sie angezeigt werden soll: Voreingestellt ist UTC, auch Zulu-Zeit oder Z genannt.",
+    "Lesen Sie die umgerechnete Zeit und die Gruppe DDHHMMZ ab. Um eine Zeitgruppe aus einem METAR oder TAF zu dekodieren, geben Sie sie im zweiten Abschnitt ein."
+  ],
+  "faq": [
+    ["Was ist die Zulu-Zeit?", "Die Zulu-Zeit ist die koordinierte Weltzeit (UTC), geschrieben mit dem Buchstaben Z, dem NATO-Buchstabieralphabet-Namen der militärischen Zeitzone ohne Abweichung. Luftfahrt, Meteorologie und Militär nutzen sie, damit alle eine gemeinsame Uhr haben, ohne Sommerzeitumstellung."],
+    ["Wie lese ich eine Zeitgruppe wie 081405Z?", "Die ersten beiden Ziffern sind der Tag des Monats (08), die nächsten zwei die Stunde (14) und die letzten zwei die Minuten (05), stets in UTC. 081405Z ist also der 8. Tag um 14:05 UTC. METAR-, TAF- und NOTAM-Zeiten verwenden diese Form. Monat und Jahr werden nicht angegeben, deshalb wählt das Werkzeug den Monat, der dem Referenzdatum am nächsten liegt."],
+    ["Ist UTC dasselbe wie GMT?", "Im Alltag ja: Die Uhren zeigen dieselbe Zeit. Streng genommen ist GMT eine an der Erdrotation orientierte Zeitzone und UTC eine Atomzeitskala, die durch Schaltsekunden innerhalb von 0,9 Sekunden daran gehalten wird. Die Luftfahrt verwendet UTC."],
+    ["Gibt es bei der Zulu-Zeit eine Sommerzeit?", "Nein. UTC ändert sich nie. Die Abweichung einer lokalen Zeitzone von UTC ändert sich, wenn ihre Sommerzeit beginnt oder endet, weshalb ein Flugplan in UTC leichter zu lesen ist."],
+    ["Was passiert bei einer Sommerzeitumstellung?", "Wenn die Uhren vorgestellt werden, existiert eine Stunde Ortszeit nicht, und das Werkzeug springt zur nächsten gültigen Zeit. Wenn die Uhren zurückgestellt werden, kommt eine Stunde doppelt vor, und das Werkzeug verwendet die erste und weist Sie darauf hin."],
+    ["Woher hat das Werkzeug seine Zeitzonenregeln?", "Aus der eingebauten IANA-Zeitzonendatenbank Ihres Browsers (der Intl-API), es wird also nichts heruntergeladen. Ein alter Browser kann für manche Länder veraltete Regeln haben."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="zt-date">Datum</label>
+    <input type="date" id="zt-date">
+  </div>
+  <div class="field">
+    <label for="zt-time">Uhrzeit</label>
+    <input type="time" id="zt-time">
+  </div>
+  <div class="field">
+    <label for="zt-from">Zeitzone dieser Uhrzeit</label>
+    <select id="zt-from"></select>
+  </div>
+  <div class="field">
+    <label for="zt-to">Anzeigen in</label>
+    <select id="zt-to"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="zt-now" type="button">Aktuelle Uhrzeit verwenden</button>
+  <button class="btn btn--quiet" id="zt-swap" type="button">Zonen tauschen</button>
+</div>
+<p class="note" id="zt-note" role="status" aria-live="polite" hidden></p>
+<dl class="stats" id="zt-stats"></dl>
+<h2 class="util-h" id="zt-grp-h">Eine METAR- oder TAF-Zeitgruppe lesen</h2>
+<div class="opts">
+  <div class="field">
+    <label for="zt-grp">Zeitgruppe (DDHHMMZ)</label>
+    <input type="text" id="zt-grp" class="mono" autocomplete="off" spellcheck="false" value="081405Z" placeholder="081405Z" aria-describedby="zt-grp-msg">
+  </div>
+  <div class="field">
+    <label for="zt-ref">Nächstliegend zu diesem UTC-Datum</label>
+    <input type="date" id="zt-ref">
+  </div>
+</div>
+<p class="note" id="zt-grp-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="zt-grp-stats"></dl>
+<!--explain-->
+<h2>So funktioniert die Umrechnung</h2>
+<p>UTC (koordinierte Weltzeit) ist der internationale zivile Zeitstandard, der vom BIPM geführt und in der ITU-R-Empfehlung TF.460 definiert wird. In der Luftfahrt wird sie mit dem Suffix Z geschrieben, nach dem Buchstaben Zulu der militärischen Zeitzonen, und im ICAO-Zeitgruppenformat DDHHMMZ, das in METAR-, TAF- und SIGMET-Meldungen verwendet wird (ICAO Annex 3, WMO Nr. 306). Die Ortszeit ist UTC plus die Abweichung der Zone, die wegen der Sommerzeitregeln vom Datum abhängt.</p>
+<p>Die Seite macht aus Datum und Uhrzeit, die Sie eingeben, einen Zeitpunkt, mit der Abweichung, die die Zone in diesem Moment hatte, und zeigt diesen Zeitpunkt dann in der anderen Zone an. Dafür dient die IANA-Zeitzonendatenbank über die Intl-API Ihres Browsers, dieselben Daten, die auch Betriebssysteme nutzen. Eine ungültige Ortszeit in der zu Beginn der Sommerzeit übersprungenen Stunde wird um die Lücke vorverlegt, und eine mehrdeutige Zeit in der wiederholten Stunde verwendet das erste Auftreten.</p>
+<p>Eine Zeitgruppe hat weder Monat noch Jahr, deshalb probiert das Werkzeug den vorherigen, den gleichen und den nächsten Monat und behält das Datum, das dem angegebenen Referenzdatum (standardmäßig heute, UTC) am nächsten liegt; so wird eine Wettermeldung normalerweise einem Kalendertag zugeordnet. <strong>Nicht für die Flugplanung oder Navigation geeignet.</strong></p>

@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Kalkulator podsieci IPv4 i IPv6 (CIDR) | Tanod Tools",
+  "description": "Wpisz adres IPv4 lub IPv6 z prefiksem albo maską: poznasz sieć, broadcast, zakres hostów, maskę wildcard i zapis binarny, a potem podzielisz ją na podsieci.",
+  "h1": "Kalkulator podsieci",
+  "lede": "Oblicz sieć, zakres hostów i liczby adresów dla dowolnej podsieci IPv4 lub IPv6, a potem podziel ją na mniejsze.",
+  "blurb": "Kalkulator CIDR dla IPv4 i IPv6 z zakresami hostów i podziałem na podsieci.",
+  "keywords": "kalkulator podsieci kalkulator cidr kalkulator ip maska podsieci maska wildcard adres broadcast liczba hostów prefiks ipv6 podział na podsieci rfc 1918 subnet calculator netmask usable hosts subnetting",
+  "limits": "Tylko IPv4 i IPv6, jedna podsieć naraz. Typ adresu jest odczytywany z wbudowanych w stronę zakresów specjalnego przeznaczenia IANA, więc narzędzie nie wie nic o tym, kto jest właścicielem adresu publicznego. Tabele podziału na podsieci kończą się na 256 wierszach.",
+  "howto_title": "Jak obliczyć podsieć",
+  "howto": [
+    "Wpisz adres z długością prefiksu, na przykład <code>192.168.1.10/24</code> lub <code>2001:db8::/32</code>. Działa też adres IPv4 z maską w zapisie kropkowym, na przykład <code>192.168.1.10 255.255.255.0</code>.",
+    "Odczytaj adres sieci, zakres hostów i liczby adresów. Jeśli w adresie były ustawione bity hosta, strona poda, do jakiej sieci został znormalizowany.",
+    "Aby zaplanować mniejsze sieci, wpisz dłuższy prefiks w polu <strong>Podziel na</strong> i przeczytaj tabelę podsieci."
+  ],
+  "faq": [
+    ["Dlaczego użytecznych hostów jest o dwa mniej niż adresów?", "W zwykłej podsieci IPv4 pierwszy adres oznacza sieć, a ostatni to adres rozgłoszeniowy (broadcast), więc żadnego z nich nie można przydzielić urządzeniu. Podsieć /24 ma 256 adresów i 254 użyteczne hosty. Istnieją dwa wyjątki: /31 ma dwa adresy i oba są użyteczne w łączu punkt–punkt (RFC 3021), a /32 to pojedynczy host."],
+    ["Co pokazuje maska wildcard?", "To odwrócona maska sieci: bity 0 muszą się zgadzać, a bity 1 są ignorowane. Dla 255.255.255.0 maska wildcard to 0.0.0.255. W tej postaci zapisuje się listy dostępu na sprzęcie Cisco i instrukcje network w OSPF."],
+    ["Dlaczego adres 010.0.0.1 jest odrzucany?", "Zero na początku sprawia, że niektóre systemy odczytują ten fragment jako liczbę ósemkową, więc 010 oznaczałoby 8, a inne jako dziesiętną 10. Ten sam tekst może wskazywać dwa różne komputery, dlatego strona prosi o zapisanie liczby bez zera."],
+    ["Czym różni się obliczanie podsieci w IPv6?", "IPv6 nie ma adresu rozgłoszeniowego, więc każdy adres w prefiksie można przydzielić, a liczba adresów to po prostu 2 do potęgi (128 minus prefiks). Zwykłe podsieci LAN mają prefiks /64. Strona pokazuje adres w skróconej postaci z RFC 5952 oraz w pełnej, ze wszystkimi ośmioma czterocyfrowymi grupami."],
+    ["Czym jest skrócona postać adresu IPv6?", "Zera wiodące w każdej grupie są pomijane, a najdłuższy ciąg co najmniej dwóch grup złożonych z samych zer jest zastępowany przez <code>::</code>, przy czym przy remisie wybierany jest ciąg położony najbardziej na lewo. Pojedyncza grupa zer nigdy nie jest skracana, więc <code>2001:db8:0:1:1:1:1:1</code> zachowuje swoje 0."],
+    ["Czy adresy są dokądś wysyłane?", "Nie. Obliczenia są wykonywane w przeglądarce na dużych liczbach całkowitych, nic, co wpiszesz, nie jest nigdzie wysyłane, a po załadowaniu strony narzędzie działa też offline."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Adres IP z prefiksem lub maską</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Przykłady">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + maska</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Szczegóły podsieci"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Podziel na mniejsze podsieci</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Podziel na prefiks o długości /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="na przykład 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Zostaw puste, aby nie dzielić. Musi być dłuższy niż prefiks powyżej.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Podsieci</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Podsieci i notacja CIDR</h2>
+<p>Adres IP składa się z dwóch części: początkowe bity wskazują sieć, a pozostałe bity wskazują hosta w tej sieci. Długość prefiksu po ukośniku mówi, ile początkowych bitów należy do sieci, więc <code>192.168.1.10/24</code> oznacza, że pierwsze 24 z 32 bitów to sieć, a ostatnie 8 identyfikuje jeden z 256 adresów. Ustawienie wszystkich bitów hosta na 0 daje adres sieci, a ustawienie ich wszystkich na 1 daje adres rozgłoszeniowy, dlatego zwykle nie przydziela się ich urządzeniom.</p>
+<p>Maska sieci to ta sama informacja zapisana jako adres: 24 bity jedynek, po których następuje 8 bitów zer, to 255.255.255.0. Poprawne są tylko maski ciągłe, więc coś takiego jak 255.0.255.0 jest odrzucane. IPv6 działa tak samo na 128 bitach, ale bez adresu rozgłoszeniowego i ze znacznie większym zakresem: standardowa podsieć LAN /64 mieści 2<sup>64</sup> adresów, czyli około 18 trylionów.</p>
+<p>Niektóre zakresy mają szczególne znaczenie wszędzie, gdzie się pojawiają. 10.0.0.0/8, 172.16.0.0/12 i 192.168.0.0/16 są prywatne i nie są routowane w publicznym internecie, 100.64.0.0/10 to współdzielona przestrzeń adresowa dla NAT klasy operatorskiej (CGNAT), 169.254.0.0/16 to adresy link-local, a bloki 192.0.2.0, 198.51.100.0 i 203.0.113.0 są zarezerwowane do dokumentacji. Strona oznacza zakres, do którego należy adres.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Zamień oktet lub cały adres między zapisem dwójkowym a dziesiętnym za pomocą narzędzia <a href="/tools/number-base-converter/">Konwerter systemów liczbowych</a>.</li>
+  <li>Ustawiasz też uprawnienia do plików na serwerze? <a href="/tools/chmod-calculator/">Kalkulator chmod</a> zamienia 755 na rwxr-xr-x i z powrotem.</li>
+  <li>Kod statusu z nieudanego sprawdzenia kondycji odczytasz w narzędziu <a href="/tools/http-status-codes/">Kody statusu HTTP</a>.</li>
+</ul>

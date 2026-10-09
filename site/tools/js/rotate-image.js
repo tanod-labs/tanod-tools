@@ -1,5 +1,5 @@
-import { $, fmtBytes, tx, txn } from "./core.js?v=5";
-import { batchTool, decode, newCanvas, ctx2d, scaleTo, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=5";
+import { $, fmtBytes, tx, txn } from "./core.js?v=11";
+import { batchTool, decode, newCanvas, ctx2d, scaleTo, release, encodeCanvas, keepType, outName, LABEL, dims } from "./imgcore.js?v=11";
 
 const prev = $("#preview");
 const prevLabel = $("#preview-label");

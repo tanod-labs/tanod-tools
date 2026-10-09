@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Chuyển đổi hệ cơ số: nhị phân, bát phân, thập phân, hex | Tanod Tools",
+  "description": "Chuyển số nguyên giữa nhị phân, bát phân, thập phân, thập lục phân và mọi cơ số từ 2 đến 36, với số lớn tùy ý, kèm số bù hai cho 8, 16, 32 và 64 bit.",
+  "h1": "Chuyển đổi hệ cơ số",
+  "lede": "Chuyển một số nguyên giữa nhị phân, bát phân, thập phân, hex và mọi cơ số đến 36, đồng thời xem mẫu bit theo số bù hai của nó.",
+  "blurb": "Nhị phân, bát phân, thập phân, hex và cơ số từ 2 đến 36.",
+  "keywords": "chuyển đổi hệ cơ số, nhị phân sang thập phân, thập phân sang nhị phân, hex sang thập phân, thập phân sang hex, bát phân, cơ số 36, số bù hai, số có dấu, số không dấu, binary to decimal, decimal to binary, hex to decimal, decimal to hex, octal, radix, base 36, two's complement, signed unsigned bits",
+  "limits": "Số nguyên tối đa 4.096 chữ số, dương hoặc âm. Phần phân số không được chuyển đổi.",
+  "howto_title": "Cách chuyển đổi giữa các hệ cơ số",
+  "howto": [
+    "Chọn cơ số mà số của bạn đang được viết, hoặc chọn Cơ số khác và nhập một cơ số từ 2 đến 36.",
+    "Nhập số. Cho phép dấu trừ, và tiền tố <code>0x</code>, <code>0b</code> hoặc <code>0o</code> tương ứng cũng được chấp nhận; dấu cách và dấu gạch dưới bị bỏ qua.",
+    "Xem số đó ở mọi cơ số bên dưới, sao chép cơ số bạn cần, và kiểm tra bảng số bù hai cho các số nguyên có độ rộng cố định."
+  ],
+  "faq": [
+    ["Công cụ chuyển đổi được số lớn đến mức nào?", "Tối đa 4.096 chữ số ở cơ số đầu vào. Việc chuyển đổi dùng phép toán số nguyên chính xác (BigInt), nên các giá trị rất lớn như 2⁶⁴ + 1 = 18446744073709551617 được chuyển đổi mà không làm tròn, khác với các máy tính chuyển sang dấu phẩy động khi vượt khoảng 9 triệu tỷ."],
+    ["Có chuyển đổi được phân số như 0,1 không?", "Không. Chỉ số nguyên được chuyển đổi, và dấu thập phân sẽ được báo là lỗi chứ không bị lặng lẽ bỏ đi. Nhiều phân số không có dạng chính xác ở cơ số khác: 0,1 trong hệ thập phân là một dãy lặp trong nhị phân, và đó là lý do 0,1 + 0,2 không đúng bằng 0,3 trong hầu hết ngôn ngữ lập trình."],
+    ["Số bù hai cho biết điều gì?", "Đó là cách máy tính lưu số nguyên có dấu trong một số bit cố định. Số âm −n được lưu là 2 lũy thừa số bit, trừ n, nên −1 trong 8 bit là 11111111 (FF). Bảng hiển thị mẫu bit cho 8, 16, 32 và 64 bit, cùng ý nghĩa của mẫu đó khi đọc như số nguyên có dấu và không dấu. Nếu số không vừa độ rộng nào, dòng đó sẽ ghi rõ thay vì tràn vòng."],
+    ["Các chữ số vượt quá cơ số 10 được biểu diễn thế nào?", "Bằng chữ cái, như hầu hết ngôn ngữ lập trình: A là 10, B là 11 và cứ thế đến Z là 35, nên cơ số 36 là cao nhất. Đầu vào chấp nhận chữ hoa hoặc chữ thường; tùy chọn chữ hoa quyết định định dạng đầu ra."],
+    ["Vì sao một chữ số bị báo là không hợp lệ?", "Mỗi cơ số chỉ cho phép các chữ số nhỏ hơn giá trị của nó: nhị phân cho phép 0 và 1, bát phân từ 0 đến 7, hex từ 0 đến 9 và từ A đến F. Thông báo lỗi nêu tên ký tự và vị trí của nó để bạn tìm ra lỗi gõ, hoặc chuyển sang đúng cơ số mà số đang được viết."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Số đang ở hệ</label>
+      <select id="nb-from">
+        <option value="10" selected>Thập phân (cơ số 10)</option>
+        <option value="2">Nhị phân (cơ số 2)</option>
+        <option value="8">Bát phân (cơ số 8)</option>
+        <option value="16">Thập lục phân (cơ số 16)</option>
+        <option value="other">Cơ số khác…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Cơ số (2 đến 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Số</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Nhóm các chữ số</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Chữ cái viết hoa</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Số bù hai</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bit</th><th scope="col">Mẫu bit (hex, nhị phân)</th><th scope="col">Đọc như</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Hệ cơ số hoạt động thế nào</h2>
+<p>Cơ số (radix) là số chữ số khác nhau mà một hệ đếm sử dụng. Trong hệ thập phân, mỗi vị trí có giá trị gấp mười lần vị trí bên phải nó; trong nhị phân, gấp hai lần, nên 1101 nghĩa là 8 + 4 + 0 + 1 = 13. Hệ thập lục phân dùng mười sáu chữ số, từ 0 đến 9 rồi A đến F, và mỗi chữ số hex đại diện chính xác bốn chữ số nhị phân, đó là lý do lập trình viên dùng nó như cách viết gọn cho byte: 255 là FF, hay 11111111.</p>
+<p>Bát phân gom các chữ số nhị phân thành nhóm ba và vẫn xuất hiện trong quyền tệp của Unix (755 nghĩa là rwxr-xr-x). Cơ số 36 dùng đủ mọi chữ số và chữ cái, thường gặp trong các ID ngắn và dịch vụ rút gọn URL.</p>
+<p>Máy tính lưu số nguyên có dấu trong một số bit cố định bằng số bù hai, trong đó bit cao nhất mang trọng số âm. Vì vậy cùng các bit đó có thể mang hai giá trị khác nhau: 11001000 là 200 khi đọc như số không dấu và −56 khi đọc như số có dấu. Bảng dưới phần kết quả hiển thị cả hai cách đọc cho các kích thước số nguyên phổ biến.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Muốn chuyển văn bản thành các byte nhị phân chứ không phải một con số? Hãy dùng <a href="/tools/text-to-binary/">Văn bản sang nhị phân</a>.</li>
+  <li>Mã màu như <code>#1636A3</code> là ba byte hex: xem chúng trong <a href="/tools/color-converter/">Chuyển đổi màu và kiểm tra độ tương phản</a>.</li>
+  <li>Unix timestamp là số giây thập phân thông thường; hãy chuyển đổi bằng <a href="/tools/unix-timestamp-converter/">Chuyển đổi Unix timestamp</a>.</li>
+</ul>

@@ -1,5 +1,5 @@
 // CSV reading and writing shared by CSV to JSON and JSON to CSV. Everything runs in the browser.
-import { textBlob, tx } from "./core.js?v=5";
+import { textBlob, tx } from "./core.js?v=11";
 
 /* Save text as a download (the blob URL is revoked shortly after). */
 export function saveText(text, name, type = "text/plain") {

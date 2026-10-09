@@ -1,7 +1,7 @@
 // Cron core shared by the cron explainer and the cron generator: parse a five-field expression the way
 // Vixie cron and cronie do, describe it in English and list next run times in any zone. Runs in the browser.
-import { wallFields, wallToInstants, offsetMinutes, utcFromFields, pad } from "./tzcore.js?v=5";
-import { tx, EN, LANG, dateFormat, listText } from "./i18n.js?v=5";
+import { wallFields, wallToInstants, offsetMinutes, utcFromFields, pad } from "./tzcore.js?v=11";
+import { tx, EN, LANG, dateFormat, listText } from "./i18n.js?v=11";
 
 export const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 export const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

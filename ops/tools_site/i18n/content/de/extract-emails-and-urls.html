@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "E-Mails, URLs, Domains und IPs extrahieren | Tanod Tools",
+  "description": "E-Mail-Adressen, URLs, Domains, IPs, Telefonnummern und Hashtags aus Text extrahieren. Duplikate entfernen, zählen, als CSV laden. Kostenlos.",
+  "h1": "E-Mails und URLs extrahieren",
+  "lede": "Fügen Sie beliebigen Text ein und erhalten Sie getrennte Listen der darin enthaltenen E-Mail-Adressen, Webadressen, Domains, IP-Adressen, telefonnummernähnlichen Zahlen und Hashtags, ohne Duplikate und mit Anzahl.",
+  "blurb": "E-Mails, URLs, Domains, IPs, Telefonnummern und Hashtags aus Text holen.",
+  "keywords": "e-mails aus text extrahieren e-mail extraktor urls aus text extrahieren link extraktor domains extrahieren ip adressen extraktor telefonnummern extraktor hashtags extraktor duplikate entfernen csv",
+  "local_text": "Läuft in Ihrem Browser; nichts, was Sie eingeben, verlässt Ihr Gerät",
+  "limits": "Text bis zu einigen Millionen Zeichen. Telefonnummern werden an ihrer Form erkannt (7 bis 15 Ziffern mit Leerzeichen, Bindestrichen, Punkten oder Klammern), daher können andere Zahlen fälschlich passen und manche Formate übersehen werden. Einzelne Domains wie example.com werden nur mit einer bekannten Endung wie .com, .org oder einem Ländercode gefunden.",
+  "howto_title": "So extrahieren Sie E-Mails und Links aus Text",
+  "howto": [
+    "Fügen Sie Ihren Text ein, zum Beispiel eine Webseite, einen E-Mail-Verlauf, ein Protokoll oder ein Dokument.",
+    "Wählen Sie, ob Duplikate entfernt werden sollen und wie jede Liste sortiert wird.",
+    "Kopieren Sie eine Liste oder laden Sie sie als Text- oder CSV-Datei herunter."
+  ],
+  "faq": [
+    [
+      "Was findet das Tool?",
+      "Sechs Arten von Einträgen: E-Mail-Adressen, URLs (http, https, ftp und Adressen, die mit www beginnen), Domains, IPv4-Adressen, telefonnummernähnliche Zahlen und Hashtags. Jede Art erhält eine eigene Liste mit Anzahl."
+    ],
+    [
+      "Wie wird entschieden, was ein Duplikat ist?",
+      "E-Mails, Domains und Hashtags werden ohne Beachtung der Groß- und Kleinschreibung verglichen, daher zählen Bob@Example.com und bob@example.com als eine Adresse, und die erste Schreibweise bleibt erhalten. URLs und IP-Adressen müssen exakt übereinstimmen. Telefonnummern werden anhand ihrer Ziffern verglichen, 555-123-4567 und 555 123 4567 sind also dieselbe Nummer. Deaktivieren Sie <em>Duplikate entfernen</em>, um jeden Treffer zu behalten."
+    ],
+    [
+      "Woher stammen die Domains?",
+      "Aus dem Hostnamen jeder URL und dem Teil nach dem @ jeder E-Mail-Adresse, dazu einzelne Namen mit bekannter Endung wie example.com. Ein führendes www. wird entfernt. IP-Adressen, die als Host dienen, stehen stattdessen unter den IP-Adressen."
+    ],
+    [
+      "Warum wurde eine Telefonnummer übersehen oder eine Zahl fälschlich aufgeführt?",
+      "Eine telefonnummernähnliche Zahl ist eine Folge von 7 bis 15 Ziffern, die Leerzeichen, Bindestriche, Punkte, Klammern und ein führendes Pluszeichen enthalten kann. Datumsangaben und IP-Adressen werden übersprungen, aber eine mit Bindestrichen geschriebene Bestellnummer kann dennoch wie eine Telefonnummer wirken, und eine Zahl aus einer einzigen Ziffernfolge außerhalb dieser Länge wird ignoriert. Verstehen Sie die Liste als erste Auswahl und prüfen Sie sie."
+    ],
+    [
+      "Was enthalten die CSV-Dateien?",
+      "Zwei Spalten, Wert und Anzahl, mit einer Zeile pro Eintrag. Die Datei ist UTF-8 mit Byte-Order-Mark, damit Tabellenkalkulationen Umlaute und Akzente korrekt anzeigen."
+    ],
+    [
+      "Wird mein Text hochgeladen?",
+      "Nein. Der Text wird in Ihrem Browser durchsucht und verlässt Ihr Gerät nie."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ex">
+  <div class="field">
+    <label for="ex-in">Zu durchsuchender Text</label>
+    <textarea id="ex-in" class="mono" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Text hier einfügen"></textarea>
+  </div>
+  <div class="opts opts--pair">
+    <div class="field">
+      <label for="ex-sort">Jede Liste sortieren</label>
+      <select id="ex-sort">
+        <option value="none">In gefundener Reihenfolge</option>
+        <option value="az">A bis Z</option>
+        <option value="count">Häufigste zuerst</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ex-unique" checked>Duplikate entfernen</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ex-example" type="button">Beispiel laden</button>
+    <button class="btn btn--quiet" id="ex-clear" type="button" disabled>Leeren</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ex-report" aria-live="polite">Fügen Sie Text ein, um zu beginnen.</p>
+  <div class="ex-lists" id="ex-lists"></div>
+</div>
+<!--explain-->
+<h2>So entstehen die Listen</h2>
+<p>Das Tool durchsucht Ihren Text mit Mustern für jede Art von Eintrag und zeigt die Treffer in der Reihenfolge ihres Auftretens. Eine E-Mail-Adresse besteht aus einem Namen, einem @-Zeichen und einer Domain mit gültiger Endung. Eine URL beginnt mit http, https, ftp oder www und reicht bis zum nächsten Leerzeichen, Anführungszeichen oder zur nächsten spitzen Klammer; die Satzzeichen des umgebenden Satzes (ein Punkt, ein Komma, eine schließende Klammer ohne öffnendes Gegenstück) gehören nicht zur Adresse. Eine Domain ist der Hostname einer URL oder der Teil einer E-Mail-Adresse nach dem @, ohne führendes www.</p>
+<p>IPv4-Adressen sind vier Zahlen von 0 bis 255, durch Punkte getrennt, daher wird 192.168.1.1 aufgeführt und 999.1.1.1 nicht. Telefonnummernähnliche Zahlen werden an ihrer Form erkannt, weil eine Telefonnummer auf viele Arten geschrieben werden kann: 7 bis 15 Ziffern mit Leerzeichen, Bindestrichen, Punkten oder Klammern und einem optionalen Pluszeichen. Datumsangaben wie 2026-10-08 werden nicht für Telefonnummern gehalten. Hashtags beginnen mit # und brauchen mindestens einen Buchstaben, daher wird #2026 übersprungen.</p>
+<p>Mit entfernten Duplikaten zeigt jede Liste jeden unterschiedlichen Eintrag einmal mit der Anzahl seines Auftretens, was hilft, den häufigsten Absender oder die am meisten verlinkte Website zu finden. Sie können eine Liste von A bis Z oder nach Anzahl sortieren und sie dann mit einem Eintrag pro Zeile kopieren oder als einfache Textdatei oder als CSV mit Wert- und Anzahl-Spalte herunterladen.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Um eine kopierte Liste aufzuräumen, entfernen Sie wiederholte Zeilen mit <a href="/tools/remove-duplicate-lines/">Doppelte Zeilen entfernen</a> oder sortieren Sie sie mit <a href="/tools/sort-lines-alphabetically/">Zeilen alphabetisch sortieren</a>.</li>
+  <li>Sie brauchen ein Muster, das das Tool nicht abdeckt? Bauen Sie es im <a href="/tools/regex-tester/">Regex-Tester</a>.</li>
+  <li>Links mit Prozentzeichen lassen sich mit <a href="/tools/url-encode-decode/">URL kodieren und dekodieren</a> lesen.</li>
+</ul>

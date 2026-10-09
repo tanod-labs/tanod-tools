@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "KSeF fatura görüntüleyici: FA(3) ve FA(2) XML açın | Tanod Tools",
+  "description": "Polonya KSeF faturasını (FA(3) veya FA(2) XML) açıp normal fatura olarak okuyun. Yazdırın, PDF kaydedin, JSON alın. Ücretsiz, yükleme yok.",
+  "h1": "KSeF fatura görüntüleyici",
+  "lede": "Polonya'nın KSeF sistemindeki yapılandırılmış bir faturayı açın ve sıradan bir fatura gibi okuyun: satıcı, alıcı, kalemler, KDV grupları ve ödeme. XML tarayıcınızda okunur, hiçbir yere yüklenmez.",
+  "blurb": "Polonya KSeF faturasını (FA(3), FA(2)) normal fatura olarak okuyun.",
+  "keywords": "ksef görüntüleyici ksef fatura görüntüleyici ksef viewer ksef xml açma ksef faturası okuma polonya e-fatura ksef nedir fa(3) fa(2) faktura ustrukturyzowana xml fatura açma ksef pdf polonya yapılandırılmış fatura",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB; ilk 5.000 fatura kalemi gösterilir. KSeF şemaları FA(3) ve FA(2) okunur, düzeltme faturaları da dahil. Okunmayanlar: FA(3)'ün yapılandırılmış eki (Załącznik), FA_RR faturaları ve eski FA(1). Yalnızca görüntüleyicidir: faturayı doğrulamaz ve KSeF'e bağlanmaz.",
+  "howto_title": "KSeF faturası nasıl açılır",
+  "howto": [
+    "KSeF'ten ya da muhasebe programınızdan kaydettiğiniz fatura XML'ini seçin veya sayfaya sürükleyin.",
+    "Faturayı okuyun: satıcı (Podmiot1) ve alıcı (Podmiot2), kalemler, orana göre KDV, toplamlar, ödeme ve notlar.",
+    "<strong>Yazdır veya PDF olarak kaydet</strong>, <strong>JSON indir</strong> ya da <strong>Ham XML'i göster</strong> düğmesine basın."
+  ],
+  "faq": [
+    [
+      "Fatura KSeF'e gönderiliyor veya yükleniyor mu?",
+      "Hayır. Bu sayfa KSeF'e ya da herhangi bir sunucuya bağlanmaz. XML tarayıcınızda okunur ve bu sayfada gösterilir; sekmeyi kapattığınızda her şey silinir."
+    ],
+    [
+      "Faturanın XML'ini nereden alırım?",
+      "KSeF'te bir faturayı XML dosyası olarak indirebilirsiniz; KSeF ile çalışan muhasebe programları da dışa aktarabilir. Bu sayfa, kaydettiğiniz dosyayı okur."
+    ],
+    [
+      "FA(3) ile FA(2) arasındaki fark nedir?",
+      "Aynı fatura şemasının birbirini izleyen sürümleridir (kök öğe Faktura'dır). FA(3), KSeF'in 2026'da zorunlu hâle gelmesinden beri kullanılan sürümdür; FA(2) bundan önceki sürümdür ve bu şemayla yazılmış faturalar hâlâ dolaşımdadır. İkisi de burada okunur."
+    ],
+    [
+      "KSeF QR kodlarını veya resmî görselleştirmeyi çiziyor mu?",
+      "Hayır. Bu sayfa XML'in içeriğini okunabilir bir fatura olarak gösterir. Resmî görselleştirmenin QR kodlarını üretmez ve Polonya Maliye Bakanlığı'ndan bağımsızdır."
+    ],
+    [
+      "Bazı kalemlerde neden KDV oranı yok?",
+      "Muaf (zw), ters ücretlendirmeli (oo) ve kapsam dışı (np) kalemlerde dosya oran yerine bir kod verir. Kod olduğu gibi, ilgili KDV kategorisiyle birlikte gösterilir."
+    ],
+    [
+      "Düzeltme faturaları nasıl gösterilir?",
+      "Düzeltme (KOR), kalemleri önceki ve şimdiki hâliyle listeler; toplamlar aradaki farktır. Eski kalemler Düzeltme öncesi olarak işaretlenir. Dosya veriyorsa düzeltilen faturanın numarası ve KSeF numarası da gösterilir."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>KSeF ve faturaları</h2>
+<p>KSeF (Krajowy System e-Faktur), Polonya Maliye Bakanlığı'nın yürüttüğü ulusal e-fatura sistemidir. Faturalar FA adlı bir şemada yapılandırılmış XML olarak düzenlenir ve sistem 2026'da işletmeler için kademeli olarak zorunlu hâle geldi. Saklanan ve iletilen fatura XML'dir; okunabilir sürüm onun bir görselleştirmesidir. Bu sayfa, elinizdeki XML'den bu görselleştirmeyi tarayıcınızda üretir. Konu Polonya sistemidir; Türkiye'deki GİB e-Fatura sistemiyle bir ilgisi yoktur.</p>
+<h2>Görüntüleyici neleri gösterir</h2>
+<p>Satıcı (Podmiot1) ile alıcı (Podmiot2) NIP veya AB KDV numaraları ve adresleriyle; fatura numarası (P_2), tarihler (P_1, P_6), para birimi; her kalem miktarı, birimi, fiyatı ve KDV oranıyla; oran grubuna göre KDV (P_13 ve P_14), toplam (P_15), banka hesabını içeren ödeme bilgileri, ek açıklamalar, altbilgi ve sicil numaraları ile önem taşıyan işaretler görünür: bölünmüş ödeme, ters ücretlendirme, nakit esaslı muhasebe, alıcı tarafından fatura düzenleme ve muafiyet. Tutarlar dosyadakiyle birebir gösterilir.</p>
+<p>Faturayı doğrulamaz, KSeF'e karşı denetlemez ve FA(3)'ün yapılandırılmış ekini okumaz. Fatura yabancı para biriminde düzenlenmişse PLN cinsinden KDV toplamların altında gösterilir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>JSON indir, Lehçe alan adları EN 16931 iş terimlerine çevrilmiş hâlde faturayı düz veri olarak verir.</li>
+  <li>Başka biçimler de burada açılır: XRechnung, ZUGFeRD / Factur-X, FatturaPA ve Peppol. Birini açtığınızda sayfa uygun görüntüleyiciyi önerir.</li>
+  <li>Ham XML'i göster, okunabilir faturanın göstermediği bir öğeye ihtiyaç duyduğunuzda işe yarar.</li>
+</ul>

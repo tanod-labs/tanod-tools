@@ -1,0 +1,93 @@
+<!--meta
+{
+  "title": "Bileşik faiz hesaplama aracı | Tanod Tools",
+  "description": "Aylık katkılı bileşik faiz hesaplama: son bakiye, kazanılan faiz ve yıl yıl tablo. Ücretsiz, tarayıcınızda çalışır.",
+  "h1": "Bileşik faiz hesaplama",
+  "lede": "Başlangıç tutarını, yıllık faiz oranını, faizin ne sıklıkla anaparaya eklendiğini ve yıl sayısını girin; isteğe bağlı aylık katkıyla birlikte paranızın ne kadar büyüyeceğini görün.",
+  "blurb": "Son bakiye, kazanılan faiz ve yıl yıl tablo.",
+  "keywords": "bileşik faiz hesaplama tasarruf hesaplayıcı yatırım büyümesi aylık katkı bileşik faiz sıklığı günlük aylık yıllık sürekli efektif yıllık faiz oranı yıl yıl tablo",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "Tüm dönem boyunca sabit bir oran; ücret, vergi ve enflasyon dahil değildir. Katkılar her ay yapılır, ay başını seçmediğiniz sürece ay sonunda eklenir ve bileşik faiz oranının aylık karşılığıyla büyür. Süre en fazla 100 yıldır ve tam ay olarak girilir. Bu bir örnektir, tahmin değildir.",
+  "howto_title": "Bileşik faiz nasıl hesaplanır",
+  "howto": [
+    "Başlangıç tutarını, yıllık faiz oranını ve yıl sayısını girin.",
+    "Faizin ne sıklıkla anaparaya eklendiğini seçin; düzenli birikim yapacaksanız aylık katkı ekleyin.",
+    "Son bakiyeyi, yatırdığınız toplamı ve kazanılan faizi okuyun, ardından yıl yıl tabloyu inceleyin."
+  ],
+  "faq": [
+    ["Bileşik faiz formülü nedir?", "Katkı yoksa bakiye A = P × (1 + r/n)^(n × t) olur. Burada P başlangıç tutarı, r ondalık olarak yıllık oran, n faizin yılda kaç kez anaparaya eklendiği ve t yıl sayısıdır. Sürekli bileşikte formül A = P × e^(r × t) olur."],
+    ["Aylık katkılar nasıl hesaplanır?", "Hesaplayıcı ay ay ilerler. Her ay bakiye, bileşik oranınızın aylık karşılığı kadar büyür, ardından katkınız ay sonunda ya da seçerseniz ay başında eklenir. Aylık bileşikte bu, bir anuitenin standart gelecek değeridir."],
+    ["Bileşik sıklığı ne fark yaratır?", "Faiz ne kadar sık eklenirse bakiye o kadar çok büyür, ancak kazanç hızla yatay seyre geçer. On yıl boyunca %5 oranında 10.000, yıllık bileşikte 16.288,95, aylıkta 16.470,09 ve günlükte 16.486,65 olur."],
+    ["Efektif yıllık oran nedir?", "Bileşik hesap dikkate alındığında fiilen elde ettiğiniz yıllık büyümedir. Aylık bileşikli %5 nominal oran, yıllık %5,12 efektif orana denk gelir."],
+    ["Vergi, ücret veya enflasyon dahil mi?", "Hayır. Ücretler ve vergiler sonrasında gerçek getiri daha düşüktür, enflasyon sonrasında da son bakiyenin satın alma gücü azalır. Temkinli bir senaryo görmek için daha düşük bir oran kullanın."],
+    ["Yazdıklarım bir yere yükleniyor mu?", "Hayır. Her şey tarayıcınızda hesaplanır ve hiçbir şey cihazınızdan çıkmaz."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ci">
+  <div class="opts">
+    <div class="field">
+      <label for="ci-p">Başlangıç tutarı</label>
+      <input type="text" id="ci-p" class="mono" inputmode="decimal" value="10000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-r">Yıllık faiz oranı (%)</label>
+      <input type="text" id="ci-r" class="mono" inputmode="decimal" value="5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-y">Yıl</label>
+      <input type="text" id="ci-y" class="mono" inputmode="decimal" value="10" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-f">Bileşik sıklığı</label>
+      <select id="ci-f">
+        <option value="annually">Yıllık</option>
+        <option value="semiannually">Yılda iki kez</option>
+        <option value="quarterly">Üç aylık</option>
+        <option value="monthly" selected>Aylık</option>
+        <option value="weekly">Haftalık</option>
+        <option value="daily">Günlük</option>
+        <option value="continuous">Sürekli</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ci-m">Aylık katkı (isteğe bağlı)</label>
+      <input type="text" id="ci-m" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ci-t">Katkılar eklenir</label>
+      <select id="ci-t">
+        <option value="end" selected>Her ayın sonunda</option>
+        <option value="start">Her ayın başında</option>
+      </select>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ci-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Son bakiye</span> <span id="ci-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Toplam katkı</dt><dd id="ci-dep">0</dd></div>
+      <div><dt>Kazanılan faiz</dt><dd id="ci-int">0</dd></div>
+      <div><dt>Efektif yıllık oran</dt><dd id="ci-ear">0</dd></div>
+    </dl>
+    <h3 class="util-h">Yıl yıl</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Yıl yıl büyüme">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Yıl</th><th scope="col">Katkı</th><th scope="col">Faiz</th><th scope="col">Bakiye</th></tr></thead>
+        <tbody id="ci-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Bileşik faiz parayı nasıl büyütür</h2>
+<p>Basit faiz yalnızca başladığınız tutar üzerinden ödenir. Bileşik faiz ise başlangıç tutarı ve o zamana kadar eklenmiş faiz üzerinden ödenir; böylece bakiye her dönemde daha hızlı büyür. Birkaç yılda fark küçüktür, onlarca yılda ise büyüktür. Bu yüzden birikimde erken başlamak neredeyse her şeyden daha önemlidir.</p>
+<p>Düzenli katkı yoksa sonuç A = P(1 + r/n)^(nt) formülünü izler. Hesaplayıcı aylık katkıyı da her seferinde bir ay ilerleyerek ele alır: bakiye, bileşik oranın aylık karşılığı kadar büyür, sonra katkı eklenir. Aylık bileşik ve ay sonu katkıda bu, ders kitaplarındaki anuite gelecek değeriyle aynıdır. Toplam katkı, başlangıç tutarı artı her katkıdır; kazanılan faiz ise son bakiyeden bu toplamın çıkarılmasıyla bulunur.</p>
+<p>Yıl yıl tablo, her yıl yapılan katkıları, o yıl kazanılan faizi ve yıl sonundaki bakiyeyi listeler; böylece faiz payının katkı payını geçişini görebilirsiniz. Süre tam yıl değilse son satır kalan kısmı kapsar. Efektif yıllık oran, nominal oranın ve bileşik sıklığının bir yılda gerçekte neye karşılık geldiğini gösterir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Biriktirmek yerine borç mu alıyorsunuz? <a href="/tools/loan-calculator/">Kredi hesaplama</a> aracı taksiti ve ödeyeceğiniz faizi gösterir.</li>
+  <li>Bir oran değişikliğini ya da bir toplamın payını <a href="/tools/percentage-calculator/">yüzde hesaplama</a> ile kontrol edin.</li>
+  <li>Son bakiyeyi bir belge için yazıyla yazmak için <a href="/tools/number-to-words/">Sayıyı yazıya çevir</a> aracını kullanın.</li>
+</ul>

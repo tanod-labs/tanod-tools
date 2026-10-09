@@ -1,6 +1,6 @@
 // Colour maths shared by the colour tools: sRGB, linear light, OKLab and OKLCH (Bjorn Ottosson's published
 // matrices, https://bottosson.github.io/posts/oklab/), WCAG contrast, and chroma-reducing gamut mapping.
-import { tx, EN, fmtNum } from "./i18n.js?v=5";
+import { tx, EN, fmtNum } from "./i18n.js?v=11";
 
 /* "#abc", "abc", "#AABBCC" and "aabbcc" -> "#aabbcc". Anything else (including 4 and 8 digit forms) -> null. */
 export function parseHex(input) {

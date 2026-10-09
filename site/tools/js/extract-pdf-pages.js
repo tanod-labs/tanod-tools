@@ -1,6 +1,6 @@
-import { $, baseName, runJob, showResults, tx, txn } from "./core.js?v=5";
-import { pagesToNewDoc, saveDoc } from "./pdfcore.js?v=5";
-import { pagePicker } from "./pickpages.js?v=5";
+import { $, baseName, runJob, showResults, tx, txn } from "./core.js?v=11";
+import { pagesToNewDoc, saveDoc } from "./pdfcore.js?v=11";
+import { pagePicker } from "./pickpages.js?v=11";
 
 const go = $("#go");
 const each = $("#each");

@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Bộ lọc ảnh trực tuyến: đen trắng, sepia, làm mờ | Tanod Tools",
+  "description": "Chỉnh độ sáng, độ tương phản, độ bão hòa và sắc độ, hoặc biến ảnh thành đen trắng, sepia, đảo màu hay làm mờ. Xem trước trực tiếp, chạy trong trình duyệt.",
+  "h1": "Bộ lọc ảnh",
+  "lede": "Chỉnh ảnh bằng thanh trượt hoặc các mẫu có sẵn chỉ với một cú nhấp, so sánh với bản gốc và lưu kết quả ở kích thước đầy đủ.",
+  "blurb": "Đen trắng, sepia, độ sáng, làm mờ và nhiều hơn nữa.",
+  "keywords": "bộ lọc ảnh chỉnh sửa ảnh hiệu ứng ảnh đen trắng sepia cổ điển đảo màu độ sáng độ tương phản độ bão hòa làm mờ ảnh photo editor effects grayscale vintage invert negative brightness contrast saturation hue blur",
+  "limits": "Xử lý một ảnh mỗi lần, tối đa 50 MB và khoảng 100 megapixel. Ảnh rất lớn mất vài giây; trang vẫn dùng được trong lúc xử lý.",
+  "howto_title": "Cách áp dụng bộ lọc cho ảnh",
+  "howto": [
+    "Chọn một ảnh. Bản xem trước hiện ở kích thước thu nhỏ để các thanh trượt phản hồi ngay.",
+    "Bắt đầu từ một mẫu như <strong>Đen trắng</strong> hoặc <strong>Rực rỡ</strong>, rồi chỉnh các thanh trượt. Bật <strong>Xem bản gốc</strong> để so sánh.",
+    "Nhấn <strong>Áp dụng và lưu</strong>. Các bộ lọc được áp dụng lại cho ảnh kích thước đầy đủ và bạn tải xuống."
+  ],
+  "faq": [
+    ["Ảnh của tôi có bị tải lên không?", "Không. Mọi bộ lọc được tính trong trình duyệt, trên thiết bị của bạn, từng điểm ảnh một. Không có gì được gửi đến máy chủ."],
+    ["Bộ lọc có cho kết quả giống CSS trong trình duyệt của tôi không?", "Chúng theo cùng công thức với đặc tả CSS Filter Effects: độ sáng là phép nhân, độ tương phản xoay quanh màu xám trung bình, còn độ bão hòa, xoay sắc độ, thang xám và sepia dùng các ma trận màu của đặc tả. Việc tính toán ngay trong trang này thay vì thông qua tính năng bộ lọc của trình duyệt cũng có nghĩa là nó hoạt động cả trên những trình duyệt thiếu tính năng đó."],
+    ["Các bộ lọc được áp dụng theo thứ tự nào?", "Độ sáng, độ tương phản, độ bão hòa, xoay sắc độ, thang xám, sepia, đảo màu, rồi làm mờ. Thứ tự này là cố định, nên cùng vị trí thanh trượt luôn cho ra cùng một bức ảnh."],
+    ["Vì sao độ mờ trông giống nhau ở bản xem trước và tệp đã lưu?", "Mức làm mờ là một phần của chiều rộng ảnh, không phải số điểm ảnh. Một ảnh 4000 điểm ảnh xem trước ở 800 điểm ảnh sẽ được làm mờ ít hơn năm lần tính theo điểm ảnh xem trước, và trông giống hệt khi bạn nhìn ở cùng tỷ lệ."],
+    ["Độ trong suốt thì sao?", "Nó được giữ nguyên. Kênh alpha không bao giờ bị thay đổi, và phép làm mờ tính trọng số màu theo độ mờ đục để các cạnh mềm của ảnh cắt nền không bị sẫm lại. Hãy lưu dưới dạng PNG hoặc WebP để giữ nó; JPEG sẽ lấp vùng trong suốt bằng màu trắng."],
+    ["Tôi có thể hoàn tác một mẫu có sẵn không?", "Chọn Đặt lại, hoặc kéo các thanh trượt về vị trí cũ. Các mẫu chỉ di chuyển thanh trượt, và bạn có thể chỉnh tiếp sau đó. Không có gì làm thay đổi tệp gốc của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Thả ảnh vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP hoặc AVIF. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Bản xem trước với các bộ lọc đã áp dụng"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Xem bản gốc</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Mẫu có sẵn</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Đen trắng</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Rực rỡ</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Phai màu</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Đảo màu</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Đặt lại</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Độ sáng: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Độ tương phản: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Độ bão hòa: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Thang xám: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepia: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Đảo màu: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Xoay sắc độ: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Làm mờ: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Lưu dưới dạng</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Giữ nguyên</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Giữ nguyên định dạng sẽ trả lại PNG, JPEG và WebP như ban đầu; GIF, BMP và AVIF trở thành PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Áp dụng và lưu</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Mỗi bộ lọc làm gì với các điểm ảnh</h2>
+<p>Mỗi điểm ảnh là ba số từ 0 đến 255, cho đỏ, lục và lam. Độ sáng nhân các số đó lên, nên 150 phần trăm biến giá trị 100 thành 150 và mọi giá trị vượt quá 255 bị cắt thành trắng. Độ tương phản kéo các số ra xa màu xám trung bình (128) hoặc ép chúng lại gần, đó là lý do độ tương phản 0 phần trăm cho ra một bức ảnh xám phẳng. Độ bão hòa và xoay sắc độ trộn ba kênh bằng các ma trận màu cố định, nhờ đó ảnh có thể chuyển dần sang xám hoặc xoay quanh vòng màu.</p>
+<p>Thang xám thay mỗi điểm ảnh bằng độ chói của nó, một tổng có trọng số tính nhiều nhất cho lục (khoảng 72 phần trăm), tiếp đến là đỏ (21 phần trăm) và ít nhất là lam (7 phần trăm), vì mắt người nhạy nhất với màu lục. Sepia dùng một ma trận cho ra sắc nâu ấm của ảnh in cũ. Đảo màu lấy 255 trừ mỗi giá trị để tạo ra âm bản. Làm mờ lấy trung bình mỗi điểm ảnh với các điểm lân cận, ba lần theo mỗi hướng, xấp xỉ rất sát với làm mờ Gauss.</p>
+<p>Bản xem trước nhỏ giúp thanh trượt chạy nhanh, nhưng tệp được lưu sẽ được xử lý ở độ phân giải đầy đủ theo từng khối, nên trang vẫn phản hồi và hiển thị tiến độ. Sau khi lưu, tệp gốc vẫn nguyên vẹn.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Để đọc một màu chính xác từ kết quả, hãy dùng <a href="/tools/image-color-picker/">Lấy màu từ ảnh</a>.</li>
+  <li>Lọc ảnh trước khi thêm chú thích giúp chữ giữ được độ sắc nét: hãy làm theo thứ tự đó với <a href="/tools/add-text-to-image/">Chèn chữ vào ảnh</a>.</li>
+  <li>Ảnh bị làm mờ và có độ tương phản cao nén rất khác, nên hãy kiểm tra dung lượng sau đó trong <a href="/tools/compress-image/">Nén ảnh</a>.</li>
+</ul>

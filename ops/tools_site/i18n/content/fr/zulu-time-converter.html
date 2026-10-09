@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "Convertisseur d'heure Zulu : local en UTC | Tanod Tools",
+  "description": "Convertissez l'heure locale en Zulu (UTC) et inversement pour tout fuseau horaire, avec les groupes horaires DDHHMMZ des METAR. Base de fuseaux du navigateur.",
+  "h1": "Convertisseur d'heure Zulu (UTC)",
+  "lede": "Convertissez une heure locale en heure Zulu (UTC) ou l'inverse pour n'importe quel fuseau horaire, et lisez les groupes horaires DDHHMMZ des METAR.",
+  "blurb": "Heure locale en Zulu (UTC) et groupes METAR DDHHMMZ.",
+  "keywords": "heure zulu convertisseur utc gmt heure locale aviation heure z ddhhmmz metar groupe horaire fuseau horaire heure militaire 24 heures heure d'ete",
+  "limits": "Utilise les données de fuseaux horaires intégrées à votre navigateur, y compris les règles d'heure d'été. Ne convient pas à la préparation de vol ni à la navigation : vérifiez vous-même l'heure officielle et la validité des NOTAM.",
+  "howto_title": "Comment convertir l'heure locale en Zulu",
+  "howto": [
+    "Choisissez la date, l'heure et le fuseau horaire correspondant. La première case commence par votre propre fuseau horaire.",
+    "Choisissez le fuseau dans lequel l'afficher : par défaut UTC, aussi appelé heure Zulu ou Z.",
+    "Lisez l'heure convertie et le groupe DDHHMMZ. Pour décoder un groupe horaire d'un METAR ou d'un TAF, saisissez-le dans la deuxième section."
+  ],
+  "faq": [
+    [
+      "Qu'est-ce que l'heure Zulu ?",
+      "L'heure Zulu est le temps universel coordonné (UTC), écrit avec la lettre Z, nom phonétique OTAN du fuseau horaire militaire sans décalage. L'aviation, la météorologie et l'armée l'utilisent afin que tout le monde ait une seule horloge, sans changement d'heure."
+    ],
+    [
+      "Comment lire un groupe horaire comme 081405Z ?",
+      "Les deux premiers chiffres sont le jour du mois (08), les deux suivants l'heure (14) et les deux derniers les minutes (05), toujours en UTC : 081405Z est donc le 8 à 14 h 05 UTC. Les heures des METAR, TAF et NOTAM suivent cette forme. Le mois et l'année ne sont pas indiqués ; l'outil choisit donc ceux qui sont les plus proches de la date de référence."
+    ],
+    [
+      "L'UTC est-il identique au GMT ?",
+      "Pour un usage courant, oui : les horloges affichent la même heure. À proprement parler, le GMT est un fuseau horaire fondé sur la rotation de la Terre et l'UTC une échelle de temps atomique maintenue à moins de 0,9 seconde de celui-ci grâce aux secondes intercalaires. L'aviation utilise l'UTC."
+    ],
+    [
+      "L'heure Zulu connaît-elle l'heure d'été ?",
+      "Non. L'UTC ne change jamais. C'est le décalage d'un fuseau local avec l'UTC qui change au début ou à la fin de l'heure d'été, ce qui explique qu'un horaire de vol se lit plus facilement en UTC."
+    ],
+    [
+      "Que se passe-t-il lors d'un changement d'heure ?",
+      "Quand les horloges avancent, une heure locale n'existe pas, et l'outil passe à l'heure valide la plus proche. Quand elles reculent, une heure se produit deux fois : l'outil prend la première et vous le signale."
+    ],
+    [
+      "D'où l'outil tire-t-il ses règles de fuseaux horaires ?",
+      "De la base de fuseaux horaires IANA intégrée à votre navigateur (l'API Intl) : rien n'est téléchargé. Un navigateur ancien peut avoir des règles périmées pour certains pays."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="zt-date">Date</label>
+    <input type="date" id="zt-date">
+  </div>
+  <div class="field">
+    <label for="zt-time">Heure</label>
+    <input type="time" id="zt-time">
+  </div>
+  <div class="field">
+    <label for="zt-from">Fuseau horaire de cette heure</label>
+    <select id="zt-from"></select>
+  </div>
+  <div class="field">
+    <label for="zt-to">Afficher dans</label>
+    <select id="zt-to"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="zt-now" type="button">Utiliser l'heure actuelle</button>
+  <button class="btn btn--quiet" id="zt-swap" type="button">Inverser les fuseaux</button>
+</div>
+<p class="note" id="zt-note" role="status" aria-live="polite" hidden></p>
+<dl class="stats" id="zt-stats"></dl>
+<h2 class="util-h" id="zt-grp-h">Lire un groupe horaire de METAR ou TAF</h2>
+<div class="opts">
+  <div class="field">
+    <label for="zt-grp">Groupe horaire (DDHHMMZ)</label>
+    <input type="text" id="zt-grp" class="mono" autocomplete="off" spellcheck="false" value="081405Z" placeholder="081405Z" aria-describedby="zt-grp-msg">
+  </div>
+  <div class="field">
+    <label for="zt-ref">Le plus proche de cette date UTC</label>
+    <input type="date" id="zt-ref">
+  </div>
+</div>
+<p class="note" id="zt-grp-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="zt-grp-stats"></dl>
+<!--explain-->
+<h2>Comment fonctionne la conversion</h2>
+<p>L'UTC (temps universel coordonné) est la référence internationale de l'heure civile, tenue par le BIPM et définie dans la Recommandation UIT-R TF.460. Il s'écrit avec le suffixe Z en aviation, d'après la lettre Zulu du fuseau horaire militaire, et dans le format de groupe horaire OACI DDHHMMZ utilisé par les messages METAR, TAF et SIGMET (Annexe 3 de l'OACI, OMM n° 306). L'heure locale est l'UTC plus le décalage du fuseau, qui dépend de la date à cause des règles d'heure d'été.</p>
+<p>La page transforme la date et l'heure saisies en un instant à l'aide du décalage qu'avait le fuseau à ce moment-là, puis affiche cet instant dans l'autre fuseau. Elle s'appuie sur la base de fuseaux horaires IANA via l'API Intl de votre navigateur, les mêmes données que celles des systèmes d'exploitation. Une heure locale invalide, dans l'heure sautée au début de l'heure d'été, est avancée de la durée du saut, et une heure ambiguë, dans l'heure répétée, utilise la première occurrence.</p>
+<p>Un groupe horaire n'a ni mois ni année : l'outil essaie donc le mois précédent, le même mois et le suivant, et garde la date la plus proche de la date de référence indiquée (aujourd'hui, en UTC, par défaut), ce qui correspond à la façon dont un message météo est normalement rattaché à un calendrier. <strong>Ne convient pas à la préparation de vol ni à la navigation.</strong></p>

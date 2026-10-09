@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "Generator i walidator security.txt (RFC 9116) | Tanod Tools",
+  "description": "Utwórz plik security.txt dla /.well-known/ z właściwymi polami albo wklej własny i sprawdź go z RFC 9116: Contact, Expires, linki https, Canonical i podpisy.",
+  "h1": "Generator i walidator security.txt",
+  "lede": "Zbuduj poprawny plik security.txt zgodny z RFC 9116, aby badacze wiedzieli, jak się z Tobą skontaktować, albo wklej istniejący i zobacz, co jest w nim nie tak. To część przygotowań do <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">unijnego aktu o cyberodporności (CRA)</a>.",
+  "blurb": "Wygeneruj plik security.txt i sprawdź go pod kątem RFC 9116.",
+  "keywords": "generator security.txt walidator security.txt sprawdzanie security.txt rfc 9116 plik well-known kontakt do zgłaszania podatności zgłaszanie luk bezpieczeństwa akt o cyberodporności cra security.txt generator security.txt checker rfc 9116 well-known security.txt validator vulnerability disclosure contact expires canonical pgp cyber resilience act",
+  "limits": "Sprawdza tekst wyłącznie pod kątem RFC 9116. Nie pobiera Twojej strony (nic, co wpiszesz, nie opuszcza tej strony, dlatego wklej plik), nie weryfikuje podpisu OpenPGP ani nie sprawdza, czy dany adres działa. To szablon, a nie porada prawna.",
+  "howto_title": "Jak utworzyć i sprawdzić plik security.txt",
+  "howto": [
+    "Wpisz co najmniej jedno pole Contact (adres e-mail, numer telefonu lub stronę https://) i sprawdź datę Expires. Wypełnij wybrane pola opcjonalne, takie jak Policy i Preferred-Languages.",
+    "Skopiuj plik lub pobierz go i opublikuj pod adresem <code>/.well-known/security.txt</code> w swojej domenie przez HTTPS jako zwykły tekst.",
+    "Aby sprawdzić istniejący plik, wklej jego tekst do walidatora. Popraw błędy, a potem przejrzyj ostrzeżenia. Podaj adres, pod którym plik jest udostępniany, aby przetestować pole Canonical.",
+    "Ustaw w kalendarzu przypomnienie, aby odnowić Expires, zanim data minie."
+  ],
+  "faq": [
+    ["Czy akt o cyberodporności wymaga pliku security.txt?", "Nie. Rozporządzenie oczekuje, że producenci będą mieć politykę skoordynowanego ujawniania podatności i opublikowany sposób zgłaszania podatności. Plik security.txt to powszechny sposób publikacji takiego kontaktu i praktycy go zalecają, ale rozporządzenie nie wskazuje tego formatu. Zobacz <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">poradnik dla małych dostawców</a>."],
+    ["Gdzie dokładnie umieścić plik?", "Pod adresem <code>https://twoja-domena/.well-known/security.txt</code>, udostępniany przez HTTPS z typem zawartości <code>text/plain; charset=utf-8</code>. RFC 9116 dopuszcza też kopię pod <code>/security.txt</code> dla starszych konfiguracji. Opublikuj plik w każdej domenie i subdomenie, którą chcesz objąć."],
+    ["Jak daleko w przyszłość ustawić Expires?", "RFC 9116 mówi, że data powinna przypadać za mniej niż rok, aby badacze mogli ufać, że dane kontaktowe są aktualne. Generator domyślnie ustawia datę tuż poniżej roku. Gdy data minie, odbiorcy mają ignorować plik, więc odnów go z wyprzedzeniem."],
+    ["Czy muszę podpisać plik kluczem PGP?", "Nie, podpisywanie jest opcjonalne, ale zalecane. Podpisany plik to wiadomość OpenPGP podpisana jawnie (cleartext), wykonana poleceniem <code>gpg --clearsign security.txt</code>. Walidator rozpoznaje format podpisany i sprawdza jego ogólną strukturę, ale nie zweryfikuje samego podpisu; użyj do tego <code>gpg --verify</code>."],
+    ["Dlaczego walidator nie pobiera mojej strony?", "Aby zachować prywatność: działa w całości w Twojej przeglądarce i nie wysyła żądań do innych witryn. Otwórz plik w karcie przeglądarki, skopiuj tekst i wklej go tutaj. Dzięki temu sprawdzisz też to, co faktycznie dostają odwiedzający."],
+    ["Do czego służy pole Canonical?", "Wymienia adresy, pod którymi plik ma być udostępniany, dzięki czemu odbiorca może potwierdzić, że plik znaleziony pod jednym adresem naprawdę tam należy. Jeśli podasz adres, z którego udostępniasz plik, walidator sprawdzi, czy któryś wiersz Canonical do niego pasuje."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">Wygeneruj plik security.txt</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Wymagane</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (po jednym w wierszu)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Adres e-mail, numer telefonu z numerem kierunkowym kraju albo strona https://. Badacze próbują najpierw pierwszego wiersza.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (koniec tego dnia, UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>Opcjonalne</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Twoja polityka ujawniania podatności. <a href="/tools/vulnerability-disclosure-policy-generator/">Napisz ją tutaj.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (po jednym w wierszu)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Link https:// do Twojego klucza publicznego, rekord dns: lub odcisk openpgp4fpr:.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="pl, en">
+            <span class="help">Kody języków oddzielone przecinkami.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (po jednym w wierszu)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">Adres, pod którym ten plik będzie udostępniany. Zalecane, zwłaszcza dla plików podpisanych.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Strona z podziękowaniami dla badaczy, którzy zgłosili problemy.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Strona z Twoimi ofertami pracy w obszarze bezpieczeństwa.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">Twój plik security.txt</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Kopiuj</button>
+          <button class="btn" id="stx-dl" type="button">Pobierz security.txt</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Uwagi do pliku"></ul>
+        <h3 class="util-h">Gdzie go umieścić</h3>
+        <p class="help">Zapisz plik jako <code>security.txt</code> i udostępnij go pod adresem <code>https://your-domain/.well-known/security.txt</code> przez HTTPS jako zwykły tekst (<code>text/plain; charset=utf-8</code>). Zrób tak samo w każdej domenie, którą chcesz objąć. Aby go podpisać, uruchom <code>gpg --clearsign security.txt</code> i opublikuj wynik.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">Sprawdź plik security.txt</h2>
+    <div class="field">
+      <label for="stx-in">Wklej tekst pliku security.txt</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Adres, pod którym jest udostępniany (opcjonalnie)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Domena lub pełny adres. Służy do sprawdzenia, czy pole Canonical pasuje. Nic nie jest pobierane.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Wczytaj przykład</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Wyczyść</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Wyniki sprawdzenia"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>Do czego służy security.txt</h2>
+<p>Gdy badacz, klient albo zespół CERT znajdzie słabość w Twoim oprogramowaniu, pierwszy problem to ustalenie, komu o tym powiedzieć. Plik security.txt to mały plik tekstowy pod stałym adresem, <code>/.well-known/security.txt</code>, który na to odpowiada: podaje kontakt, datę wygaśnięcia, a opcjonalnie link do polityki ujawniania podatności i klucz publiczny. Format opisuje RFC 9116, a wiele skanerów, platform bug bounty i krajowych zespołów CERT szuka tego pliku, zanim zajrzy gdziekolwiek indziej.</p>
+<p>Dla dostawcy oprogramowania w UE wspiera on także obowiązki wynikające z aktu o cyberodporności: załącznik I oczekuje opublikowanego sposobu, w jaki osoby z zewnątrz mogą zgłaszać podatności, oraz procesu ich obsługi. Rozporządzenie nie wskazuje tego formatu, ale to zwykły sposób publikacji kontaktu. <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">Poradnik zgłaszania dla małych dostawców</a> opisuje pozostałe elementy konfiguracji, w tym zegar 24 godzin.</p>
+<h2>Pola</h2>
+<p>Contact i Expires są wymagane. Contact może wystąpić kilka razy i musi być identyfikatorem URI: <code>mailto:</code>, <code>tel:</code> lub <code>https:</code>. Expires występuje raz, jako data i godzina, na przykład <code>2027-12-31T23:59:59Z</code>, a RFC 9116 prosi o termin krótszy niż rok. Encryption, Acknowledgments, Policy, Hiring i Canonical to opcjonalne linki, a każdy adres internetowy musi używać https. Preferred-Languages występuje raz i wymienia kody języków. Pola, których RFC nie definiuje, są ignorowane przez odbiorców, więc walidator zgłasza je jako ostrzeżenia: zwykle to literówki.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Użyj skrzynki, którą czyta kilka osób, a nie adresu jednej osoby, i sprawdź ją, pisząc na nią wiadomość.</li>
+  <li>Napisz <a href="/tools/vulnerability-disclosure-policy-generator/">politykę ujawniania podatności</a> i podlinkuj ją w polu Policy.</li>
+  <li>Poznaj swoje terminy, zanim nadejdzie zgłoszenie: <a href="/tools/cra-incident-clock/">zegar zgłoszeń 24 godz. CRA</a> zamienia moment uzyskania wiedzy o zdarzeniu na terminy z datami.</li>
+</ul>

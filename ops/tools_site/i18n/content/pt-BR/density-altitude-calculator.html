@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "Altitude-densidade e altitude-pressão (calculadora) | Tanod Tools",
+  "description": "Calcule a altitude-pressão e a altitude-densidade a partir da elevação do campo, do ajuste do altímetro e da temperatura, usando a atmosfera padrão ISA.",
+  "h1": "Calculadora de altitude-densidade e altitude-pressão",
+  "lede": "Informe a elevação do campo, o ajuste do altímetro e a temperatura do ar externo para obter a altitude-pressão, a altitude-densidade e o desvio ISA.",
+  "blurb": "Altitude-pressão e altitude-densidade pela atmosfera padrão ISA.",
+  "keywords": "altitude densidade altitude pressao calculadora isa atmosfera padrao ajuste do altimetro qnh inhg hpa temperatura desvio desempenho decolagem quente e alto",
+  "limits": "Cálculo ISA com ar seco; a umidade é ignorada, o que deixa a altitude-densidade um pouco baixa em dias úmidos. Não serve para planejamento de voo nem para navegação: use as tabelas de desempenho da aeronave e os dados oficiais.",
+  "howto_title": "Como calcular a altitude-densidade",
+  "howto": [
+    "Informe a elevação do aeroporto e escolha pés ou metros.",
+    "Informe o ajuste do altímetro (QNH) em hPa ou inHg e a temperatura do ar externo em °C ou °F.",
+    "Leia a altitude-pressão e a altitude-densidade e veja o quanto a temperatura se afasta do padrão."
+  ],
+  "faq": [
+    ["O que é altitude-densidade?", "É a altitude na atmosfera padrão em que o ar tem a mesma densidade do ar onde você está. O ar quente, em altitude ou úmido é rarefeito, então a altitude-densidade pode ser bem maior que a elevação real. Isso reduz a potência do motor, a tração da hélice e a sustentação da asa, o que alonga a corrida de decolagem e diminui a razão de subida."],
+    ["O que é altitude-pressão?", "É a altitude que o altímetro indica quando ajustado para o padrão de 1013,25 hPa (29,92 inHg). É a elevação na ISA em que a pressão é igual à pressão real, e serve de base para as tabelas de desempenho e os níveis de voo."],
+    ["Como a temperatura ISA é calculada?", "A atmosfera padrão tem 15 °C ao nível do mar e esfria 6,5 °C a cada 1.000 m (1,98 °C a cada 1.000 ft) até 11 km. O desvio ISA é a temperatura real menos a temperatura ISA na altitude-pressão; cada grau acima do padrão eleva a altitude-densidade em cerca de 120 ft."],
+    ["Por que meu resultado difere de uma regra prática ou de uma tabela?", "As tabelas e a regra DA = PA + 120 × (OAT − temperatura ISA) são aproximações lineares. Esta ferramenta inverte diretamente o perfil de densidade da ISA, por isso difere algumas centenas de pés em dias quentes. O valor exato também é mostrado ao lado do valor da regra prática."],
+    ["A umidade importa?", "Sim, um pouco. O vapor de água é mais leve que o ar seco, então o ar úmido é mais rarefeito. Esta calculadora usa ar seco, de modo que, num dia quente e úmido, a altitude-densidade real é um pouco maior."],
+    ["Onde consigo o ajuste do altímetro?", "No METAR ou no ATIS: Q1013 é hPa e A2992 é inHg em centésimos. O decodificador de METAR deste site converte os dois. Se você tiver apenas a pressão da estação, use diretamente a altitude-pressão."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="da-elev">Elevação do campo</label>
+    <input type="text" id="da-elev" inputmode="decimal" autocomplete="off" value="5434" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-elev-u">Unidade de elevação</label>
+    <select id="da-elev-u"><option value="ft" selected>pés</option><option value="m">metros</option></select>
+  </div>
+  <div class="field">
+    <label for="da-qnh">Ajuste do altímetro (QNH)</label>
+    <input type="text" id="da-qnh" inputmode="decimal" autocomplete="off" value="1013.25" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-qnh-u">Unidade de pressão</label>
+    <select id="da-qnh-u"><option value="hpa" selected>hPa</option><option value="inhg">inHg</option></select>
+  </div>
+  <div class="field">
+    <label for="da-oat">Temperatura do ar externo</label>
+    <input type="text" id="da-oat" inputmode="decimal" autocomplete="off" value="30" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-oat-u">Unidade de temperatura</label>
+    <select id="da-oat-u"><option value="c" selected>°C</option><option value="f">°F</option></select>
+  </div>
+</div>
+<p class="note" id="da-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="da-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Altitude-densidade</span> <span class="calc-main__val num" id="da-main"></span></p>
+  <dl class="stats" id="da-stats"></dl>
+  <p class="help" id="da-info"></p>
+</div>
+<!--explain-->
+<h2>As fórmulas</h2>
+<p>O cálculo usa a Atmosfera Padrão Internacional (ICAO Doc 7488, ISO 2533): temperatura ao nível do mar T0 = 288,15 K, pressão P0 = 1013,25 hPa, densidade 1,225 kg/m³, um gradiente térmico L = 0,0065 K/m até 11.000 m e, depois disso, 216,65 K constantes. A pressão na altitude h na troposfera é P = P0 · (1 − L·h/T0)^(g/(R·L)), em que g = 9,80665 m/s², R = 287,05287 J/(kg·K) e o expoente é 5,25588.</p>
+<p>A pressão da estação é obtida do ajuste do altímetro como P_estação = QNH · (1 − L·elevação/T0)^5,25588. A altitude-pressão é a altitude ISA com essa pressão: h = (T0/L) · (1 − (P_estação/P0)^(1/5,25588)). A densidade do ar é ρ = P_estação / (R · T), pela lei dos gases ideais com a temperatura do ar externo em kelvin, e a altitude-densidade é a altitude ISA com essa densidade: h = (T0/L) · (1 − (ρ/ρ0)^(1/4,25588)). Acima de 11 km usa-se a camada isotérmica. O desvio de temperatura é a OAT menos a temperatura ISA na altitude-pressão.</p>
+<p>As conversões são exatas (1 ft = 0,3048 m, 1 inHg = 3.386,38864 Pa). <strong>Não serve para planejamento de voo nem para navegação.</strong></p>

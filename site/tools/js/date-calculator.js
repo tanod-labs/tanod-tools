@@ -1,6 +1,6 @@
 // Date calculator: add or subtract years/months/weeks/days or business days. Pure calendar arithmetic on day numbers.
-import { $, $$, setStatus, tx, fmtNum, EN } from "./core.js?v=5";
-import { parseDate, isoDate, today, dayNumber, fromDayNumber, addMonths, addDays, weekday, weekdayName, longDate, monthYear, isLeap } from "./calccore.js?v=5";
+import { $, $$, setStatus, tx, fmtNum, EN } from "./core.js?v=11";
+import { parseDate, isoDate, today, dayNumber, fromDayNumber, addMonths, addDays, weekday, weekdayName, longDate, monthYear, isLeap } from "./calccore.js?v=11";
 
 const START = $("#dc-start");
 const status = $("#status"), res = $("#dc-res");

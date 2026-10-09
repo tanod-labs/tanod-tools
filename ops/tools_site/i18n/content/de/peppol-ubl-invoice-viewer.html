@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Peppol-/UBL-Viewer: BIS-Billing-3.0-Rechnung lesen | Tanod Tools",
+  "description": "Öffnen Sie eine Peppol-BIS-Billing-3.0-Rechnung oder -Gutschrift (UBL-XML) und lesen Sie sie wie eine normale Rechnung. Drucken, PDF oder JSON. Ohne Upload.",
+  "h1": "Peppol-/UBL-Viewer",
+  "lede": "Öffnen Sie eine Peppol- oder andere UBL-2.1-Rechnung oder -Gutschrift und lesen Sie sie wie eine gewöhnliche Rechnung, mit Beteiligten, Positionen, Umsatzsteuer und Zahlungsangaben. Sie wird in Ihrem Browser gelesen und nie hochgeladen.",
+  "blurb": "Peppol-BIS-Billing-3.0- oder UBL-Rechnung als normale Rechnung lesen.",
+  "keywords": "peppol viewer ubl viewer peppol rechnung anzeigen ubl rechnung anzeigen ubl xml öffnen ubl 2.1 rechnung lesen peppol bis billing 3.0 viewer peppol xml lesen ubl gutschrift lesen en 16931 viewer e-rechnung ubl lesen",
+  "limits": "Eine Datei auf einmal, bis 25 MB; angezeigt werden die ersten 5.000 Rechnungspositionen. Gelesen werden UBL 2.1 Invoice und CreditNote, wie sie Peppol BIS Billing 3.0 und andere EN-16931-Profile verwenden, auch innerhalb eines Peppol-Umschlags (SBDH). Nicht gelesen werden andere UBL-Dokumente wie Bestellungen oder Lieferavise. Nur Viewer: keine Validierung, und es wird nichts an das Peppol-Netzwerk gesendet.",
+  "howto_title": "So öffnen Sie eine Peppol-Rechnung",
+  "howto": [
+    "Wählen Sie die UBL-XML-Datei aus oder ziehen Sie sie auf die Seite.",
+    "Lesen Sie die Rechnung: Verkäufer und Käufer mit ihren Peppol-Adressen, Datumsangaben, Rechnungspositionen, Umsatzsteuer-Aufschlüsselung, Summen und Zahlungsangaben.",
+    "Mit <strong>Drucken oder als PDF speichern</strong>, <strong>JSON herunterladen</strong> oder <strong>Roh-XML anzeigen</strong> geht es weiter."
+  ],
+  "faq": [
+    [
+      "Wird meine Rechnung hochgeladen?",
+      "Nein. Das XML wird in Ihrem Browser mit dessen eingebautem Parser gelesen und auf dieser Seite angezeigt. Kein Server erhält es, und beim Schließen des Tabs ist alles gelöscht."
+    ],
+    [
+      "Was ist Peppol BIS Billing 3.0?",
+      "Es ist das Format für Rechnungen und Gutschriften im Peppol-Netzwerk. Es ist ein UBL-2.1-Dokument, das der europäischen Norm EN 16931 folgt und einige zusätzliche Peppol-Regeln enthält. Viele Länder nutzen es, und die XRechnung ist ein enger Verwandter mit deutschen Ergänzungen."
+    ],
+    [
+      "Öffnet die Seite auch andere Peppol-Dokumente, etwa Bestellungen?",
+      "Nein, nur Rechnungen und Gutschriften. Öffnen Sie eine Bestellung, eine Bestellantwort oder ein Lieferavis, sagt Ihnen die Seite, um welches Dokument es sich handelt und dass sie es nicht anzeigen kann."
+    ],
+    [
+      "Kann sie eine Rechnung öffnen, die in einen Umschlag verpackt ist?",
+      "Ja. Kommt die Rechnung in einem Standard Business Document Header (SBDH) an, wird die darin enthaltene Rechnung gefunden und angezeigt."
+    ],
+    [
+      "Werden die Peppol-Adressen angezeigt?",
+      "Ja. Die elektronische Adresse von Verkäufer und Käufer wird mit ihrem Schema angezeigt, zum Beispiel 0088 für eine GLN oder 0007 für eine schwedische Organisationsnummer."
+    ],
+    [
+      "Was ist, wenn die Umsatzsteuer in einer zweiten Währung angegeben ist?",
+      "Manche Länder verlangen die Umsatzsteuer in der Landeswährung. Gibt die Rechnung sie an, wird der Umsatzsteuerbetrag in dieser Währung unter den Summen angezeigt."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-Rechnung hier ablegen</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Datei auswählen</span></label>
+  <p class="drop__hint">XML, ein PDF mit eingebetteter Rechnung (ZUGFeRD, Factur-X) oder eine signierte .p7m-Datei. Oder ziehen Sie die Datei an eine beliebige Stelle dieser Seite.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drucken oder als PDF speichern</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON herunterladen</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML herunterladen</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Roh-XML anzeigen</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Neu beginnen</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Roh-XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hier wird nur der Anfang einer langen Datei angezeigt. Laden Sie das XML herunter, um den gesamten Inhalt zu erhalten.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Peppol, UBL und EN 16931</h2>
+<p>Peppol ist ein Netzwerk für den Austausch von Geschäftsdokumenten zwischen Unternehmen und öffentlichen Stellen, das in weiten Teilen Europas und darüber hinaus genutzt wird. Seine Rechnungen sind UBL-2.1-XML-Dateien: ein Standard von OASIS, auf dem die europäische Norm EN 16931 aufbaut. Eine Rechnung nach Peppol BIS Billing 3.0 hat deshalb einen festen Satz von Geschäftsbegriffen, etwa die Umsatzsteuer-Identifikationsnummer des Verkäufers, die Rechnungspositionen und die Umsatzsteuer-Aufschlüsselung, die diese Seite liest und als normale Rechnung darstellt.</p>
+<p>Viele Länder verwenden dieselbe Struktur mit eigenen Ergänzungen, in Deutschland etwa die XRechnung. Nennt die Datei ihr Profil im Customization Identifier, wird es im Kopf angezeigt. Seit dem 1. Januar 2025 muss jedes Unternehmen in Deutschland strukturierte E-Rechnungen empfangen können, und Frankreich verlangt dies ab dem 1. September 2026; solche Dateien erreichen deshalb immer mehr Menschen, die das XML noch nie gesehen haben.</p>
+<h2>Was angezeigt wird und was nicht</h2>
+<p>Sie sehen die Beteiligten mit Umsatzsteuer-Identifikationsnummern, Rechts- und elektronischen Adressen, Lieferung und Zahlungsempfänger, wo angegeben, die Datumsangaben und Referenzen, jede Rechnungsposition mit Menge, Einheit, Preis und Umsatzsteuer, Nachlässe und Zuschläge, die Umsatzsteuer-Aufschlüsselung mit Befreiungsgründen, die Summen (auch die Umsatzsteuer in einer zweiten Währung), die Zahlungsart mit IBAN, BIC und Verwendungszweck, Hinweise und angehängte Dokumente. Die Rechnung wird nicht validiert, und das Peppol-Netzwerk wird nicht genutzt.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Deutsche XRechnung-Dateien öffnen sich auch im <a href="/tools/xrechnung-viewer/">XRechnung-Viewer</a>.</li>
+  <li>Ein PDF mit eingebetteter Rechnung lässt sich auch hier öffnen, doch der <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD-Viewer (Factur-X)</a> ist dafür gemacht.</li>
+  <li>„JSON herunterladen“ liefert die Rechnung als reine Daten mit den Bezeichnungen der Geschäftsbegriffe der EN 16931.</li>
+</ul>

@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "RouterOS v7 için MikroTik güvenlik duvarı oluşturucu | Tanod Tools",
+  "description": "Sıkılaştırılmış RouterOS v7 güvenlik duvarı kurun: input ve forward zincirleri, FastTrack, invalid drop, hız sınırlı ping, NAT ve hizmet kısıtlama. Tarayıcıda çalışır.",
+  "h1": "MikroTik güvenlik duvarı oluşturucu",
+  "lede": "WAN ve LAN arayüzlerinizi ile yönetim alt ağlarınızı seçin; inceleyip yapıştırabileceğiniz yorumlu bir RouterOS v7 güvenlik duvarı temeli alın.",
+  "blurb": "Hizmet kısıtlamalı, sıkılaştırılmış RouterOS v7 güvenlik duvarı temeli.",
+  "keywords": "mikrotik güvenlik duvarı kuralları routeros v7 firewall filter input zinciri forward zinciri fasttrack drop invalid winbox kısıtlama ip service sıkılaştırma güvenli yönlendirici betik rsc firewall rules hardening",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "IPv4 için, isteğe bağlı bir IPv6 temeliyle RouterOS v7 sözdizimini üretir. Arayüz ve liste adları denetlenir; betik yönlendiricinize karşı denenmemiştir, bu yüzden uygulamadan önce okuyun. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik güvenlik duvarı nasıl kurulur",
+  "howto": [
+    "İnternete bakan arayüzleri (örneğin <code>ether1</code> veya <code>pppoe-out1</code>) ve yerel olanları (genellikle <code>bridge</code>) girin.",
+    "Yönlendiriciyi yönettiğiniz alt ağları listeleyin. WinBox'a ve SSH'ye yalnızca bunlar ulaşacağı için şu an bağlandığınız adresi de ekleyin.",
+    "Seçenekleri belirleyin, betiği ve yanındaki notları okuyun, sonra Safe Mode'u açın (terminalde <kbd>Ctrl</kbd>+<kbd>X</kbd>) ve yapıştırın ya da .rsc dosyasını indirip içe aktarın."
+  ],
+  "faq": [
+    ["Input zinciri neden forward zincirinden ayrı?", "Input zinciri, yönlendiricinin kendisine yönelik paketleri süzer: WinBox, SSH, DNS, API. Forward zinciri ise LAN'ınız ile internet arasında içinden geçen paketleri süzer. Bir yönlendirici input tarafında tamamen açık olabilirken arkasındaki LAN gayet güvenli olabilir; birçok MikroTik cihazının açık DNS çözümleyici veya proxy olarak sonlanması böyle olur."],
+    ["Neden önce established ve related bağlantıları kabul ediyor?", "Hemen her paket, güvenlik duvarının zaten izin verdiği bir bağlantıya aittir. Bunları ilk kuralda kabul etmek, her paketin tüm zinciri dolaşmak yerine bir kez denetlenmesi anlamına gelir; yönlendiricinin kendi DNS veya NTP sorgularının yanıtları da ek kural olmadan geçer. Geçersiz (invalid) paketler hemen ardından düşürülür."],
+    ["FastTrack ne yapar ve ne zaman kapatmalıyım?", "FastTrack, established bağlantıları işaretler; böylece paketleri güvenlik duvarının çoğunu atlar ve bu, küçük yönlendiricilerde verimi katlayabilir. Bir bit yeniği var: fasttrack'lenen paketler simple queue'ları, queue tree'leri, mangle kurallarını ve IPsec ilkelerini de atlar. Müşteri başına bant genişliği şekillendiriyor veya ilke tabanlı yönlendirme kullanıyorsanız FastTrack'i kapalı bırakın ya da bu bağlantıları hariç tutun."],
+    ["Bu beni dışarıda bırakır mı?", "Yönetim yaptığınız bilgisayar bir yönetim alt ağında değilse ve LAN güvenilir değilse bırakabilir. Önce Safe Mode'u açın (terminalde <kbd>Ctrl</kbd>+<kbd>X</kbd> veya WinBox'taki Safe Mode düğmesi): oturumunuz düşerse RouterOS, Safe Mode başladığından beri yapılan her şeyi geri alır."],
+    ["Bunu hâlâ varsayılan yapılandırmayı taşıyan bir yönlendiriciye yapıştırabilir miyim?", "Evet. Arayüz listeleri, liste üyeleri ve address-list girdileri yalnızca eksikse eklenir. Değiştirme modu olmadan yeni kurallar varsayılanların arkasına eklenir; bu yüzden varsayılan \"LAN'dan gelmeyen her şeyi düşür\" kuralı önce gelebilir. Sırayı gözden geçirin ya da yerel olarak ulaşabildiğiniz bir yönlendiricide değiştirme modunu kullanın."],
+    ["Yapılandırmam bir yere gönderiliyor mu?", "Hayır. Betik, bu sayfadaki JavaScript tarafından bir araya getirilir. Yazdığınız hiçbir şey yüklenmez, saklanmaz veya kaydedilmez ve sayfa yüklendikten sonra çevrimdışı çalışır."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Arayüzler</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">WAN arayüzleri</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">İnternete bakan, virgülle ayrılmış. WAN arayüz listesine katılırlar.</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">LAN arayüzleri</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">Genellikle bridge. LAN arayüz listesine katılırlar.</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Yönetim</legend>
+      <div class="field">
+        <label for="fw-mgmt">Yönetim alt ağları</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">WinBox'a (8291) ve SSH'ye (22) yalnızca bunlar ulaşır. Bağlandığınız adresi ekleyin.</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">Yönlendiricide açılacak portlar</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">İsteğe bağlı; yönlendiricinin kendisinin internete sunduğu hizmetler için, örneğin WireGuard.</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>LAN'a güven (LAN'dan yönlendiriciye her şeyi kabul et)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>WinBox ve SSH'yi yönetim alt ağlarıyla sınırla; telnet, FTP, WebFig ve API'yi kapat</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>Komşu keşfini ve MAC erişimini LAN ile sınırla; bant genişliği test sunucusunu, proxy'yi, SOCKS'u ve UPnP'yi kapat</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Seçenekler</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>Established bağlantıları FastTrack yap</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>Ping'e yanıt ver, hız sınırlı</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>WAN'a masquerade (kaynak NAT)</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">IPsec tünelleri bu yönlendiricide sonlanır</label>
+        <label class="check"><input type="checkbox" id="fw-v6">IPv6 güvenlik duvarı da ekle</label>
+        <label class="check"><input type="checkbox" id="fw-replace">Değiştirme modu: önce mevcut filtre ve NAT kurallarını kaldır</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Dışarıda kalma riski.</strong> Uzaktaki bir yönlendiriciye uygulamadan önce bir laboratuvarda deneyin ya da Safe Mode'u açın (terminalde <kbd>Ctrl</kbd>+<kbd>X</kbd>).</span></p>
+    <label for="fw-out" class="label">RouterOS v7 betiği</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Üretilen güvenlik duvarı ne yapar</h2>
+<p>Betik, MikroTik'in kendi varsayılan yapılandırmasıyla aynı yapıyı izler; yalnızca daha katıdır. <strong>Input zinciri</strong> yönlendiriciyi korur: zaten izin verilmiş bağlantılara ait paketleri kabul eder, geçersiz olanları düşürür, sınırlı bir hızda ping'e yanıt verir, yönetim alt ağlarının WinBox'a ve SSH'ye ulaşmasına izin verir, LAN'ı (veya ondan yalnızca DNS, DHCP, NTP ve ICMP'yi) kabul eder ve geri kalan her şeyi koşulsuz bir son kuralla düşürür. Koşulsuz bir son drop, bir istisnalar listesini varsayılan olarak reddeden bir ilkeye dönüştüren şeydir.</p>
+<p><strong>Forward zinciri</strong> yönlendiricinin arkasındaki ağı korur. Established ve related trafik kabul edilir (ve isteğe bağlı olarak fasttrack'lenir), geçersiz paketler düşürülür ve WAN'dan gelen yeni bağlantılar, bir hedef NAT kuralı (bir port yönlendirmesi) onları oluşturmadıkça düşürülür. Bu son kural, internetin yönlendiricinin arkasındaki özel adreslere doğrudan ulaşmasını engelleyen kuraldır; tek başına masquerade bunu yapmaz.</p>
+<h3>Hizmetler ve yardımcılar</h3>
+<p>RouterOS varsayılan olarak birkaç yönetim hizmetini dinler. Betik, düz metin olanları (telnet, FTP, HTTP üzerinden WebFig) ve API'yi kapatır; güvenlik duvarının ardında ikinci bir katman olarak WinBox'a ve SSH'ye bir adres kısıtlaması ekler. MAC Telnet, MAC WinBox ve komşu keşfi 2. katmanda çalışır ve IP güvenlik duvarı kurallarını yok sayar; bu yüzden LAN arayüz listesiyle sınırlanır. Bant genişliği test sunucusu, web proxy, SOCKS ve UPnP kapatılır; yalnızca kullandığınızı yeniden açın.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Zaten bir güvenlik duvarınız mı var? Neyi kaçırdığını görmek için export'unuzu <a href="/tools/mikrotik-firewall-auditor/">MikroTik güvenlik duvarı denetleyici</a>ye yapıştırın.</li>
+  <li>Yönlendiricinin arkasındaki bir sunucuyu mu yayımlıyorsunuz? <a href="/tools/mikrotik-port-forwarding/">MikroTik port yönlendirme oluşturucu</a>, hairpin NAT dahil dst-nat kurallarını yazar.</li>
+  <li>Bir engelleme veya izin listesi mi gerekiyor? Onu <a href="/tools/mikrotik-address-list-generator/">MikroTik address list oluşturucu</a> ile oluşturun.</li>
+</ul>

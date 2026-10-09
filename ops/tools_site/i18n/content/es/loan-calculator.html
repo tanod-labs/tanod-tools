@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Calculadora de préstamos con tabla de amortización | Tanod Tools",
+  "description": "Calculadora de préstamos e hipotecas: cuota mensual, intereses totales y tabla de amortización completa descargable en CSV. Gratis, en tu navegador.",
+  "h1": "Calculadora de préstamos",
+  "lede": "Ingresa el monto, la tasa de interés anual y el plazo para ver la cuota mensual, los intereses totales y una tabla de amortización pago por pago que puedes descargar.",
+  "blurb": "Cuota mensual, intereses totales y tabla de amortización.",
+  "keywords": "calculadora de préstamos calculadora de hipoteca cuota mensual tabla de amortización amortización de préstamo intereses totales préstamo de auto préstamo personal pagos adicionales descargar csv interés cero",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Préstamos de tasa fija con cuotas mensuales iguales, intereses calculados cada mes a una doceava parte de la tasa anual y montos redondeados al centavo en cada periodo. Plazos de hasta 100 años. No se incluyen comisiones, seguros, impuestos, pagos globales (balloon) ni tasas variables, así que las cifras de un banco pueden diferir un poco. Los montos son números simples en la moneda que uses.",
+  "howto_title": "Cómo calcular la cuota de un préstamo",
+  "howto": [
+    "Ingresa el monto del préstamo, la tasa de interés anual y el plazo, en años o en meses.",
+    "Si quieres, agrega un monto adicional que pagarás cada mes además de la cuota obligatoria.",
+    "Lee la cuota mensual, los intereses totales y el total pagado; luego recorre la tabla de amortización o descárgala como archivo CSV."
+  ],
+  "faq": [
+    [
+      "¿Cómo se calcula la cuota mensual?",
+      "Con la fórmula estándar de anualidad: cuota = P × r ÷ (1 − (1 + r)^−n), donde P es el monto prestado, r es la tasa mensual (la tasa anual dividida entre 12) y n es el número de pagos mensuales. La cuota se redondea al centavo y el último pago se ajusta para que el saldo termine exactamente en cero."
+    ],
+    [
+      "¿Qué pasa si la tasa de interés es 0 %?",
+      "El préstamo simplemente se divide en pagos iguales: el monto entre el número de meses. Los intereses totales son cero. Las diferencias de redondeo, si las hay, se suman al último pago."
+    ],
+    [
+      "¿Qué muestra la tabla de amortización?",
+      "Una fila por cada pago: cuánto va a intereses, cuánto reduce el capital y el saldo que queda después. Al principio la mayor parte de cada pago son intereses; hacia el final, casi todo es capital."
+    ],
+    [
+      "¿Cómo ayudan los pagos adicionales?",
+      "Un monto extra cada mes va directo al capital, así que el saldo baja más rápido, se acumulan menos intereses y el préstamo termina antes. El resultado muestra cuántos pagos se necesitan y los intereses totales con tu pago adicional."
+    ],
+    [
+      "¿Por qué difiere la cifra de mi banco?",
+      "Las entidades pueden cobrar comisiones, capitalizar los intereses de otra forma, contar días en lugar de meses o redondear de otro modo. Usa esto como una estimación cercana, no como una cotización."
+    ],
+    [
+      "¿Lo que escribo se sube a algún lado?",
+      "No. Todo se calcula en tu navegador y nada sale de tu dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Monto del préstamo</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Tasa de interés anual (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Plazo del préstamo</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Unidad del plazo">
+          <option value="years" selected>años</option>
+          <option value="months">meses</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Pago adicional cada mes (opcional)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Cuota mensual</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Intereses totales</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Total pagado</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Número de pagos</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Descargar tabla (CSV)</button>
+    </div>
+    <h3 class="util-h">Tabla de amortización</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tabla de amortización">
+      <table class="dv-table">
+        <thead><tr><th scope="col">N.º</th><th scope="col">Pago</th><th scope="col">Capital</th><th scope="col">Interés</th><th scope="col">Saldo</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Cómo se calcula la cuota de un préstamo</h2>
+<p>La mayoría de los préstamos y las hipotecas se amortizan: pagas el mismo monto cada mes y cada pago cubre primero los intereses acumulados sobre el saldo y luego reduce una parte del capital. Como el saldo es más alto al inicio, la parte de intereses de los primeros pagos es grande y la de capital, pequeña. A medida que el saldo baja, los intereses disminuyen y una mayor parte de cada pago se destina al capital.</p>
+<p>La calculadora convierte la tasa anual en tasa mensual dividiéndola entre 12, halla la cuota fija con la fórmula estándar de anualidad y luego construye la tabla mes a mes. El interés del mes es el saldo por la tasa mensual, redondeado al centavo como lo hace una entidad financiera. El resto del pago reduce el saldo. El último pago es el que liquida el saldo, por lo que puede diferir de los demás en unos centavos. Una tasa de 0 % no necesita fórmula: el monto se reparte en partes iguales entre los meses.</p>
+<p>Pagar un poco más cada mes es una de las formas más baratas de reducir los intereses. El monto extra va por completo al capital, así que el saldo baja más rápido y el préstamo termina antes. Ingresa un pago adicional para ver cuántos pagos faltan y cuántos intereses ahorras frente a no hacer pagos extra.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Mira en cuánto pueden crecer unos ahorros o una inversión con la <a href="/tools/compound-interest-calculator/">calculadora de interés compuesto</a>.</li>
+  <li>Compara dos tasas o calcula el cambio en una cuota con la <a href="/tools/percentage-calculator/">calculadora de porcentajes</a>.</li>
+  <li>¿Vas a escribir el monto en un cheque? <a href="/tools/number-to-words/">Número a letras</a> lo escribe con palabras.</li>
+</ul>

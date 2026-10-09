@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Calculateur de prêt avec tableau d'amortissement | Tanod Tools",
+  "description": "Calculateur de prêt et de crédit immobilier : mensualité, intérêts totaux et tableau d'amortissement complet à télécharger en CSV. Gratuit, dans le navigateur.",
+  "h1": "Calculateur de prêt",
+  "lede": "Saisissez le montant, le taux d'intérêt annuel et la durée pour obtenir la mensualité, le total des intérêts et un tableau d'amortissement échéance par échéance à télécharger.",
+  "blurb": "Mensualité, intérêts totaux et tableau d'amortissement.",
+  "keywords": "calculateur de prêt calculateur de crédit immobilier mensualité tableau d'amortissement amortissement intérêts totaux crédit auto prêt personnel remboursements supplémentaires télécharger csv taux zéro",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Prêts à taux fixe avec mensualités constantes, intérêts calculés chaque mois au douzième du taux annuel et montants arrondis au centime à chaque échéance. Durées jusqu'à 100 ans. Les frais, assurances, taxes, remboursements in fine (balloon) et taux variables ne sont pas inclus : les chiffres d'un prêteur peuvent donc différer légèrement. Les montants sont de simples nombres, dans la devise de votre choix.",
+  "howto_title": "Comment calculer la mensualité d'un prêt",
+  "howto": [
+    "Saisissez le montant du prêt, le taux d'intérêt annuel et la durée, en années ou en mois.",
+    "Si vous le souhaitez, ajoutez un montant supplémentaire que vous paierez chaque mois en plus de la mensualité obligatoire.",
+    "Lisez la mensualité, le total des intérêts et le total payé, puis faites défiler le tableau d'amortissement ou téléchargez-le en fichier CSV."
+  ],
+  "faq": [
+    [
+      "Comment la mensualité est-elle calculée ?",
+      "Avec la formule standard des annuités : mensualité = P × r ÷ (1 − (1 + r)^−n), où P est le montant emprunté, r le taux mensuel (le taux annuel divisé par 12) et n le nombre de mensualités. La mensualité est arrondie au centime et la dernière est ajustée pour que le solde finisse exactement à zéro."
+    ],
+    [
+      "Que se passe-t-il si le taux d'intérêt est de 0 % ?",
+      "Le prêt est simplement réparti en mensualités égales : le montant divisé par le nombre de mois. Le total des intérêts est alors nul. Les éventuelles différences d'arrondi sont reportées sur la dernière mensualité."
+    ],
+    [
+      "Que montre le tableau d'amortissement ?",
+      "Une ligne par échéance : la part qui va aux intérêts, la part qui rembourse le capital et le capital restant dû ensuite. Au début, l'essentiel de chaque mensualité correspond aux intérêts ; vers la fin, c'est surtout du capital."
+    ],
+    [
+      "En quoi les remboursements supplémentaires aident-ils ?",
+      "Un montant supplémentaire chaque mois est affecté directement au capital : le solde baisse plus vite, moins d'intérêts s'accumulent et le prêt se termine plus tôt. Le résultat indique le nombre d'échéances nécessaires et le total des intérêts avec votre versement supplémentaire."
+    ],
+    [
+      "Pourquoi le chiffre de mon prêteur est-il différent ?",
+      "Les prêteurs peuvent facturer des frais, capitaliser les intérêts autrement, compter les jours plutôt que les mois ou arrondir différemment. Considérez ce résultat comme une estimation proche, pas comme une offre."
+    ],
+    [
+      "Ce que je saisis est-il envoyé quelque part ?",
+      "Non. Tout est calculé dans votre navigateur et rien ne quitte votre appareil."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Montant du prêt</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Taux d'intérêt annuel (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Durée du prêt</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Unité de durée">
+          <option value="years" selected>ans</option>
+          <option value="months">mois</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Versement supplémentaire chaque mois (facultatif)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Mensualité</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Intérêts totaux</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Total payé</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Nombre de mensualités</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Télécharger le tableau (CSV)</button>
+    </div>
+    <h3 class="util-h">Tableau d'amortissement</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tableau d'amortissement">
+      <table class="dv-table">
+        <thead><tr><th scope="col">N°</th><th scope="col">Mensualité</th><th scope="col">Capital</th><th scope="col">Intérêts</th><th scope="col">Capital restant dû</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment la mensualité d'un prêt est calculée</h2>
+<p>La plupart des prêts et des crédits immobiliers sont amortissables : vous payez le même montant chaque mois, et chaque mensualité couvre d'abord les intérêts accumulés sur le capital restant dû, puis rembourse une partie du capital. Comme le solde est le plus élevé au départ, la part d'intérêts des premières mensualités est importante et la part de capital faible. Au fil de la baisse du solde, les intérêts diminuent et une part croissante de chaque mensualité va au capital.</p>
+<p>Le calculateur convertit le taux annuel en taux mensuel en le divisant par 12, détermine la mensualité constante avec la formule standard des annuités, puis construit le tableau mois par mois. Les intérêts du mois sont le solde multiplié par le taux mensuel, arrondis au centime comme le fait un prêteur. Le reste de la mensualité réduit le solde. La dernière échéance est celle qui solde le prêt ; elle peut donc différer des autres de quelques centimes. Un taux de 0 % n'a pas besoin de formule : le montant est réparti à parts égales sur les mois.</p>
+<p>Payer un peu plus chaque mois est l'un des moyens les plus économiques de réduire les intérêts. Le surplus va entièrement au capital : le solde baisse plus vite et le prêt se termine plus tôt. Saisissez un montant supplémentaire pour voir combien d'échéances il reste et combien d'intérêts vous économisez par rapport à l'absence de versement supplémentaire.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Voyez ce que pourrait devenir une épargne ou un placement avec le <a href="/tools/compound-interest-calculator/">calculateur d'intérêts composés</a>.</li>
+  <li>Comparez deux taux ou calculez la variation d'une mensualité avec le <a href="/tools/percentage-calculator/">calculateur de pourcentages</a>.</li>
+  <li>Vous écrivez le montant sur un chèque ? <a href="/tools/number-to-words/">Nombre en lettres</a> l'écrit en toutes lettres.</li>
+</ul>

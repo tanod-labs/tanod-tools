@@ -1,7 +1,7 @@
 // Time zone converter and meeting planner, built on tzcore.js (the browser's own time-zone data).
-import { $, $$, el, announce, prefs, tx, txn, EN, dateFormat, listText } from "./core.js?v=5";
-import { parseDate, isoDate, dayNumber, weekdayName } from "./calccore.js?v=5";
-import { fillZoneSelect, zoneOf, zoneCity, utcFromFields, resolveWall, wallToInstants, wallFields, offsetMinutes, fmtOffset, pad, zoneAbbr, isZone } from "./tzcore.js?v=5";
+import { $, $$, el, announce, prefs, tx, txn, EN, dateFormat, listText } from "./core.js?v=11";
+import { parseDate, isoDate, dayNumber, weekdayName } from "./calccore.js?v=11";
+import { fillZoneSelect, zoneOf, zoneCity, utcFromFields, resolveWall, wallToInstants, wallFields, offsetMinutes, fmtOffset, pad, zoneAbbr, isZone } from "./tzcore.js?v=11";
 
 const dateEl = $("#tzc-date"), timeEl = $("#tzc-time"), fromEl = $("#tzc-from"), addEl = $("#tzc-add");
 const rowsEl = $("#tzc-rows"), msgEl = $("#tzc-msg");

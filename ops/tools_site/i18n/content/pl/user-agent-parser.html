@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Analizator user agent: przeglądarka, system, urządzenie | Tanod Tools",
+  "description": "Zobacz, co mówi user agent przeglądarki, albo wklej dowolny ciąg: poznasz przeglądarkę, silnik, system, urządzenie, procesor oraz Client Hints.",
+  "h1": "Analizator user agent",
+  "lede": "Rozłóż ciąg user agent na przeglądarkę, silnik, system operacyjny, urządzenie i procesor, zaczynając od własnej przeglądarki.",
+  "blurb": "Analizuj dowolny ciąg user agent i zobacz własny wraz z Client Hints.",
+  "keywords": "analizator user agent jaki mam user agent ciąg ua wykrywanie przeglądarki client hints useragent dekoder navigator.userAgent googlebot curl user agent parser what is my user agent browser detection",
+  "limits": "Analiza korzysta z ua-parser-js 1.0.41 (MIT) i opiera się na wzorcach, więc nietypowe lub podrobione ciągi mogą zostać źle odczytane. Client Hints są pokazywane tylko dla przeglądarki, której teraz używasz, i tylko tam, gdzie ta przeglądarka je obsługuje (przeglądarki Chromium tak; Firefox i Safari nie).",
+  "howto_title": "Jak odczytać ciąg user agent",
+  "howto": [
+    "User agent twojej przeglądarki jest analizowany zaraz po załadowaniu strony. Aby sprawdzić inny, wklej go do pola, na przykład z logu serwera.",
+    "Przeczytaj wiersze z przeglądarką, silnikiem, systemem operacyjnym, urządzeniem i procesorem. Traktuj je jako to, co twierdzi ciąg, a nie jako udowodnione fakty.",
+    "W przypadku własnej przeglądarki porównaj wynik z sekcją Client Hints, która może pokazać szczegóły pomijane w skróconym ciągu."
+  ],
+  "faq": [
+    ["Czym jest ciąg user agent?", "To wiersz tekstu, który przeglądarka lub program wysyła z każdym żądaniem sieciowym, aby powiedzieć, czym jest. Z powodu dziesięcioleci sztuczek zapewniających zgodność niemal każda przeglądarka zaczyna od <code>Mozilla/5.0</code> i wspomina kilka innych przeglądarek, więc odczytanie go wymaga dopasowywania wzorców, a nie prostego podziału."],
+    ["Dlaczego Windows 11 jest pokazywany jako Windows 10?", "Chrome i inne przeglądarki Chromium zamrażają część ciągu dotyczącą platformy na „Windows NT 10.0”, niezależnie od faktycznej wersji Windows. Odróżnić je mogą tylko Client Hints: wersja platformy 13 lub wyższa oznacza Windows 11. Ta strona pokazuje tę wartość dla twojej przeglądarki, gdy jest dostępna."],
+    ["Dlaczego mój iPad podaje, że jest Makiem?", "Od iPadOS 13 Safari domyślnie prosi o wersje stron na komputery i wysyła user agent Macintosha. Sam ciąg nie pozwala odróżnić Maca od iPada, choć strona może sprawdzić obecność ekranu dotykowego. To samo dotyczy macOS: wersja jest zamrożona na 10_15_7."],
+    ["Czym jest redukcja User-Agent?", "Chrome usuwa szczegóły z ciągu, aby ograniczyć śledzenie pasywne: wersja pomocnicza pokazuje się jako 0.0.0, model urządzenia z Androidem jako pojedyncza litera K, a wersja systemu jest stała. Witryny, które potrzebują szczegółów, muszą o nie prosić przez Client Hints."],
+    ["Czym są Client Hints?", "To ustrukturyzowane nagłówki i API JavaScript (<code>navigator.userAgentData</code>), które pozwalają stronie zażądać konkretnych szczegółów, takich jak architektura lub pełna wersja przeglądarki, zamiast odczytywać je z ciągu. Obecnie obsługują je tylko przeglądarki oparte na Chromium."],
+    ["Czy można ufać user agent przy decyzjach związanych z bezpieczeństwem?", "Nie. Każdy może wysłać dowolny ciąg, a boty często udają Chrome. Do statystyk i wyboru układu strony jest w porządku, ale nie do kontroli dostępu. Aby zweryfikować Googlebota, witryna sprawdza adres IP odwiedzającego za pomocą odwrotnego wyszukiwania DNS."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">Ciąg user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Użyj ciągu mojej przeglądarki</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Kopiuj wynik</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="Przeanalizowany user agent"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints z twojej przeglądarki</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Co mówi user agent i co ukrywa</h2>
+<p>User agent powstał jako sposób, aby serwer widział, która przeglądarka o coś prosi, i mógł wysłać stronę, która tam działa. Przeglądarki zaczęły potem kopiować swoje nazwy nawzajem, aby dostawać lepsze strony, dlatego dzisiejszy ciąg Chrome mówi też Mozilla, AppleWebKit, KHTML, Gecko i Safari. Analizator radzi sobie z tym, sprawdzając wzorce w starannie dobranej kolejności i wybierając najbardziej szczegółowe dopasowanie.</p>
+<p>Ciąg jest też celowo skracany. Redukcja User-Agent w Chrome ustala wersję Windows na NT 10.0, wersję macOS na 10_15_7, model Androida na K, a numer kompilacji na 0.0.0, aby ciąg przestał być dobrym odciskiem palca. Szczegóły nie zniknęły: strona, która poprosi o nie przez Client Hints, dostaje wersję platformy, architekturę, model i pełną wersję przeglądarki, a przeglądarka odwiedzającego decyduje, czy odpowiedzieć.</p>
+<p>Używaj ciągu do zgrubnych decyzji i logów, a nie do budowania zaufania. Roboty indeksujące i narzędzia wiersza poleceń, takie jak curl, wysyłają własne krótkie ciągi, a wszystko można podrobić. Jeśli szukasz błędu w układzie strony, wykrywanie funkcji na stronie jest bardziej niezawodne niż odczytywanie nazwy przeglądarki.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>W logu serwera pełno odpowiedzi 403 lub 429 dla jednego klienta? Sprawdź kody w narzędziu <a href="/tools/http-status-codes/">Kody statusu HTTP</a>.</li>
+  <li>User agenty w adresach URL lub ciągach zapytań są często zakodowane procentowo; odkoduj je w narzędziu <a href="/tools/url-encode-decode/">Koduj i dekoduj URL</a>.</li>
+  <li>Nagłówki skopiowane z żądania czasem zawierają wartości Base64; odczytaj je w narzędziu <a href="/tools/base64-encode-decode/">Koduj i dekoduj Base64</a>.</li>
+</ul>

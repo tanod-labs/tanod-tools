@@ -1,5 +1,5 @@
-import { $, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, baseName, UserError, announce, tx, txn, EN, listText } from "./core.js?v=5";
-import { loadPdfLib, openForEdit, parseRanges, saveDoc } from "./pdfcore.js?v=5";
+import { $, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, baseName, UserError, announce, tx, txn, EN, listText } from "./core.js?v=11";
+import { loadPdfLib, openForEdit, parseRanges, saveDoc } from "./pdfcore.js?v=11";
 
 const MAX_BYTES = 200 * 1024 * 1024;
 const MAX_TILES = 600;

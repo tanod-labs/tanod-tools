@@ -1,0 +1,139 @@
+<!--meta
+{
+  "title": "Firmar PDF online: dibuja o escribe tu firma | Tanod Tools",
+  "description": "Firma un PDF en tu navegador: dibuja o escribe tu firma, colócala en cualquier página, agrega la fecha y guarda. Gratis, sin registro y sin subir el archivo.",
+  "h1": "Firmar un PDF",
+  "lede": "Dibuja o escribe tu firma, colócala donde quieras en una página, agrega la fecha si lo deseas y guarda el PDF firmado. Todo ocurre en tu dispositivo.",
+  "blurb": "Dibuja o escribe una firma y colócala en una página del PDF.",
+  "keywords": "firmar pdf firmar un pdf firmar documento online poner firma en pdf agregar firma a un pdf firma electronica dibujar firma escribir firma firma con el mouse iniciales fecha rellenar y firmar sign pdf esign",
+  "limits": "Un PDF a la vez, de hasta 200 MB y 500 páginas. La firma se agrega a la página como una imagen. No es una firma digital con certificado, así que no demuestra quién firmó ni que el archivo no se haya modificado. Los PDF protegidos con contraseña no se pueden editar.",
+  "howto_title": "Cómo firmar un PDF",
+  "howto": [
+    "Elige un archivo PDF o arrástralo a la página.",
+    "Dibuja tu firma o cambia a <strong>Escribir</strong> e ingresa tu nombre. Marca la casilla para agregar la fecha.",
+    "Elige la página y luego arrastra la firma a su lugar, toca donde debe ir o usa los controles deslizantes para la posición y el tamaño. Pulsa <strong>Agregar firma</strong> y descarga el PDF firmado."
+  ],
+  "faq": [
+    ["¿Se suben mi PDF o mi firma?", "No. La página se dibuja y la firma se agrega con código que se ejecuta en tu navegador, con las bibliotecas de código abierto pdf.js y pdf-lib. Ni el PDF ni la firma se envían a un servidor ni se guardan, y ambos desaparecen cuando cierras la pestaña."],
+    ["¿Es una firma con validez legal?", "Muchas personas y organizaciones aceptan una imagen de una firma en documentos de uso cotidiano, pero que sea suficiente depende del documento, de quién la pidió y de la ley del lugar donde te encuentres. Esta no es una firma digital basada en un certificado: no demuestra quién firmó ni que el archivo siguió siendo el mismo después. Si tienes dudas, pregunta a quien te pidió la firma qué acepta."],
+    ["¿Puedo firmar más de una página?", "Sí. Elige <em>Todas las páginas</em> para poner la misma firma en el mismo lugar de todas las páginas, lo que resulta práctico para las iniciales. La posición y el tamaño se mantienen en proporción a cada página, así que también funcionan páginas de distintos tamaños. Para firmar páginas distintas en lugares distintos, firma una vez, abre el resultado y vuelve a firmar."],
+    ["¿Se puede quitar la firma después?", "Pasa a formar parte de la página, así que todos los visores de PDF la muestran, pero es una imagen común y alguien con un editor de PDF podría quitarla. Tu archivo original no cambia: descargas una copia nueva. Si quieres limitar quién puede modificar la copia firmada, usa <a href=\"/tools/protect-pdf/\">Proteger PDF con contraseña</a>."],
+    ["¿Por qué mi firma escrita se ve distinta en otro dispositivo?", "Las firmas escritas usan fuentes que están instaladas en tu dispositivo, y los estilos caligráficos varían de un sistema a otro. La vista previa muestra lo que se guardará. La firma guardada es una imagen, así que se ve igual en cualquier lugar donde se abra el PDF."],
+    ["¿Funciona con páginas rotadas?", "Sí. La página se muestra tal como aparece en un visor, y la firma gira junto con la página para que quede derecha. Las páginas recortadas también se tienen en cuenta: la posición se mide dentro del área visible."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Suelta un PDF aquí</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Elegir un PDF</span></label>
+  <p class="drop__hint">O arrástralo a cualquier parte de esta página.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">Tu firma</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Cómo crearla</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Dibujar</label>
+          <label><input type="radio" name="sg-mode" value="type">Escribir</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="Área de firma. Dibuja aquí tu firma con el mouse, el dedo o un lápiz digital."></canvas>
+        <span class="help">Dibuja con el mouse, el dedo o un lápiz digital. Si no puedes dibujar, elige Escribir.</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Deshacer el último trazo</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Borrar</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Tu nombre</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Escribe tu nombre">
+        </div>
+        <div class="field">
+          <label for="sg-font">Estilo</label>
+          <select id="sg-font">
+            <option value="script" selected>Caligráfica</option>
+            <option value="hand">Manuscrita</option>
+            <option value="serif">Cursiva clásica</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Vista previa de tu firma escrita"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Tinta</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Negra</label>
+          <label><input type="radio" name="sg-ink" value="blue">Azul</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">Agregar la fecha debajo de la firma</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Texto de la fecha</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Colócala en la página</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Página anterior">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Página</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Página siguiente">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">Arrastra la firma por la página, toca donde debe ir o usa los controles deslizantes.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">De izquierda a derecha: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">De arriba abajo: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Tamaño: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">Firmar</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>Esta página</label>
+            <label><input type="radio" name="sg-scope" value="all">Todas las páginas</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Agregar firma</button>
+    <span class="help" id="sg-hint">Primero dibuja o escribe tu firma.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Empezar de nuevo</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cómo llega una firma a la página de un PDF</h2>
+<p>Una página de PDF es un diseño fijo, así que firmarla significa agregarle algo, no escribir en ella. Esta herramienta convierte tu firma en una imagen pequeña con fondo transparente, junto con la línea de la fecha si marcaste esa casilla, y dibuja esa imagen en la página que elegiste. Tu navegador te muestra la página con pdf.js y escribe la copia nueva con pdf-lib, así que la página que ves es la página que se firma.</p>
+<p>La posición y el tamaño se guardan como fracciones de la página, no como medidas fijas. Por eso un mismo conjunto de controles deslizantes sirve para páginas de distintos tamaños cuando firmas todas las páginas, y por eso una página guardada de lado igualmente recibe una firma que queda derecha. Tu archivo original nunca se modifica; descargas una copia firmada aparte.</p>
+<p>Lo que obtienes es la imagen de una firma, que es lo que resulta cuando la mayoría de las personas firma a mano un formulario, una carta o un contrato y luego lo escanea. No es una firma digital criptográfica. Ese tipo de firma usa un certificado emitido a tu nombre, protege el archivo de cambios posteriores a la firma y requiere un servicio creado para ese fin. El tipo de firma que necesita un documento depende del propio documento y de quién la pidió.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>Dibuja despacio y aprovecha todo el panel: la firma se recorta al trazo, así que un dibujo más grande da un resultado más nítido con el mismo tamaño en la página.</li>
+  <li>Bloquea la copia firmada con <a href="/tools/protect-pdf/">Proteger PDF con contraseña</a>, o estampa todas las páginas con <a href="/tools/watermark-pdf/">Marca de agua en PDF</a>.</li>
+  <li>¿Primero necesitas agregar una página firmada a otro documento? <a href="/tools/merge-pdf/">Unir PDF</a> junta los archivos en el orden que elijas.</li>
+</ul>

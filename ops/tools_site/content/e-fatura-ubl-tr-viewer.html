@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "e-Fatura / UBL-TR viewer",
+  "icon": "e-fatura-ubl-tr-viewer",
+  "module": "einvoice-viewer",
+  "title": "e-Fatura and e-Arşiv viewer: open UBL-TR XML | Tanod Tools",
+  "description": "Open a Turkish e-Fatura or e-Arşiv invoice (UBL-TR XML) and read it as a normal invoice. Print, save as PDF or export JSON. Free, nothing is uploaded.",
+  "h1": "e-Fatura / UBL-TR viewer",
+  "lede": "Open a Turkish e-Fatura or e-Arşiv invoice in UBL-TR format and read it as an ordinary invoice: seller and buyer with VKN or TCKN, lines, KDV, withheld VAT (tevkifat) and payment. The XML is read in your browser and never uploaded.",
+  "blurb": "Read a Turkish e-Fatura or e-Arşiv invoice (UBL-TR) as a normal invoice.",
+  "keywords": "e-fatura viewer ubl-tr viewer e-arşiv fatura görüntüleyici e-fatura xml açma ubl-tr xml okuma e-fatura xml görüntüle gib e-fatura tevkifat temelfatura ticarifatura earsivfatura",
+  "limits": "One file at a time, up to 25 MB; the first 5,000 line items are shown. Reads UBL-TR 1.2 invoices (TEMELFATURA, TICARIFATURA, EARSIVFATURA and the other profiles, including returns and withholding). The fiscal seal (mali mühür) is not verified, and the XSLT inside the file is never run. Viewer only: it does not validate the invoice and does not connect to the GİB.",
+  "howto_title": "How to open an e-Fatura or e-Arşiv invoice",
+  "howto": [
+    "Choose the invoice XML you saved from your e-Fatura provider, the GİB portal or your accounting program, or drag it onto the page.",
+    "Read the invoice: seller and buyer with VKN or TCKN and tax office, UUID (ETTN), profile and invoice type, lines, KDV by rate, withholding, totals and payment.",
+    "Press <strong>Print or save as PDF</strong>, <strong>Download JSON</strong>, or <strong>Show raw XML</strong>. The sender's XSLT, if the file has one, is offered under Attachments as a download only."
+  ],
+  "faq": [
+    [
+      "Is the invoice uploaded or sent to the GİB?",
+      "No. This page does not connect to the GİB, to your provider or to any server. The XML is read in your browser and shown on this page, and closing the tab clears everything."
+    ],
+    [
+      "Is the fiscal seal (mali mühür) verified?",
+      "No. This page does not verify the mali mühür or any other e-signature. A file that carries one is flagged with a note, but the page cannot tell you who sealed the invoice or whether it was changed afterwards. Use your provider's or the GİB's tools if you need that."
+    ],
+    [
+      "What is the XSLT inside the file, and is it run?",
+      "Most e-Faturas carry an XSLT stylesheet in an AdditionalDocumentReference; the sender's software uses it to draw the invoice. This page never runs it. It is offered only as a download, because a stylesheet is code supplied by the sender. The invoice you see here is drawn by this page from the data in the XML."
+    ],
+    [
+      "What do SATIS, IADE, TEVKIFAT and ISTISNA mean?",
+      "They are values of the invoice type code: SATIS is a sale, IADE a return, TEVKIFAT an invoice with VAT withholding and ISTISNA an exempt one. The profile (ProfileID) is the scenario: TEMELFATURA is the basic one, TICARIFATURA the commercial one and EARSIVFATURA an e-Arşiv invoice. Both are shown as the file gives them."
+    ],
+    [
+      "How is withheld VAT (tevkifat) shown?",
+      "The withheld part of the KDV is shown as its own line under the totals and under Additional information, with the code, the name and the rate the file gives. The amount due is the one in the file; this page does not recalculate it."
+    ],
+    [
+      "Where do I get the XML of an invoice?",
+      "Your e-Fatura provider or the GİB portal lets you download an invoice as an XML file (often inside a ZIP), and accounting programs can export it. This page reads the XML file you saved."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "zugferd-factur-x-viewer",
+    "fatturapa-viewer",
+    "ksef-viewer",
+    "peppol-ubl-invoice-viewer",
+    "vietnam-e-invoice-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>e-Fatura, e-Arşiv and UBL-TR</h2>
+<p>e-Fatura and e-Arşiv are Turkey's electronic invoicing systems, run by the Revenue Administration (GİB). e-Fatura is used between businesses that are registered in the system; e-Arşiv covers invoices issued to buyers who are not, such as consumers. Both use UBL 2.1 with a Turkish customisation called UBL-TR (the CustomizationID is TR1.2). The XML is the invoice; the readable version is a drawing of it. This page makes that drawing in your browser from the XML you have.</p>
+<h2>What the viewer shows</h2>
+<p>You see the seller and buyer with their VKN or TCKN, tax office and addresses; the invoice number, date, UUID (ETTN), profile and type code; every line with quantity, unit, price, discount and KDV rate; KDV by rate group with exemption codes; withheld VAT (tevkifat) where the invoice has it; other taxes such as ÖTV as the file lists them; the totals and amount due; payment details with the IBAN; notes; the exchange rate of a foreign-currency invoice; and the references to orders, delivery notes and the invoice a return refers to. Amounts are shown exactly as in the file.</p>
+<p>It does not verify the fiscal seal (mali mühür), does not validate the invoice against the GİB schemas and rules and does not connect to the GİB. The XSLT stylesheet that most e-Faturas carry is never run: it is offered as a download under Attachments.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Download JSON gives you the invoice as plain data, with the UBL elements mapped to the EN 16931 business terms.</li>
+  <li>Other formats open here too: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol and the Vietnamese hóa đơn điện tử. The page suggests the matching viewer when you open one.</li>
+  <li>Show raw XML helps when you need an element that the readable invoice does not show.</li>
+</ul>

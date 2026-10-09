@@ -1,0 +1,123 @@
+<!--meta
+{
+  "category": "calc",
+  "name": "Business days calculator",
+  "title": "Business days calculator: count or add working days | Tanod Tools",
+  "description": "Count business days between two dates or add and subtract working days. Choose your weekend, count or skip the end dates and list holidays. Free, in your browser.",
+  "h1": "Business days calculator",
+  "lede": "Count the working days between two dates, or add and subtract business days from a date, with the weekend you use and your own list of holidays.",
+  "blurb": "Working days between dates, or add days to a date, with holidays.",
+  "keywords": "business days calculator working days between two dates networkdays workday add business days subtract working days weekend friday saturday holidays excluding weekends",
+  "local_text": "Runs in your browser; nothing you type leaves your device",
+  "limits": "Dates from year 1 to 9999 in the Gregorian calendar. This tool has no holiday data: it skips only the dates you list yourself, and a listed date that falls on a weekend is not counted twice. The counting follows the same rules as the spreadsheet functions NETWORKDAYS and WORKDAY.",
+  "howto_title": "How to count business days",
+  "howto": [
+    "Choose <em>Count business days</em> and enter the start and end dates, or choose <em>Add or subtract business days</em> and enter a start date and a number of days.",
+    "Pick your weekend (Saturday and Sunday, Friday and Saturday, Sunday only, or any days you choose) and paste public holidays as <code>YYYY-MM-DD</code>, one per line.",
+    "Read the business days, or the resulting date, together with the calendar days, weekend days and holidays that were skipped."
+  ],
+  "faq": [
+    ["Does it count the start date and the end date?", "By default it counts both, as the spreadsheet function NETWORKDAYS does: Monday to Friday of one week is 5 business days. Untick <em>Count the start date</em> or <em>Count the end date</em> to leave either one out. When you add business days, the start date is never counted, as with WORKDAY: one business day after a Friday is the following Monday."],
+    ["How do I use a weekend other than Saturday and Sunday?", "Pick <em>Friday and Saturday</em> for the weekend used in many Middle Eastern countries, <em>Sunday only</em> for a six-day week, or <em>Custom</em> to tick any combination of weekdays. At least one day of the week must stay a working day."],
+    ["How do I enter holidays?", "Type or paste one date per line in the form <code>YYYY-MM-DD</code>, for example <code>2026-12-25</code>. Text after the date on the same line, such as a holiday name, is ignored. A holiday that falls on a weekend does not change the result, because that day is already skipped."],
+    ["Why are there no built-in public holidays?", "Public holidays differ by country, region and year, and some are set by decree, so the tool does not guess. Everything here runs in your browser from the dates you give it. If you need a country's holidays added for you, see the business days API linked below."],
+    ["What if the end date is before the start date?", "The tool swaps the two dates, counts the days between them and tells you it did so, so the result is always a positive number. The start and end options swap with the dates."],
+    ["How are the start date and end date options handled when the dates are the same?", "With both options ticked, a single date counts as one day, which is a business day unless it is a weekend or a listed holiday. With either option unticked, the range is empty and the result is 0."]
+  ],
+  "related": ["date-difference-calculator", "date-calculator", "age-calculator", "countdown-timer", "time-zone-converter", "unix-timestamp-converter"]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">What do you want to do?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Count business days</label>
+      <label><input type="radio" name="bd-mode" value="add">Add or subtract business days</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Start date</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">End date</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Count the start date</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Count the end date</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Start date</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Operation</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Add</label>
+          <label><input type="radio" name="bd-op" value="sub">Subtract</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Business days</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Weekend</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Saturday and Sunday</option>
+        <option value="fri-sat">Friday and Saturday</option>
+        <option value="sun">Sunday only</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Weekend days</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Holidays (optional)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">One date per line as YYYY-MM-DD. There is no built-in holiday list.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Business days</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Calendar days</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Weekend days skipped</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Holidays skipped</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>How business days are counted</h2>
+<p>A business day, or working day, is any day that is neither a weekend day nor a holiday. To count them between two dates, the calculator takes every calendar day in the range, removes the weekend days you chose, then removes the listed holidays that fall on the remaining days. What is left is the number of business days. The three figures under the result show how many calendar days were looked at and how many of them were skipped as weekend or holiday.</p>
+<p>Whether the first and last day belong to the range matters. Counting Monday to Friday of one week with both ends included gives 5, and with the start date left out it gives 4. The defaults match the spreadsheet function <code>NETWORKDAYS</code>, which counts both ends.</p>
+<p>Adding business days works the other way round, like <code>WORKDAY</code>. The tool starts the day after the start date and steps forward, or back when you subtract, counting only days that are not weekend days or holidays, until it has counted the number you asked for. The start date itself is never counted, so adding 0 days returns the start date, even if that date is a weekend.</p>
+<p>The weekend is a setting because it is not the same everywhere. Many countries use Saturday and Sunday, several in the Middle East use Friday and Saturday, and some workplaces work six days. Holidays are yours to supply. Shifted or substitute holidays are not added automatically, so list the day that is actually observed.</p>
+<h3>For developers / AI agents</h3>
+<p>Need this in code, or for an AI agent? The business days API does the same counting and adds a country's public holidays automatically, so you do not have to maintain a holiday list. See the <a href="https://tanod.dev/learn/business-days-api.html">business days API guide</a>.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Need plain calendar days, weeks or months between two dates? Use the <a href="/tools/date-difference-calculator/">date difference calculator</a>.</li>
+  <li>Adding months or years to a date? The <a href="/tools/date-calculator/">date calculator</a> handles month-end dates.</li>
+  <li>Working across countries? Compare office hours with the <a href="/tools/time-zone-converter/">time zone converter</a>.</li>
+</ul>

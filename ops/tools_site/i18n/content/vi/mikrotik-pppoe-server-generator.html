@@ -1,0 +1,90 @@
+<!--meta
+{
+  "title": "Tạo PPPoE server MikroTik cho ISP và WISP | Tanod Tools",
+  "description": "Tạo PPPoE server RouterOS: address pool, profile gói cước với rate-limit, server, secret mẫu, kèm RADIUS và NAT tùy chọn. Ngay trong trình duyệt của bạn.",
+  "h1": "Tạo PPPoE server MikroTik",
+  "lede": "Đặt interface phía khách hàng, address pool và các gói tốc độ, rồi nhận một PPPoE server RouterOS hoàn chỉnh với profile, mẫu secret và RADIUS tùy chọn.",
+  "blurb": "Pool, profile gói cước, PPPoE server, secret và RADIUS.",
+  "keywords": "tạo pppoe server mikrotik, cấu hình pppoe mikrotik, pppoe mikrotik, quay số pppoe, gói cước internet, quản lý khách hàng wisp isp, mikrotik pppoe server setup routeros pppoe-server ppp profile rate-limit ppp secret radius ip pool local-address remote-address change-tcp-mss",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không rời khỏi thiết bị của bạn",
+  "limits": "Tạo cú pháp RouterOS v7 (cũng hợp lệ trên v6). Secret được gán mật khẩu mẫu có chủ đích; trang không bao giờ hỏi mật khẩu thật. Chỉ hỗ trợ IPv4; IPv6 prefix delegation cho PPPoE không nằm trong phạm vi. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập, không liên kết với hay được MikroTik bảo trợ.",
+  "howto_title": "Cách thiết lập PPPoE server trên MikroTik",
+  "howto": [
+    "Nhập interface hướng ra khách hàng (một cổng Ethernet, một bridge hoặc một VLAN) và tên dịch vụ.",
+    "Nhập address pool của khách hàng dưới dạng một mạng, các máy chủ DNS, và mỗi gói tốc độ một profile với tốc độ upload và download của gói.",
+    "Chọn phương thức xác thực, RADIUS và NAT, đặt số tài khoản mẫu cần tạo, rồi sao chép hoặc tải xuống tập lệnh. Hãy thay mọi CHANGE_ME trước khi khách hàng kết nối."
+  ],
+  "faq": [
+    ["Tốc độ trong PPP profile hoạt động thế nào?", "rate-limit của profile được viết theo dạng rx/tx từ góc nhìn của router: rx là phần router nhận từ khách hàng (upload của họ) và tx là phần router gửi đi (download của họ). Khi một phiên kết nối được thiết lập, RouterOS tạo một simple queue động với các giới hạn này. RADIUS có thể ghi đè theo từng khách hàng bằng thuộc tính Mikrotik-Rate-Limit."],
+    ["Vì sao mật khẩu là CHANGE_ME?", "Mật khẩu khách hàng là thông tin bí mật, và một công cụ tạo cấu hình không có lý do gì để biết chúng. Tập lệnh tạo các tài khoản với mật khẩu mẫu dễ nhận ra để cấu trúc sẵn sàng; hãy đặt mật khẩu thật trên router, nhập từ hệ thống tính cước của bạn, hoặc để máy chủ RADIUS xử lý xác thực."],
+    ["only-one và one-session-per-host có tác dụng gì?", "only-one trên profile ngăn cùng một tên đăng nhập có hai phiên cùng lúc. one-session-per-host trên server ngăn một địa chỉ MAC mở nhiều phiên. Kết hợp lại, chúng ngăn được phần lớn việc dùng chung tài khoản."],
+    ["Vì sao MTU là 1480?", "PPPoE thêm header 8 byte bên trong khung Ethernet, nên một phiên chỉ chứa được tối đa 1492 byte trên đường truyền chuẩn 1500 byte. RouterOS mặc định là 1480 để chừa chỗ cho VLAN tag và các hành vi lạ của CPE; change-tcp-mss trong profile sau đó giới hạn TCP để gói tin lớn không bị phân mảnh."],
+    ["Tôi nên cho phép phương thức xác thực nào?", "CHAP và MS-CHAPv2 không gửi mật khẩu dưới dạng văn bản thường. PAP thì có, và chỉ đáng bật cho các CPE cũ không hỗ trợ gì khác. RADIUS hoạt động với tất cả, dù một số backend RADIUS cần PAP để kiểm tra mật khẩu đã băm."],
+    ["Có gì ở đây bị gửi đi đâu không?", "Không. Tập lệnh được tạo ngay trong trình duyệt của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pp">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Server</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-if">Interface phía khách hàng</label><input type="text" id="pp-if" class="mono" value="ether2" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-svc">Tên dịch vụ</label><input type="text" id="pp-svc" class="mono" value="isp" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-net">Mạng của pool khách hàng</label><input type="text" id="pp-net" class="mono" value="10.10.0.0/22" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pp-dns">Máy chủ DNS</label><input type="text" id="pp-dns" class="mono" value="1.1.1.1, 8.8.8.8" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <fieldset class="field">
+        <legend>Xác thực</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="pp-auth" value="pap">PAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="chap" checked>CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap1" checked>MS-CHAP</label>
+          <label class="check"><input type="checkbox" name="pp-auth" value="mschap2" checked>MS-CHAPv2</label>
+        </div>
+      </fieldset>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Gói tốc độ (profile)</legend>
+      <ul class="ros-rows" id="pp-profiles"></ul>
+      <button class="btn btn--sm ros-add" id="pp-add" type="button">{{mark:i-plus}}Thêm một gói</button>
+      <span class="help">Gói đầu tiên là profile mặc định của server và cũng là profile mà các tài khoản được tạo sẽ dùng.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Tài khoản và tùy chọn</legend>
+      <div class="opts">
+        <div class="field"><label for="pp-count">Số tài khoản mẫu</label><input type="text" id="pp-count" class="mono" value="3" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pp-user">Mẫu tên đăng nhập</label><input type="text" id="pp-user" class="mono" value="customer{n}" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pp-one" checked>Mỗi tên đăng nhập một phiên (only-one)</label>
+        <label class="check"><input type="checkbox" id="pp-nat" checked>Masquerade khách hàng ra WAN</label>
+        <label class="check"><input type="checkbox" id="pp-radius">Dùng máy chủ RADIUS</label>
+      </div>
+      <div class="opts" id="pp-radius-f" hidden>
+        <div class="field"><label for="pp-rad-ip">Địa chỉ máy chủ RADIUS</label><input type="text" id="pp-rad-ip" class="mono" value="10.0.0.5" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <label class="check"><input type="checkbox" id="pp-coa" checked>Chấp nhận yêu cầu CoA và ngắt kết nối</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pp-out" class="label">Tập lệnh RouterOS</label>
+    <textarea id="pp-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pp-copy" type="button">Sao chép tập lệnh</button>
+      <button class="btn" id="pp-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pp-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Cấu trúc của một PPPoE server RouterOS</h2>
+<p>Một PPPoE server trên RouterOS gồm bốn phần. <strong>IP pool</strong> chứa các địa chỉ của khách hàng. <strong>PPP profile</strong> mô tả từng gói cước: địa chỉ cục bộ của router trên mỗi phiên, pool để lấy địa chỉ từ xa, các máy chủ DNS cấp phát và <code>rate-limit</code> trở thành queue của khách hàng. Bản thân <strong>PPPoE server</strong> lắng nghe các yêu cầu discovery trên interface phía khách hàng. <strong>Secret</strong>, hoặc một máy chủ RADIUS, quyết định ai được đăng nhập và với profile nào.</p>
+<p>Mỗi phiên là một liên kết điểm-điểm, nên khách hàng không cần subnet riêng: router dùng một địa chỉ cục bộ cho mọi phiên và mỗi khách hàng nhận một địa chỉ duy nhất từ pool. Đó là lý do interface phía khách hàng không cần địa chỉ IP hay DHCP server; trên bridge hoặc VLAN dùng chung với các dịch vụ khác, hãy tách riêng lưu lượng PPPoE và IP.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Muốn gói cước có burst? Tính các giá trị bằng <a href="/tools/mikrotik-burst-calculator/">Tính burst MikroTik</a>; công cụ in ra đầy đủ chuỗi rate-limit cho profile hoặc RADIUS.</li>
+  <li>Khách hàng nằm sau các VLAN riêng theo từng trạm hoặc tòa nhà? Hãy tạo VLAN bằng <a href="/tools/mikrotik-vlan-generator/">Tạo VLAN MikroTik</a> và chạy một PPPoE server cho mỗi VLAN, hoặc một bridge bao các VLAN đó.</li>
+  <li>Bảo vệ chính router bằng <a href="/tools/mikrotik-firewall-generator/">Tạo tường lửa MikroTik</a>: các interface phía khách hàng không nên truy cập được WinBox hay SSH.</li>
+</ul>

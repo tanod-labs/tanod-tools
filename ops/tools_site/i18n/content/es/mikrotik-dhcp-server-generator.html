@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Generador de servidor DHCP e IP pool para MikroTik | Tanod Tools",
+  "description": "Genera un servidor DHCP de RouterOS: IP pool, servidor, ajustes de red (gateway, DNS, dominio, NTP) y leases estáticos, validados contra la subred. En tu navegador.",
+  "h1": "Generador de servidor DHCP MikroTik",
+  "lede": "Ingresa la interfaz y la subred, y obtén el IP pool, el servidor DHCP, los ajustes de red y los leases estáticos en un solo script de RouterOS validado.",
+  "blurb": "IP pool, servidor DHCP, red y leases estáticos.",
+  "keywords": "configurar servidor dhcp mikrotik routeros ip pool dhcp-server network gateway dns-server lease estático reserva de dirección mac lease-time script dhcp vlan dhcp",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Genera sintaxis de RouterOS v7 (también válida en v6) para un servidor DHCP IPv4 en una interfaz. No cubre opciones DHCP personalizadas ni relays. MikroTik y RouterOS son marcas registradas de SIA Mikrotīkls. Esta herramienta es independiente y no está afiliada ni respaldada por MikroTik.",
+  "howto_title": "Cómo configurar un servidor DHCP en MikroTik",
+  "howto": [
+    "Ingresa la interfaz en la que están los clientes (un bridge o una interfaz VLAN) y su subred; a partir de ella se sugieren el gateway y el pool.",
+    "Ajusta el pool, los servidores DNS, el dominio y el tiempo de lease, y agrega leases estáticos para los dispositivos que necesitan una dirección fija.",
+    "Copia el script o descarga el archivo .rsc y ejecútalo; las notas señalan todo lo que merece una segunda revisión."
+  ],
+  "faq": [
+    ["¿Cuáles son las partes de un servidor DHCP de RouterOS?", "Tres menús trabajan juntos: <code>/ip pool</code> contiene las direcciones a entregar, <code>/ip dhcp-server</code> vincula un servidor a una interfaz y un pool, y <code>/ip dhcp-server network</code> contiene lo que se les informa a los clientes: el gateway, los servidores DNS, el dominio y los servidores NTP de esa subred. El router también necesita su propia dirección en la interfaz, que el script puede agregar."],
+    ["¿Los leases estáticos deben estar dentro o fuera del pool?", "Ambas opciones funcionan: RouterOS nunca entrega una dirección que ocupa un lease estático. Mantener los dispositivos fijos fuera del rango dinámico, por ejemplo de .2 a .9 con el pool desde .10, hace el plan más fácil de leer y evita confusiones si se elimina un lease."],
+    ["¿Qué tiempo de lease debo usar?", "Para una LAN de casa u oficina, un día es lo habitual. Las redes de invitados y los hotspots con muchas visitas cortas funcionan mejor con una hora o menos, para que las direcciones vuelvan rápido al pool. Los leases muy cortos implican más renovaciones, pero sin un costo real en una red pequeña."],
+    ["¿Necesito allow-remote-requests para que los clientes usen el router como DNS?", "Sí, y eso también es lo que convierte a un router en un resolver abierto cuando el firewall no descarta el DNS que viene de la WAN. La herramienta solo lo agrega cuando marcas la opción, y te recuerda revisar la cadena input."],
+    ["¿Mi plan de red se envía a algún lado?", "No. Las validaciones y el script se hacen en tu navegador."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Red</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Interfaz</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Subred</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Gateway (dirección del router)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Rango del pool</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Agregar la dirección del gateway a la interfaz</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Ajustes para los clientes</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">Servidores DNS</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Dominio</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">Servidores NTP</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="opcional" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Tiempo de lease</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Nombre del servidor y del pool</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">El router responde DNS para la LAN (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Leases estáticos</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Agregar un lease estático</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">Script de RouterOS</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Copiar script</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}Descargar .rsc</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>DHCP en RouterOS, pieza por pieza</h2>
+<p>RouterOS guarda un servidor DHCP en tres lugares, y la falta de una pieza es la razón habitual por la que los clientes no reciben dirección. El <strong>pool</strong> es solo un conjunto con nombre de rangos de direcciones. El <strong>servidor</strong> escucha en una interfaz y asigna direcciones de su pool. La entrada <strong>network</strong> se asocia por subred y contiene las opciones que se envían con cada lease: gateway, servidores DNS, nombre de dominio y servidores NTP. La interfaz también necesita la dirección propia del router en esa subred, o el servidor no tiene una red que atender.</p>
+<p>La página contrasta las piezas entre sí antes de escribir nada: el gateway y el pool deben estar dentro de la subred, el pool debe evitar las direcciones de red, de broadcast y del gateway, y los leases estáticos deben ser únicos y estar dentro de la subred. Los leases estáticos se escriben en <code>/ip dhcp-server lease</code> con el nombre del servidor, de modo que cada dispositivo siempre reciba la misma dirección.</p>
+<h3>Consejos</h3>
+<ul>
+  <li>¿Planificando el direccionamiento? La <a href="/tools/subnet-calculator/">calculadora de subredes</a> muestra el rango de hosts y el tamaño de cualquier prefijo.</li>
+  <li>Un servidor DHCP por VLAN: crea primero las interfaces VLAN con el <a href="/tools/mikrotik-vlan-generator/">generador de VLAN</a> y luego ejecuta esto una vez por VLAN.</li>
+  <li>Si el router responde DNS, asegúrate de que el <a href="/tools/mikrotik-firewall-generator/">firewall</a> descarte el DNS que viene de internet.</li>
+</ul>

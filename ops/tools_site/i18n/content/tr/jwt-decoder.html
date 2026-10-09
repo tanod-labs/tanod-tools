@@ -1,0 +1,92 @@
+<!--meta
+{
+  "title": "JWT çözücü: JSON Web Token talepleri | Tanod Tools",
+  "description": "JSON Web Token'ı tarayıcınızda çözün: başlık, yük ve talepler; exp, nbf ve iat tarih olarak, süre bitimine kalan zamanla. Belirteç hiçbir yere gönderilmez.",
+  "h1": "JWT çözücü",
+  "lede": "Başlığını ve yükünü okumak için bir JSON Web Token yapıştırın; bitiş ve düzenleme zamanları gerçek tarihler olarak gösterilir.",
+  "blurb": "Bir JWT'nin başlığını, taleplerini ve süre bitimini okuyun.",
+  "keywords": "jwt çözücü jwt decode json web token jws jwe bearer token talepler exp iat nbf süre bitimi oauth id token claims expiry",
+  "limits": "1 MB'a kadar belirteç. Yalnızca çözme: imza gösterilir ama doğrulanmaz.",
+  "howto_title": "JWT nasıl çözülür",
+  "howto": [
+    "Belirteci kutuya yapıştırın. Başta <code>Bearer </code> ile çevredeki boşluklar veya tırnaklar yok sayılır.",
+    "Aşağıda başlığı ve yükü, ayrıca bitiş, öncesinde geçersiz ve düzenlenme zamanlarını saat diliminizde ve UTC olarak okuyun.",
+    "Başka bir yerde gerekirse çözülmüş yükü veya başlığı biçimlendirilmiş JSON olarak kopyalayın."
+  ],
+  "faq": [
+    ["İmzayı doğrular mı?", "Hayır. Bu sayfa yalnızca belirteci çözer. Herkes herhangi bir başlık ve yükle bir belirteç oluşturabilir; bu yüzden burada gösterilen içerik kanıt değil, taleplerdir. Bir belirtecin gerçek olup olmadığını ancak imzalama anahtarını (RS256 ve ES256 belirteçleri için genel anahtarı) tutan hizmet söyleyebilir ve bu hizmetin bitiş, hedef kitle (audience) ve vereni de denetlemesi gerekir."],
+    ["Buraya belirteç yapıştırmak güvenli mi?", "Bu sayfa belirteci hiçbir yere göndermez: tarayıcınızda çalışan kodla çözülür ve saklanmaz. Yine de geçerli bir erişim belirteci, geçerli olduğu sürece bir parola gibidir. Üretim belirteçlerini herhangi bir web sitesine yapıştırmaktan kaçının; hata ayıklarken süresi dolmuş veya test belirteçlerini tercih edin."],
+    ["Bazı belirteçleri neden okuyamıyorum?", "Üç yerine beş bölümlü bir belirteç, şifrelenmiş bir JWT'dir (JWE). Başlığı okunabilir ama yük şifrelidir ve yalnızca alıcının anahtarıyla okunabilir; bu yüzden bu araç başlığı gösterir ve bölümleri açıklar. Yanlış sayıda bölüm veya geçerli Base64url ya da JSON olmayan metin gibi diğer hatalar, neyin ters gittiğiyle birlikte bildirilir."],
+    ["Zamanlar nasıl hesaplanıyor?", "<code>exp</code>, <code>nbf</code> ve <code>iat</code> talepleri NumericDate değerleridir: 1 Ocak 1970 UTC'den itibaren geçen saniye. Cihazınızın saat diliminde ve UTC olarak gösterilir ve belirtecin süresinin dolup dolmadığını söylemek için cihazınızın saatiyle karşılaştırılır. Saatiniz yanlışsa göreli zamanlar da yanlış olur. Milisaniye gibi görünen bir değer, yaygın bir hata olduğu için işaretlenir."],
+    ["alg, typ ve kid ne anlama geliyor?", "<code>alg</code>, HS256 (paylaşılan gizli anahtar), RS256 veya ES256 (anahtar çifti) gibi imzalama algoritmasıdır. <code>typ</code> genellikle JWT'dir. <code>kid</code>, verenin kullandığı anahtar kimliğidir ve doğrulayıcıya imzayı hangi anahtarla denetleyeceğini söyler. <code>alg</code> değeri <code>none</code> olan bir belirteç imzasızdır ve önemli hiçbir iş için asla kabul edilmemelidir."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="jw-in">Belirteç</label>
+    <textarea id="jw-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.signature"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="jw-sample" type="button">Örnek bir belirteç dene</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="jw-clear" type="button">Temizle</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="jw-out" class="util-stack dv-stack" hidden>
+    <p class="dv-caution" id="jw-warn">{{mark:i-alert}}<span><strong>İmza doğrulanmadı.</strong> Bu sayfa belirteci çözer; gerçek olup olmadığını denetlemez. Herkes istediği içerikle bir belirteç oluşturabilir.</span></p>
+    <p class="dv-verdict" id="jw-valid" aria-live="polite"></p>
+    <dl class="stats" id="jw-stats">
+      <div><dt>Algoritma</dt><dd id="jw-alg" class="util-small">-</dd></div>
+      <div><dt>Tür</dt><dd id="jw-typ" class="util-small">-</dd></div>
+      <div><dt>Anahtar kimliği</dt><dd id="jw-kid" class="util-small">-</dd></div>
+      <div><dt>Bölümler</dt><dd id="jw-parts" class="util-small">-</dd></div>
+    </dl>
+    <div id="jw-times-box">
+      <h2 class="dv-sub" id="jw-times-h">Zamanlar</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-times-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Talep</th><th scope="col">Saat diliminiz, sonra UTC</th><th scope="col">Göreli</th></tr></thead>
+          <tbody id="jw-times"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-h-l">Başlık</span>
+      <pre class="out dv-json" id="jw-header" tabindex="0" aria-labelledby="jw-h-l"></pre>
+    </div>
+    <div class="field" id="jw-payload-box">
+      <span class="label" id="jw-p-l">Yük</span>
+      <pre class="out dv-json" id="jw-payload" tabindex="0" aria-labelledby="jw-p-l"></pre>
+    </div>
+    <div id="jw-claims-box">
+      <h2 class="dv-sub" id="jw-claims-h">Talepler</h2>
+      <div class="dv-scroll" tabindex="0" aria-labelledby="jw-claims-h">
+        <table class="dv-table">
+          <thead><tr><th scope="col">Talep</th><th scope="col">Anlamı</th><th scope="col">Değer</th></tr></thead>
+          <tbody id="jw-claims"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="jw-s-l">İmza</span>
+      <pre class="out" id="jw-sig" tabindex="0" aria-labelledby="jw-s-l"></pre>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="jw-copy-p" type="button">{{mark:i-copy}}Yükü kopyala</button>
+      <button class="btn" id="jw-copy-h" type="button">Başlığı kopyala</button>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Bir JSON Web Token'ın içinde ne var</h2>
+<p>İmzalı bir JWT, noktalarla birleştirilmiş üç Base64url metin parçasıdır: bir başlık, bir yük ve bir imza. Başlık ve yük, Base64url ile yazılmış düz JSON'dur; herkesin okuyabilmesinin nedeni budur. Base64url bir kodlamadır, şifreleme değil; bu yüzden belirteç şifrelenmediyse JWT yüküne asla gizli bilgi koymayın.</p>
+<p>Yük, talepleri (claims) tutar. Bazı adlar kayıtlıdır: <code>iss</code> (belirteci kimin düzenlediği), <code>sub</code> (kimle ilgili olduğu), <code>aud</code> (kimin için olduğu), <code>exp</code> (ne zaman sona erdiği), <code>nbf</code> (öncesinde geçersiz olduğu zaman), <code>iat</code> (ne zaman düzenlendiği) ve <code>jti</code> (benzersiz bir kimlik). Hizmetler roller, kapsamlar veya bir e-posta adresi gibi kendi taleplerini de ekler.</p>
+<p>Talepleri güvenilir kılan imzadır ve onu denetlemek, yalnızca vereninin ve belirteci kabul eden hizmetlerin tutması gereken imzalama anahtarını gerektirir. Bu çözücü bilerek okumada durur: bir belirtecin ne dediğini ve ne zaman sona erdiğini gösterir; bir oturum açmayı ya da bir API çağrısını ayıklarken genellikle ihtiyacınız olan da budur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Başka bir Unix zamanını tarihe çevirmek için <a href="/tools/unix-timestamp-converter/">Unix zaman damgası çevirici</a>yi kullanın.</li>
+  <li>Büyük bir yükü <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile biçimlendirin veya denetleyin.</li>
+  <li>Tek bir Base64url parçasını elle çözmek için <a href="/tools/base64-encode-decode/">Base64 kodla ve çöz</a> aracını kullanın.</li>
+</ul>

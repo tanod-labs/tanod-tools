@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "MikroTik Netwatch जनरेटर: अप/डाउन अलर्ट | Tanod Tools",
+  "description": "RouterOS /tool netwatch स्क्रिप्ट बनाएँ जो आपके होस्ट पर नज़र रखे और उनके डाउन होने या वापस आने पर ntfy, Telegram या ईमेल से अलर्ट भेजे। आपके ब्राउज़र में।",
+  "h1": "MikroTik Netwatch जनरेटर",
+  "lede": "अपने ISP गेटवे और दूसरे होस्ट पर राउटर से ही नज़र रखें: होस्ट की सूची दें, इंटरवल और सूचना का तरीका चुनें, और डाउन तथा अप अलर्ट वाली, सीधे पेस्ट करने लायक Netwatch स्क्रिप्ट पाएँ।",
+  "blurb": "ntfy, Telegram या ईमेल अलर्ट वाली Netwatch एंट्री।",
+  "keywords": "mikrotik netwatch जनरेटर routeros tool netwatch up-script down-script ntfy telegram बॉट ईमेल अलर्ट tool fetch ping मॉनिटरिंग isp गेटवे डाउन सूचना v7 v6",
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता",
+  "limits": "RouterOS /tool netwatch एंट्री बनाता है जो IPv4 होस्ट को ping करती हैं (v7 में type=icmp, v6 में पुराना host= रूप) और हर स्थिति बदलाव पर एक स्क्रिप्ट चलाती हैं। यहाँ इसे आपके राउटर पर आज़माया नहीं जा सकता, इसलिए इस्तेमाल से पहले हर पंक्ति जाँच लें। बॉट टोकन और ईमेल सेटिंग राउटर पर सादे टेक्स्ट में रहती हैं। Netwatch राउटर पर चलता है और यह नहीं बता सकता कि राउटर खुद ऑफ़लाइन हो गया। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर Netwatch अलर्ट कैसे सेट करें",
+  "howto": [
+    "निगरानी वाले होस्ट हर एक के लेबल के साथ लिखें: पहले आपका ISP गेटवे, फिर 8.8.8.8 और 1.1.1.1 जैसे भरोसेमंद सार्वजनिक पते।",
+    "इंटरवल और टाइमआउट, अपना RouterOS संस्करण (v7 या v6) और सूचना का तरीका चुनें: ntfy टॉपिक, Telegram बॉट या ईमेल।",
+    "स्क्रिप्ट कॉपी करें या .rsc फ़ाइल डाउनलोड करें, राउटर के टर्मिनल में पेस्ट करें, फिर /tool netwatch print और /log print देखें।"
+  ],
+  "faq": [
+    [
+      "Netwatch क्या करता है?",
+      "Netwatch आपके तय इंटरवल पर हर होस्ट को ping करता है। जब कोई होस्ट टाइमआउट के भीतर जवाब देना बंद कर देता है तो उसे डाउन मार्क किया जाता है और उसकी down-script एक बार चलती है; दोबारा जवाब देने पर up-script चलती है। बनी हुई स्क्रिप्ट लॉग में एक पंक्ति लिखती हैं और, अगर आपने कोई तरीका चुना है, तो /tool fetch या /tool e-mail से संदेश भेजती हैं।"
+    ],
+    [
+      "Netwatch यह क्यों नहीं बता सकता कि राउटर खुद ऑफ़लाइन है?",
+      "Netwatch राउटर का ही हिस्सा है। अगर राउटर की बिजली चली जाए, वह क्रैश हो जाए या उसका अपलिंक कट जाए, तो स्क्रिप्ट चलाने या संदेश भेजने के लिए कुछ बचता ही नहीं। इसके लिए बाहर से की जाने वाली जाँच चाहिए जो पकड़ ले कि राउटर ने जवाब देना बंद कर दिया। <a href=\"https://tanod.dev/learn/mikrotik-router-offline-alert.html\">राउटर-ऑफ़लाइन अलर्ट गाइड</a> और मुफ़्त <a href=\"https://tanod.dev/monitor/\">बाहरी हार्टबीट</a> देखें।"
+    ],
+    [
+      "इंटरनेट लिंक फेल होने पर क्या मुझे DOWN संदेश मिलेगा?",
+      "अक्सर उसी समय नहीं। संदेश इसी राउटर से निकलता है, इसलिए अगर निगरानी वाला होस्ट आपके अकेले अपलिंक का गेटवे है, तो down-script चलेगी लेकिन संदेश लिंक लौटने तक बाहर नहीं जा पाएगा। तब UP संदेश बताता है कि लिंक वापस आ गया। दूसरे लिंक या LAN के किसी होस्ट पर नज़र रखने से ऐसे अलर्ट मिलते हैं जो फेल हुए लिंक पर निर्भर नहीं होते।"
+    ],
+    [
+      "v7 और v6 के आउटपुट में क्या फ़र्क़ है?",
+      "RouterOS v7 में एंट्री में type=icmp होता है, जो ping प्रोब चुनता है। RouterOS v6 में type पैरामीटर नहीं है, इसलिए एंट्री सिर्फ़ host, interval और timeout इस्तेमाल करती हैं। अगर आपका v7 संस्करण पुराना है और type=icmp को ठुकराता है, तो उसे हर पंक्ति से हटा दें।"
+    ],
+    [
+      "लेबल में कोट, बैकस्लैश और डॉलर चिह्न कैसे संभाले जाते हैं?",
+      "लेबल और राउटर का नाम RouterOS स्ट्रिंग के लिए एस्केप किए जाते हैं: बैकस्लैश, डबल कोट, डॉलर चिह्न और प्रश्न चिह्न, हर एक के आगे बैकस्लैश लगता है। स्क्रिप्ट Netwatch एंट्री के अंदर स्ट्रिंग के रूप में रखी जाती हैं, इसलिए एस्केपिंग दो बार लागू होती है: एक बार संदेश के लिए और एक बार सहेजी गई स्क्रिप्ट के लिए।"
+    ],
+    [
+      "क्या मेरा कॉन्फ़िगरेशन या बॉट टोकन कहीं भेजा जाता है?",
+      "नहीं। सब कुछ आपके ब्राउज़र में बनता है। स्क्रिप्ट पेस्ट करने के बाद, जब कोई होस्ट स्थिति बदलता है तो ntfy या Telegram से राउटर खुद संपर्क करता है।"
+    ]
+  ]
+}
+-->
+<!--tool-->
+
+<div class="ros-gen" id="nw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>निगरानी वाले होस्ट</legend>
+      <ul class="ros-rows" id="nw-hosts"></ul>
+      <button class="btn btn--sm ros-add" id="nw-add" type="button">{{mark:i-plus}}होस्ट जोड़ें</button>
+      <span class="help">203.0.113.1 की जगह अपने ISP के गेटवे का पता लिखें।</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>समय और संस्करण</legend>
+      <div class="opts">
+        <div class="field"><label for="nw-interval">इंटरवल</label><input type="text" id="nw-interval" class="mono" value="30s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-timeout">टाइमआउट</label><input type="text" id="nw-timeout" class="mono" value="1s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-router">राउटर का नाम (संदेशों में दिखेगा)</label><input type="text" id="nw-router" class="mono" value="MikroTik" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="RouterOS संस्करण">
+        <label><input type="radio" name="nw-ver" value="v7" checked>RouterOS v7</label>
+        <label><input type="radio" name="nw-ver" value="v6">RouterOS v6</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>सूचना</legend>
+      <div class="seg" role="radiogroup" aria-label="सूचना का तरीका">
+        <label><input type="radio" name="nw-notify" value="none">कोई नहीं (सिर्फ़ लॉग)</label>
+        <label><input type="radio" name="nw-notify" value="ntfy" checked>ntfy</label>
+        <label><input type="radio" name="nw-notify" value="telegram">Telegram</label>
+        <label><input type="radio" name="nw-notify" value="email">ईमेल</label>
+      </div>
+      <div class="field" id="nw-ntfy-f">
+        <label for="nw-ntfy">ntfy टॉपिक URL</label>
+        <input type="text" id="nw-ntfy" class="mono" value="https://ntfy.sh/my-router-alerts" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="nw-telegram-f" hidden>
+        <div class="field"><label for="nw-tg-token">बॉट टोकन</label><input type="text" id="nw-tg-token" class="mono" value="" placeholder="123456789:ABC-DEF" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-tg-chat">चैट आईडी</label><input type="text" id="nw-tg-chat" class="mono" value="" placeholder="-1001234567890" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="field" id="nw-email-f" hidden>
+        <label for="nw-mail-to">अलर्ट यहाँ भेजें</label>
+        <input type="text" id="nw-mail-to" class="mono" value="" placeholder="ops@example.com" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="nw-out" class="label">RouterOS स्क्रिप्ट</label>
+    <textarea id="nw-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="nw-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="nw-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="nw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS में Netwatch</h2>
+<p><code>/tool netwatch</code> के तहत Netwatch हर <code>interval</code> पर एक होस्ट को जाँचता है और उसकी स्थिति अप या डाउन के रूप में रखता है। जो होस्ट <code>timeout</code> के भीतर जवाब न दे, उसे डाउन माना जाता है। हर बदलाव पर RouterOS एंट्री की <code>down-script</code> या <code>up-script</code> चलाता है, और अलर्ट यहीं से भेजा जाता है: <code>/tool fetch</code> ntfy टॉपिक पर पोस्ट करता है या Telegram का <code>sendMessage</code> URL कॉल करता है, और <code>/tool e-mail send</code> राउटर पर पहले से कॉन्फ़िगर ईमेल सेटिंग इस्तेमाल करता है।</p>
+<p>एक से ज़्यादा होस्ट पर नज़र रखें। कोई एक सार्वजनिक पता ऐसी वजहों से भी फेल हो सकता है जिनका आपके लिंक से कोई लेना-देना नहीं, इसलिए ISP गेटवे को दो स्वतंत्र सार्वजनिक पतों के साथ जोड़ने से पता चलता है कि दिक़्क़त आख़िरी मील में है या व्यापक इंटरनेट में। टाइमआउट को इंटरवल से छोटा रखें और बहुत सारे होस्ट पर बेहद छोटे इंटरवल से बचें।</p>
+<h3>Netwatch क्या नहीं बता सकता</h3>
+<p>Netwatch राउटर पर चलता है, इसलिए यह नहीं बता सकता कि राउटर खुद ऑफ़लाइन हो गया: बिजली जाना, क्रैश या कटा हुआ अपलिंक स्क्रिप्ट चलाने के लिए कुछ नहीं छोड़ते। इसके लिए बाहर से की जाने वाली जाँच चाहिए जो पकड़ ले कि राउटर ने जवाब देना बंद कर दिया। पढ़ें <a href="https://tanod.dev/learn/mikrotik-router-offline-alert.html">MikroTik राउटर ऑफ़लाइन होने पर अलर्ट कैसे पाएँ</a> और मुफ़्त <a href="https://tanod.dev/monitor/">बाहरी हार्टबीट</a> इस्तेमाल करें। अगर आप उन्हीं लिंक पर ट्रैफ़िक भी सँभालते हैं, तो <a href="/tools/mikrotik-load-balancing/">लोड बैलेंसिंग जनरेटर</a> से तुलना करें, जिसका फ़ेलओवर अपने जाँच-होस्ट इस्तेमाल करता है।</p>

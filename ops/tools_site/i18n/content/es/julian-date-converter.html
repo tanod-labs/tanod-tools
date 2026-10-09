@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Conversor de fecha juliana, MJD y semana GPS | Tanod Tools",
+  "description": "Convierte entre fecha y hora UTC, fecha juliana, fecha juliana modificada, semana GPS y segundos de la semana, y tiempo Unix. Muestra el reinicio de la semana GPS.",
+  "h1": "Conversor de fecha juliana, MJD y semana GPS",
+  "lede": "Convierte entre una fecha y hora del calendario en UTC, fecha juliana, fecha juliana modificada, semana GPS y segundos de la semana, y tiempo Unix, todo a la vez.",
+  "blurb": "Fecha del calendario, fecha juliana, MJD, semana GPS y tiempo Unix.",
+  "keywords": "conversor fecha juliana jd mjd fecha juliana modificada semana gps tiempo gps segundos de la semana reinicio rollover tiempo unix dia del año astronomia calendario utc segundos intercalares",
+  "limits": "Las fechas julianas aquí se basan en UTC (no en el Tiempo Terrestre), como se usa en el trabajo cotidiano y de navegación. El tiempo GPS se calcula a partir de UTC con los 18 segundos intercalares vigentes desde 2017, así que un segundo intercalar futuro lo cambiaría. No sirve para navegar.",
+  "howto_title": "Cómo convertir una fecha juliana",
+  "howto": [
+    "Elige el valor que tienes: una fecha y hora del calendario en UTC, una fecha juliana, una fecha juliana modificada, una semana GPS con segundos o un tiempo Unix.",
+    "Escríbelo. La página lo convierte de inmediato a todas las demás formas.",
+    "Copia el valor que necesites, como la fecha juliana o la semana GPS."
+  ],
+  "faq": [
+    [
+      "¿Qué es una fecha juliana?",
+      "La fecha juliana (JD) es una cuenta continua de días desde el mediodía UT del 1 de enero de 4713 a. C. en el calendario juliano. Se usa en astronomía porque evita los meses y los años. Por ejemplo, 2000-01-01 12:00 UTC es JD 2451545,0, la época J2000.0."
+    ],
+    [
+      "¿Qué es la fecha juliana modificada?",
+      "MJD = JD − 2400000,5. Empieza a medianoche en lugar de al mediodía y tiene menos dígitos: 2000-01-01 00:00 es MJD 51544,0. La usan las agencias espaciales y los operadores de satélites."
+    ],
+    [
+      "¿Cómo funcionan las semanas GPS?",
+      "El tiempo GPS comenzó a las 00:00 UTC del 6 de enero de 1980 y cuenta las semanas y los segundos de la semana desde entonces, sin segundos intercalares. El número de semana se transmitía en 10 bits, por lo que se reinicia cada 1024 semanas (unos 19,6 años): el 22 de agosto de 1999 y de nuevo el 6 de abril de 2019. El próximo reinicio será el 20 de noviembre de 2038. Esta herramienta muestra tanto la cuenta completa de semanas como el valor de 10 bits."
+    ],
+    [
+      "¿Por qué el tiempo GPS va por delante de UTC?",
+      "El tiempo GPS no inserta segundos intercalares, mientras que UTC ha añadido 18 desde 1980. Por eso el tiempo GPS lleva 18 segundos de ventaja sobre UTC desde el 1 de enero de 2017. La herramienta usa los segundos intercalares anunciados hasta ahora."
+    ],
+    [
+      "¿La fecha juliana es lo mismo que el calendario juliano?",
+      "No. El calendario juliano es un calendario antiguo con un año bisiesto cada cuatro años. La fecha juliana es una cuenta de días. La fecha que se muestra aquí está en el calendario moderno (gregoriano proléptico), igual que en tu navegador."
+    ],
+    [
+      "¿Qué tan precisa es la conversión?",
+      "Una fecha juliana de doble precisión tiene hoy una resolución de unos 0,1 milisegundos. La herramienta muestra seis decimales de un día, que son unos 0,09 segundos."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Tengo</legend>
+  <div class="seg jd-modes">
+    <label><input type="radio" name="jd-mode" value="date" checked>Fecha y hora (UTC)</label>
+    <label><input type="radio" name="jd-mode" value="jd">Fecha juliana</label>
+    <label><input type="radio" name="jd-mode" value="mjd">Fecha juliana modificada</label>
+    <label><input type="radio" name="jd-mode" value="gps">Semana GPS y segundos</label>
+    <label><input type="radio" name="jd-mode" value="unix">Tiempo Unix</label>
+  </div>
+</fieldset>
+<div class="opts" id="jd-p-date">
+  <div class="field"><label for="jd-date">Fecha (UTC)</label><input type="date" id="jd-date"></div>
+  <div class="field"><label for="jd-time">Hora (UTC)</label><input type="time" id="jd-time" step="1"></div>
+</div>
+<div class="opts" id="jd-p-jd" hidden>
+  <div class="field"><label for="jd-jd">Fecha juliana</label><input type="text" id="jd-jd" class="mono" inputmode="decimal" autocomplete="off" value="2451545.0"></div>
+</div>
+<div class="opts" id="jd-p-mjd" hidden>
+  <div class="field"><label for="jd-mjd">Fecha juliana modificada</label><input type="text" id="jd-mjd" class="mono" inputmode="decimal" autocomplete="off" value="51544.5"></div>
+</div>
+<div class="opts" id="jd-p-gps" hidden>
+  <div class="field"><label for="jd-week">Semana GPS (cuenta completa)</label><input type="text" id="jd-week" class="mono" inputmode="numeric" autocomplete="off" value="2400"></div>
+  <div class="field"><label for="jd-sow">Segundos de la semana</label><input type="text" id="jd-sow" class="mono" inputmode="decimal" autocomplete="off" value="0"></div>
+</div>
+<div class="opts" id="jd-p-unix" hidden>
+  <div class="field"><label for="jd-unix">Tiempo Unix (segundos desde 1970-01-01 UTC)</label><input type="text" id="jd-unix" class="mono" inputmode="decimal" autocomplete="off" value="0"></div>
+</div>
+<div class="actions">
+  <button class="btn" id="jd-now" type="button">Usar la hora actual</button>
+</div>
+<p class="note" id="jd-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="jd-stats"></dl>
+<!--explain-->
+<h2>Las fórmulas</h2>
+<p>Una fecha del calendario se convierte en fecha juliana con el algoritmo de Jean Meeus, <em>Astronomical Algorithms</em> (2.ª ed., 1998), capítulo 7, y la página usa la relación equivalente con el tiempo Unix JD = segundos Unix / 86 400 + 2 440 587,5, que es válida para el calendario gregoriano proléptico de tu navegador. La fecha juliana modificada es MJD = JD − 2 400 000,5 (UAI, 1973). La época J2000.0 es JD 2 451 545,0.</p>
+<p>El tiempo GPS es una escala de tiempo continua que comenzó el 1980-01-06 00:00:00 UTC (Especificación de Interfaz IS-GPS-200). La semana GPS es floor(segundos desde esa época / 604 800), los segundos de la semana son el resto, y la semana de 10 bits transmitida es la semana módulo 1024. El tiempo GPS es igual a UTC más el número de segundos intercalares insertados desde 1980: 18 desde el 2017-01-01, según la tabla de 18 inserciones publicada por el IERS (Boletín C). La herramienta aplica la cuenta vigente en el instante en cuestión.</p>
+<p>El IERS anuncia los segundos intercalares solo con meses de antelación, así que los tiempos GPS de fechas futuras suponen que no habrá un nuevo segundo intercalar. <strong>No sirve para navegar.</strong></p>

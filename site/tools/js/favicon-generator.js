@@ -1,5 +1,5 @@
-import { $, el, fmtBytes, setStatus, runJob, showResults, clearNode, copyText, textBlob, debounce, announce, tx } from "./core.js?v=5";
-import { singleImage, decode, newCanvas, ctx2d, scaleTo, release, canvasToBlob, concatBytes, MIME, dims } from "./imgcore.js?v=5";
+import { $, el, fmtBytes, setStatus, runJob, showResults, clearNode, copyText, textBlob, debounce, announce, tx } from "./core.js?v=11";
+import { singleImage, decode, newCanvas, ctx2d, scaleTo, release, canvasToBlob, concatBytes, MIME, dims } from "./imgcore.js?v=11";
 
 const radio = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
 const drop = $("#drop"), status = $("#status"), result = $("#result"), go = $("#go");

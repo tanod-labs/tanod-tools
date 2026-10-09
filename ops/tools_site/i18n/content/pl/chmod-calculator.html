@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Kalkulator chmod: ósemkowo, symbolicznie i polecenia | Tanod Tools",
+  "description": "Zaznacz odczyt, zapis i wykonywanie, aby uzyskać liczbę ósemkową chmod, postać rwxr-xr-x i gotowe polecenia, albo wpisz tryb. Obsługuje setuid i sticky.",
+  "h1": "Kalkulator chmod",
+  "lede": "Ustaw uprawnienia plików Uniksa za pomocą pól wyboru, liczby ósemkowej takiej jak 755 lub tekstu rwxr-xr-x i uzyskaj odpowiednie polecenia chmod.",
+  "blurb": "Uprawnienia Uniksa jako pola wyboru, liczba ósemkowa, tekst rwx i polecenia chmod.",
+  "keywords": "kalkulator chmod uprawnienia unix uprawnienia plików linux system ósemkowy rwx 755 644 setuid setgid sticky bit umask generator chmod prawa dostępu",
+  "limits": "Obsługuje dziewięć bitów uprawnień oraz setuid, setgid i sticky, tak jak POSIX chmod. Nie odczytuje prawdziwych plików, nie pokazuje właściciela i nie obejmuje list ACL, atrybutów plików ani umask. Tryby ósemkowe wymagają 3 lub 4 cyfr.",
+  "howto_title": "Jak ustalić tryb chmod",
+  "howto": [
+    "Zaznacz pola dla właściciela, grupy i pozostałych albo wybierz popularne ustawienie, takie jak 644 lub 755. Możesz też wpisać liczbę ósemkową lub dziewięcioliterowy tekst, a pola dostosują się same.",
+    "Przeczytaj opis prostym językiem, co każda klasa może robić z plikiem i katalogiem, oraz ewentualne ostrzeżenie.",
+    "Skopiuj polecenie <code>chmod</code> w postaci liczbowej lub symbolicznej. Najpierw zmień nazwę pliku, jeśli chcesz mieć polecenie gotowe do wklejenia."
+  ],
+  "faq": [
+    ["Jak działa liczba ósemkowa?", "Każda cyfra sumuje odczyt (4), zapis (2) i wykonywanie (1) dla jednej klasy, w kolejności: właściciel, grupa, pozostali. Zatem 7 to odczyt, zapis i wykonywanie, 5 to odczyt i wykonywanie, a 4 to sam odczyt. 755 daje właścicielowi wszystko, a pozostałym odczyt i wykonywanie. Opcjonalna czwarta cyfra z przodu zawiera setuid (4), setgid (2) i sticky (1)."],
+    ["Co oznaczają litery s, S, t i T?", "Zastępują one x na pozycji właściciela, grupy lub pozostałych. Mała litera oznacza, że bit specjalny jest ustawiony i wykonywanie też jest włączone; wielka litera oznacza, że bit specjalny jest ustawiony, ale wykonywanie jest wyłączone, co zwykle jest błędem. Zatem 4755 to <code>rwsr-xr-x</code>, a 4644 to <code>rwSr--r--</code>."],
+    ["Jaka jest różnica między 644 a 755?", "644 to zwykły tryb zwykłych plików: właściciel może czytać i zapisywać, wszyscy inni tylko czytać. 755 dodaje wykonywanie dla wszystkich, którego potrzebują programy, skrypty i katalogi. Katalogi wymagają bitu wykonywania, aby ktokolwiek mógł do nich wejść."],
+    ["Dlaczego 777 uważa się za niebezpieczne?", "Pozwala każdemu użytkownikowi na maszynie, a także każdemu programowi uruchomionemu jako ten użytkownik, zmienić lub zastąpić plik. Serwer WWW, któremu każe się gdzieś zapisywać, tego nie potrzebuje: nadanie właściwemu użytkownikowi lub grupie własności i użycie 775 lub 770 rozwiązuje większość błędów uprawnień bez otwierania pliku dla wszystkich."],
+    ["Co robi bit sticky?", "Na katalogu uniemożliwia użytkownikom usuwanie lub zmianę nazw plików, których nie są właścicielami, nawet jeśli mogą zapisywać w katalogu. Dlatego współdzielone foldery, takie jak <code>/tmp</code>, mają tryb 1777. We współczesnym Linuksie nie wpływa na zwykłe pliki."],
+    ["Czy to coś zmienia na moim komputerze?", "Nie. Narzędzie tylko oblicza liczbę i polecenia. Nic, co wpiszesz, nie jest nigdzie wysyłane, a polecenia uruchamiasz samodzielnie w terminalu."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cm">
+    <fieldset class="cm__grid">
+      <legend>Uprawnienia</legend>
+      <table class="cm-table">
+        <thead>
+          <tr><td></td><th scope="col">Właściciel</th><th scope="col">Grupa</th><th scope="col">Pozostali</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Odczyt <span class="cm-val">4</span></th>
+            <td><input type="checkbox" id="m-u-r" aria-label="Odczyt, właściciel"></td><td><input type="checkbox" id="m-g-r" aria-label="Odczyt, grupa"></td><td><input type="checkbox" id="m-o-r" aria-label="Odczyt, pozostali"></td></tr>
+          <tr><th scope="row">Zapis <span class="cm-val">2</span></th>
+            <td><input type="checkbox" id="m-u-w" aria-label="Zapis, właściciel"></td><td><input type="checkbox" id="m-g-w" aria-label="Zapis, grupa"></td><td><input type="checkbox" id="m-o-w" aria-label="Zapis, pozostali"></td></tr>
+          <tr><th scope="row">Wykonywanie <span class="cm-val">1</span></th>
+            <td><input type="checkbox" id="m-u-x" aria-label="Wykonywanie, właściciel"></td><td><input type="checkbox" id="m-g-x" aria-label="Wykonywanie, grupa"></td><td><input type="checkbox" id="m-o-x" aria-label="Wykonywanie, pozostali"></td></tr>
+        </tbody>
+      </table>
+      <div class="cm-special">
+        <label class="check"><input type="checkbox" id="m-suid">Ustaw ID użytkownika (setuid) <span class="cm-val">4</span></label>
+        <label class="check"><input type="checkbox" id="m-sgid">Ustaw ID grupy (setgid) <span class="cm-val">2</span></label>
+        <label class="check"><input type="checkbox" id="m-sticky">Bit sticky <span class="cm-val">1</span></label>
+      </div>
+    </fieldset>
+    <div class="cm__side">
+      <div class="field">
+        <label for="m-octal">Ósemkowo</label>
+        <input type="text" id="m-octal" class="mono cm-big" value="755" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="m-info">
+      </div>
+      <div class="field">
+        <label for="m-sym">Symbolicznie</label>
+        <input type="text" id="m-sym" class="mono cm-big" value="rwxr-xr-x" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="m-info">
+      </div>
+      <p class="tt__report" id="m-info" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Popularne tryby">
+    <button class="btn btn--sm" type="button" data-mode="644">644 plik</button>
+    <button class="btn btn--sm" type="button" data-mode="755">755 program lub katalog</button>
+    <button class="btn btn--sm" type="button" data-mode="600">600 plik prywatny</button>
+    <button class="btn btn--sm" type="button" data-mode="700">700 katalog prywatny</button>
+    <button class="btn btn--sm" type="button" data-mode="775">775 wspólna grupa</button>
+    <button class="btn btn--sm" type="button" data-mode="777">777 wszyscy</button>
+  </div>
+  <p class="note cm-warn" id="m-warn" hidden></p>
+  <div class="field">
+    <label for="m-file">Nazwa pliku lub katalogu w poleceniach</label>
+    <input type="text" id="m-file" class="mono" value="file" autocomplete="off" spellcheck="false" autocapitalize="off">
+  </div>
+  <dl class="dv-rows" aria-label="Polecenia">
+    <div><dt>Liczbowe</dt><dd id="m-cmd-num"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-num" aria-label="Kopiuj polecenie liczbowe">Kopiuj</button></div>
+    <div><dt>Symboliczne</dt><dd id="m-cmd-sym"></dd><button type="button" class="btn btn--sm btn--quiet dv-copy" id="m-copy-sym" aria-label="Kopiuj polecenie symboliczne">Kopiuj</button></div>
+  </dl>
+  <h2 class="util-h">Co pozwala ten tryb</h2>
+  <div class="sn-table-wrap">
+    <table class="sn-table" id="m-means">
+      <thead><tr><th scope="col">Kto</th><th scope="col">Dla pliku</th><th scope="col">Dla katalogu</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak przechowywane są uprawnienia plików w Uniksie</h2>
+<p>Każdy plik i katalog w systemie uniksowym ma krótki tryb: trzy bity uprawnień (odczyt, zapis, wykonywanie) dla każdej z trzech klas (użytkownik będący właścicielem, grupa będąca właścicielem, wszyscy pozostali) oraz trzy bity specjalne. To dwanaście bitów, a liczba ósemkowa to po prostu te bity zapisane po trzy, dlatego cyfry sięgają tylko 7. Dziewięcioliterowa postać z <code>ls -l</code> pokazuje te same bity jako litery.</p>
+<p>Odczyt, zapis i wykonywanie znaczą co innego dla katalogu. Odczyt pozwala wypisać nazwy w środku, zapis pozwala dodawać, zmieniać nazwy i usuwać wpisy, a wykonywanie pozwala wejść do katalogu i sięgać do rzeczy po nazwie. Katalog z odczytem, ale bez wykonywania, pokazuje nazwy i odmawia dostępu do wszystkiego w środku, co jest częstym źródłem mylących błędów uprawnień.</p>
+<p>Bity specjalne zmieniają działanie trybu. Setuid i setgid sprawiają, że program działa z uprawnieniami właściciela lub grupy pliku zamiast uprawnień wywołującego, co jest potężne, więc w większości systemów jest ignorowane dla skryptów powłoki. Setgid na katalogu powoduje, że nowe pliki dziedziczą jego grupę, a bit sticky na katalogu uniemożliwia użytkownikom usuwanie cudzych plików. Jeśli nie masz pewności, jakiego trybu potrzebuje plik, zacznij od restrykcyjnego i dodawaj tylko to, o co prosi komunikat o błędzie.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>System dwójkowy i ósemkowy to te same bity zapisane inaczej; <a href="/tools/number-base-converter/">Konwerter systemów liczbowych</a> pokazuje 755 jako 111 101 101.</li>
+  <li>Planujesz zadanie cron, które uruchamia skrypt, któremu właśnie nadano prawo wykonywania? Zbuduj harmonogram w narzędziu <a href="/tools/cron-expression-generator/">Generator wyrażeń cron</a>.</li>
+  <li>Zaraz liczysz zakresy sieci? Wypróbuj <a href="/tools/subnet-calculator/">Kalkulator podsieci</a>.</li>
+</ul>

@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Penampil XRechnung: buka XML XRechnung online | Tanod Tools",
+  "description": "Buka XRechnung (XML UBL atau CII) dan baca sebagai faktur biasa. Cetak, simpan sebagai PDF, atau ekspor JSON. Gratis, tanpa unggah.",
+  "h1": "Penampil XRechnung",
+  "lede": "Buka file XML XRechnung dan baca sebagai faktur biasa: penjual, pembeli, baris item, PPN, dan rincian pembayaran. File dibaca di tab ini dan tidak pernah diunggah.",
+  "blurb": "Baca file XML XRechnung sebagai faktur biasa, cetak, atau ekspor JSON.",
+  "keywords": "penampil xrechnung xrechnung viewer buka xrechnung xml baca xrechnung cara membuka xrechnung xrechnung xml online xrechnung ke pdf xrechnung ubl xrechnung cii leitweg-id e-rechnung viewer faktur elektronik jerman buka faktur xml",
+  "limits": "Satu file sekali proses, hingga 25 MB, dan 5.000 baris item pertama ditampilkan. Membaca XRechnung 3.x sebagai UBL 2.1 Invoice atau CreditNote dan sebagai UN/CEFACT CII. Ini penampil, bukan validator: alat ini tidak memeriksa file terhadap aturan XRechnung atau EN 16931, dan tidak mengirim maupun menerima apa pun.",
+  "howto_title": "Cara membuka XRechnung",
+  "howto": [
+    "Pilih file XML XRechnung dari komputer Anda, atau seret ke halaman ini. PDF ZUGFeRD atau .p7m bertanda tangan juga bisa.",
+    "Baca faktur yang muncul: para pihak, tanggal, baris item, rincian PPN, dan rincian pembayaran. Tidak ada yang meninggalkan perangkat Anda.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong> untuk salinan kertas atau PDF, <strong>Unduh JSON</strong> untuk datanya, atau <strong>Tampilkan XML mentah</strong> untuk melihat sumbernya."
+  ],
+  "faq": [
+    [
+      "Apakah faktur saya diunggah?",
+      "Tidak. File dibaca di browser Anda dengan parser XML bawaan, lalu ditampilkan di halaman ini. Tidak ada server yang menerimanya, dan semuanya terhapus begitu Anda menutup tab. Anda bisa membuktikannya lewat developer tools browser: tab Network tetap kosong saat Anda membuka file."
+    ],
+    [
+      "File XRechnung apa saja yang bisa dibuka?",
+      "XRechnung 3.x dalam kedua sintaksis: UBL 2.1 (Invoice dan CreditNote) dan UN/CEFACT CII. File XRechnung 2.x yang lebih lama memiliki struktur yang sama dan biasanya juga terbuka. Halaman ini menampilkan isi file; halaman ini tidak memeriksanya terhadap aturan XRechnung."
+    ],
+    [
+      "Apakah ini validator?",
+      "Bukan, ini penampil. Untuk mengetahui apakah sebuah XRechnung valid, gunakan validator seperti validator KoSIT. Halaman ini juga menampilkan file yang akan ditolak validator, dan tidak mengirim faktur ke platform mana pun maupun ke jaringan Peppol."
+    ],
+    [
+      "Mengapa beberapa file XML ditolak?",
+      "File yang berisi deklarasi DOCTYPE atau ENTITY ditolak sebelum diurai, karena deklarasi itu bisa dipakai untuk membaca file lokal atau menghabiskan memori. XRechnung yang sebenarnya tidak pernah memuatnya. File di atas 25 MB juga ditolak, dan hanya 5.000 baris item pertama yang ditampilkan."
+    ],
+    [
+      "Bagaimana dengan dokumen lampiran?",
+      "XRechnung dapat membawa dokumen tertanam, seperti lembar kerja jam kerja atau salinan PDF. Dokumen tersebut dicantumkan dengan tombol Unduh dan tidak pernah dibuka atau ditampilkan di halaman. Nama file dibersihkan dan unduhan memakai tipe file generik, jadi buka hanya jika Anda memercayai pengirimnya."
+    ],
+    [
+      "Bagaimana cara mendapatkan PDF fakturnya?",
+      "Tekan <strong>Cetak atau simpan sebagai PDF</strong>, lalu pilih Simpan sebagai PDF sebagai printer di jendela cetak browser Anda. Yang dicetak hanya fakturnya, bukan bagian halaman lainnya."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Mengapa XRechnung sulit dibaca</h2>
+<p>XRechnung adalah faktur yang ditulis untuk komputer. File-nya berupa XML: ratusan nilai bertag dengan nama seperti <code>cbc:PayableAmount</code> dan tanpa tata letak sama sekali. Sejak 1 Januari 2025 setiap usaha di Jerman wajib mampu menerima faktur elektronik terstruktur, sehingga kini banyak orang menerima file seperti ini lewat email atau portal tetapi tidak bisa membacanya. Halaman ini mengubah XML itu kembali menjadi faktur yang Anda harapkan: siapa penjualnya, siapa pembelinya, apa yang dikirim, berapa PPN-nya, dan cara membayarnya.</p>
+<p>XRechnung adalah profil Jerman dari standar Eropa EN 16931. Formatnya hadir dalam dua sintaksis XML, yaitu UBL 2.1 dan UN/CEFACT Cross Industry Invoice (CII). Keduanya dibaca di sini dan menghasilkan faktur yang sama. Referensi pembeli di bagian kepala (untuk instansi publik berupa Leitweg-ID) serta alamat elektronik penjual dan pembeli juga ditampilkan.</p>
+<h2>Apa yang ditampilkan, dan apa yang tidak</h2>
+<p>Anda melihat para pihak beserta ID PPN dan alamatnya, tanggal dan referensi, setiap baris item dengan kuantitas, satuan, harga, dan PPN, diskon dan biaya tambahan, rincian PPN, total, rincian pembayaran dengan IBAN dan BIC, catatan, serta daftar dokumen lampiran. Penampil ini tidak memeriksa faktur terhadap aturan XRechnung, daftar kode, atau perhitungannya (gunakan validator untuk itu), dan tidak mengirim faktur ke mana pun maupun mengambilnya dari platform.</p>
+<p>Unduhan JSON memuat fakta yang sama dalam bentuk data biasa, dengan nama sesuai istilah bisnis EN 16931: nomor faktur, tanggal, mata uang, para pihak, baris, rincian PPN, total, dan pembayaran. Jumlah uang berupa string dengan desimal persis seperti di faktur, jadi tidak ada yang dibulatkan.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Faktur yang datang sebagai PDF dengan XML di dalamnya (ZUGFeRD atau Factur-X) dibuka di <a href="/tools/zugferd-factur-x-viewer/">Penampil ZUGFeRD / Factur-X</a>; halaman ini juga menerimanya.</li>
+  <li>Faktur dari jaringan Peppol umumnya berformat UBL: <a href="/tools/peppol-ubl-invoice-viewer/">Penampil faktur Peppol / UBL</a> membukanya.</li>
+  <li>Untuk menyimpan faktur sebagai PDF, tekan Cetak atau simpan sebagai PDF lalu pilih Simpan sebagai PDF.</li>
+</ul>

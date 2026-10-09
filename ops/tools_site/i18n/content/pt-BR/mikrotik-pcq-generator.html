@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Gerador de PCQ MikroTik: banda igual por usuário | Tanod Tools",
+  "description": "Gere queue types PCQ do RouterOS mais simple queue ou queue tree com marcas de mangle, para dar a cada cliente uma parcela justa e limitada do link. No navegador.",
+  "h1": "Gerador de PCQ MikroTik",
+  "lede": "Divida um link de forma justa entre todos os clientes com uma única Per Connection Queue: escolha a taxa por usuário e o total e receba os queue types mais uma simple queue ou queue tree.",
+  "blurb": "Queue types PCQ com simple queue ou queue tree.",
+  "keywords": "gerador pcq mikrotik per connection queue routeros pcq-rate pcq-classifier dst-address src-address queue tree mangle packet mark banda igual por usuário wisp divisão justa de banda",
+  "local_text": "Roda no navegador; nada do que você digita sai do seu dispositivo",
+  "limits": "Gera sintaxe RouterOS v7 (também válida na v6) para IPv4. O método queue tree marca as conexões que os clientes da LAN abrem em direção à WAN; o restante passa sem limitação. O pcq-limit e o pcq-total-limit ficam nos valores padrão. MikroTik e RouterOS são marcas registradas da SIA Mikrotīkls. Esta ferramenta é independente e não é afiliada nem endossada pela MikroTik.",
+  "howto_title": "Como configurar PCQ no MikroTik",
+  "howto": [
+    "Escolha o método: uma simple queue para a sub-rede da LAN (mais simples) ou uma queue tree alimentada por marcas de mangle (mais controle).",
+    "Informe a taxa por cliente, ou 0 para dividir o total igualmente, e o upload e o download totais um pouco abaixo da velocidade real do seu link.",
+    "Copie o script ou baixe o arquivo .rsc e confirme que o FastTrack está desligado para o tráfego limitado."
+  ],
+  "faq": [
+    ["O que o PCQ faz?", "Um queue type PCQ distribui os pacotes em subfilas por um classificador, normalmente o endereço do cliente, e atende as subfilas em rodízio. Com o pcq-rate definido, cada subfila é limitada a essa taxa; com pcq-rate 0, o limite da parent é dividido igualmente entre os clientes ativos naquele momento. Assim, uma única queue dá a centenas de clientes uma parcela justa, o que de outro modo exigiria centenas de simple queues."],
+    ["Por que o download é classificado por dst-address e o upload por src-address?", "Os pacotes de download viajam até o cliente, então o endereço do cliente é o destino; os de upload vêm dele, então ele é a origem. Se fossem trocados, todos os clientes cairiam em uma só subfila, indexada pelos endereços dos servidores remotos."],
+    ["Por que a queue tree usa parent=global e a forward chain?", "Os pacotes de upload precisam ser classificados antes de o source NAT trocar o endereço do cliente pelo endereço da WAN, e a queue global roda antes do source NAT. Marcar na forward chain vê os pacotes de download depois de o destination NAT ter restaurado o endereço do cliente. Marcar na interface WAN faria todos os uploads caírem em uma só subfila."],
+    ["Para que serve a máscara de endereço?", "Com /32, cada endereço é a sua própria subfila. Um WISP que dá a cada cliente uma pequena sub-rede, como uma /29, pode definir a máscara em 29 para que a sub-rede inteira compartilhe uma subfila e uma taxa."],
+    ["O PCQ não tem efeito. O que devo verificar?", "Primeiro o FastTrack: os pacotes com fasttrack pulam o mangle e todas as queues. Depois os totais: se o max-limit estiver acima do que a linha realmente entrega, a queue nunca enche e quem faz a fila é o equipamento do provedor, não o seu roteador."],
+    ["Minha configuração é enviada para algum lugar?", "Não. Tudo é gerado no seu navegador."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pcq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Método</legend>
+      <div class="seg" role="radiogroup" aria-label="Método">
+        <label><input type="radio" name="pcq-method" value="simple" checked>Simple queue</label>
+        <label><input type="radio" name="pcq-method" value="tree">Queue tree + mangle</label>
+      </div>
+      <div class="field" id="pcq-simple-f">
+        <label for="pcq-target">Sub-redes da LAN (target)</label>
+        <input type="text" id="pcq-target" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="pcq-tree-f" hidden>
+        <div class="field"><label for="pcq-lan">Interface list LAN</label><input type="text" id="pcq-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-wan">Interface list WAN</label><input type="text" id="pcq-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Taxas</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-down-rate">Download por cliente (pcq-rate)</label><input type="text" id="pcq-down-rate" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-rate">Upload por cliente (pcq-rate)</label><input type="text" id="pcq-up-rate" class="mono" value="2M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-down-max">Download total</label><input type="text" id="pcq-down-max" class="mono" value="95M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-max">Upload total</label><input type="text" id="pcq-up-max" class="mono" value="45M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <span class="help">Por cliente, 0 ou vazio significa uma parcela igual do total.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opções</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-mask">Máscara de endereço (uma subfila por)</label><input type="text" id="pcq-mask" class="mono" value="32" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="pcq-name">Prefixo do nome</label><input type="text" id="pcq-name" class="mono" value="pcq" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pcq-out" class="label">Script RouterOS</label>
+    <textarea id="pcq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pcq-copy" type="button">Copiar script</button>
+      <button class="btn" id="pcq-dl" type="button">{{mark:i-download}}Baixar .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pcq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Per Connection Queue na prática</h2>
+<p>O PCQ é um queue type, definido em <code>/queue type</code> com <code>kind=pcq</code>, que uma simple queue ou uma queue tree passa a usar. O seu <code>pcq-classifier</code> decide o que conta como um fluxo: <code>dst-address</code> para downloads, de modo que o download de cada cliente seja um fluxo, e <code>src-address</code> para uploads. O RouterOS cria os subfluxos na hora e os remove quando ficam ociosos, então não há nada para manter conforme os clientes entram e saem.</p>
+<p>Dois ajustes moldam o resultado. O <code>pcq-rate</code> limita cada fluxo; deixe-o em 0 e os fluxos simplesmente dividem, de forma igual, o que o <code>max-limit</code> da queue permitir. O max-limit da queue que usa PCQ deve ficar um pouco abaixo da capacidade real do link: o PCQ só consegue dividir a banda de forma justa quando os pacotes fazem fila no roteador e não no modem a montante.</p>
+<h3>Simple queue ou queue tree?</h3>
+<p>O método simple queue não precisa de marcação: uma única queue com a sub-rede da LAN como target e <code>queue=upload-type/download-type</code>. O método queue tree usa o mangle para marcar as conexões da LAN para a WAN e duas queues sob <code>parent=global</code>; deixa sem limitação o tráfego entre redes locais e é o ponto de partida para classes de prioridade. De qualquer forma, os ajustes de burst por cliente pertencem às simple queues; compare-os com o <a href="/tools/mikrotik-simple-queue-generator/">gerador de simple queue</a> e a <a href="/tools/mikrotik-burst-calculator/">calculadora de burst</a>.</p>

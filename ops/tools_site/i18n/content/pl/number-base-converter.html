@@ -1,0 +1,76 @@
+<!--meta
+{
+  "title": "Konwerter systemów liczbowych: binarny, hex, dziesiętny | Tanod Tools",
+  "description": "Przeliczaj liczby całkowite dowolnej wielkości między systemem dwójkowym, ósemkowym, dziesiętnym i szesnastkowym oraz podstawami 2–36, z kodem U2 dla 8–64 bitów.",
+  "h1": "Konwerter systemów liczbowych",
+  "lede": "Przelicz liczbę całkowitą między systemem dwójkowym, ósemkowym, dziesiętnym, szesnastkowym i dowolnym do 36 oraz zobacz jej wzorce bitowe w kodzie uzupełnień do dwóch.",
+  "blurb": "Dwójkowy, ósemkowy, dziesiętny, szesnastkowy i systemy od 2 do 36.",
+  "keywords": "binarny na dziesiętny, dziesiętny na binarny, hex na dziesiętny, dziesiętny na hex, system ósemkowy, system szesnastkowy, kod uzupełnień do dwóch, konwerter systemów liczbowych, binary to decimal, hex to decimal, octal, radix, base 36, two's complement, signed unsigned, bits",
+  "limits": "Liczby całkowite do 4096 cyfr, dodatnie lub ujemne. Ułamki nie są przeliczane.",
+  "howto_title": "Jak przeliczać liczby między systemami liczbowymi",
+  "howto": [
+    "Wybierz system, w którym zapisana jest liczba, albo wybierz Inna podstawa i wpisz podstawę od 2 do 36.",
+    "Wpisz liczbę. Dozwolony jest znak minus, a pasujący prefiks <code>0x</code>, <code>0b</code> lub <code>0o</code> jest akceptowany; spacje i podkreślniki są ignorowane.",
+    "Odczytaj ją we wszystkich poniższych systemach, skopiuj ten, którego potrzebujesz, i sprawdź tabelę kodu uzupełnień do dwóch dla liczb całkowitych o stałej szerokości."
+  ],
+  "faq": [
+    ["Jak dużą liczbę można przeliczyć?", "Do 4096 cyfr w systemie wejściowym. Przeliczanie korzysta z dokładnej arytmetyki liczb całkowitych (BigInt), więc bardzo duże wartości, takie jak 2⁶⁴ + 1 = 18446744073709551617, są przeliczane bez zaokrągleń, w przeciwieństwie do kalkulatorów, które powyżej około 9 biliardów przechodzą na liczby zmiennoprzecinkowe."],
+    ["Czy można przeliczać ułamki, na przykład 0,1?", "Nie. Przeliczane są tylko liczby całkowite, a przecinek lub kropka dziesiętna są zgłaszane jako błąd, zamiast po cichu odrzucane. Wiele ułamków nie ma dokładnej postaci w innym systemie: 0,1 w systemie dziesiętnym to w dwójkowym wzór okresowy, dlatego w większości języków programowania 0,1 + 0,2 nie daje dokładnie 0,3."],
+    ["Co pokazuje kod uzupełnień do dwóch?", "Tak komputery przechowują liczby całkowite ze znakiem w stałej liczbie bitów. Liczba ujemna −n jest zapisywana jako 2 do potęgi równej liczbie bitów minus n, więc −1 na 8 bitach to 11111111 (FF). Tabela pokazuje wzorzec bitowy dla 8, 16, 32 i 64 bitów oraz znaczenie tego wzorca odczytanego jako liczba ze znakiem i bez znaku. Jeśli liczba nie mieści się w danej szerokości, wiersz mówi o tym zamiast zawijać wartość."],
+    ["Jakich cyfr używa się powyżej podstawy 10?", "Liter, tak jak w większości języków programowania: A to 10, B to 11 i tak dalej aż do Z jako 35, dlatego system o podstawie 36 jest najwyższy. Dane wejściowe można wpisywać wielkimi lub małymi literami; opcja wielkich liter steruje wynikiem."],
+    ["Dlaczego cyfra jest zgłaszana jako nieprawidłowa?", "Każdy system dopuszcza tylko cyfry mniejsze od swojej podstawy: dwójkowy 0 i 1, ósemkowy od 0 do 7, szesnastkowy od 0 do 9 i od A do F. Komunikat o błędzie podaje znak i jego pozycję, abyś mógł znaleźć literówkę albo przełączyć się na system, w którym liczba jest naprawdę zapisana."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <label for="nb-from">Liczba jest zapisana w systemie</label>
+      <select id="nb-from">
+        <option value="10" selected>Dziesiętnym (podstawa 10)</option>
+        <option value="2">Dwójkowym (podstawa 2)</option>
+        <option value="8">Ósemkowym (podstawa 8)</option>
+        <option value="16">Szesnastkowym (podstawa 16)</option>
+        <option value="other">Inna podstawa…</option>
+      </select>
+    </div>
+    <div class="field" id="nb-base-field" hidden>
+      <label for="nb-base">Podstawa (od 2 do 36)</label>
+      <input type="number" id="nb-base" min="2" max="36" value="36" inputmode="numeric">
+    </div>
+  </div>
+  <div class="field">
+    <label for="nb-in">Liczba</label>
+    <input type="text" id="nb-in" class="mono" autocomplete="off" spellcheck="false" inputmode="text" placeholder="255">
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="nb-group">Grupuj cyfry</label>
+    <label class="check"><input type="checkbox" id="nb-upper" checked>Wielkie litery</label>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="nb-out" hidden>
+    <dl class="dv-rows" id="nb-rows"></dl>
+    <p class="help" id="nb-info"></p>
+  </div>
+  <div id="nb-tc" hidden>
+    <h2 class="dv-sub" id="nb-tc-h">Kod uzupełnień do dwóch</h2>
+    <div class="dv-scroll" tabindex="0" aria-labelledby="nb-tc-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Bity</th><th scope="col">Wzorzec bitowy (hex, binarnie)</th><th scope="col">Odczyt jako</th></tr></thead>
+        <tbody id="nb-tc-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak działają systemy liczbowe</h2>
+<p>Podstawa systemu to liczba różnych cyfr, których używa. W systemie dziesiętnym każda pozycja jest warta dziesięć razy więcej niż ta po jej prawej stronie; w dwójkowym dwa razy więcej, więc 1101 oznacza 8 + 4 + 0 + 1 = 13. System szesnastkowy używa szesnastu cyfr, od 0 do 9, a potem od A do F, i każda cyfra szesnastkowa odpowiada dokładnie czterem cyfrom dwójkowym, dlatego programiści używają go jako zwartego zapisu bajtów: 255 to FF, czyli 11111111.</p>
+<p>System ósemkowy grupuje cyfry dwójkowe po trzy i nadal występuje w uprawnieniach plików Uniksa (755 oznacza rwxr-xr-x). Podstawa 36 wykorzystuje wszystkie cyfry i litery i pojawia się w krótkich identyfikatorach oraz skracaczach adresów URL.</p>
+<p>Komputery przechowują liczby całkowite ze znakiem w stałej liczbie bitów w kodzie uzupełnień do dwóch, w którym najstarszy bit ma wagę ujemną. Te same bity mogą więc oznaczać dwie różne liczby: 11001000 to 200 przy odczycie bez znaku i −56 przy odczycie ze znakiem. Tabela pod wynikami pokazuje oba odczyty dla typowych rozmiarów liczb całkowitych.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Zamieniasz tekst na bajty binarne, a nie liczbę? Użyj narzędzia <a href="/tools/text-to-binary/">Tekst na kod binarny</a>.</li>
+  <li>Kody kolorów, takie jak <code>#1636A3</code>, to trzy bajty szesnastkowe: odczytasz je w narzędziu <a href="/tools/color-converter/">Konwerter kolorów i kontrastu</a>.</li>
+  <li>Znaczniki czasu Unix to zwykłe sekundy w zapisie dziesiętnym; przeliczysz je w narzędziu <a href="/tools/unix-timestamp-converter/">Konwerter znacznika czasu Unix</a>.</li>
+</ul>

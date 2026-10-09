@@ -1,0 +1,63 @@
+<!--meta
+{
+  "title": "Quota densità e quota pressione (ISA) | Tanod Tools",
+  "description": "Calcola la quota pressione e la quota densità da elevazione dell'aeroporto, regolazione altimetrica e temperatura, con l'atmosfera standard ISA.",
+  "h1": "Calcolatore di quota densità e quota pressione",
+  "lede": "Inserisci l'elevazione dell'aeroporto, la regolazione altimetrica e la temperatura dell'aria esterna per ottenere quota pressione, quota densità e scostamento ISA.",
+  "blurb": "Quota pressione e quota densità dall'atmosfera standard ISA.",
+  "keywords": "quota densità quota pressione calcolatore isa atmosfera standard regolazione altimetrica qnh inhg hpa temperatura scostamento prestazioni decollo caldo alta quota altitudine densità",
+  "limits": "Calcolo ISA con aria secca; l'umidità è ignorata, quindi nei giorni umidi la quota densità risulta un po' più bassa. Non per la pianificazione del volo né per la navigazione: usa i grafici delle prestazioni dell'aeromobile e i dati ufficiali.",
+  "howto_title": "Come calcolare la quota densità",
+  "howto": [
+    "Inserisci l'elevazione dell'aeroporto e scegli piedi o metri.",
+    "Inserisci la regolazione altimetrica (QNH) in hPa o inHg e la temperatura dell'aria esterna in °C o °F.",
+    "Leggi la quota pressione e la quota densità e guarda quanto la temperatura si discosta da quella standard."
+  ],
+  "faq": [
+    ["Che cos'è la quota densità?", "È la quota nell'atmosfera standard alla quale l'aria ha la stessa densità di quella in cui ti trovi. L'aria calda, in alta quota o umida è rarefatta, quindi la quota densità può essere molto più alta dell'elevazione reale. Questo riduce la potenza del motore, la spinta dell'elica e la portanza dell'ala, allungando la corsa di decollo e riducendo la velocità di salita."],
+    ["Che cos'è la quota pressione?", "È la quota che l'altimetro indica quando è regolato sullo standard di 1013,25 hPa (29,92 inHg). È l'altitudine nell'ISA alla quale la pressione eguaglia quella effettiva ed è la base per i grafici delle prestazioni e i livelli di volo."],
+    ["Come si ricava la temperatura ISA?", "L'atmosfera standard ha 15 °C al livello del mare e si raffredda di 6,5 °C ogni 1.000 m (1,98 °C ogni 1.000 ft) fino a 11 km. Lo scostamento ISA è la temperatura reale meno la temperatura ISA alla quota pressione; ogni grado sopra lo standard alza la quota densità di circa 120 ft."],
+    ["Perché il mio risultato differisce da una regola pratica o da un grafico?", "I grafici e la regola DA = PA + 120 × (OAT − temperatura ISA) sono approssimazioni lineari. Questo strumento inverte direttamente il profilo di densità ISA, quindi nei giorni caldi differisce di qualche centinaio di piedi. Il valore esatto è mostrato anche accanto a quello della regola pratica."],
+    ["L'umidità conta?", "Sì, un poco. Il vapore acqueo è più leggero dell'aria secca, quindi l'aria umida è più rarefatta. Questo calcolatore usa aria secca, perciò in una giornata calda e umida la vera quota densità è un po' più alta."],
+    ["Dove trovo la regolazione altimetrica?", "Nel METAR o nell'ATIS: Q1013 è in hPa e A2992 è in inHg in centesimi. Il decodificatore METAR di questo sito converte entrambi. Se hai solo la pressione di stazione, usa direttamente la quota pressione."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="da-elev">Elevazione dell'aeroporto</label>
+    <input type="text" id="da-elev" inputmode="decimal" autocomplete="off" value="5434" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-elev-u">Unità di elevazione</label>
+    <select id="da-elev-u"><option value="ft" selected>piedi</option><option value="m">metri</option></select>
+  </div>
+  <div class="field">
+    <label for="da-qnh">Regolazione altimetrica (QNH)</label>
+    <input type="text" id="da-qnh" inputmode="decimal" autocomplete="off" value="1013.25" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-qnh-u">Unità di pressione</label>
+    <select id="da-qnh-u"><option value="hpa" selected>hPa</option><option value="inhg">inHg</option></select>
+  </div>
+  <div class="field">
+    <label for="da-oat">Temperatura dell'aria esterna</label>
+    <input type="text" id="da-oat" inputmode="decimal" autocomplete="off" value="30" aria-describedby="da-msg">
+  </div>
+  <div class="field">
+    <label for="da-oat-u">Unità di temperatura</label>
+    <select id="da-oat-u"><option value="c" selected>°C</option><option value="f">°F</option></select>
+  </div>
+</div>
+<p class="note" id="da-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="da-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Quota densità</span> <span class="calc-main__val num" id="da-main"></span></p>
+  <dl class="stats" id="da-stats"></dl>
+  <p class="help" id="da-info"></p>
+</div>
+<!--explain-->
+<h2>Le formule</h2>
+<p>Il calcolo usa l'Atmosfera Standard Internazionale (ICAO Doc 7488, ISO 2533): temperatura al livello del mare T0 = 288,15 K, pressione P0 = 1013,25 hPa, densità 1,225 kg/m³, un gradiente termico L = 0,0065 K/m fino a 11.000 m, e poi una temperatura costante di 216,65 K. La pressione alla quota h nella troposfera è P = P0 · (1 − L·h/T0)^(g/(R·L)), dove g = 9,80665 m/s², R = 287,05287 J/(kg·K) e l'esponente è 5,25588.</p>
+<p>La pressione di stazione si ricava dalla regolazione altimetrica come P_station = QNH · (1 − L·elevazione/T0)^5,25588. La quota pressione è la quota ISA con quella pressione: h = (T0/L) · (1 − (P_station/P0)^(1/5,25588)). La densità dell'aria è ρ = P_station / (R · T) dalla legge dei gas perfetti, con la temperatura dell'aria esterna in kelvin, e la quota densità è la quota ISA con quella densità: h = (T0/L) · (1 − (ρ/ρ0)^(1/4,25588)). Sopra 11 km si usa invece lo strato isotermo. Lo scostamento di temperatura è la OAT meno la temperatura ISA alla quota pressione.</p>
+<p>Le conversioni sono esatte (1 ft = 0,3048 m, 1 inHg = 3.386,38864 Pa). <strong>Non per la pianificazione del volo né per la navigazione.</strong></p>

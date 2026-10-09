@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Przeglądarka faktur KSeF: podgląd XML FA(3) i FA(2) | Tanod Tools",
+  "description": "Otwórz fakturę z KSeF (XML FA(3) lub FA(2)) i czytaj ją jak zwykłą fakturę. Wydrukuj, zapisz jako PDF lub wyeksportuj JSON. Bezpłatnie, nic nie jest przesyłane.",
+  "h1": "Przeglądarka faktur KSeF",
+  "lede": "Otwórz fakturę ustrukturyzowaną z polskiego KSeF i czytaj ją jak zwykłą fakturę: sprzedawca, nabywca, pozycje, grupy VAT i płatność. Plik XML jest odczytywany w przeglądarce i nigdy nie jest przesyłany.",
+  "blurb": "Odczytaj polską fakturę z KSeF (FA(3), FA(2)) jak zwykłą fakturę.",
+  "keywords": "przeglądarka faktur ksef podgląd faktury ksef wizualizacja faktury ksef wizualizacja faktury xml jak otworzyć fakturę xml otworzyć fakturę xml z ksef faktura ustrukturyzowana podgląd faktura ksef na pdf fa(3) fa(2) krajowy system e-faktur czytnik faktur xml ksef viewer",
+  "limits": "Jeden plik naraz, do 25 MB; wyświetlanych jest pierwszych 5000 pozycji. Odczytuje schematy KSeF FA(3) i FA(2), także faktury korygujące. Nie są odczytywane: ustrukturyzowany załącznik FA(3) (Załącznik), faktury FA_RR i starszy schemat FA(1). Tylko przeglądarka: nie waliduje faktury i nie łączy się z KSeF.",
+  "howto_title": "Jak otworzyć fakturę z KSeF",
+  "howto": [
+    "Wybierz plik XML faktury zapisany z KSeF lub z programu księgowego albo przeciągnij go na stronę.",
+    "Przeczytaj fakturę: sprzedawcę (Podmiot1) i nabywcę (Podmiot2), pozycje, VAT według stawek, sumy, płatność i uwagi.",
+    "Naciśnij <strong>Drukuj lub zapisz jako PDF</strong>, <strong>Pobierz JSON</strong> albo <strong>Pokaż surowy XML</strong>."
+  ],
+  "faq": [
+    [
+      "Czy faktura jest wysyłana do KSeF albo przesyłana?",
+      "Nie. Ta strona nie łączy się z KSeF ani z żadnym serwerem. Plik XML jest odczytywany w przeglądarce i wyświetlany na tej stronie, a zamknięcie karty wszystko usuwa."
+    ],
+    [
+      "Skąd wziąć plik XML faktury?",
+      "W KSeF możesz pobrać fakturę jako plik XML, a programy księgowe współpracujące z KSeF potrafią go wyeksportować. Ta strona odczytuje zapisany przez Ciebie plik."
+    ],
+    [
+      "Czym różni się FA(3) od FA(2)?",
+      "To kolejne wersje tego samego schematu faktury (elementem głównym jest Faktura). FA(3) to wersja używana od startu obowiązkowego KSeF w 2026 r.; FA(2) jest wcześniejsza, a faktury w niej zapisane nadal krążą w obiegu. Obie są tu odczytywane."
+    ],
+    [
+      "Czy rysuje kody QR z KSeF albo oficjalną wizualizację?",
+      "Nie. Ta strona pokazuje zawartość pliku XML jako czytelną fakturę. Nie tworzy kodów QR oficjalnej wizualizacji faktury i jest niezależna od Ministerstwa Finansów."
+    ],
+    [
+      "Dlaczego przy niektórych pozycjach nie ma stawki VAT?",
+      "Dla pozycji zwolnionych (zw), objętych odwrotnym obciążeniem (oo) i niepodlegających opodatkowaniu (np) plik podaje kod zamiast stawki. Kod jest pokazywany bez zmian, razem z odpowiednią kategorią VAT."
+    ],
+    [
+      "A co z fakturami korygującymi?",
+      "Faktura korygująca (KOR) wymienia pozycje w stanie przed korektą i po korekcie, a sumy są różnicą. Stare pozycje są oznaczone jako Przed korektą. Numer korygowanej faktury i jej numer KSeF są pokazywane, jeśli plik je zawiera."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Upuść e-fakturę tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik</span></label>
+  <p class="drop__hint">Plik XML, PDF z fakturą w środku (ZUGFeRD, Factur-X) albo podpisany plik .p7m. Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Drukuj lub zapisz jako PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Pobierz JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Pobierz XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Pokaż surowy XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Surowy XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Tutaj widać tylko początek długiego pliku. Pobierz XML, aby mieć go w całości.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>KSeF i jego faktury</h2>
+<p>KSeF, czyli Krajowy System e-Faktur, to polski krajowy system fakturowania elektronicznego, prowadzony przez Ministerstwo Finansów. Faktury ustrukturyzowane są wystawiane jako XML w schemacie o nazwie FA, a w 2026 r. system stał się obowiązkowy dla przedsiębiorców, etapami. Fakturą jest przechowywany i wymieniany plik XML; czytelna wersja to jego wizualizacja. Ta strona tworzy taką wizualizację w Twojej przeglądarce na podstawie posiadanego pliku XML.</p>
+<h2>Co pokazuje przeglądarka</h2>
+<p>Widzisz sprzedawcę (Podmiot1) i nabywcę (Podmiot2) z numerami NIP lub numerami VAT UE i adresami, numer faktury (P_2), daty (P_1, P_6), walutę, każdą pozycję z ilością, jednostką, ceną i stawką VAT, VAT według grup stawek (P_13 i P_14), kwotę należności ogółem (P_15), dane do płatności z rachunkiem bankowym, dodatkowe opisy, stopkę i numery rejestrowe oraz oznaczenia, które mają znaczenie: mechanizm podzielonej płatności (MPP), odwrotne obciążenie, metoda kasowa, samofakturowanie i zwolnienie. Kwoty są pokazywane dokładnie tak, jak w pliku.</p>
+<p>Przeglądarka nie waliduje faktury, nie sprawdza jej w KSeF i nie odczytuje ustrukturyzowanego załącznika FA(3). Jeśli faktura została wystawiona w walucie obcej, kwota VAT w PLN jest pokazana pod sumami. Faktura korygująca jest rozpoznawana, a jej pozycje przed korektą i po korekcie są oznaczone.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Pobierz JSON, aby uzyskać fakturę jako zwykłe dane, z polskimi nazwami pól przetłumaczonymi na terminy biznesowe EN 16931.</li>
+  <li>Otwierają się tu także inne formaty: XRechnung, ZUGFeRD / Factur-X, FatturaPA i Peppol. Po otwarciu takiego pliku strona podpowiada odpowiednią przeglądarkę.</li>
+  <li>Pokaż surowy XML pomaga, gdy potrzebujesz elementu, którego czytelna faktura nie pokazuje.</li>
+</ul>

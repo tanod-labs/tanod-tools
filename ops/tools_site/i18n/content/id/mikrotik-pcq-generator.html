@@ -1,0 +1,78 @@
+<!--meta
+{
+  "title": "Generator PCQ MikroTik: bandwidth merata per pengguna | Tanod Tools",
+  "description": "Buat queue type PCQ RouterOS plus simple queue atau queue tree dengan mangle mark, agar setiap klien mendapat bagian link yang adil dan terbatas. Di browser Anda.",
+  "h1": "Generator PCQ MikroTik",
+  "lede": "Bagi link secara adil di antara semua klien dengan satu Per Connection Queue: pilih kecepatan per pengguna dan totalnya, lalu dapatkan queue type plus simple queue atau queue tree.",
+  "blurb": "Queue type PCQ dengan simple queue atau queue tree.",
+  "keywords": "generator pcq mikrotik per connection queue routeros pcq-rate pcq-classifier dst-address src-address queue tree mangle packet mark bandwidth merata per pengguna wisp fair share bagi rata",
+  "local_text": "Berjalan di browser; apa pun yang Anda ketik tidak meninggalkan perangkat Anda",
+  "limits": "Menghasilkan sintaks RouterOS v7 (juga valid di v6) untuk IPv4. Metode queue tree menandai koneksi yang dibuka klien LAN menuju WAN; yang lain lewat tanpa dibatasi. pcq-limit dan pcq-total-limit tetap pada nilai default. MikroTik dan RouterOS adalah merek dagang SIA Mikrotīkls. Alat ini independen dan tidak berafiliasi dengan atau didukung oleh MikroTik.",
+  "howto_title": "Cara menyiapkan PCQ di MikroTik",
+  "howto": [
+    "Pilih metodenya: satu simple queue untuk subnet LAN (paling sederhana) atau queue tree yang diberi mangle mark (kendali lebih besar).",
+    "Masukkan kecepatan per klien, atau 0 untuk membagi total secara merata, serta total upload dan download tepat di bawah kecepatan link sebenarnya.",
+    "Salin skrip atau unduh file .rsc, dan pastikan FastTrack mati untuk lalu lintas yang dibatasi."
+  ],
+  "faq": [
+    ["Apa yang dilakukan PCQ?", "Queue type PCQ memilah paket ke dalam sub-queue berdasarkan classifier, biasanya alamat klien, dan melayani sub-queue secara bergiliran. Dengan pcq-rate diatur, tiap sub-queue dibatasi pada kecepatan itu; dengan pcq-rate 0, batas parent dibagi rata di antara klien yang aktif saat itu. Satu queue pun memberi ratusan klien bagian yang adil, yang kalau tidak memerlukan ratusan simple queue."],
+    ["Mengapa download diklasifikasi dengan dst-address dan upload dengan src-address?", "Paket download menuju klien, jadi alamat klien adalah tujuan; paket upload datang darinya, jadi ia adalah sumber. Jika ditukar, semua klien masuk ke satu sub-queue yang dikunci pada alamat server remote."],
+    ["Mengapa queue tree memakai parent=global dan forward chain?", "Paket upload harus diklasifikasi sebelum source NAT mengganti alamat klien dengan alamat WAN, dan queue global berjalan sebelum source NAT. Menandai di forward chain melihat paket download setelah destination NAT memulihkan alamat klien. Menandai di interface WAN justru memasukkan semua upload ke satu sub-queue."],
+    ["Untuk apa address mask?", "Dengan /32 setiap alamat menjadi sub-queue sendiri. WISP yang memberi tiap pelanggan subnet kecil, seperti /29, dapat mengatur mask ke 29 sehingga seluruh subnet berbagi satu sub-queue dan satu kecepatan."],
+    ["PCQ tidak berpengaruh. Apa yang harus diperiksa?", "FastTrack dulu: paket yang di-fasttrack melewati mangle dan semua queue. Lalu totalnya: jika max-limit di atas yang benar-benar diberikan jalur, queue tidak pernah penuh, dan perangkat ISP yang melakukan antrean, bukan router Anda."],
+    ["Apakah konfigurasi saya dikirim ke suatu tempat?", "Tidak. Semuanya dibuat di browser Anda."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pcq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Metode</legend>
+      <div class="seg" role="radiogroup" aria-label="Metode">
+        <label><input type="radio" name="pcq-method" value="simple" checked>Simple queue</label>
+        <label><input type="radio" name="pcq-method" value="tree">Queue tree + mangle</label>
+      </div>
+      <div class="field" id="pcq-simple-f">
+        <label for="pcq-target">Subnet LAN (target)</label>
+        <input type="text" id="pcq-target" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="pcq-tree-f" hidden>
+        <div class="field"><label for="pcq-lan">Interface list LAN</label><input type="text" id="pcq-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-wan">Interface list WAN</label><input type="text" id="pcq-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Kecepatan</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-down-rate">Download per klien (pcq-rate)</label><input type="text" id="pcq-down-rate" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-rate">Upload per klien (pcq-rate)</label><input type="text" id="pcq-up-rate" class="mono" value="2M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-down-max">Total download</label><input type="text" id="pcq-down-max" class="mono" value="95M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-max">Total upload</label><input type="text" id="pcq-up-max" class="mono" value="45M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <span class="help">Per klien 0 atau kosong berarti bagian yang sama rata dari total.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opsi</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-mask">Address mask (satu sub-queue per)</label><input type="text" id="pcq-mask" class="mono" value="32" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="pcq-name">Awalan nama</label><input type="text" id="pcq-name" class="mono" value="pcq" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pcq-out" class="label">Skrip RouterOS</label>
+    <textarea id="pcq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pcq-copy" type="button">Salin skrip</button>
+      <button class="btn" id="pcq-dl" type="button">{{mark:i-download}}Unduh .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pcq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Per Connection Queue dalam praktik</h2>
+<p>PCQ adalah queue type, didefinisikan di bawah <code>/queue type</code> dengan <code>kind=pcq</code>, yang kemudian dipakai oleh simple queue atau queue tree. <code>pcq-classifier</code>-nya menentukan apa yang dihitung sebagai satu aliran: <code>dst-address</code> untuk download, sehingga download tiap klien adalah satu aliran, dan <code>src-address</code> untuk upload. RouterOS membuat sub-aliran secara langsung dan menghapusnya saat sepi, jadi tidak ada yang perlu dirawat ketika klien datang dan pergi.</p>
+<p>Dua pengaturan membentuk hasilnya. <code>pcq-rate</code> membatasi tiap aliran; biarkan 0 dan aliran-aliran itu sekadar berbagi apa pun yang diizinkan <code>max-limit</code> queue, secara merata. max-limit queue yang memakai PCQ sebaiknya sedikit di bawah kapasitas nyata link: PCQ hanya bisa membagi bandwidth secara adil bila paket mengantre di router, bukan di modem hulu.</p>
+<h3>Simple queue atau queue tree?</h3>
+<p>Metode simple queue tidak memerlukan penandaan: satu queue dengan subnet LAN sebagai target dan <code>queue=upload-type/download-type</code>. Metode queue tree memakai mangle untuk menandai koneksi dari LAN ke WAN dan dua queue di bawah <code>parent=global</code>; lalu lintas antar jaringan lokal dibiarkan tanpa dibatasi dan metode ini menjadi titik awal untuk kelas prioritas. Bagaimanapun, pengaturan burst per klien ada di simple queue; bandingkan dengan <a href="/tools/mikrotik-simple-queue-generator/">generator simple queue</a> dan <a href="/tools/mikrotik-burst-calculator/">kalkulator burst</a>.</p>

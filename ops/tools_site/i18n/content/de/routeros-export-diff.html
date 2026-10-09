@@ -1,0 +1,57 @@
+<!--meta
+{
+  "title": "RouterOS-Export-Vergleich: zwei MikroTik-Configs | Tanod Tools",
+  "description": "Zwei RouterOS-/export-Dateien Abschnitt für Abschnitt vergleichen: hinzugefügte und entfernte Zeilen pro Menü, lange Zeilen verbunden, Kopf ignoriert, Secrets maskiert.",
+  "h1": "RouterOS-Export-Vergleich",
+  "lede": "Fügen Sie zwei Exporte ein, etwa vor und nach einer Änderung oder von zwei Routern, die übereinstimmen sollen, und sehen Sie genau, was sich unterscheidet, Menü für Menü.",
+  "blurb": "Abschnittsweiser Vergleich zweier RouterOS-Exporte.",
+  "keywords": "routeros export diff vergleichen mikrotik config vergleich zwei exporte konfigurationsänderungen rsc diff backup vergleichen router konfiguration audit änderungsprüfung",
+  "local_text": "Beide Exporte werden in Ihrem Browser verglichen und verlassen Ihr Gerät nie",
+  "limits": "Vergleicht Exporte Zeile für Zeile innerhalb jedes Menüs, nachdem umbrochene Zeilen verbunden und der Kopf entfernt wurden. Änderungen an der Reihenfolge von Regeln erscheinen als entfernte und hinzugefügte Zeilen. Geheime Werte werden standardmäßig maskiert. MikroTik und RouterOS sind Marken der SIA Mikrotīkls. Dieses Tool ist unabhängig und weder mit MikroTik verbunden noch von MikroTik unterstützt.",
+  "howto_title": "So vergleichen Sie zwei RouterOS-Konfigurationen",
+  "howto": [
+    "Führen Sie auf jedem Router, oder vor und nach einer Änderung, <code>/export</code> aus (v6: <code>/export hide-sensitive</code>) und kopieren Sie die Ausgabe, oder öffnen Sie die gespeicherten .rsc-Dateien.",
+    "Fügen Sie den älteren Export links und den neueren rechts ein. Der Vergleich aktualisiert sich beim Tippen.",
+    "Klappen Sie die hervorgehobenen Abschnitte auf, um zu lesen, was hinzugefügt (+) und entfernt (−) wurde, und kopieren Sie die Änderungen als Text für ein Änderungsprotokoll."
+  ],
+  "faq": [
+    ["Warum abschnittsweise statt die ganze Datei zu vergleichen?", "Ein Export ist eine Liste von Menüs, und dasselbe Menü steht immer an derselben Stelle. Der Vergleich Menü für Menü verhindert, dass eine Änderung in /ip firewall filter mit Zeilen in /ip address vermischt wird, und zeigt auf einen Blick, welche Teile der Konfiguration sich geändert haben."],
+    ["Warum sehen lange Zeilen aus meinem Export hier anders aus?", "RouterOS bricht lange Zeilen in einem Export mit einem Backslash am Ende um und setzt sie in der nächsten Zeile fort. Der Vergleich fügt sie wieder zu einer logischen Zeile zusammen und reduziert wiederholte Leerzeichen, sodass eine nur neu umbrochene Regel nicht als Änderung zählt."],
+    ["Eine Regel wurde nur verschoben, erscheint aber als entfernt und hinzugefügt. Warum?", "In Firewall-, NAT- und Mangle-Chains kommt es auf die Reihenfolge an: Eine verschobene Regel kann ändern, was der Router tut. Der Vergleich behält deshalb die Reihenfolge bei und zeigt eine verschobene Regel als an der alten Position entfernt und an der neuen hinzugefügt."],
+    ["Sind Passwörter und Schlüssel verborgen?", "Mit eingeschaltetem \"Secrets maskieren\" werden die Werte von Passwörtern, Secrets, privaten und Preshared Keys, MD5-Schlüsseln und SNMP-Communities im Vergleich durch ***** ersetzt. So oder so verlässt nichts, was Sie einfügen, Ihren Browser."],
+    ["Kann ich es auch für nur einen Export nutzen?", "Ja. Ist nur eine Seite gefüllt, listet die Seite die Abschnitte dieses Exports mit ihren Zeilenzahlen auf, was ein schneller Weg ist, eine lange Konfiguration zu lesen."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-xdiff" id="xd">
+  <div class="ros-pair">
+    <div class="field">
+      <label for="xd-a">Älterer Export (vorher)</label>
+      <textarea id="xd-a" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}.rsc-Datei öffnen<input type="file" id="xd-file-a" accept=".rsc,.txt,text/plain"></label>
+    </div>
+    <div class="field">
+      <label for="xd-b">Neuerer Export (nachher)</label>
+      <textarea id="xd-b" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/interface bridge&#10;add name=bridge vlan-filtering=yes&#10;…"></textarea>
+      <label class="btn btn--sm ros-open">{{mark:i-upload}}.rsc-Datei öffnen<input type="file" id="xd-file-b" accept=".rsc,.txt,text/plain"></label>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="xd-mask" checked>Secrets maskieren</label>
+    <label class="check"><input type="checkbox" id="xd-nocomments" checked>#-Kommentarzeilen ignorieren</label>
+    <label class="check"><input type="checkbox" id="xd-all">Unveränderte Abschnitte anzeigen</label>
+  </div>
+  <div class="ros-results" id="xd-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="xd-copy" type="button" hidden>Änderungen als Text kopieren</button></div>
+</div>
+<!--explain-->
+<h2>Einen RouterOS-Konfigurationsvergleich lesen</h2>
+<p>Ein Export ist die Konfiguration des Routers, geschrieben als die Befehle, die sie neu erzeugen würden: eine Menüzeile wie <code>/ip firewall filter</code>, gefolgt von den <code>add</code>- und <code>set</code>-Befehlen für dieses Menü. Es erscheinen nur Einstellungen, die von den Standardwerten abweichen, was Exporte kurz hält, aber bedeutet, dass eine auf den Standard zurückgesetzte Einstellung im neueren Export einfach verschwindet. Der Vergleich behandelt jedes Menü als Abschnitt, vergleicht dessen Befehle der Reihe nach und hebt die geänderten Abschnitte hervor.</p>
+<p>Manche Unterschiede sind Rauschen statt Änderungen: Der Kopf mit Exportdatum, Software-ID und Seriennummer wird entfernt, umbrochene Zeilen werden verbunden, und Kommentarzeilen lassen sich ignorieren. Übrig bleibt, was der Router tatsächlich anders tun würde. Die Reihenfolge bleibt absichtlich erhalten: Firewall-, NAT-, Mangle- und Queue-Regeln werden von oben nach unten abgearbeitet, das Verschieben einer Regel ist also eine echte Änderung.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Bewahren Sie nach jedem Wartungsfenster einen datierten Export auf und vergleichen Sie ihn mit dem vorherigen, um genau zu sehen, was getan wurde.</li>
+  <li>Sie prüfen ein Upgrade von v6 auf v7? Vergleichen Sie das umgewandelte Skript aus dem <a href="/tools/routeros-v7-migration-helper/">Migrationshelfer</a> mit einem Export nach dem Upgrade.</li>
+  <li>Für reinen Text, der kein Export ist, vergleicht das allgemeine <a href="/tools/text-diff/">Text-Diff</a> ebenfalls Wort für Wort.</li>
+</ul>

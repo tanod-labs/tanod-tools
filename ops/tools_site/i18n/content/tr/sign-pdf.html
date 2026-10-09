@@ -1,0 +1,139 @@
+<!--meta
+{
+  "title": "PDF imzala: imzanızı çizin veya yazın, çevrimiçi | Tanod Tools",
+  "description": "PDF'i tarayıcınızda imzalayın: imzanızı çizin veya yazın, sayfaya yerleştirin, tarih ekleyip kaydedin. Ücretsiz, kayıt gerekmez; dosya cihazınızdan çıkmaz.",
+  "h1": "PDF'i imzalayın",
+  "lede": "İmzanızı çizin veya yazın, sayfada istediğiniz yere yerleştirin, isterseniz tarihi ekleyin ve imzalı PDF'i kaydedin. Her şey cihazınızda gerçekleşir.",
+  "blurb": "İmza çizin veya yazın, PDF sayfasına yerleştirin.",
+  "keywords": "pdf imzala pdf imzalama pdf'e imza ekle pdf imza ekleme imza çiz imza yaz elektronik imza ıslak imza belge imzalama çevrimiçi imza paraf tarih damgası sign pdf add signature to pdf esign electronic signature fill and sign",
+  "limits": "Bir seferde tek PDF, en fazla 200 MB ve 500 sayfa. İmza sayfaya bir resim olarak eklenir. Sertifika tabanlı bir dijital imza değildir; bu yüzden kimin imzaladığını ya da dosyanın değiştirilmediğini kanıtlamaz. Parola korumalı PDF'ler düzenlenemez.",
+  "howto_title": "PDF nasıl imzalanır",
+  "howto": [
+    "Bir PDF dosyası seçin veya sayfaya sürükleyin.",
+    "İmzanızı çizin ya da <strong>Yazarak</strong> seçeneğine geçip adınızı yazın. Tarihi eklemek için kutuyu işaretleyin.",
+    "Sayfayı seçin, ardından imzayı sürükleyerek yerine bırakın, imzanın duracağı yere dokunun ya da konum ve boyut için kaydırıcıları kullanın. <strong>İmza ekle</strong> düğmesine basın ve imzalı PDF'i indirin."
+  ],
+  "faq": [
+    ["PDF'im veya imzam yükleniyor mu?", "Hayır. Sayfa çizilir ve imza, tarayıcınızda çalışan kodla, açık kaynaklı pdf.js ve pdf-lib kitaplıkları kullanılarak eklenir. Ne PDF ne de imza bir sunucuya gönderilir veya saklanır; sekmeyi kapattığınızda ikisi de silinir."],
+    ["Bu, yasal olarak bağlayıcı bir imza mı?", "Birçok kişi ve kurum, gündelik belgelerde imza resmini kabul eder; ancak bunun yeterli olup olmadığı belgeye, imzayı kimin istediğine ve bulunduğunuz yerdeki yasalara bağlıdır. Bu, sertifika tabanlı bir dijital imza değildir: kimin imzaladığını ya da dosyanın sonradan aynı kalıp kalmadığını göstermez. Emin değilseniz imzayı isteyen kişiye ya da kuruma neyi kabul ettiğini sorun."],
+    ["Birden fazla sayfayı imzalayabilir miyim?", "Evet. Aynı imzayı tüm sayfalarda aynı yere koymak için <em>Her sayfa</em> seçeneğini seçin; bu, paraf için uygundur. Konum ve boyut her sayfaya orantılı olarak uygulanır, bu yüzden farklı boyutlardaki sayfalar da sorunsuz çalışır. Farklı sayfaları farklı yerlerde imzalamak için bir kez imzalayın, ardından sonucu açıp yeniden imzalayın."],
+    ["İmza sonradan kaldırılabilir mi?", "İmza sayfanın bir parçası olur; bu yüzden her PDF görüntüleyicide görünür. Ancak sıradan bir resimdir ve PDF düzenleyicisi olan biri onu kaldırabilir. Özgün dosyanız değişmez: yeni bir kopya indirirsiniz. İmzalı kopyayı kimlerin değiştirebileceğini sınırlamak istiyorsanız <a href=\"/tools/protect-pdf/\">PDF'e parola koy</a> aracıyla bir parola ekleyin."],
+    ["Yazarak oluşturduğum imza neden başka bir cihazda farklı görünüyor?", "Yazarak oluşturulan imzalar cihazınızda yüklü yazı tiplerini kullanır ve bitişik yazı stilleri sistemlere göre değişir. Önizleme, kaydedilecek olanı gösterir. Kaydedilen imza bir resimdir; bu yüzden PDF nerede açılırsa açılsın aynı görünür."],
+    ["Döndürülmüş sayfalarda çalışır mı?", "Evet. Sayfa, bir görüntüleyicide göründüğü şekliyle gösterilir ve imza sayfayla birlikte döndürülür; böylece dik durur. Kırpılmış sayfalar da desteklenir: konum, görünür alanın içinde ölçülür."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">PDF'i buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>PDF seçin</span></label>
+  <p class="drop__hint">Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">İmzanız</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Oluşturma yöntemi</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Çizerek</label>
+          <label><input type="radio" name="sg-mode" value="type">Yazarak</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="İmza alanı. İmzanızı burada fare, parmak veya kalemle çizin."></canvas>
+        <span class="help">Fare, parmak veya kalemle çizin. Çizim yapamıyorsanız Yazarak seçeneğini seçin.</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Son çizgiyi geri al</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Temizle</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Adınız</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Adınızı yazın">
+        </div>
+        <div class="field">
+          <label for="sg-font">Yazı stili</label>
+          <select id="sg-font">
+            <option value="script" selected>Bitişik yazı</option>
+            <option value="hand">El yazısı</option>
+            <option value="serif">Klasik italik</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Yazdığınız imzanın önizlemesi"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Mürekkep</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Siyah</label>
+          <label><input type="radio" name="sg-ink" value="blue">Mavi</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">İmzanın altına tarih ekle</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Tarih metni</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Sayfaya yerleştirin</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Önceki sayfa">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Sayfa</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Sonraki sayfa">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">İmzayı sayfada sürükleyin, imzanın duracağı yere dokunun ya da kaydırıcıları kullanın.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">Yatay konum: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">Dikey konum: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Boyut: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">İmzalanacak sayfalar</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>Bu sayfa</label>
+            <label><input type="radio" name="sg-scope" value="all">Her sayfa</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>İmza ekle</button>
+    <span class="help" id="sg-hint">Önce imzanızı çizin veya yazın.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>İmza bir PDF sayfasına nasıl eklenir</h2>
+<p>Bir PDF sayfası sabit bir düzendir; bu yüzden onu imzalamak, sayfanın içine yazmak değil, sayfaya bir şey eklemek demektir. Bu araç imzanızı, kutuyu işaretlediyseniz tarih satırıyla birlikte, saydam arka planlı küçük bir resme dönüştürür ve bu resmi seçtiğiniz sayfaya çizer. Tarayıcınız sayfayı pdf.js ile gösterir, yeni kopyayı pdf-lib ile yazar; yani gördüğünüz sayfa, imzalanan sayfadır.</p>
+<p>Konum ve boyut, sabit ölçüler olarak değil, sayfaya oranla saklanır. Bu yüzden tüm sayfaları imzalarken aynı kaydırıcı ayarları farklı boyutlardaki sayfalara da uyar; döndürülmüş olarak saklanan bir sayfa bile dik duran bir imza alır. Özgün dosyanız asla değiştirilmez; ayrı bir imzalı kopya indirirsiniz.</p>
+<p>Elde ettiğiniz şey bir imza resmidir; çoğu insan da form, mektup ve sözleşmeleri elle imzalayıp tarayarak aynı sonuca ulaşır. Bu, kriptografik bir dijital imza değildir. Bu tür imzalar size verilmiş bir sertifika kullanır, dosyayı imzadan sonraki değişikliklere karşı korur ve bu amaç için kurulmuş bir hizmet gerektirir. Bir belgenin hangi türü gerektirdiği, belgeye ve imzayı kimin istediğine bağlıdır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Yavaş çizin ve alanı doldurun: imza mürekkebin sınırlarına göre kırpılır, bu yüzden daha büyük bir çizim, sayfada aynı boyutta daha net bir sonuç verir.</li>
+  <li>İmzalı kopyayı <a href="/tools/protect-pdf/">PDF'e parola koy</a> ile bir parolayla kilitleyin ya da <a href="/tools/watermark-pdf/">PDF'e filigran ekle</a> ile her sayfaya damga basın.</li>
+  <li>İmzalı bir sayfayı önce başka bir belgeye eklemeniz mi gerekiyor? <a href="/tools/merge-pdf/">PDF birleştir</a> dosyaları seçtiğiniz sırayla birleştirir.</li>
+</ul>

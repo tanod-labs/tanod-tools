@@ -1,0 +1,116 @@
+<!--meta
+{
+  "title": "Filtry do zdjęć online: czarno-białe, sepia, rozmycie | Tanod Tools",
+  "description": "Dostosuj jasność, kontrast, nasycenie i odcień albo zamień zdjęcie na czarno-białe, sepię, negatyw lub rozmyj je. Podgląd na żywo, działa w przeglądarce.",
+  "h1": "Filtry do zdjęć",
+  "lede": "Dopracuj zdjęcie suwakami lub gotowymi ustawieniami jednym kliknięciem, porównaj z oryginałem i zapisz wynik w pełnym rozmiarze.",
+  "blurb": "Czerń i biel, sepia, jasność, rozmycie i więcej.",
+  "keywords": "filtry do zdjęć edytor zdjęć efekty czarno-białe skala szarości sepia vintage negatyw jasność kontrast nasycenie odcień rozmycie instagram photo filters",
+  "limits": "Działa na pojedynczym obrazie do 50 MB i około 100 megapikseli. Bardzo duże obrazy przetwarzane są kilka sekund; strona w tym czasie pozostaje użyteczna.",
+  "howto_title": "Jak zastosować filtry do obrazu",
+  "howto": [
+    "Wybierz obraz. Podgląd pojawia się w zmniejszonym rozmiarze, dzięki czemu suwaki reagują od razu.",
+    "Zacznij od gotowego ustawienia, takiego jak <strong>Czerń i biel</strong> lub <strong>Intensywne</strong>, a potem dostosuj suwaki. Włącz <strong>Pokaż oryginał</strong>, aby porównać.",
+    "Kliknij <strong>Zastosuj i zapisz</strong>. Filtry zostaną ponownie nałożone na obraz w pełnym rozmiarze i pobierzesz gotowy plik."
+  ],
+  "faq": [
+    ["Czy moje zdjęcie jest przesyłane?", "Nie. Każdy filtr jest obliczany w Twojej przeglądarce, na Twoim urządzeniu, piksel po pikselu. Nic nie jest wysyłane na serwer."],
+    ["Czy filtry dają taki sam wynik jak CSS w przeglądarce?", "Stosują te same wzory co specyfikacja CSS Filter Effects: jasność mnoży, kontrast obraca się wokół środkowej szarości, a nasycenie, obrót barwy, skala szarości i sepia korzystają z macierzy kolorów ze specyfikacji. Wykonywanie obliczeń na tej stronie, a nie przez funkcję filtrów przeglądarki, sprawia, że działa to także w przeglądarkach, w których tej funkcji brakuje."],
+    ["W jakiej kolejności nakładane są filtry?", "Jasność, kontrast, nasycenie, obrót barwy, skala szarości, sepia, negatyw, a na końcu rozmycie. Kolejność jest stała, więc te same ustawienia suwaków zawsze dają ten sam obraz."],
+    ["Dlaczego rozmycie wygląda tak samo w podglądzie i w zapisanym pliku?", "Wielkość rozmycia jest ułamkiem szerokości obrazu, a nie liczbą pikseli. Zdjęcie o szerokości 4000 pikseli, oglądane w podglądzie 800 pikseli, jest w pikselach podglądu rozmywane pięciokrotnie słabiej, co po przeskalowaniu wygląda identycznie."],
+    ["Co dzieje się z przezroczystością?", "Zostaje nietknięta. Kanał alfa nigdy nie jest zmieniany, a rozmycie waży kolory według krycia, więc miękkie krawędzie wycinanych obiektów nie robią się ciemne. Zapisz jako PNG lub WebP, aby ją zachować; JPEG wypełnia przezroczyste obszary bielą."],
+    ["Czy mogę cofnąć ustawienie gotowe?", "Wybierz Resetuj albo przeciągnij suwaki z powrotem. Gotowe ustawienia tylko przesuwają suwaki, które potem można dalej regulować. Nic nie zmienia oryginalnego pliku."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść obraz tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Wybierz obraz</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP lub AVIF. Możesz też przeciągnąć obraz w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="flt-view">
+    <div class="preview"><canvas id="preview" role="img" aria-label="Podgląd z zastosowanymi filtrami"></canvas></div>
+    <div class="actions">
+      <button type="button" class="btn" id="compare" aria-pressed="false">Pokaż oryginał</button>
+      <span class="help" id="compare-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label" id="presets-label">Gotowe ustawienia</span>
+    <div class="actions" role="group" aria-labelledby="presets-label">
+      <button type="button" class="btn btn--sm" data-preset="bw">Czerń i biel</button>
+      <button type="button" class="btn btn--sm" data-preset="sepia">Sepia</button>
+      <button type="button" class="btn btn--sm" data-preset="vivid">Intensywne</button>
+      <button type="button" class="btn btn--sm" data-preset="fade">Wyblakłe</button>
+      <button type="button" class="btn btn--sm" data-preset="invert">Negatyw</button>
+      <button type="button" class="btn btn--sm btn--quiet" data-preset="reset">Resetuj</button>
+    </div>
+  </div>
+  <div class="opts flt-opts">
+    <div class="field flt-slider">
+      <label for="f-brightness">Jasność: <span class="num" id="o-brightness">100</span>%</label>
+      <input type="range" id="f-brightness" min="0" max="200" value="100" data-key="brightness">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-contrast">Kontrast: <span class="num" id="o-contrast">100</span>%</label>
+      <input type="range" id="f-contrast" min="0" max="200" value="100" data-key="contrast">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-saturation">Nasycenie: <span class="num" id="o-saturation">100</span>%</label>
+      <input type="range" id="f-saturation" min="0" max="300" value="100" data-key="saturation">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-grayscale">Skala szarości: <span class="num" id="o-grayscale">0</span>%</label>
+      <input type="range" id="f-grayscale" min="0" max="100" value="0" data-key="grayscale">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-sepia">Sepia: <span class="num" id="o-sepia">0</span>%</label>
+      <input type="range" id="f-sepia" min="0" max="100" value="0" data-key="sepia">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-invert">Negatyw: <span class="num" id="o-invert">0</span>%</label>
+      <input type="range" id="f-invert" min="0" max="100" value="0" data-key="invert">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-hue">Obrót barwy: <span class="num" id="o-hue">0</span>°</label>
+      <input type="range" id="f-hue" min="-180" max="180" value="0" data-key="hue">
+    </div>
+    <div class="field flt-slider">
+      <label for="f-blur">Rozmycie: <span class="num" id="o-blur">0</span></label>
+      <input type="range" id="f-blur" min="0" max="40" value="0" data-key="blur">
+    </div>
+    <fieldset class="field">
+      <legend>Zapisz jako</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Bez zmian</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Opcja „Bez zmian” zwraca PNG, JPEG i WebP w oryginalnym formacie; GIF, BMP i AVIF stają się PNG.</p>
+    </fieldset>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Zastosuj i zapisz</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Co każdy filtr robi z pikselami</h2>
+<p>Każdy piksel to trzy liczby od 0 do 255, dla czerwieni, zieleni i błękitu. Jasność mnoży te liczby, więc 150% zamienia wartość 100 na 150, a wszystko powyżej 255 jest obcinane do bieli. Kontrast rozciąga liczby od środkowej szarości (128) albo ściska je ku niej, dlatego kontrast 0% daje jednolicie szary obraz. Nasycenie i obrót barwy mieszają trzy kanały za pomocą stałych macierzy kolorów, dzięki czemu zdjęcie przesuwa się ku szarości albo wokół koła barw.</p>
+<p>Skala szarości zastępuje każdy piksel jego luminancją, czyli sumą ważoną, w której najwięcej liczy zieleń (około 72%), potem czerwień (21%), a najmniej błękit (7%), ponieważ oko jest najbardziej wrażliwe na zieleń. Sepia używa macierzy, która nadaje ciepły brązowy odcień dawnych odbitek. Negatyw odejmuje każdą wartość od 255, tworząc odwrócony obraz. Rozmycie uśrednia każdy piksel z sąsiadami, trzykrotnie w każdym kierunku, co dobrze przybliża rozmycie Gaussa.</p>
+<p>Małe podglądy zapewniają szybkie suwaki, ale zapisywany plik jest przetwarzany w pełnej rozdzielczości, porcjami, więc strona nadal reaguje i pokazuje postęp. Po zapisaniu oryginalny plik pozostaje nietknięty.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Aby odczytać dokładny kolor z wyniku, użyj narzędzia <a href="/tools/image-color-picker/">Pobierz kolor z obrazu</a>.</li>
+  <li>Filtrowanie przed dodaniem napisu zachowuje ostrość tekstu: wykonaj te kroki w tej kolejności, korzystając z narzędzia <a href="/tools/add-text-to-image/">Dodaj tekst do obrazu</a>.</li>
+  <li>Rozmyty obraz o wysokim kontraście kompresuje się zupełnie inaczej, więc sprawdź potem rozmiar w narzędziu <a href="/tools/compress-image/">Kompresuj obraz</a>.</li>
+</ul>

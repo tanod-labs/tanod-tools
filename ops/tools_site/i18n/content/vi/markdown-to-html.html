@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Chuyển Markdown sang HTML có xem trước | Tanod Tools",
+  "description": "Chuyển Markdown thành HTML sạch trong trình duyệt, có bảng kiểu GitHub, danh sách công việc và xem trước trực tiếp. HTML không an toàn bị loại. Không tải lên.",
+  "h1": "Chuyển Markdown sang HTML",
+  "lede": "Nhập hoặc dán Markdown và nhận HTML sạch ngay khi bạn gõ, kèm bản xem trước cách nó sẽ hiển thị.",
+  "blurb": "Chuyển Markdown sang HTML, có xem trước.",
+  "keywords": "markdown sang html chuyển đổi markdown thành html md gfm bảng github xem trước hiển thị readme markdown html convert preview render",
+  "limits": "Markdown tối đa khoảng 5 MB, nhập, dán hoặc từ một tệp .md hay .txt. Kết quả được cập nhật khi bạn nhập.",
+  "howto_title": "Cách chuyển Markdown sang HTML",
+  "howto": [
+    "Nhập hoặc dán Markdown, hoặc mở một tệp .md.",
+    "Đọc HTML ở bên phải, hoặc chuyển sang Xem trước để xem nó hiển thị ra sao. Bật tùy chọn tài liệu đầy đủ nếu bạn cần một trang hoàn chỉnh.",
+    "Sao chép HTML hoặc tải xuống dưới dạng tệp .html."
+  ],
+  "faq": [
+    ["Văn bản của tôi có bị tải lên không?", "Không. Markdown được chuyển đổi trong trình duyệt của bạn bằng thư viện mã nguồn mở marked, và không có gì được gửi đi hay lưu lại."],
+    ["Hỗ trợ những cú pháp Markdown nào?", "CommonMark cùng các phần bổ sung của GitHub: bảng, danh sách công việc (<code>- [x] done</code>), gạch ngang chữ bằng <code>~~</code>, khối mã có rào và liên kết tự động. Các lần xuống dòng đơn được nối thành một đoạn văn như trong Markdown chuẩn; hãy bật <em>Xuống dòng thành &lt;br&gt;</em> để giữ chúng, như các bình luận trên GitHub."],
+    ["HTML có an toàn để đưa lên website không?", "Nó được làm sạch bằng thư viện mã nguồn mở DOMPurify trước khi bạn thấy. Script, trình xử lý sự kiện như <code>onerror</code>, liên kết <code>javascript:</code>, iframe và đối tượng nhúng bị loại bỏ, và dòng dưới kết quả liệt kê những gì đã bị lấy ra. HTML thông thường viết trong Markdown, như <code>&lt;details&gt;</code> hoặc <code>&lt;sup&gt;</code>, được giữ lại. Như với mọi nội dung đến từ người khác, hãy giữ nguyên các biện pháp bảo vệ của chính trang web bạn."],
+    ["Vì sao ảnh hiện thành khung giữ chỗ trong phần xem trước?", "Bản xem trước không bao giờ tải bất cứ thứ gì từ website khác, nên văn bản của bạn không bị lộ cho website đó và trang vẫn riêng tư. Ảnh từ địa chỉ web hiện dưới dạng khung giữ chỗ có nhãn kèm địa chỉ của nó. Mã HTML vẫn chứa thẻ <code>&lt;img&gt;</code> bình thường, nên ảnh sẽ hiển thị ở bất cứ nơi nào bạn xuất bản."],
+    ["Tùy chọn tài liệu đầy đủ thêm gì?", "Một trang hoàn chỉnh bao quanh HTML: doctype, <code>&lt;head&gt;</code> với bảng mã UTF-8, thẻ viewport cho thiết bị di động và tiêu đề lấy từ tiêu đề đầu tiên. Hãy tắt nó khi bạn dán vào một trang có sẵn hoặc một CMS."],
+    ["Tiêu đề có được gán thuộc tính id cho liên kết không?", "Không. Tiêu đề được xuất ra dưới dạng các thẻ <code>&lt;h1&gt;</code> đến <code>&lt;h6&gt;</code> thuần. Nếu cần neo liên kết, hãy thêm id trong template của website hoặc bằng tay."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="md" class="md-label">Markdown</label>
+      <textarea id="md" class="mono md-pane" spellcheck="false" autocomplete="off" placeholder="# Một tiêu đề&#10;&#10;Một đoạn văn bản **in đậm** và một [liên kết](https://example.com).&#10;&#10;- [x] Đã xong&#10;- [ ] Cần làm"></textarea>
+    </div>
+    <div class="field md-result">
+      <div class="md-result__head">
+        <span class="label" id="view-l">Kết quả</span>
+        <div class="seg" role="radiogroup" aria-labelledby="view-l">
+          <label><input type="radio" name="view" value="code" checked>Mã HTML</label>
+          <label><input type="radio" name="view" value="preview">Xem trước</label>
+        </div>
+      </div>
+      <textarea id="out" class="mono md-pane" readonly aria-label="Mã HTML"></textarea>
+      <div id="preview" class="md-preview md-pane" tabindex="0" role="region" aria-label="Xem trước" hidden></div>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="breaks">Xuống dòng thành &lt;br&gt;</label>
+    <label class="check"><input type="checkbox" id="full">Bao trong một tài liệu HTML đầy đủ</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Nhập hoặc dán Markdown để bắt đầu.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Sao chép HTML</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Tải xuống .html</button>
+    <button class="btn btn--quiet" id="clear" type="button">Xóa</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/markdown,.md,.markdown,text/plain,.txt">{{mark:i-upload}}<span>Mở tệp .md</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Markdown trở thành HTML như thế nào</h2>
+<p>Markdown là cách viết văn bản có định dạng bằng các ký tự thường: dấu <code>#</code> mở đầu một tiêu đề, <code>**hai dấu sao**</code> tạo chữ đậm, dòng bắt đầu bằng dấu gạch ngang là một mục danh sách. Đó là thứ mà các tệp README, nhiều ứng dụng ghi chú và hầu hết diễn đàn lập trình sử dụng. Trình duyệt, template email và hệ thống quản lý nội dung cần HTML, nên đến một lúc nào đó Markdown phải được chuyển đổi.</p>
+<p>Bộ chuyển đổi này tuân theo CommonMark cùng các phần bổ sung của GitHub Flavored Markdown, nên bảng, danh sách công việc và chữ gạch ngang hoạt động như trên GitHub. HTML do nó tạo ra sau đó được đưa qua bộ làm sạch, loại bỏ mọi thứ có thể chạy mã khi HTML được hiển thị, trong khi giữ nguyên định dạng thông thường.</p>
+<p>Thẻ xem trước hiển thị cùng HTML đó được kết xuất trong trang. Liên kết mở trong thẻ mới, và ảnh lưu trữ ở nơi khác được hiển thị bằng khung giữ chỗ thay vì được tải về, nên không có gì bạn viết bị gửi đến trang khác trong khi bạn làm việc.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Có HTML và muốn chuyển sang Markdown? Hãy dùng <a href="/tools/html-to-markdown/">HTML sang Markdown</a>.</li>
+  <li>Kiểm tra độ dài bài viết bằng <a href="/tools/word-counter/">Đếm từ</a>.</li>
+  <li>So sánh hai bản nháp bằng <a href="/tools/text-diff/">So sánh văn bản</a>.</li>
+</ul>

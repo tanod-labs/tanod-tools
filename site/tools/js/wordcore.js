@@ -1,6 +1,6 @@
 // Word, sentence and character counting shared by the Word counter and Character counter.
-import { normalizeNewlines } from "./textcore.js?v=5";
-import { tx, EN, LANG } from "./i18n.js?v=5";
+import { normalizeNewlines } from "./textcore.js?v=11";
+import { tx, EN, LANG } from "./i18n.js?v=11";
 
 export const STOP = new Set(("a about above after again against all also am an and any are aren't as at be because been before being below between both but by can could did do does doing don't down during each few for from further had has have having he her here hers him his how i if in into is isn't it its just me more most my no nor not of off on once only or other our out over own same she should so some such than that the their them then there these they this those through to too under until up us very was we were what when where which while who whom why will with would you your").split(" "));
 

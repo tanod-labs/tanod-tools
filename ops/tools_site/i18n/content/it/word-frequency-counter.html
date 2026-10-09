@@ -1,0 +1,115 @@
+<!--meta
+{
+  "title": "Contatore di frequenza delle parole | Tanod Tools",
+  "description": "Trova le parole e le frasi di due o tre parole più comuni in un testo, con conteggi e percentuali. Escludi le stop word e scarica il CSV. Gratis.",
+  "h1": "Contatore di frequenza delle parole",
+  "lede": "Incolla un testo per vedere quali parole e frasi compaiono più spesso, con conteggi e percentuali, escludendo le stop word più comuni della tua lingua.",
+  "blurb": "Parole e frasi più comuni con conteggi e percentuali.",
+  "keywords": "contatore frequenza parole parole più frequenti parole più comuni frequenza delle frasi contatore n-grammi densità parole chiave stop word rimuovere stop word csv analisi del testo",
+  "local_text": "Funziona nel browser; nulla di ciò che scrivi lascia il tuo dispositivo",
+  "limits": "Testo fino a qualche milione di caratteri. Le parole sono sequenze di lettere e cifre, con apostrofi e trattini interni alla parola mantenuti; le frasi non attraversano mai la fine di una frase o un a capo. Gli elenchi di stop word sono brevi elenchi delle parole funzionali più comuni, non dizionari completi, e esistono per inglese, spagnolo, francese, tedesco, portoghese (Brasile), italiano, indonesiano, turco, vietnamita, russo, polacco e hindi.",
+  "howto_title": "Come contare la frequenza delle parole",
+  "howto": [
+    "Incolla il tuo testo.",
+    "Scegli parole singole, frasi di due parole o frasi di tre parole, e una lingua per le stop word se vuoi escludere parole come the, and o of.",
+    "Leggi l'elenco in ordine di frequenza con conteggi e percentuali, poi copialo o scaricalo come CSV."
+  ],
+  "faq": [
+    [
+      "Che cosa conta come parola?",
+      "Una sequenza di lettere o cifre che può contenere un apostrofo o un trattino tra lettere, quindi don't e well-known sono una parola ciascuna. Maiuscole e minuscole sono trattate come la stessa parola. La punteggiatura e gli spazi separano le parole."
+    ],
+    [
+      "Come vengono contate le frasi?",
+      "Una frase di due parole è ogni coppia di parole una accanto all'altra, e una frase di tre parole è ogni tripletta di questo tipo. Le frasi non attraversano un punto fermo, un punto interrogativo, un punto e virgola o un a capo, quindi l'ultima parola di una frase non si unisce alla prima della successiva."
+    ],
+    [
+      "Che cosa fanno le opzioni delle stop word?",
+      "Le stop word sono parole funzionali molto comuni come the, and, of, el, la, le, der o и. Per le parole singole vengono escluse dall'elenco. Per le frasi viene esclusa ogni frase che inizia o finisce con una stop word, così vedi frasi come search engine invece di of the search. Le percentuali sono calcolate su ciò che resta."
+    ],
+    [
+      "Come si calcola la percentuale?",
+      "È il conteggio dell'elemento diviso per il numero totale di parole (o frasi) contate, dopo aver escluso le stop word e i numeri se lo hai scelto."
+    ],
+    [
+      "Che cosa c'è nel file CSV?",
+      "L'intero elenco ordinato, non solo la parte visibile sullo schermo, con le colonne posizione, parola, conteggio e percentuale. Il file è in UTF-8 con indicatore dell'ordine dei byte, così i fogli di calcolo mostrano correttamente le lettere accentate."
+    ],
+    [
+      "Il mio testo viene caricato?",
+      "No. Il testo viene contato nel tuo browser e nulla lascia il tuo dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="wf">
+  <div class="field">
+    <label for="wf-in">Testo da analizzare</label>
+    <textarea id="wf-in" rows="9" spellcheck="false" autocomplete="off" placeholder="Incolla qui il testo"></textarea>
+  </div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="wf-n-l">Conta</span>
+      <div class="seg" role="radiogroup" aria-labelledby="wf-n-l">
+        <label><input type="radio" name="wf-n" value="1" checked>Parole</label>
+        <label><input type="radio" name="wf-n" value="2">Frasi di 2 parole</label>
+        <label><input type="radio" name="wf-n" value="3">Frasi di 3 parole</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="wf-stop">Escludi le stop word</label>
+      <select id="wf-stop">
+        <option value="" selected>Nessuna</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wf-top">Mostra</label>
+      <select id="wf-top">
+        <option value="10">Prime 10</option>
+        <option value="25" selected>Prime 25</option>
+        <option value="50">Prime 50</option>
+        <option value="100">Prime 100</option>
+        <option value="0">Tutte</option>
+      </select>
+    </div>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="wf-num" checked>Includi i numeri</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="wf-example" type="button">Carica un esempio</button>
+    <button class="btn btn--quiet" id="wf-clear" type="button" disabled>Cancella</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="wf-report" aria-live="polite">Incolla il testo per iniziare.</p>
+  <div class="util-stack" id="wf-res" hidden>
+    <dl class="stats">
+      <div><dt>Parole nel testo</dt><dd id="wf-words">0</dd></div>
+      <div><dt>Contate</dt><dd id="wf-total">0</dd></div>
+      <div><dt>Diverse</dt><dd id="wf-unique">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--primary" id="wf-copy" type="button">{{mark:i-copy}}Copia elenco</button>
+      <button class="btn" id="wf-csv" type="button">{{mark:i-download}}Scarica CSV</button>
+    </div>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tabella delle frequenze">
+      <table class="dv-table">
+        <thead><tr><th scope="col">N.</th><th scope="col" id="wf-th">Parola</th><th scope="col">Conteggio</th><th scope="col">Percentuale</th></tr></thead>
+        <tbody id="wf-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Come viene contata la frequenza delle parole</h2>
+<p>Il testo viene diviso in parole, ogni parola viene convertita in minuscolo e lo strumento conta quante volte compare ciascuna. L'elenco in ordine di frequenza mette per prime le più frequenti e, a parità, segue l'ordine alfabetico. Contare quanto si ripetono le parole è un modo rapido per capire di che cosa parla davvero un testo, per controllare se una parola chiave è usata troppo, per trovare i termini di un'intervista o di un insieme di risposte a un sondaggio, o per accorgersi di un vizio come appoggiarsi sempre alla stessa parola in un tema.</p>
+<p>Senza alcun filtro, la parte alta dell'elenco è quasi sempre occupata da parole funzionali come the, of e and. Scegliendo una lingua per le stop word queste vengono rimosse e le parole di contenuto salgono in cima. Gli elenchi coprono gli articoli, i pronomi, le preposizioni, le congiunzioni e i verbi ausiliari più comuni della lingua e servono per una rapida occhiata, non per un lavoro linguistico.</p>
+<p>Le frasi sono contate come sequenze di due o tre parole una accanto all'altra, all'interno di una stessa frase. Le frasi ripetute dicono spesso più delle parole singole: rivelano nomi di prodotti, slogan ed espressioni fisse di un testo. Con le stop word attive, le frasi che iniziano o finiscono con una stop word vengono scartate, e quelle che restano sono più significative.</p>
+<p>La percentuale di un elemento è il suo conteggio diviso per il totale contato. Questo totale cambia con le opzioni, perché le stop word e i numeri esclusi non vengono contati. Scarica il CSV per conservare l'elenco completo o per farne un grafico in un foglio di calcolo.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Per i totali di parole, caratteri, frasi e tempo di lettura, usa il <a href="/tools/word-counter/">conta parole</a>.</li>
+  <li>Per distinguere maiuscole e minuscole a modo tuo, cambia prima la capitalizzazione con il <a href="/tools/case-converter/">convertitore maiuscole e minuscole</a>.</li>
+  <li>Pulisci un elenco di elementi ripetuti con <a href="/tools/remove-duplicate-lines/">Rimuovi righe duplicate</a>.</li>
+</ul>

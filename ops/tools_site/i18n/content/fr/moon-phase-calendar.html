@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Calendrier lunaire : phases de la Lune du mois | Tanod Tools",
+  "description": "Calendrier mensuel des phases de la Lune et de l'illumination chaque jour, avec les heures exactes de nouvelle lune, premier quartier, pleine lune et dernier quartier.",
+  "h1": "Calendrier des phases de la Lune",
+  "lede": "Voyez la phase de la Lune et la fraction éclairée pour chaque jour d'un mois, ainsi que l'heure exacte de chaque nouvelle lune, premier quartier, pleine lune et dernier quartier.",
+  "blurb": "Phase de la Lune et illumination pour chaque jour d'un mois.",
+  "keywords": "calendrier lunaire phases de la lune pleine lune nouvelle lune premier quartier dernier quartier illumination pourcentage croissant decroissant gibbeuse mois date heure",
+  "limits": "Les phases correspondent au milieu de chaque journée (12 h 00) dans le fuseau horaire choisi ; les heures exactes sont précises à quelques minutes. Les symboles lunaires montrent la vue de l'hémisphère nord ; au sud de l'équateur, le côté éclairé est inversé. Ne convient pas à la navigation.",
+  "howto_title": "Comment lire le calendrier des phases de la Lune",
+  "howto": [
+    "Choisissez le mois et l'année, ainsi que le fuseau horaire dans lequel afficher les dates et heures.",
+    "Lisez le calendrier : chaque jour affiche le symbole de la Lune et la part éclairée du disque. Les jours avec une phase principale sont mis en évidence.",
+    "Regardez sous le calendrier la date et l'heure exactes de chaque phase principale du mois."
+  ],
+  "faq": [
+    [
+      "Quelle est la durée d'un mois lunaire ?",
+      "Le temps d'une nouvelle lune à la suivante est le mois synodique, de 29,53 jours en moyenne. Il varie d'environ une demi-journée dans les deux sens, car l'orbite de la Lune est elliptique : l'intervalle entre deux pleines lunes est donc de 29 ou 30 jours en jours entiers."
+    ],
+    [
+      "Quelle différence entre illumination et phase ?",
+      "La phase est le nom de l'étape de la Lune (nouvelle, premier croissant, premier quartier, etc.), fondé sur l'angle entre la Lune et le Soleil. L'illumination est le pourcentage du disque visible qui est éclairé. Au premier ou au dernier quartier, la Lune est éclairée à 50 %, bien qu'on parle de quartier."
+    ],
+    [
+      "Quelle est la précision des heures de phase ?",
+      "Les heures proviennent de la position de la Lune et du Soleil calculée avec les formules de Jean Meeus, et diffèrent de quelques minutes au plus de celles des almanachs. Une phase indiquée pour votre fuseau horaire peut tomber à une autre date que dans un tableau en UTC."
+    ],
+    [
+      "Pourquoi la Lune est-elle dessinée différemment au sud de l'équateur ?",
+      "Vue de l'hémisphère sud, la Lune apparaît à l'envers par rapport à l'hémisphère nord : un premier croissant est donc éclairé à gauche au lieu de la droite. Les symboles ici suivent la vue de l'hémisphère nord."
+    ],
+    [
+      "Puis-je consulter un mois passé ou futur ?",
+      "Oui. Le calcul fonctionne pour toute année prise en charge par le navigateur. La précision se dégrade lentement loin du présent car les formules sont tronquées, mais elle reste de l'ordre de quelques heures pendant plusieurs siècles autour d'aujourd'hui."
+    ],
+    [
+      "Une super-lune est-elle indiquée ?",
+      "Non. Le calendrier ne montre que la phase et l'illumination. La distance de la Lune pour la journée est disponible dans le calculateur de lever du soleil et de la Lune."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="mc-month">Mois</label>
+    <select id="mc-month"></select>
+  </div>
+  <div class="field">
+    <label for="mc-year">Année</label>
+    <input type="text" id="mc-year" inputmode="numeric" autocomplete="off" aria-describedby="mc-msg">
+  </div>
+  <div class="field">
+    <label for="mc-tz">Fuseau horaire</label>
+    <select id="mc-tz"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn btn--icon" id="mc-prev" type="button" aria-label="Mois précédent">{{mark:i-arrow-left}}</button>
+  <button class="btn btn--icon" id="mc-next" type="button" aria-label="Mois suivant">{{mark:i-arrow-right}}</button>
+  <button class="btn btn--quiet" id="mc-today" type="button">Ce mois-ci</button>
+</div>
+<p class="note" id="mc-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="mc-res" hidden>
+  <h2 class="util-h" id="mc-title"></h2>
+  <div class="calc-table">
+    <table class="mc" id="mc-grid">
+      <caption class="visually-hidden">Phase de la Lune pour chaque jour du mois</caption>
+      <thead id="mc-head"></thead>
+      <tbody id="mc-body"></tbody>
+    </table>
+  </div>
+  <h2 class="util-h" id="mc-ph-h">Phases principales</h2>
+  <dl class="stats" id="mc-phases"></dl>
+</div>
+<!--explain-->
+<h2>Comment le calendrier est calculé</h2>
+<p>Pour chaque jour, la page calcule les longitudes écliptiques et les distances de la Lune et du Soleil à 12 h 00 dans le fuseau horaire choisi, à l'aide des séries de Jean Meeus, <em>Astronomical Algorithms</em> (2e éd., 1998) : le Soleil d'après le chapitre 25 et la Lune d'après le chapitre 47. L'élongation est la longitude de la Lune moins celle du Soleil, soit 0° à la nouvelle lune, 90° au premier quartier, 180° à la pleine lune et 270° au dernier quartier. Le nom de la phase se déduit de l'élongation par pas de 45°.</p>
+<p>La fraction éclairée est k = (1 + cos i) / 2, où i est l'angle de phase tiré du triangle Lune-Soleil-Terre (Meeus, chapitre 48, formule 48.3). Les heures exactes des phases principales s'obtiennent en balayant l'élongation toutes les six heures et en affinant par dichotomie chaque passage à 0°, 90°, 180° et 270° à environ une seconde près. Le mois synodique de référence est de 29,530588853 jours.</p>
+<p>Le même moteur est à la base de l'API Soleil et Lune, testée par rapport aux éphémérides JPL DE421 : l'illumination est exacte à 0,5 point de pourcentage près. Le résultat est un calcul astronomique, <strong>qui ne convient pas à la navigation</strong>, et la forme visible dépend aussi de la libration et de votre latitude.</p>

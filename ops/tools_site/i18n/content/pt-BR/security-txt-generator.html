@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "Gerador e verificador de security.txt (RFC 9116) | Tanod Tools",
+  "description": "Crie um security.txt para /.well-known/ com os campos certos, ou cole o seu para conferir com a RFC 9116: Contact, Expires, links https, Canonical e assinatura.",
+  "h1": "Gerador e verificador de security.txt",
+  "lede": "Monte um security.txt válido conforme a RFC 9116 para que pesquisadores saibam como falar com você, ou cole um arquivo existente para ver o que há de errado nele. Faz parte da preparação para o <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">Regulamento Ciber-Resiliência (Cyber Resilience Act, CRA) da UE</a>.",
+  "blurb": "Gere um security.txt e confira um arquivo com a RFC 9116.",
+  "keywords": "gerador security.txt verificador security.txt validador security.txt divulgação de vulnerabilidades contato de segurança rfc 9116 security.txt generator security.txt checker well-known security.txt validator vulnerability disclosure contact expires canonical pgp cyber resilience act",
+  "limits": "Confere o texto apenas com a RFC 9116. Não acessa o seu site (nada do que você digita sai desta página, então cole o arquivo), não verifica uma assinatura OpenPGP nem testa se um endereço funciona. É um modelo, não aconselhamento jurídico.",
+  "howto_title": "Como criar e conferir um security.txt",
+  "howto": [
+    "Informe pelo menos um Contact (um endereço de e-mail, um telefone ou uma página https://) e confira a data de Expires. Preencha os campos opcionais que quiser, como Policy e Preferred-Languages.",
+    "Copie o arquivo ou baixe-o e publique-o em <code>/.well-known/security.txt</code> no seu domínio, por HTTPS e como texto simples.",
+    "Para conferir um arquivo existente, cole o texto dele no verificador. Corrija os erros e depois veja os avisos. Informe o endereço de onde ele é servido para testar o campo Canonical.",
+    "Coloque um lembrete na agenda para renovar o Expires antes que a data passe."
+  ],
+  "faq": [
+    ["O Regulamento Ciber-Resiliência (CRA) exige um security.txt?", "Não. O regulamento espera que os fabricantes tenham uma política de divulgação coordenada de vulnerabilidades e uma forma publicada de receber relatos de vulnerabilidades. O security.txt é a maneira comum de publicar esse contato e os especialistas o recomendam, mas o regulamento não cita o formato. Veja o <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">guia para pequenos fornecedores</a>."],
+    ["Onde exatamente devo colocar o arquivo?", "Em <code>https://seu-dominio/.well-known/security.txt</code>, servido por HTTPS com o tipo de conteúdo <code>text/plain; charset=utf-8</code>. A RFC 9116 também permite uma cópia em <code>/security.txt</code> para configurações mais antigas. Publique o arquivo em cada domínio ou subdomínio que você quer cobrir."],
+    ["Com quanta antecedência devo definir o Expires?", "A RFC 9116 diz que a data deve ficar a menos de um ano no futuro, para que os pesquisadores possam confiar que os dados de contato são mantidos em dia. O gerador usa por padrão uma data um pouco abaixo de um ano. Quando a data passa, os leitores devem ignorar o arquivo, então renove-o com folga."],
+    ["Preciso assinar o arquivo com PGP?", "Não, assinar é opcional, mas recomendado. Um arquivo assinado é uma mensagem OpenPGP com assinatura em texto claro, criada com <code>gpg --clearsign security.txt</code>. O verificador reconhece o formato assinado e confere a estrutura, mas não consegue verificar a assinatura em si; para isso, use <code>gpg --verify</code>."],
+    ["Por que o verificador não acessa o meu site?", "Para manter a página privada: ela roda inteiramente no seu navegador e não faz requisições a outros sites. Abra o arquivo em uma aba do navegador, copie o texto e cole aqui. Assim você também confere o que os visitantes realmente recebem."],
+    ["Para que serve o campo Canonical?", "Ele lista os endereços em que o arquivo deve ser servido, para que quem lê possa confirmar que um arquivo encontrado em determinado endereço realmente pertence a ele. Se você informar o endereço de onde serve o arquivo, o verificador testa se alguma das suas linhas Canonical corresponde a ele."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">Gerar um security.txt</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Obrigatórios</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (um por linha)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Um endereço de e-mail, um telefone com código do país ou uma página https://. A primeira linha é a que os pesquisadores tentam primeiro.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (fim deste dia, em UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>Opcionais</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Sua política de divulgação de vulnerabilidades. <a href="/tools/vulnerability-disclosure-policy-generator/">Escreva uma aqui.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (um por linha)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Um link https:// para a sua chave pública, um registro dns: ou uma impressão digital openpgp4fpr:.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="en, de">
+            <span class="help">Códigos de idioma separados por vírgulas.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (um por linha)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">Onde este arquivo será servido. Recomendado, principalmente para arquivos assinados.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Uma página que agradece aos pesquisadores que relataram problemas.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Uma página com as suas vagas de segurança.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">Seu security.txt</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Copiar</button>
+          <button class="btn" id="stx-dl" type="button">Baixar security.txt</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Observações sobre o arquivo"></ul>
+        <h3 class="util-h">Onde publicar</h3>
+        <p class="help">Salve o arquivo como <code>security.txt</code> e sirva-o em <code>https://seu-dominio/.well-known/security.txt</code> por HTTPS, como texto simples (<code>text/plain; charset=utf-8</code>). Faça o mesmo em cada domínio que você quer cobrir. Para assiná-lo, execute <code>gpg --clearsign security.txt</code> e publique o resultado.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">Conferir um security.txt</h2>
+    <div class="field">
+      <label for="stx-in">Cole o texto de um security.txt</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Endereço de onde ele é servido (opcional)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Um domínio ou o endereço completo. Serve para testar se o Canonical corresponde. Nada é acessado.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Carregar um exemplo</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Limpar</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Resultados da verificação"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>Para que serve um security.txt</h2>
+<p>Quando um pesquisador, um cliente ou um CERT encontra uma falha no seu software, o primeiro problema é saber a quem avisar. O security.txt é um pequeno arquivo de texto em um endereço fixo, <code>/.well-known/security.txt</code>, que responde a essa pergunta: um contato, uma data de validade e, opcionalmente, um link para a sua política de divulgação e uma chave pública. A RFC 9116 define o formato, e muitos scanners, plataformas de bug bounty e CERTs nacionais procuram esse arquivo antes de procurar em qualquer outro lugar.</p>
+<p>Para um fornecedor de software na UE, ele também apoia obrigações do Regulamento Ciber-Resiliência (CRA): o Anexo I espera uma forma publicada para que terceiros relatem vulnerabilidades e um processo para tratá-las. O regulamento não cita este formato, mas ele é a maneira usual de publicar o contato. O <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">guia de notificação para pequenos fornecedores</a> descreve o restante da preparação, incluindo o relógio de 24 horas.</p>
+<h2>Os campos</h2>
+<p>Contact e Expires são obrigatórios. Contact pode aparecer várias vezes e deve ser um URI: <code>mailto:</code>, <code>tel:</code> ou <code>https:</code>. Expires aparece uma única vez, como data e hora, por exemplo <code>2027-12-31T23:59:59Z</code>, e a RFC 9116 pede que fique a menos de um ano no futuro. Encryption, Acknowledgments, Policy, Hiring e Canonical são links opcionais, e todo endereço da web deve usar https. Preferred-Languages aparece uma única vez e lista códigos de idioma. Os campos que a RFC não define são ignorados por quem lê o arquivo, por isso o verificador os sinaliza como avisos: normalmente são erros de digitação.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Use uma caixa de e-mail que várias pessoas leiam, não o endereço de uma só pessoa, e teste-a escrevendo para ela.</li>
+  <li>Escreva uma <a href="/tools/vulnerability-disclosure-policy-generator/">política de divulgação de vulnerabilidades</a> e vincule-a com o campo Policy.</li>
+  <li>Conheça os seus prazos antes de um relato chegar: o <a href="/tools/cra-incident-clock/">relógio de 24 horas do CRA</a> transforma o momento em que você tomou conhecimento em prazos com data.</li>
+</ul>

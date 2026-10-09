@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Tekst na kod binarny i kod binarny na tekst | Tanod Tools",
+  "description": "Zamień tekst na kod binarny i kod binarny z powrotem na tekst, z użyciem UTF-8, więc akcenty i emoji działają. Także bajty szesnastkowe, dziesiętne i ósemkowe.",
+  "h1": "Tekst na kod binarny",
+  "lede": "Zamień tekst na kod binarny albo odkoduj kod binarny z powrotem na czytelny tekst. Działa z każdym językiem i emoji.",
+  "blurb": "Tekst na kod binarny i z powrotem, a także zapis szesnastkowy i dziesiętny.",
+  "keywords": "tekst na kod binarny kod binarny na tekst tłumacz kodu binarnego ascii na binarny zapis dwójkowy dekoder binarny bajty utf-8 tekst na hex hex na tekst binary to text ascii to binary 01 decoder",
+  "limits": "Tekst do kodowania do 1 MB; kod binarny do dekodowania do 5 MB. Wynik odświeża się w trakcie wpisywania.",
+  "howto_title": "Jak zamienić tekst na kod binarny",
+  "howto": [
+    "Wybierz <strong>Tekst na kod binarny</strong> lub <strong>Kod binarny na tekst</strong>.",
+    "Wpisz lub wklej dane do pola. Wynik pojawia się w trakcie wpisywania.",
+    "Skopiuj wynik albo pobierz go jako plik .txt. Użyj przycisku <strong>Zamień</strong>, aby przekonwertować wynik z powrotem."
+  ],
+  "faq": [
+    ["Jak tekst jest zamieniany na kod binarny?", "Każdy znak jest najpierw zamieniany na bajty w UTF-8, czyli w kodowaniu używanym w internecie, a każdy bajt jest zapisywany jako osiem cyfr binarnych. Litera A to bajt 65, czyli 01000001. Zwykłe litery angielskie zajmują po jednym bajcie, litery z akcentami zajmują dwa bajty, a większość emoji cztery."],
+    ["Czy to to samo co ASCII na kod binarny?", "Dla zwykłych liter angielskich, cyfr i znaków interpunkcyjnych tak: UTF-8 nadaje tym znakom takie same wartości bajtów jak ASCII. Różnica widoczna jest tylko w przypadku innych znaków, których ASCII w ogóle nie potrafi zapisać."],
+    ["Jakie dane binarne można odkodować?", "Grupy do ośmiu zer i jedynek oddzielone spacjami, przecinkami lub podziałami wierszy, po jednej grupie na bajt, albo jeden nieprzerwany ciąg cyfr, którego długość jest wielokrotnością ośmiu. Wszystko inne, na przykład 2 lub litera, jest zgłaszane wraz z pozycją, aby można było to poprawić."],
+    ["Dlaczego dekodowanie mówi, że bajty nie są poprawnym UTF-8?", "Nie każdy ciąg bajtów jest poprawnym tekstem. Bajt może brakować lub być nadmiarowy, albo kod binarny może pochodzić ze starszego kodowania lub z pliku, który nie jest tekstem. Komunikat wskazuje pierwszy bajt, którego nie da się odczytać. Sprawdź, czy przy kopiowaniu kodu binarnego nie zgubiono żadnej grupy."],
+    ["Czym są opcje szesnastkowa, dziesiętna i ósemkowa?", "Zapisują te same bajty w innym systemie liczbowym: szesnastkowy używa dwóch cyfr 0-9 i a-f na bajt (A to 41), dziesiętny używa wartości od 0 do 255 (A to 65), a ósemkowy od 0 do 377 (A to 101). Dekodowanie przyjmuje ten system, który wybierzesz."],
+    ["Czy mój tekst jest przesyłany?", "Nie. Konwersja działa w przeglądarce, a tekst nie jest przesyłany ani zapisywany."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="opts opts--pair">
+    <fieldset>
+      <legend>Konwertuj</legend>
+      <div class="seg">
+        <label><input type="radio" name="dir" value="encode" checked>Tekst na kod binarny</label>
+        <label><input type="radio" name="dir" value="decode">Kod binarny na tekst</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="base">Bajty zapisane jako</label>
+      <select id="base">
+        <option value="2" selected>Binarnie (01000001)</option>
+        <option value="16">Szesnastkowo (41)</option>
+        <option value="10">Dziesiętnie (65)</option>
+        <option value="8">Ósemkowo (101)</option>
+      </select>
+    </div>
+    <div class="field" id="sep-field">
+      <label for="sep">Między bajtami</label>
+      <select id="sep">
+        <option value=" " selected>Spacja</option>
+        <option value="">Nic</option>
+        <option value="\n">Nowy wiersz</option>
+      </select>
+    </div>
+  </div>
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="text" id="in-l">Tekst</label>
+      <textarea id="text" spellcheck="false" placeholder="Wpisz tekst tutaj."></textarea>
+    </div>
+    <div class="field">
+      <label for="out" id="out-l">Kod binarny</label>
+      <textarea id="out" class="mono" readonly></textarea>
+    </div>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Wpisz tekst, aby zacząć.</p>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Kopiuj wynik</button>
+    <button class="btn" id="dl" type="button" disabled>Pobierz .txt</button>
+    <button class="btn btn--quiet" id="swap" type="button" disabled>Zamień: przekonwertuj wynik z powrotem</button>
+    <button class="btn btn--quiet" id="clear" type="button" disabled>Wyczyść</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak tekst staje się zerami i jedynkami</h2>
+<p>Komputery przechowują tekst jako liczby. Kodowanie decyduje, jaką liczbę dostaje każdy znak; to narzędzie używa UTF-8, którego używa niemal każda strona internetowa, wiadomość e-mail i nowoczesny plik. UTF-8 zapisuje pierwsze 128 znaków (alfabet angielski, cyfry i typową interpunkcję) w jednym bajcie każdy, z tymi samymi wartościami co w starszym kodzie ASCII. Pozostałe znaki zajmują od dwóch do czterech bajtów: é to 11000011 10101001, a emoji 😀 to cztery bajty.</p>
+<p>Bajt to osiem bitów, więc każdy bajt jest pokazany jako osiem cyfr binarnych, z zachowanymi zerami wiodącymi, aby każda grupa miała tę samą szerokość. Dzięki temu wynik łatwo odczytać z powrotem: każda grupa ośmiu cyfr to jeden bajt.</p>
+<p>Aby odkodować, narzędzie odczytuje każdą grupę jako bajt, a potem odczytuje bajty jako tekst UTF-8. Jeśli bajty nie tworzą poprawnego UTF-8, wskazuje, gdzie zaczyna się problem, zamiast pokazywać zniekształcone znaki.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Krótszy, standardowy sposób przenoszenia bajtów jako tekstu to <a href="/tools/base64-encode-decode/">Koduj i dekoduj Base64</a>.</li>
+  <li>Zamieniasz pojedynczą liczbę między zapisem dwójkowym, dziesiętnym i szesnastkowym? Użyj narzędzia <a href="/tools/number-base-converter/">Konwerter systemów liczbowych</a>.</li>
+  <li>Wolisz kropki i kreski? Wypróbuj narzędzie <a href="/tools/morse-code-translator/">Tłumacz alfabetu Morse’a</a>.</li>
+</ul>

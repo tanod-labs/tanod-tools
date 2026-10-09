@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Konwerter YAML na JSON online | Tanod Tools",
+  "description": "Konwertuj YAML na JSON w przeglądarce. Obsługuje kotwice, aliasy, klucze scalające i pliki z wieloma dokumentami, a błędy podają wiersz i kolumnę. Za darmo i prywatnie.",
+  "h1": "Konwertuj YAML na JSON",
+  "lede": "Wklej YAML i odbierz JSON, z rozwiniętymi kotwicami i kluczami scalającymi oraz dokładnym wierszem każdego błędu składni.",
+  "blurb": "Konwertuj YAML na JSON.",
+  "keywords": "yaml na json konwertuj parsuj yml kubernetes docker compose openapi konfiguracja kotwice aliasy yaml to json convert parse config anchors aliases",
+  "limits": "Dane do około 10 MB. Czyta YAML 1.2 tylko ze standardowymi typami; własne tagi, takie jak <code>!!python/object</code>, są odrzucane, a nie wykonywane.",
+  "howto_title": "Jak zamienić YAML na JSON",
+  "howto": [
+    "Wklej YAML do pola albo kliknij <strong>Wstaw przykład</strong>.",
+    "Wybierz 2 spacje, 4 spacje, tabulatory albo <strong>Minifikuj</strong> jako układ JSON.",
+    "Jeśli YAML ma błąd składni, zobaczysz jego wiersz i kolumnę. W przeciwnym razie skopiuj JSON albo pobierz go jako plik <code>.json</code>."
+  ],
+  "faq": [
+    [
+      "Czy mój YAML jest przesyłany?",
+      "Nie. Parser YAML jest ładowany z tej witryny przy pierwszym wklejeniu i działa w przeglądarce. Konfiguracja z hasłami lub kluczami nie jest nigdzie wysyłana."
+    ],
+    [
+      "Dlaczego yes nadal jest tekstem „yes”?",
+      "To narzędzie stosuje YAML 1.2, w którym wartościami logicznymi są tylko <code>true</code> i <code>false</code>. Słowa <code>yes</code>, <code>no</code>, <code>on</code> i <code>off</code> pozostają ciągami znaków, co pozwala uniknąć tzw. problemu Norwegii, w którym kod kraju <code>NO</code> zamienia się w <code>false</code> w parserach YAML 1.1. Jeśli odbiorcą jest parser YAML 1.1, może on odczytać te słowa inaczej."
+    ],
+    [
+      "Co dzieje się z datami i znacznikami czasu?",
+      "Wartość taka jak <code>2024-05-01</code> pozostaje ciągiem „2024-05-01”. JSON nie ma typu daty, a zamiana jej na liczbę lub inny format spowodowałaby utratę informacji."
+    ],
+    [
+      "A bardzo duże liczby całkowite?",
+      "Liczby całkowite powyżej 9 007 199 254 740 991 (2<sup>53</sup> - 1) są zapisywane cyfra po cyfrze, a nie zaokrąglane, więc identyfikator taki jak 12345678901234567890 przetrwa. Pamiętaj, że program, który później odczyta ten JSON zwykłymi liczbami JavaScript, zaokrągli go."
+    ],
+    [
+      "Czy kotwice, aliasy i klucze scalające są obsługiwane?",
+      "Tak. Kotwice <code>&amp;name</code> i aliasy <code>*name</code> są rozwijane, a <code>&lt;&lt;: *name</code> scala mapowanie z innym. Ponieważ JSON nie ma odwołań, każdy alias jest zapisywany w całości."
+    ],
+    [
+      "Czym jest limit aliasów i limit 20 MB?",
+      "Mały plik YAML może używać aliasów, które rozwijają się w coś ogromnego, co znane jest jako bomba aliasów. Pliki z ponad 10 000 aliasów są odrzucane, a konwersja zatrzymuje się, jeśli JSON przekroczyłby 20 MB, aby karta nie zawisła."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Wstaw przykład</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Wyczyść</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="name: example
+tags: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Układ</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 spacje</label>
+      <label><input type="radio" name="indent" value="4">4 spacje</label>
+      <label><input type="radio" name="indent" value="tab">Tabulator</label>
+      <label><input type="radio" name="indent" value="min">Minifikuj</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Wejście</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Wyjście</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Zmiana</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Wynik</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Kopiuj</button>
+    <button class="btn" id="f-dl" type="button">Pobierz .json</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Od YAML do JSON</h2>
+<p>YAML i JSON opisują ten sam rodzaj danych: mapowania, listy i proste wartości. YAML piszą ludzie, używając wcięć zamiast nawiasów klamrowych, komentarzy i skrótów takich jak kotwice; JSON to to, czego oczekuje większość programów i API. Konwersja między nimi jest częsta, gdy manifest Kubernetes, plik Compose lub opis OpenAPI trzeba przekazać czemuś, co czyta tylko JSON.</p>
+<p>Niektóre cechy YAML nie mają odpowiednika w JSON, więc konwerter je rozwiązuje. Kotwica (<code>&amp;base</code>) oznacza blok, który alias (<code>*base</code>) może wykorzystać ponownie, a klucz scalający (<code>&lt;&lt;</code>) kopiuje wpisy mapowania do innego; w JSON każde z nich staje się pełną kopią. Komentarze są usuwane, ponieważ JSON nie może ich przechowywać. Plik z kilkoma dokumentami rozdzielonymi przez <code>---</code> staje się tablicą JSON.</p>
+<p>Reguły typów są zgodne z YAML 1.2: <code>true</code> i <code>false</code> to wartości logiczne, <code>null</code> i <code>~</code> to null, liczby to liczby, a wszystko inne, w tym <code>yes</code> i <code>2024-05-01</code>, to tekst. Błędy składni mają wiersz i kolumnę, a najczęstsze przyczyny to tabulator użyty do wcięcia, klucz powtórzony w tym samym mapowaniu oraz wartość, która nie jest wcięta pod swoim kluczem.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz konwersji w drugą stronę? <a href="/tools/json-to-yaml/">Konwertuj JSON na YAML</a> ujmuje wartości takie jak „yes” w cudzysłowy, aby przetrwały podróż.</li>
+  <li>Sprawdź lub uporządkuj wynik w narzędziu <a href="/tools/json-formatter/">Formatuj i waliduj JSON</a>.</li>
+  <li>Masz dane tabelaryczne? Arkusze obsługuje narzędzie <a href="/tools/csv-to-json/">CSV na JSON</a>.</li>
+</ul>

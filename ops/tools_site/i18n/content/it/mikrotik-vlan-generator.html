@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Generatore di VLAN MikroTik: filtering sul bridge (v7) | Tanod Tools",
+  "description": "Genera il bridge VLAN filtering di RouterOS v7: porte access, trunk e hybrid, tabella VLAN, interfacce VLAN e indirizzi, attivato per ultimo contro il lock-out.",
+  "h1": "Generatore di VLAN MikroTik",
+  "lede": "Descrivi le tue VLAN e quali porte le trasportano, e ottieni la configurazione del bridge VLAN filtering di RouterOS v7, ordinata in modo che il filtering si attivi per ultimo.",
+  "blurb": "Bridge VLAN filtering con porte access, trunk e hybrid.",
+  "keywords": "configurazione vlan mikrotik routeros v7 bridge vlan filtering porta trunk porta access hybrid pvid tagged untagged frame-types ingress-filtering interfaccia vlan switch crs",
+  "local_text": "Funziona nel browser; nulla di ciò che scrivi lascia il tuo dispositivo",
+  "limits": "Genera il bridge VLAN filtering di RouterOS v7 (il metodo che MikroTik consiglia per i dispositivi attuali) con un solo bridge. I vecchi menu del chip switch (/interface ethernet switch) non vengono usati. Gli indirizzi sono IPv4. MikroTik e RouterOS sono marchi di SIA Mikrotīkls. Questo strumento è indipendente e non è affiliato né approvato da MikroTik.",
+  "howto_title": "Come configurare le VLAN su un bridge MikroTik",
+  "howto": [
+    "Elenca le VLAN con un ID, un nome e, per le VLAN che il router deve instradare, l'indirizzo del router in quella VLAN.",
+    "Elenca le porte: le porte access trasportano una VLAN senza tag, le porte trunk trasportano VLAN con tag, le porte hybrid fanno entrambe le cose.",
+    "Leggi l'avviso sul lock-out, attiva la Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> nel terminale) ed esegui lo script; il VLAN filtering viene abilitato nell'ultimissima riga."
+  ],
+  "faq": [
+    ["Perché abilitare vlan-filtering può tagliare fuori dall'accesso?", "Finché vlan-filtering non è attivo, il bridge inoltra tutto e le impostazioni VLAN non hanno effetto. Appena viene attivato, i frame sono accettati solo dove la tabella VLAN lo consente. Se la porta da cui sei connesso non appartiene a una VLAN con un indirizzo del router, la sessione cade. Per questo lo script lo attiva per ultimo, e per questo la Safe Mode è importante: se la connessione si interrompe, RouterOS annulla la modifica."],
+    ["Che differenza c'è tra porte access, trunk e hybrid?", "Una porta access collega un dispositivo che non sa nulla delle VLAN: i frame in ingresso senza tag vengono messi nel PVID della porta e escono senza tag. Una porta trunk collega un altro switch o un access point e trasporta più VLAN con tag 802.1Q. Una porta hybrid fa entrambe le cose, tipicamente per un telefono IP o un access point con una VLAN di gestione o dati senza tag e altre con tag."],
+    ["Perché il bridge stesso ha il tag in alcune VLAN?", "L'interfaccia bridge è la porta del router stesso verso lo switch. Perché il router abbia un indirizzo in una VLAN, tramite un'interfaccia VLAN sul bridge, il bridge deve essere membro con tag di quella VLAN. Le VLAN solo commutate tra le porte non ne hanno bisogno."],
+    ["Mi serve ancora /interface vlan oltre al bridge VLAN filtering?", "Solo per le VLAN a cui il router partecipa: l'interfaccia VLAN è il punto in cui si agganciano il suo indirizzo IP, il server DHCP e le regole del firewall. Le VLAN puramente di livello 2 richiedono solo la tabella VLAN del bridge."],
+    ["Viene eseguito in hardware?", "Sugli switch CRS3xx, e su alcuni altri dispositivi con RouterOS v7 recente, il bridge VLAN filtering gira nel chip switch. Su altri gira sulla CPU, con un costo in throughput. Dopo l'applicazione controlla il flag H sulle porte in /interface bridge port print."],
+    ["La mia configurazione viene inviata da qualche parte?", "No. Lo script viene generato nel tuo browser."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="vl">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Bridge</legend>
+      <div class="field"><label for="vl-bridge">Nome del bridge</label><input type="text" id="vl-bridge" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="vl-exists" checked>Il bridge esiste già</label>
+        <label class="check"><input type="checkbox" id="vl-inbridge" checked>Le porte sono già nel bridge</label>
+        <label class="check"><input type="checkbox" id="vl-tagonly">Il router accetta dal bridge solo frame con tag (gestione solo su una VLAN)</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>VLAN</legend>
+      <ul class="ros-rows" id="vl-vlans"></ul>
+      <button class="btn btn--sm ros-add" id="vl-vadd" type="button">{{mark:i-plus}}Aggiungi una VLAN</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Porte</legend>
+      <ul class="ros-rows" id="vl-ports"></ul>
+      <button class="btn btn--sm ros-add" id="vl-padd" type="button">{{mark:i-plus}}Aggiungi una porta</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Rischio di lock-out.</strong> L'attivazione del VLAN filtering taglia fuori ogni porta che non appartiene a una VLAN con un indirizzo del router. Prova in laboratorio, oppure attiva prima la Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> nel terminale).</span></p>
+    <label for="vl-out" class="label">Script RouterOS v7</label>
+    <textarea id="vl-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="vl-copy" type="button">Copia lo script</button>
+      <button class="btn" id="vl-dl" type="button">{{mark:i-download}}Scarica .rsc</button>
+    </div>
+    <ul class="ros-notes" id="vl-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Bridge VLAN filtering, alla maniera v7</h2>
+<p>Sulle versioni attuali di RouterOS, il modo consigliato per gestire le VLAN è un solo bridge con <code>vlan-filtering=yes</code>. Ogni <strong>porta del bridge</strong> ha un <code>pvid</code>, la VLAN a cui appartengono i frame senza tag che vi arrivano, e <code>frame-types</code>, che indica se accetta frame senza tag, con tag o entrambi. La <strong>tabella VLAN del bridge</strong> in <code>/interface bridge vlan</code> elenca poi, per ogni ID VLAN, quali porte la inviano con tag e quali senza. Con <code>ingress-filtering=yes</code> una porta scarta anche i frame con tag delle VLAN di cui non è membro.</p>
+<p>Il router entra in una VLAN tramite un'<strong>interfaccia VLAN</strong> creata sul bridge, con il bridge indicato come membro con tag di quella VLAN. A quell'interfaccia si assegna l'indirizzo IP, e diventa il gateway, il server DHCP e il confine del firewall per la VLAN. Le guide più vecchie configurano le VLAN nel menu del chip switch o con un bridge separato per VLAN; sui dispositivi che eseguono il bridge VLAN filtering in hardware, il metodo a bridge unico è più semplice e veloce.</p>
+<h3>Applicarlo in sicurezza</h3>
+<ul>
+  <li>Costruisci tutto con il filtering disattivato, poi abilitalo in un solo passaggio alla fine, come fa lo script. Usa la Safe Mode o una console seriale quando lavori da remoto.</li>
+  <li>Dai a ogni VLAN instradata il suo server DHCP con il <a href="/tools/mikrotik-dhcp-server-generator/">Generatore di server DHCP MikroTik</a>, e tieni gli ospiti lontani dalle altre VLAN con regole della chain forward dal <a href="/tools/mikrotik-firewall-generator/">Generatore di firewall MikroTik</a>.</li>
+  <li>Confronta la configurazione prima e dopo con il <a href="/tools/routeros-export-diff/">Confronto di export RouterOS</a>.</li>
+</ul>

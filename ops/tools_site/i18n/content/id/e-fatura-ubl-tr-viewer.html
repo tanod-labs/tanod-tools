@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Penampil e-Fatura dan e-Arşiv: buka XML UBL-TR | Tanod Tools",
+  "description": "Buka faktur e-Fatura atau e-Arşiv Turki (XML UBL-TR) dan baca sebagai faktur biasa. Cetak, simpan PDF, atau ekspor JSON. Gratis, tanpa unggah.",
+  "h1": "Penampil e-Fatura / UBL-TR",
+  "lede": "Buka faktur e-Fatura atau e-Arşiv Turki dalam format UBL-TR dan baca sebagai faktur biasa: penjual dan pembeli dengan VKN atau TCKN, baris, KDV, PPN yang dipotong (tevkifat), dan pembayaran. XML dibaca di browser Anda dan tidak pernah diunggah.",
+  "blurb": "Baca faktur e-Fatura atau e-Arşiv Turki (UBL-TR) sebagai faktur biasa.",
+  "keywords": "penampil e-fatura penampil ubl-tr e-arşiv faktur buka xml e-fatura baca faktur elektronik turki ubl-tr xml e-fatura viewer faktur elektronik turki e-fatura görüntüleyici e-arşiv fatura görüntüleyici e-fatura xml açma gib e-fatura tevkifat temelfatura ticarifatura earsivfatura",
+  "limits": "Satu file sekali proses, hingga 25 MB; 5.000 baris item pertama ditampilkan. Membaca faktur UBL-TR 1.2 (TEMELFATURA, TICARIFATURA, EARSIVFATURA dan profil lainnya, termasuk retur dan pemotongan). Segel fiskal (mali mühür) tidak diverifikasi, dan XSLT di dalam file tidak pernah dijalankan. Hanya penampil: tidak memvalidasi faktur dan tidak terhubung ke GİB.",
+  "howto_title": "Cara membuka faktur e-Fatura atau e-Arşiv",
+  "howto": [
+    "Pilih XML faktur yang Anda simpan dari penyedia e-Fatura Anda, portal GİB, atau program akuntansi Anda, atau seret ke halaman ini.",
+    "Baca fakturnya: penjual dan pembeli dengan VKN atau TCKN dan kantor pajak, UUID (ETTN), profil dan jenis faktur, baris item, KDV per tarif, pemotongan, total, dan pembayaran.",
+    "Tekan <strong>Cetak atau simpan sebagai PDF</strong>, <strong>Unduh JSON</strong>, atau <strong>Tampilkan XML mentah</strong>. XSLT dari pengirim, jika file memilikinya, hanya ditawarkan sebagai unduhan di bawah Lampiran."
+  ],
+  "faq": [
+    [
+      "Apakah faktur diunggah atau dikirim ke GİB?",
+      "Tidak. Halaman ini tidak terhubung ke GİB, penyedia Anda, maupun server mana pun. XML dibaca di browser Anda dan ditampilkan di halaman ini, dan semuanya terhapus begitu Anda menutup tab."
+    ],
+    [
+      "Apakah segel fiskal (mali mühür) diverifikasi?",
+      "Tidak. Halaman ini tidak memverifikasi mali mühür maupun tanda tangan elektronik lainnya. File yang memilikinya ditandai dengan catatan, tetapi halaman ini tidak dapat memberi tahu Anda siapa yang menyegel faktur atau apakah faktur diubah setelahnya. Gunakan alat dari penyedia Anda atau GİB jika Anda memerlukannya."
+    ],
+    [
+      "Apa itu XSLT di dalam file, dan apakah dijalankan?",
+      "Sebagian besar e-Fatura memuat stylesheet XSLT dalam AdditionalDocumentReference; perangkat lunak pengirim memakainya untuk menggambar faktur. Halaman ini tidak pernah menjalankannya. XSLT hanya ditawarkan sebagai unduhan, karena stylesheet adalah kode yang disediakan pengirim. Faktur yang Anda lihat di sini digambar oleh halaman ini dari data dalam XML."
+    ],
+    [
+      "Apa arti SATIS, IADE, TEVKIFAT, dan ISTISNA?",
+      "Itu adalah nilai kode jenis faktur: SATIS adalah penjualan, IADE retur, TEVKIFAT faktur dengan pemotongan PPN, dan ISTISNA faktur yang dibebaskan. Profil (ProfileID) adalah skenarionya: TEMELFATURA adalah yang dasar, TICARIFATURA yang komersial, dan EARSIVFATURA faktur e-Arşiv. Keduanya ditampilkan sebagaimana diberikan file."
+    ],
+    [
+      "Bagaimana PPN yang dipotong (tevkifat) ditampilkan?",
+      "Bagian KDV yang dipotong ditampilkan sebagai baris tersendiri di bawah total dan di bawah Informasi tambahan, dengan kode, nama, dan tarif yang diberikan file. Jumlah yang harus dibayar adalah yang ada di file; halaman ini tidak menghitung ulang."
+    ],
+    [
+      "Di mana saya mendapatkan XML sebuah faktur?",
+      "Penyedia e-Fatura Anda atau portal GİB memungkinkan Anda mengunduh faktur sebagai file XML (sering di dalam ZIP), dan program akuntansi dapat mengekspornya. Halaman ini membaca file XML yang sudah Anda simpan."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Letakkan faktur elektronik di sini</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Pilih file</span></label>
+  <p class="drop__hint">XML, PDF yang berisi faktur (ZUGFeRD, Factur-X), atau .p7m bertanda tangan. Atau seret ke mana saja di halaman ini.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Cetak atau simpan sebagai PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Unduh JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Unduh XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Tampilkan XML mentah</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Mulai ulang</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML mentah" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Hanya bagian awal file yang panjang ditampilkan di sini. Unduh XMLnya untuk mendapatkan seluruh isinya.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>e-Fatura, e-Arşiv, dan UBL-TR</h2>
+<p>e-Fatura dan e-Arşiv adalah sistem faktur elektronik Turki yang dijalankan oleh Administrasi Pendapatan (GİB). e-Fatura dipakai antar pelaku usaha yang terdaftar dalam sistem; e-Arşiv mencakup faktur yang diterbitkan kepada pembeli yang tidak terdaftar, seperti konsumen. Keduanya memakai UBL 2.1 dengan kustomisasi Turki bernama UBL-TR (CustomizationID-nya TR1.2). XML itulah fakturnya; versi yang mudah dibaca hanyalah visualisasinya. Halaman ini membuat visualisasi tersebut di browser Anda dari XML yang Anda miliki.</p>
+<h2>Apa yang ditampilkan penampil</h2>
+<p>Anda melihat penjual dan pembeli dengan VKN atau TCKN, kantor pajak, dan alamatnya; nomor faktur, tanggal, UUID (ETTN), profil, dan kode jenis; setiap baris item dengan kuantitas, satuan, harga, diskon, dan tarif KDV; KDV per kelompok tarif beserta kode pembebasan; PPN yang dipotong (tevkifat) bila faktur memilikinya; pajak lain seperti ÖTV sebagaimana dicantumkan file; total dan jumlah yang harus dibayar; rincian pembayaran dengan IBAN; catatan; kurs faktur dalam mata uang asing; serta rujukan ke pesanan, surat jalan, dan faktur yang dirujuk oleh sebuah retur. Jumlah uang ditampilkan persis seperti di file.</p>
+<p>Halaman ini tidak memverifikasi segel fiskal (mali mühür), tidak memvalidasi faktur terhadap skema dan aturan GİB, dan tidak terhubung ke GİB. Stylesheet XSLT yang dimuat sebagian besar e-Fatura tidak pernah dijalankan: stylesheet itu ditawarkan sebagai unduhan di bawah Lampiran.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Unduh JSON memberi Anda faktur sebagai data biasa, dengan elemen UBL dipetakan ke istilah bisnis EN 16931.</li>
+  <li>Format lain juga bisa dibuka di sini: XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol, dan hóa đơn điện tử Vietnam. Halaman ini menyarankan penampil yang sesuai saat Anda membukanya.</li>
+  <li>Tampilkan XML mentah membantu bila Anda memerlukan elemen yang tidak ditampilkan pada faktur yang mudah dibaca.</li>
+</ul>

@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "XRechnung görüntüleyici: XML'i çevrimiçi açın | Tanod Tools",
+  "description": "XRechnung (UBL veya CII XML) dosyasını açıp normal bir fatura olarak okuyun. Yazdırın, PDF kaydedin ya da JSON alın. Ücretsiz, yükleme yok.",
+  "h1": "XRechnung görüntüleyici",
+  "lede": "Bir XRechnung XML dosyasını açın ve sıradan bir fatura gibi okuyun: satıcı, alıcı, kalemler, KDV ve ödeme bilgileri. Dosya bu sekmede okunur, hiçbir yere yüklenmez.",
+  "blurb": "XRechnung XML dosyasını normal fatura olarak okuyun, yazdırın veya JSON alın.",
+  "keywords": "xrechnung görüntüleyici xrechnung viewer xrechnung açma xrechnung xml okuma xrechnung xml görüntüle xrechnung nedir xrechnung pdf xrechnung ubl xrechnung cii leitweg-id e-fatura görüntüleyici almanya e-fatura xml fatura açma xml faturayı okuma",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB; ilk 5.000 fatura kalemi gösterilir. XRechnung 3.x dosyalarını, UBL 2.1 Invoice ve CreditNote olarak ve UN/CEFACT CII olarak okur. Bu araç bir görüntüleyicidir, doğrulayıcı değil: dosyayı XRechnung veya EN 16931 kurallarına göre denetlemez, hiçbir şey göndermez ve almaz.",
+  "howto_title": "XRechnung nasıl açılır",
+  "howto": [
+    "Bilgisayarınızdan XRechnung XML dosyasını seçin ya da sayfaya sürükleyin. ZUGFeRD PDF'i veya imzalı bir .p7m dosyası da olur.",
+    "Görünen faturayı okuyun: taraflar, tarihler, kalemler, KDV dökümü ve ödeme bilgileri. Hiçbir şey cihazınızdan çıkmaz.",
+    "Kâğıt ya da PDF kopyası için <strong>Yazdır veya PDF olarak kaydet</strong>, veriler için <strong>JSON indir</strong>, kaynak dosyayı görmek için <strong>Ham XML'i göster</strong> düğmesine basın."
+  ],
+  "faq": [
+    [
+      "Faturam yükleniyor mu?",
+      "Hayır. Dosya, tarayıcınızın yerleşik XML ayrıştırıcısıyla okunur ve bu sayfada gösterilir. Hiçbir sunucu dosyayı almaz; sekmeyi kapattığınızda her şey silinir. Bunu tarayıcınızın geliştirici araçlarından doğrulayabilirsiniz: dosya açılırken Ağ sekmesi boş kalır."
+    ],
+    [
+      "Hangi XRechnung dosyalarını açar?",
+      "XRechnung 3.x dosyalarını iki söz diziminde de açar: UBL 2.1 (Invoice ve CreditNote) ve UN/CEFACT CII. Eski XRechnung 2.x dosyalarının yapısı aynıdır ve genellikle bunlar da açılır. Sayfa dosyanın içindekini gösterir; XRechnung kurallarına göre denetlemez."
+    ],
+    [
+      "Bu bir doğrulayıcı mı?",
+      "Hayır, görüntüleyici. Bir XRechnung'un geçerli olup olmadığını öğrenmek için KoSIT doğrulayıcısı gibi bir doğrulayıcı kullanın. Bu sayfa, bir doğrulayıcının reddedeceği dosyaları da gösterir; ayrıca faturayı bir platforma ya da Peppol ağına göndermez."
+    ],
+    [
+      "Bazı XML dosyalarını neden reddediyor?",
+      "DOCTYPE veya ENTITY bildirimi içeren bir dosya, ayrıştırılmadan önce reddedilir; çünkü bu bildirimler yerel dosyaları okumak veya belleği tüketmek için kullanılabilir. Gerçek XRechnung dosyalarında bunlar bulunmaz. 25 MB'tan büyük dosyalar da reddedilir ve yalnızca ilk 5.000 fatura kalemi gösterilir."
+    ],
+    [
+      "Eklenen belgelere ne olur?",
+      "Bir XRechnung, puantaj çizelgesi veya PDF kopyası gibi gömülü belgeler taşıyabilir. Bunlar bir İndir düğmesiyle listelenir; sayfada hiçbir zaman açılmaz veya gösterilmez. Dosya adı temizlenir ve indirme genel bir dosya türüyle yapılır; yine de bunları yalnızca göndericiye güveniyorsanız açın."
+    ],
+    [
+      "Faturanın PDF'ini nasıl alırım?",
+      "<strong>Yazdır veya PDF olarak kaydet</strong> düğmesine basın ve tarayıcının yazdırma penceresinde yazıcı olarak PDF olarak kaydet seçeneğini seçin. Sayfanın geri kalanı değil, yalnızca fatura yazdırılır."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>XRechnung neden okunması zor bir belgedir</h2>
+<p>XRechnung, bilgisayarlar için yazılmış bir faturadır. Dosya XML biçimindedir: <code>cbc:PayableAmount</code> gibi adlara sahip yüzlerce etiketli değerden oluşur ve hiçbir sayfa düzeni yoktur. Almanya'da her işletme 1 Ocak 2025'ten beri yapılandırılmış e-faturaları alabilmek zorunda olduğundan, birçok kişi bu dosyaları e-postayla ya da bir portal üzerinden alıyor ama okuyamıyor. Bu sayfa XML'i, beklediğiniz faturaya geri dönüştürür: kim satıyor, kim alıyor, ne teslim edildi, ne kadar KDV var ve nasıl ödenecek. Araç Avrupa biçimleri içindir; Türkiye'deki GİB e-Fatura sisteminin dosyalarını açmak için tasarlanmamıştır.</p>
+<p>XRechnung, Avrupa standardı EN 16931'in Almanya profilidir. İki XML söz diziminde gelir: UBL 2.1 ve UN/CEFACT Cross Industry Invoice (CII). İkisi de burada okunur ve aynı faturayı verir. Başlıktaki alıcı referansı (kamu kurumlarında Leitweg-ID) ile satıcının ve alıcının elektronik adresleri de gösterilir.</p>
+<h2>Neler gösterilir, neler gösterilmez</h2>
+<p>Taraflar KDV kimlik numaraları ve adresleriyle, tarihler ve referanslar, her fatura kalemi miktarı, birimi, fiyatı ve KDV'siyle, iskontolar ve ek ücretler, KDV dökümü, toplamlar, IBAN ve BIC içeren ödeme bilgileri, notlar ve ekli belgelerin listesi görünür. Görüntüleyici faturayı XRechnung kurallarına, kod listelerine veya hesaplamalara göre denetlemez (bunun için bir doğrulayıcı kullanın); faturayı bir yere göndermez, bir platformdan da almaz.</p>
+<p>JSON olarak indirdiğiniz dosya aynı bilgileri düz veri olarak içerir ve alanlar EN 16931 iş terimlerinden adlandırılır: fatura numarası, tarihler, para birimi, taraflar, kalemler, KDV dökümü, toplamlar ve ödeme. Tutarlar faturadaki ondalıkların aynısını taşıyan metinlerdir; yani hiçbir şey yuvarlanmaz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>İçinde XML bulunan bir PDF olarak gelen fatura <a href="/tools/zugferd-factur-x-viewer/">ZUGFeRD / Factur-X görüntüleyici</a> ile açılır; bu sayfa da onu kabul eder.</li>
+  <li>Peppol ağından gelen faturalar genellikle UBL'dir: bunları <a href="/tools/peppol-ubl-invoice-viewer/">Peppol / UBL fatura görüntüleyici</a> açar.</li>
+  <li>Faturayı PDF olarak saklamak için Yazdır veya PDF olarak kaydet düğmesine basın ve PDF olarak kaydet seçeneğini seçin.</li>
+</ul>

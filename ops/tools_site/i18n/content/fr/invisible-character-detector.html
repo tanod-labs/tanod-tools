@@ -1,0 +1,107 @@
+<!--meta
+{
+  "title": "Détecteur de caractères invisibles et ASCII smuggling | Tanod Tools",
+  "description": "Trouvez les caractères de largeur nulle, bidi et de balise Unicode, décodez le texte ASCII caché et repérez les mots trompeurs. Gratuit, dans le navigateur.",
+  "h1": "Détecteur de caractères invisibles et décodeur d'ASCII smuggling",
+  "lede": "Collez un texte pour trouver les caractères que vous ne voyez pas et lire tout texte caché dans des caractères de balise Unicode invisibles : espaces de largeur nulle, contrôles de direction du texte, caractères de balise Unicode cachés et mots qui mélangent des lettres latines avec des lettres cyrilliques ou grecques d'apparence identique.",
+  "blurb": "Trouvez l'Unicode invisible, décodez le texte ASCII caché et repérez les mots piégés.",
+  "keywords": "détecteur de caractères invisibles décodeur ascii smuggling trouver espace de largeur nulle caractères unicode cachés bidi trojan source caractères de balise unicode ascii smuggling injection de prompt homoglyphes cyrillique mots trompeurs supprimer caractères de largeur nulle",
+  "local_text": "Fonctionne dans votre navigateur ; rien de ce que vous saisissez ne quitte votre appareil",
+  "limits": "Texte jusqu'à quelques millions de caractères. La vérification examine les points de code Unicode : elle trouve les caractères cachés, mais ne peut pas savoir si l'un d'eux est inoffensif dans votre texte. Les vraies séquences d'emoji, comme les drapeaux et les emoji de famille, ne sont pas signalées.",
+  "howto_title": "Comment trouver les caractères invisibles",
+  "howto": [
+    "Collez le texte à vérifier, ou choisissez <em>Charger un exemple</em> pour voir ce que l'outil détecte.",
+    "Lisez le nombre de caractères de chaque type, le texte surligné et le tableau indiquant la ligne, la colonne et le point de code de chaque résultat.",
+    "Choisissez <em>Copier le texte nettoyé</em> pour obtenir le texte sans les caractères invisibles."
+  ],
+  "faq": [
+    [
+      "Que sont les caractères de largeur nulle ?",
+      "Ce sont des caractères qui n'occupent aucune place à l'écran, comme l'espace de largeur nulle (U+200B), l'antiliant de largeur nulle (U+200C), le lieur de mots (U+2060) et la marque d'ordre des octets (U+FEFF). Ils s'infiltrent dans le texte copié depuis des pages web et des applis de messagerie, et peuvent casser des recherches, des mots de passe, du code et des noms de fichier sans le moindre signe visible. Le liant et l'antiliant sont aussi utilisés volontairement dans certaines écritures, comme le persan et l'hindi : vérifiez avant de les supprimer."
+    ],
+    [
+      "Qu'est-ce qu'une attaque Trojan Source ?",
+      "Unicode comporte des contrôles qui modifient le sens d'affichage du texte, comme le forçage de droite à gauche (U+202E). Dans du code source, ils peuvent faire qu'une ligne s'affiche autrement que ce que lit le compilateur : un commentaire d'apparence anodine peut alors cacher du vrai code. L'outil liste tous les contrôles bidirectionnels pour que vous puissiez les voir."
+    ],
+    [
+      "Que sont les caractères de balise Unicode et pourquoi comptent-ils ?",
+      "Les caractères de balise (U+E0000 à U+E007F) reproduisent l'ASCII mais ne s'affichent pas. Un texte écrit avec eux est invisible pour un lecteur, mais un logiciel peut le lire, y compris les assistants IA : c'est un moyen de glisser des instructions cachées dans un prompt ou un document. L'outil décode chaque suite de caractères de balise en texte ASCII et l'affiche en évidence. On parle d'ASCII smuggling. Le drapeau de l'Angleterre, de l'Écosse ou du pays de Galles est construit exprès avec quelques caractères de balise : une séquence de drapeau complète n'est donc pas signalée."
+    ],
+    [
+      "Pourquoi un mot est-il signalé comme à écritures mélangées ?",
+      "Le cyrillique et le grec ont des lettres identiques aux lettres latines, comme le а cyrillique et le a latin. Un mot qui les mélange, comme pаypal avec un а cyrillique, peut passer pour un vrai nom tout en menant ailleurs. L'outil liste tout mot qui combine des lettres latines avec des lettres cyrilliques, grecques ou arméniennes et montre quelles lettres n'ont rien à y faire."
+    ],
+    [
+      "Les emoji sont-ils signalés ?",
+      "Non. Un lieur de largeur nulle entre deux emoji, comme dans les emoji de famille ou de métiers, et le sélecteur de variante qui suit un emoji font partie de la construction des emoji ; ils sont donc ignorés. Les mêmes caractères ailleurs, par exemple entre deux lettres, sont signalés."
+    ],
+    [
+      "Mon texte est-il envoyé quelque part ?",
+      "Non. Le texte est vérifié dans votre navigateur et ne quitte jamais votre appareil."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Texte à vérifier</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Collez le texte ici"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Charger un exemple</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Effacer</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Collez un texte pour le vérifier.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Texte caché décodé à partir de caractères de balise</h3>
+    <p class="help">Ces caractères invisibles forment le texte lisible ci-dessous. Considérez-le comme non fiable, surtout si le texte est destiné à un assistant IA.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Caractères de largeur nulle</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Contrôles de direction du texte</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Caractères de balise Unicode</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Caractères de contrôle</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Autres caractères invisibles</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Espaces inhabituels</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Mots à écritures mélangées</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Texte surligné</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Texte avec les caractères cachés signalés"></div>
+    <h3 class="util-h">Texte nettoyé</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Transformer aussi les espaces inhabituels en espaces normaux</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Texte sans les caractères invisibles</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Copier le texte nettoyé</button>
+    </div>
+    <h3 class="util-h">Résultats</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Tableau des résultats">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Ligne:colonne</th><th scope="col">N° du caractère</th><th scope="col">Point de code</th><th scope="col">De quoi il s'agit</th><th scope="col">Type</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Comment les caractères cachés sont repérés</h2>
+<p>Unicode définit de nombreux caractères qui n'impriment rien : espaces et liants de largeur nulle, marques qui inversent le sens du texte, traits d'union conditionnels, espaces de largeurs inhabituelles et caractères de balise qui reproduisent l'ASCII. Ils sont utiles à leur place, et gênants ou dangereux ailleurs. Cet outil lit votre texte point de code par point de code et range chaque résultat dans un type, pour que vous voyiez ce qui s'y trouve avant de décider quoi en faire.</p>
+<p>Sept types sont signalés. Les <strong>caractères de largeur nulle</strong> comprennent l'espace de largeur nulle, les liants et la marque d'ordre des octets. Les <strong>contrôles de direction du texte</strong> sont les incorporations, forçages, isolats et marques utilisés dans les attaques Trojan Source contre le code source. Les <strong>caractères de balise Unicode</strong> forment le bloc U+E0000, utilisé pour glisser des instructions invisibles dans des textes destinés aux assistants IA ; chaque suite est décodée pour que vous lisiez l'ASCII qu'elle écrit. Les <strong>caractères de contrôle</strong> sont les codes C0 et C1 autres que la tabulation et les sauts de ligne. Les <strong>autres caractères invisibles</strong> couvrent le trait d'union conditionnel, les opérateurs mathématiques invisibles, les caractères de remplissage et les sélecteurs de variante, et les <strong>espaces inhabituels</strong> sont l'espace insécable, les espaces cadratin et demi-cadratin et l'espace idéographique. Enfin, les <strong>mots à écritures mélangées</strong> sont des mots qui combinent des lettres latines avec des lettres cyrilliques, grecques ou arméniennes, la méthode habituelle pour imiter un nom de domaine ou un nom d'utilisateur.</p>
+<p>Les espaces de largeur nulle apparaissent aussi dans les textes générés par IA. Les assistants de chat et les chaînes de traitement de texte laissent parfois des espaces ou des liants de largeur nulle dans leur sortie, et ces mêmes caractères peuvent servir de filigrane invisible : une réponse collée peut donc contenir plus que ce que vous voyez. Passer le texte dans cette vérification montre exactement ce qui s'y cache.</p>
+<p>Certains de ces caractères ont leur place dans un vrai texte ; l'outil les laisse donc tranquilles là où ils sont normaux. Un drapeau complet de l'Angleterre, de l'Écosse ou du pays de Galles (un drapeau noir suivi de quelques lettres de balise et d'une balise d'annulation), un lieur de largeur nulle entre deux emoji et un sélecteur de présentation emoji après un emoji sont tous normaux. Un liant ou un antiliant à l'intérieur de mots persans, hindis ou arabes est aussi normal mais il est signalé, car l'outil ne peut pas connaître la langue de votre texte.</p>
+<p>La copie nettoyée supprime les caractères de largeur nulle, de direction, de balise, de contrôle et les autres caractères invisibles. Elle ne modifie jamais les mots à écritures mélangées, car remplacer une lettre changerait le texte ; corrigez-les à la main après avoir examiné le mot surligné.</p>
+<h3>Astuces</h3>
+<ul>
+  <li>Comptez ce qui reste avec le <a href="/tools/character-counter/">compteur de caractères</a>, qui compte caractères, octets et lignes.</li>
+  <li>Comparez l'original avec le texte nettoyé dans <a href="/tools/text-diff/">Comparer des textes</a>.</li>
+  <li>Pour supprimer un caractère précis partout, utilisez <a href="/tools/find-and-replace/">Rechercher et remplacer</a>.</li>
+</ul>

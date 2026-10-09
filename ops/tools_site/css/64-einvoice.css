@@ -1,0 +1,131 @@
+/* E-invoice viewers (XRechnung, ZUGFeRD / Factur-X, FatturaPA, KSeF, Peppol / UBL): the invoice sheet and its print rules. */
+
+.ei-match { background: var(--enamel-wash); border: 2px solid var(--frame); color: var(--text); font-weight: 600; }
+.ei-match p { margin: 0; }
+.ei-match a { color: var(--route); }
+.ei-notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.ei-notes li { padding: 8px 12px; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); background: var(--surface-2); font-size: 0.875rem; color: var(--text-soft); }
+.ei-actions .btn { min-height: 44px; }
+.ei-invoices { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; min-width: 0; }
+#work:has(.ei-invoices) { grid-template-columns: minmax(0, 1fr); }
+#work:has(.ei-invoices) > * { min-width: 0; }
+.ei-raw { display: grid; gap: 6px; }
+.ei-rawtext { margin: 0; max-height: 70vh; white-space: pre; overflow: auto; font-size: 0.8125rem; line-height: 1.5; }
+
+/* the sheet: paper-like, but built from the page's colours so dark mode works; print forces black on white */
+.ei-sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  min-width: 0;
+  padding: 16px;
+  border: 2px solid var(--frame);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+@media (min-width: 720px) { .ei-sheet { padding: 28px; gap: 26px; } }
+
+.ei-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 28px; padding-bottom: 16px; border-bottom: 2px solid var(--frame); }
+@media (min-width: 760px) { .ei-head { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; } }
+.ei-title { min-width: 0; }
+.ei-kind { margin: 0; font-family: var(--font-sign); font-size: 0.9375rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-soft); }
+.ei-num { margin: 2px 0 4px; font-size: clamp(1.375rem, 4vw, 1.875rem); font-weight: 800; font-stretch: 90%; overflow-wrap: anywhere; }
+.ei-profile { margin: 0; font-size: 0.8125rem; color: var(--text-soft); }
+.ei-marks { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ei-marks li { padding: 2px 10px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--enamel); color: var(--ink); font-size: 0.8125rem; font-weight: 800; }
+
+.ei-dl { margin: 0; display: grid; gap: 4px; min-width: 0; }
+.ei-dl > div { display: grid; grid-template-columns: minmax(6.5rem, 10.5rem) minmax(0, 1fr); gap: 2px 12px; }
+.ei-dl dt { font-size: 0.8125rem; font-weight: 700; color: var(--text-soft); }
+.ei-dl dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .ei-dl > div { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 4px; } }
+.ei-party .ei-dl > div { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 3px; }
+.ei-refs { padding: 12px 14px; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); background: var(--surface-2); }
+
+.ei-parties { display: grid; gap: 22px 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+.ei-party { min-width: 0; }
+.ei-h { margin: 0 0 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-soft); }
+.ei-name { margin: 0; font-size: 1.0625rem; font-weight: 800; overflow-wrap: anywhere; }
+.ei-sub { margin: 0; font-size: 0.875rem; color: var(--text-soft); overflow-wrap: anywhere; }
+.ei-addr { margin: 4px 0 10px; overflow-wrap: anywhere; }
+.ei-tag { display: inline-block; padding: 0 6px; border: 1.5px solid var(--frame); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text); font: 700 0.6875rem/1.6 var(--font-mono); letter-spacing: 0; white-space: nowrap; vertical-align: baseline; }
+.ei-code { font-family: var(--font-mono); font-size: 0.875em; overflow-wrap: anywhere; }
+.ei-uuidbox { margin: 0 0 8px; padding: 8px 10px; border: 1.5px solid var(--frame); border-radius: var(--radius-sm); background: var(--surface-2); }
+.ei-uuidlabel { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-soft); }
+.ei-uuid { margin: 2px 0 0; font: 700 clamp(0.9375rem, 3.2vw, 1.125rem)/1.35 var(--font-mono); overflow-wrap: anywhere; user-select: all; }
+.ei-verify { margin: 6px 0 0; font-size: 0.875rem; overflow-wrap: anywhere; }
+.ei-detail { display: block; margin-top: 1px; font-size: 0.8125rem; font-weight: 400; color: var(--text-soft); overflow-wrap: anywhere; }
+.ei-pre { white-space: pre-line; overflow-wrap: anywhere; }
+.ei-block > .ei-h { padding-bottom: 4px; border-bottom: 1.5px solid var(--hair); margin-bottom: 8px; }
+.ei-block p { margin: 0; }
+.ei-block p + p { margin-top: 6px; }
+.ei-warn { margin-top: 8px !important; padding: 8px 12px; border: 2px solid var(--frame); border-radius: var(--radius-sm); background: var(--enamel-wash); font-size: 0.875rem; font-weight: 600; }
+.ei-hint { margin-top: 8px !important; font-size: 0.8125rem; color: var(--text-soft); }
+
+/* line items and the VAT table */
+.ei-lines, .ei-vattable { border: 1.5px solid var(--hair); border-radius: var(--radius-sm); overflow: auto; max-width: 100%; }
+.ei-table { min-width: 34rem; }
+.ei-table th, .ei-table td { vertical-align: top; }
+.dv-table.ei-table th.ei-num-c, .dv-table.ei-table td.ei-num-c { text-align: right; }
+.ei-table td { font-size: 0.9375rem; }
+.ei-vattable .ei-table { min-width: 26rem; }
+.ei-n { width: 1%; white-space: nowrap; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+.ei-table .ei-num-c, .ei-num-c { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ei-vat { white-space: nowrap; }
+.ei-desc { min-width: 12rem; overflow-wrap: anywhere; }
+.ei-desc strong { font-weight: 700; }
+.ei-desc .ei-tag { margin-left: 6px; }
+.is-before .ei-desc strong, .is-before .ei-num-c { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.is-before td, .is-before th { color: var(--text-soft); }
+
+.ei-sum { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px 28px; align-items: start; }
+@media (min-width: 880px) { .ei-sum { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } .ei-sum:has(> :only-child) { grid-template-columns: minmax(0, 1fr); } }
+.ei-sum > .ei-block:empty { display: none; }
+.ei-sumcol { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.ei-totalbox { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.ei-totals > div, .ei-adj > div { grid-template-columns: minmax(0, 1fr) auto; }
+.ei-totals dd, .ei-adj dd { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ei-totals dt, .ei-adj dt { color: var(--text); font-weight: 600; font-size: 0.9375rem; overflow-wrap: anywhere; }
+.ei-adj { padding-bottom: 8px; border-bottom: 1.5px solid var(--hair); }
+.ei-due { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 0; padding: 10px 14px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--enamel); color: var(--ink); font-size: 1.0625rem; font-weight: 700; }
+.ei-due strong { font-size: 1.375rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.ei-atts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ei-atts li { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; padding: 8px 12px; border: 1.5px solid var(--hair); border-radius: var(--radius-sm); }
+.ei-atts li .ei-detail { margin: 0; }
+.ei-attname { flex: 1 1 14rem; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.ei-attdl { margin-left: auto; }
+
+/* print: only the invoice, in black on white, whatever theme the page uses */
+@media print {
+  @page { margin: 14mm; }
+  html:root, html:root:not([data-theme="light"]), html:root[data-theme="dark"] {
+    color-scheme: light;
+    --surface: #fff; --surface-2: #f4f4f4; --ground: #fff; --ground-2: #fff;
+    --text: #000; --text-soft: #3a3a3a; --hair: #b8b8b8; --frame: #000; --slot: #666; --route: #000;
+    --enamel: #f3c11a; --enamel-wash: #fdf3cf; --ink: #000;
+  }
+  body[data-tool] { display: block; min-height: 0; background: #fff; color: #000; font-size: 10.5pt; }
+  .top, .stripe, .foot, .crumbs, .intro, .skip, .sprite, .ad-slot, .below, .limits, .drop, .ei-actions, .ei-match, .ei-notes, .ei-raw, .pdf2-filebar, #status { display: none !important; }
+  .page { padding: 0; }
+  .wrap { max-width: none; padding: 0; }
+  .board { padding: 0; border: 0; box-shadow: none; background: transparent; display: block; }
+  #work { display: block; }
+  .ei-invoices { display: block; }
+  .ei-sheet { display: block; padding: 0; border: 0; background: #fff; color: #000; }
+  .ei-sheet > * + * { margin-top: 14pt; }
+  .ei-sheet + .ei-sheet { break-before: page; }
+  .ei-head, .ei-party, .ei-block, .ei-totalbox, .ei-atts li { break-inside: avoid; }
+  .calc-table, .ei-lines, .ei-vattable { overflow: visible !important; max-width: none; border: 0; }
+  .ei-table { min-width: 0; width: 100%; }
+  .ei-table thead { display: table-header-group; }
+  .ei-table tr { break-inside: avoid; }
+  .ei-table td, .ei-table th { padding: 3pt 4pt; font-size: 9.5pt; }
+  .ei-parties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12pt 24pt; }
+  .ei-sum { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14pt 24pt; }
+  .ei-due { border-color: #000; background: #f3c11a; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ei-marks li { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ei-attdl, .btn { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+}

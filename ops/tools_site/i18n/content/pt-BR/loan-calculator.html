@@ -1,0 +1,102 @@
+<!--meta
+{
+  "title": "Calculadora de empréstimo com tabela de amortização | Tanod Tools",
+  "description": "Calculadora de empréstimo e financiamento: parcela mensal, juros totais e tabela de amortização completa para baixar em CSV. Grátis, no navegador.",
+  "h1": "Calculadora de empréstimo",
+  "lede": "Informe o valor, a taxa de juros anual e o prazo para ver a parcela mensal, o total de juros e uma tabela de amortização parcela a parcela que você pode baixar.",
+  "blurb": "Parcela mensal, juros totais e tabela de amortização.",
+  "keywords": "calculadora de empréstimo calculadora de financiamento parcela mensal tabela de amortização amortização juros totais financiamento de carro empréstimo pessoal pagamentos extras baixar csv juros zero",
+  "local_text": "Funciona no seu navegador; nada do que você digita sai do seu dispositivo",
+  "limits": "Empréstimos com taxa fixa e parcelas mensais iguais, juros calculados todo mês a um doze avos da taxa anual e valores arredondados ao centavo a cada mês. Prazos de até 100 anos. Tarifas, seguros, impostos, pagamentos finais (balloon) e taxas variáveis não estão incluídos, então os números de uma instituição financeira podem diferir um pouco. Os valores são números simples, na moeda que você usar.",
+  "howto_title": "Como calcular a parcela de um empréstimo",
+  "howto": [
+    "Informe o valor do empréstimo, a taxa de juros anual e o prazo, em anos ou meses.",
+    "Se quiser, adicione um valor extra que você pagará todo mês além da parcela obrigatória.",
+    "Veja a parcela mensal, o total de juros e o total pago; depois role a tabela de amortização ou baixe-a como arquivo CSV."
+  ],
+  "faq": [
+    [
+      "Como a parcela mensal é calculada?",
+      "Com a fórmula padrão de anuidade: parcela = P × r ÷ (1 − (1 + r)^−n), em que P é o valor emprestado, r é a taxa mensal (a taxa anual dividida por 12) e n é o número de parcelas mensais. A parcela é arredondada ao centavo e a última é ajustada para que o saldo termine exatamente em zero."
+    ],
+    [
+      "E se a taxa de juros for 0%?",
+      "O empréstimo é simplesmente dividido em parcelas iguais: o valor dividido pelo número de meses. O total de juros é zero. Diferenças de arredondamento, se houver, vão para a última parcela."
+    ],
+    [
+      "O que a tabela de amortização mostra?",
+      "Uma linha para cada pagamento: quanto vai para os juros, quanto abate o principal e o saldo devedor que sobra. No início, a maior parte de cada parcela são juros; perto do fim, quase tudo é principal."
+    ],
+    [
+      "Como os pagamentos extras ajudam?",
+      "Um valor extra a cada mês vai direto para o principal, então o saldo cai mais rápido, acumulam-se menos juros e o empréstimo termina antes. O resultado mostra quantas parcelas são necessárias e o total de juros com o seu pagamento extra."
+    ],
+    [
+      "Por que o valor do meu banco é diferente?",
+      "As instituições podem cobrar tarifas, capitalizar os juros de outro jeito, contar dias em vez de meses ou arredondar de outra forma. Use isto como uma estimativa próxima, não como uma cotação."
+    ],
+    [
+      "O que eu digito é enviado para algum lugar?",
+      "Não. Tudo é calculado no seu navegador e nada sai do seu dispositivo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ln">
+  <div class="opts">
+    <div class="field">
+      <label for="ln-p">Valor do empréstimo</label>
+      <input type="text" id="ln-p" class="mono" inputmode="decimal" value="250000" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-r">Taxa de juros anual (%)</label>
+      <input type="text" id="ln-r" class="mono" inputmode="decimal" value="6.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="ln-t">Prazo do empréstimo</label>
+      <div class="calc-pair">
+        <input type="text" id="ln-t" class="mono" inputmode="numeric" value="30" autocomplete="off" spellcheck="false">
+        <select id="ln-u" aria-label="Unidade do prazo">
+          <option value="years" selected>anos</option>
+          <option value="months">meses</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ln-x">Pagamento extra por mês (opcional)</label>
+      <input type="text" id="ln-x" class="mono" inputmode="decimal" placeholder="0" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="ln-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label">Parcela mensal</span> <span id="ln-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Juros totais</dt><dd id="ln-int">0</dd></div>
+      <div><dt>Total pago</dt><dd id="ln-paid">0</dd></div>
+      <div><dt>Número de parcelas</dt><dd id="ln-n">0</dd></div>
+    </dl>
+    <p class="help" id="ln-note"></p>
+    <div class="actions">
+      <button class="btn btn--primary" id="ln-csv" type="button">{{mark:i-download}}Baixar tabela (CSV)</button>
+    </div>
+    <h3 class="util-h">Tabela de amortização</h3>
+    <div class="calc-table ln-table" tabindex="0" role="region" aria-label="Tabela de amortização">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Nº</th><th scope="col">Parcela</th><th scope="col">Amortização</th><th scope="col">Juros</th><th scope="col">Saldo devedor</th></tr></thead>
+        <tbody id="ln-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Como a parcela de um empréstimo é calculada</h2>
+<p>A maioria dos empréstimos e financiamentos é amortizada: você paga o mesmo valor todo mês, e cada parcela cobre primeiro os juros acumulados sobre o saldo e depois abate uma parte do principal. Como o saldo é maior no começo, a parte de juros das primeiras parcelas é grande e a do principal, pequena. À medida que o saldo cai, os juros diminuem e mais de cada parcela vai para o principal.</p>
+<p>A calculadora transforma a taxa anual em taxa mensal dividindo por 12, encontra a parcela fixa com a fórmula padrão de anuidade e depois monta a tabela mês a mês. Os juros do mês são o saldo vezes a taxa mensal, arredondados ao centavo como faz uma instituição financeira. O restante da parcela reduz o saldo. A última parcela é a que quita o saldo, por isso pode diferir das outras em alguns centavos. Uma taxa de 0% dispensa fórmula: o valor é dividido igualmente entre os meses.</p>
+<p>Pagar um pouco a mais todo mês é uma das formas mais baratas de reduzir os juros. O valor extra vai inteiro para o principal, então o saldo cai mais rápido e o empréstimo termina antes. Informe um valor extra para ver quantas parcelas restam e quanto você economiza em juros em comparação com não fazer pagamentos extras.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Veja quanto uma economia ou um investimento pode render com a <a href="/tools/compound-interest-calculator/">calculadora de juros compostos</a>.</li>
+  <li>Compare duas taxas ou calcule a variação de uma parcela com a <a href="/tools/percentage-calculator/">calculadora de porcentagem</a>.</li>
+  <li>Vai escrever o valor em um cheque? <a href="/tools/number-to-words/">Número por extenso</a> escreve com palavras.</li>
+</ul>

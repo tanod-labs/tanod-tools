@@ -1,0 +1,94 @@
+<!--meta
+{
+  "title": "Timer con conto alla rovescia: durata o data | Tanod Tools",
+  "description": "Timer con conto alla rovescia gratis: preset, suono allo scadere, tempo nel titolo della scheda e modalità data fino a qualsiasi momento in qualsiasi fuso.",
+  "h1": "Timer con conto alla rovescia",
+  "lede": "Imposta una durata e premi avvia, oppure conta alla rovescia fino a una data e un'ora nel fuso che preferisci e condividi il link.",
+  "blurb": "Timer con preset e sveglia, oppure conto alla rovescia fino a una data.",
+  "keywords": "timer conto alla rovescia countdown contaminuti timer da cucina sveglia orologio pomodoro giorni mancanti capodanno scadenza evento countdown timer",
+  "limits": "Le durate arrivano fino a 99 ore, 59 minuti e 59 secondi. Il timer funziona solo finché questa pagina resta aperta in una scheda; chiuderla ferma il conto alla rovescia e il suono.",
+  "howto_title": "Come usare il timer con conto alla rovescia",
+  "howto": [
+    "Inserisci ore, minuti e secondi oppure premi un <strong>preset</strong>, poi premi <strong>Avvia</strong>. Il titolo della scheda mostra il tempo rimasto.",
+    "Metti in pausa e riprendi quante volte vuoi, oppure premi <strong>Azzera</strong> per tornare al tempo iniziale.",
+    "Per contare alla rovescia fino a un evento, passa a <em>Fino a una data</em>, inserisci data, ora e fuso, e copia il link da condividere."
+  ],
+  "faq": [
+    ["Resta preciso se passo a un'altra scheda?", "Sì. I browser rallentano i timer nelle schede in background, quindi la pagina non conta mai i tick. Confronta la lettura dell'orologio attuale con il momento in cui il timer deve terminare, così il display si aggiorna nell'istante in cui la scheda torna visibile e l'orario di fine non va alla deriva. La sveglia in una scheda nascosta può arrivare con un ritardo fino a circa un secondo."],
+    ["Il suono verrà riprodotto?", "La sveglia è un breve tono prodotto dal motore audio del browser, senza file audio. I browser consentono il suono solo dopo che hai interagito con la pagina, quindi premi prima Avvia su questa pagina. Se il dispositivo è in silenzioso o la scheda è disattivata, non lo sentirai, e il messaggio di fine resta sullo schermo. Usa la casella per disattivare il suono."],
+    ["Il timer può tenere acceso lo schermo?", "C'è una casella facoltativa per questo. Usa la funzione Wake Lock del browser, offerta da Chrome, Edge e Safari. Se il tuo browser o il risparmio energetico la rifiuta, la pagina lo dice e prosegue; il conto alla rovescia in sé non è influenzato."],
+    ["Come condivido un conto alla rovescia fino a un evento?", "Passa alla modalità data, inserisci data, ora e fuso, poi usa Copia link. La destinazione è memorizzata nella parte dell'indirizzo dopo il <code>#</code>, come <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. Quella parte non viene inviata a nessun server quando qualcuno apre il link, e la persona vede lo stesso momento sul proprio orologio."],
+    ["Cosa succede al cambio dell'ora legale?", "In modalità data l'ora viene calcolata per il fuso che hai scelto, usando i dati dei fusi orari del browser. Se l'ora indicata viene saltata, per esempio le 02:30 nella notte in cui le lancette vanno avanti, la pagina passa al momento successivo equivalente e te lo segnala. Se si verifica due volte, viene usata la prima."],
+    ["Perché mostra un secondo intero prima di arrivare a zero?", "Il display arrotonda per eccesso, quindi 00:00:01 resta sullo schermo per l'ultimo secondo e lo zero compare nel momento in cui il tempo scade, come si comporta un timer da cucina."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Conto alla rovescia</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>Per una durata</label>
+      <label><input type="radio" name="ct-mode" value="date">Fino a una data</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Tempo rimanente" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>Il tempo è scaduto.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Ore</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minuti</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Secondi</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Preset">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 min</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Avvia</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Azzera</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Data</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Ora</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Fuso orario</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Giorni</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Ore</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minuti</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Secondi</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Copia il link a questo conto alla rovescia</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Disattiva il suono allo scadere del tempo</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Tieni acceso lo schermo durante il conteggio</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Come un timer resta preciso, e cosa gli fa una scheda nascosta</h2>
+<p>Il modo ovvio di costruire un conto alla rovescia è sottrarre uno a un numero ogni volta che scatta un timer da un secondo. È anche sbagliato. I browser limitano i timer nelle schede in background a una volta al secondo o addirittura una al minuto, e una pagina occupata li ritarda ancora di più, quindi un timer a conteggio resta silenziosamente indietro. Questa pagina memorizza il momento in cui il timer deve finire e, a ogni tick, sottrae l'ora attuale, usando l'orologio monotono per le durate e l'orologio di sistema per le date. I tick decidono solo quando lo schermo viene ridisegnato.</p>
+<p>La modalità data lavora con il tempo di calendario, che è più complicato. "Mezzanotte del 1° gennaio ad Auckland" è un istante diverso dalla stessa lettura dell'orologio a Londra, e due volte l'anno alcuni fusi saltano o ripetono un'ora. La pagina chiede al database dei fusi orari del browser lo scarto esatto nel giorno di destinazione, così un conto alla rovescia verso un evento locale è corretto per il luogo in cui avviene, in qualunque fuso si trovi chi guarda.</p>
+<p>Gli annunci per gli screen reader sono volutamente sparsi: l'inizio, ogni minuto intero, 10 e 5 secondi e la fine. Leggere ogni secondo renderebbe la pagina inutilizzabile con uno screen reader e non aiuterebbe nessuno che veda le cifre.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Pianifichi un evento tra regioni diverse? Confronta prima gli orari nel <a href="/tools/time-zone-converter/">Convertitore di fusi orari</a>.</li>
+  <li>Vuoi il tempo trascorso anziché quello rimasto, con i giri? Usa il <a href="/tools/stopwatch/">Cronometro</a>.</li>
+  <li>Ti serve l'intervallo tra due date in giorni, non un orologio in tempo reale? Prova <a href="/tools/date-difference-calculator/">Calcola la differenza tra due date</a>.</li>
+</ul>

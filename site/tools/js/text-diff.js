@@ -1,4 +1,4 @@
-import { $, el, tick, openTextFile, wireCopy, setStatus, announce, fmtInt, normalizeNewlines, tx, txn } from "./textcore.js?v=5";
+import { $, el, tick, openTextFile, wireCopy, setStatus, announce, fmtInt, normalizeNewlines, tx, txn } from "./textcore.js?v=11";
 
 const a = $("#a"), b = $("#b"), view = $("#view"), status = $("#status"), go = $("#go");
 const MAX_FINE = 300000; // characters for word and character modes

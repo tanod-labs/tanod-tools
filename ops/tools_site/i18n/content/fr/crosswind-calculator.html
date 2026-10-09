@@ -1,0 +1,88 @@
+<!--meta
+{
+  "title": "Vent traversier et vent de face : calcul piste | Tanod Tools",
+  "description": "Saisissez une piste et le vent pour obtenir le vent de face ou arrière et la composante traversière, avec rafales, pour les deux sens. Nœuds, km/h, mph, m/s.",
+  "h1": "Calculateur de vent traversier et de vent de face",
+  "lede": "Saisissez la piste et le vent pour voir les composantes de vent de face (ou arrière) et de vent traversier aux deux extrémités de la piste, pour le vent établi et les rafales.",
+  "blurb": "Composantes de vent de face, arrière et traversier pour une piste.",
+  "keywords": "vent traversier vent de face vent arriere composante piste direction du vent rafales noeuds pilote atterrissage decollage angle sinus cosinus calcul",
+  "limits": "Trigonométrie simple appliquée au vent saisi. Ne convient pas à la préparation de vol ni à la navigation : utilisez la limite de vent traversier démontrée de l'aéronef et le message de vent officiel, et rappelez-vous que les numéros de piste et les vents de la tour sont magnétiques alors que les vents des METAR sont vrais.",
+  "howto_title": "Comment trouver la composante de vent traversier",
+  "howto": [
+    "Saisissez le numéro de piste (comme 27 ou 09L) ou son cap en degrés (comme 275).",
+    "Saisissez la direction d'où vient le vent, sa vitesse et, si elle est indiquée, la vitesse des rafales. Choisissez l'unité de vitesse.",
+    "Lisez le vent de face ou arrière et le vent traversier pour chaque extrémité de piste. Vérifiez quel sens donne du vent de face."
+  ],
+  "faq": [
+    [
+      "Comment le vent traversier est-il calculé ?",
+      "On prend l'angle entre la direction du vent et le cap de la piste. Le vent traversier est la vitesse du vent multipliée par le sinus de cet angle, et le vent de face est la vitesse du vent multipliée par son cosinus. Un vent de 20 nœuds à 30 degrés de la piste donne 10 nœuds de vent traversier et environ 17 nœuds de vent de face."
+    ],
+    [
+      "Dois-je utiliser la vitesse des rafales ?",
+      "Oui, les pilotes vérifient généralement les deux. La colonne des rafales montre les composantes pour la rafale maximale, le pire cas que vous pouvez rencontrer à l'arrondi ou au roulement."
+    ],
+    [
+      "Que signifient gauche et droite ?",
+      "Droite signifie que le vent souffle du côté droit lorsque vous faites face à la piste, dans le sens de l'atterrissage ou du décollage. Gauche signifie du côté gauche. Un vent de face négatif est un vent arrière."
+    ],
+    [
+      "Le numéro de piste correspond-il à des degrés ?",
+      "Un numéro de piste est le cap magnétique divisé par dix et arrondi : la piste 27 pointe vers environ 270 degrés, la piste 09 vers environ 090. L'extrémité opposée est à 180 degrés (09 et 27, ou 36 et 18). Un nombre à trois chiffres est utilisé comme cap exact."
+    ],
+    [
+      "Le vent et la piste sont-ils dans la même référence ?",
+      "Ils devraient l'être. Les vents de la tour et de l'ATIS sont en degrés magnétiques, tandis que ceux des METAR et TAF sont en degrés vrais. L'écart est la déclinaison magnétique locale, de quelques degrés à plus de dix. Utilisez la même référence pour les deux entrées."
+    ],
+    [
+      "Quel vent traversier est sans danger ?",
+      "Cela dépend de l'aéronef, de la piste et du pilote. Le manuel de l'aéronef indique un vent traversier maximal démontré, qui n'est pas une limite légale mais un bon repère. Ce calculateur ne donne pas de limites."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="cw-rwy">Numéro ou cap de piste</label>
+    <input type="text" id="cw-rwy" autocomplete="off" spellcheck="false" value="27" placeholder="27 ou 275" aria-describedby="cw-msg">
+    <span class="help">Un ou deux chiffres correspondent à un numéro de piste, trois chiffres à un cap en degrés.</span>
+  </div>
+  <div class="field">
+    <label for="cw-dir">Direction du vent, d'où il vient (degrés)</label>
+    <input type="text" id="cw-dir" inputmode="decimal" autocomplete="off" value="320" placeholder="320" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-spd">Vitesse du vent</label>
+    <input type="text" id="cw-spd" inputmode="decimal" autocomplete="off" value="18" placeholder="18" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-gust">Vitesse des rafales (facultatif)</label>
+    <input type="text" id="cw-gust" inputmode="decimal" autocomplete="off" value="26" placeholder="26" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-unit">Unité de vitesse</label>
+    <select id="cw-unit">
+      <option value="kt" selected>nœuds</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+      <option value="ms">m/s</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="cw-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="cw-res" hidden>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Composantes du vent pour chaque extrémité de la piste</caption>
+      <thead><tr><th scope="col">Extrémité de piste</th><th scope="col">Vent</th><th scope="col">Vent de face ou arrière</th><th scope="col">Vent traversier</th></tr></thead>
+      <tbody id="cw-rows"></tbody>
+    </table>
+  </div>
+  <p class="help" id="cw-info"></p>
+</div>
+<!--explain-->
+<h2>La formule</h2>
+<p>Soit θ l'angle entre le cap de la piste et la direction d'où souffle le vent, et V la vitesse du vent. La composante le long de la piste est vent de face = V · cos θ (négatif signifie vent arrière) et la composante perpendiculaire est vent traversier = V · sin θ, positif de la droite et négatif de la gauche. C'est la décomposition classique du triangle des vents utilisée en formation des pilotes, par exemple dans le Pilot's Handbook of Aeronautical Knowledge de la FAA (FAA-H-8083-25, chapitre sur les performances de l'aéronef) et l'Airplane Flying Handbook (FAA-H-8083-3).</p>
+<p>L'extrémité opposée de la piste a un cap décalé de 180 degrés : son vent de face est donc l'opposé du premier et son vent traversier change de côté. Le numéro de piste est le cap magnétique en dizaines de degrés arrondi à la dizaine la plus proche. Les vitesses sont converties exactement (1 nœud = 1,852 km/h, 1 mph = 1,609344 km/h, 1 m/s = 3,6 km/h).</p>
+<p>Le calcul ignore le cisaillement de vent, les fronts de rafales et les effets du relief, et utilise une seule valeur de vent. <strong>Ne convient pas à la préparation de vol ni à la navigation.</strong></p>

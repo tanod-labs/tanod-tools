@@ -1,0 +1,120 @@
+<!--meta
+{
+  "title": "Kalkulator dni roboczych: policz lub dodaj dni robocze | Tanod Tools",
+  "description": "Policz dni robocze między dwiema datami albo dodaj i odejmij dni robocze od daty. Wybierz weekend, wpisz święta. Bezpłatnie, w przeglądarce.",
+  "h1": "Kalkulator dni roboczych",
+  "lede": "Policz dni robocze między dwiema datami albo dodaj i odejmij dni robocze od daty, z wybranym weekendem i własną listą świąt.",
+  "blurb": "Dni robocze między datami lub dodawanie dni do daty, ze świętami.",
+  "keywords": "kalkulator dni roboczych dni robocze między datami ile dni roboczych dodaj dni robocze odejmij dni robocze weekend piątek sobota święta bez weekendów networkdays workday",
+  "local_text": "Działa w przeglądarce; nic, co wpiszesz, nie opuszcza Twojego urządzenia",
+  "limits": "Daty od roku 1 do 9999 w kalendarzu gregoriańskim. To narzędzie nie ma danych o świętach: pomija tylko daty, które sam wpiszesz, a wpisana data wypadająca w weekend nie jest liczona dwa razy. Liczenie działa według tych samych zasad co funkcje arkusza NETWORKDAYS i WORKDAY.",
+  "howto_title": "Jak policzyć dni robocze",
+  "howto": [
+    "Wybierz <em>Policz dni robocze</em> i wpisz datę początkową i końcową albo wybierz <em>Dodaj lub odejmij dni robocze</em> i wpisz datę początkową oraz liczbę dni.",
+    "Wybierz weekend (sobota i niedziela, piątek i sobota, tylko niedziela albo dowolne dni) i wklej święta w formacie <code>YYYY-MM-DD</code>, po jednym w wierszu.",
+    "Odczytaj liczbę dni roboczych lub datę wynikową razem z liczbą dni kalendarzowych, dni weekendu i świąt, które zostały pominięte."
+  ],
+  "faq": [
+    ["Czy liczy datę początkową i końcową?", "Domyślnie liczy obie, tak jak funkcja arkusza NETWORKDAYS: od poniedziałku do piątku jednego tygodnia to 5 dni roboczych. Odznacz <em>Wlicz datę początkową</em> lub <em>Wlicz datę końcową</em>, aby pominąć któryś z końców. Przy dodawaniu dni roboczych data początkowa nigdy nie jest liczona, tak jak w WORKDAY: jeden dzień roboczy po piątku to następny poniedziałek."],
+    ["Jak użyć weekendu innego niż sobota i niedziela?", "Wybierz <em>Piątek i sobota</em> dla weekendu stosowanego w wielu krajach Bliskiego Wschodu, <em>Tylko niedziela</em> dla sześciodniowego tygodnia pracy albo <em>Własny</em>, aby zaznaczyć dowolną kombinację dni tygodnia. Przynajmniej jeden dzień tygodnia musi pozostać dniem roboczym."],
+    ["Jak wpisać święta?", "Wpisz lub wklej po jednej dacie w wierszu w formacie <code>YYYY-MM-DD</code>, na przykład <code>2026-12-25</code>. Tekst po dacie w tym samym wierszu, na przykład nazwa święta, jest ignorowany. Święto wypadające w weekend nie zmienia wyniku, bo ten dzień i tak jest pomijany."],
+    ["Dlaczego nie ma wbudowanych świąt państwowych?", "Święta państwowe różnią się w zależności od kraju, regionu i roku, a niektóre ustala się dekretem, więc narzędzie niczego nie zgaduje. Wszystko działa w Twojej przeglądarce na podstawie podanych dat. Jeśli potrzebujesz automatycznie dodanych świąt danego kraju, zobacz API dni roboczych, do którego link jest poniżej."],
+    ["Co jeśli data końcowa jest przed datą początkową?", "Narzędzie zamienia obie daty miejscami, liczy dni między nimi i informuje o tym, więc wynik jest zawsze liczbą dodatnią. Opcje początku i końca zamieniają się razem z datami."],
+    ["Jak działają opcje daty początkowej i końcowej, gdy daty są takie same?", "Gdy zaznaczone są obie opcje, pojedyncza data liczy się jako jeden dzień, który jest dniem roboczym, chyba że to weekend lub wpisane święto. Gdy którakolwiek opcja jest odznaczona, zakres jest pusty, a wynik to 0."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">Co chcesz zrobić?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Policz dni robocze</label>
+      <label><input type="radio" name="bd-mode" value="add">Dodaj lub odejmij dni robocze</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Data początkowa</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">Data końcowa</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Wlicz datę początkową</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Wlicz datę końcową</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Data początkowa</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Działanie</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Dodaj</label>
+          <label><input type="radio" name="bd-op" value="sub">Odejmij</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Dni robocze</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Weekend</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Sobota i niedziela</option>
+        <option value="fri-sat">Piątek i sobota</option>
+        <option value="sun">Tylko niedziela</option>
+        <option value="custom">Własny</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Dni weekendu</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Święta (opcjonalnie)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">Jedna data w wierszu w formacie YYYY-MM-DD. Nie ma wbudowanej listy świąt.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Dni robocze</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Dni kalendarzowe</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Pominięte dni weekendu</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Pominięte święta</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Jak liczone są dni robocze</h2>
+<p>Dzień roboczy to każdy dzień, który nie jest ani dniem weekendu, ani świętem. Aby policzyć je między dwiema datami, kalkulator bierze każdy dzień kalendarzowy z zakresu, usuwa wybrane dni weekendu, a potem usuwa wpisane święta, które wypadają w pozostałych dniach. To, co zostaje, jest liczbą dni roboczych. Trzy wartości pod wynikiem pokazują, ile dni kalendarzowych przejrzano i ile z nich pominięto jako weekend lub święto.</p>
+<p>Ma znaczenie, czy pierwszy i ostatni dzień należą do zakresu. Liczenie od poniedziałku do piątku jednego tygodnia z oboma końcami daje 5, a bez daty początkowej daje 4. Ustawienia domyślne odpowiadają funkcji arkusza <code>NETWORKDAYS</code>, która liczy oba końce.</p>
+<p>Dodawanie dni roboczych działa odwrotnie, jak <code>WORKDAY</code>. Narzędzie zaczyna od dnia po dacie początkowej i idzie do przodu, a przy odejmowaniu wstecz, licząc tylko dni, które nie są dniami weekendu ani świętami, aż doliczy do podanej liczby. Sama data początkowa nigdy nie jest liczona, więc dodanie 0 dni zwraca datę początkową, nawet jeśli to weekend.</p>
+<p>Weekend jest ustawieniem, bo nie wszędzie jest taki sam. Wiele krajów stosuje sobotę i niedzielę, kilka na Bliskim Wschodzie piątek i sobotę, a niektóre zakłady pracują sześć dni. Święta podajesz sam. Święta przesunięte lub zastępcze nie są dodawane automatycznie, więc wpisz dzień, który faktycznie obowiązuje.</p>
+<h3>Dla programistów i agentów AI</h3>
+<p>Potrzebujesz tego w kodzie albo dla agenta AI? API dni roboczych wykonuje to samo liczenie i automatycznie dodaje święta państwowe danego kraju, więc nie musisz prowadzić listy świąt. Zobacz <a href="https://tanod.dev/learn/business-days-api.html">przewodnik po API dni roboczych</a>.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz zwykłych dni kalendarzowych, tygodni lub miesięcy między dwiema datami? Użyj narzędzia <a href="/tools/date-difference-calculator/">Ile dni między datami</a>.</li>
+  <li>Dodajesz miesiące lub lata do daty? <a href="/tools/date-calculator/">Kalkulator dat</a> radzi sobie z datami na koniec miesiąca.</li>
+  <li>Pracujesz w różnych krajach? Porównaj godziny pracy biur za pomocą <a href="/tools/time-zone-converter/">konwertera stref czasowych</a>.</li>
+</ul>

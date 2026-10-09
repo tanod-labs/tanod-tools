@@ -1,0 +1,106 @@
+<!--meta
+{
+  "category": "einvoice",
+  "name": "ZUGFeRD / Factur-X viewer",
+  "icon": "zugferd-factur-x-viewer",
+  "module": "einvoice-viewer",
+  "title": "ZUGFeRD / Factur-X viewer: read the XML in a PDF | Tanod Tools",
+  "description": "Take the XML invoice out of a ZUGFeRD or Factur-X PDF and read it as a normal invoice. Print or export JSON. Free, nothing is uploaded.",
+  "h1": "ZUGFeRD / Factur-X viewer",
+  "lede": "Open a ZUGFeRD or Factur-X PDF and see the invoice data hidden inside it. The attached XML is taken out of the PDF in your browser and shown as an invoice. The file never leaves your device.",
+  "blurb": "Pull the XML invoice out of a ZUGFeRD or Factur-X PDF and read it.",
+  "keywords": "zugferd viewer zugferd anzeigen factur-x viewer factur-x lecteur zugferd pdf xml auslesen factur-x xml extraire facture électronique pdf/a-3 xml eingebettet e-rechnung pdf",
+  "limits": "One file at a time, up to 25 MB. Needs a PDF/A-3 with an attached invoice file (factur-x.xml, zugferd-invoice.xml or xrechnung.xml); a plain PDF has no invoice data, and the page says so. The pages of the PDF are not shown, only the data inside. Viewer only: no validation, and nothing is sent anywhere.",
+  "howto_title": "How to read a ZUGFeRD or Factur-X PDF",
+  "howto": [
+    "Choose the ZUGFeRD or Factur-X PDF, or drag it onto the page. An XML file works too.",
+    "The page finds the attached XML in the PDF and shows it as an invoice: parties, lines, VAT, totals and payment details.",
+    "Press <strong>Print or save as PDF</strong> for a clean copy, <strong>Download JSON</strong> for the data, or <strong>Download XML</strong> for the file that was inside the PDF."
+  ],
+  "faq": [
+    [
+      "Is my PDF uploaded?",
+      "No. The PDF is opened in your browser with the open-source pdf.js library, the attached XML is read there, and nothing is sent to a server. Closing the tab clears everything."
+    ],
+    [
+      "What is the difference between ZUGFeRD and Factur-X?",
+      "They are the same standard. ZUGFeRD is the German name and Factur-X the French one; ZUGFeRD 2 and Factur-X 1 are technically identical. Both are a PDF/A-3 document with an XML invoice (UN/CEFACT CII) attached. The profile (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED or XRECHNUNG) says how much data the XML carries."
+    ],
+    [
+      "Why does it say there is no invoice data in my PDF?",
+      "A plain PDF is only a picture of an invoice. Structured data exists only if the program that made the PDF attached the XML. Look for an attached file in your PDF reader. If there is none, the PDF is not an e-invoice; to read its text instead, try <a href=\"/tools/pdf-to-text/\">PDF to text</a>."
+    ],
+    [
+      "Which profiles work?",
+      "All profiles that use the CII XML. MINIMUM and BASIC WL carry totals but no line items, and the page says so; BASIC, EN 16931, EXTENDED and XRECHNUNG carry lines. The old ZUGFeRD 1.0 format is not supported."
+    ],
+    [
+      "Does it compare the PDF pages with the XML?",
+      "No. The pages of the PDF are not shown and nothing is compared. For hybrid formats the XML is generally the part that counts as the invoice data, so that is what you see here."
+    ],
+    [
+      "Are attached documents opened?",
+      "No. Documents attached inside the XML (a timesheet, say) are listed with a Download button only. The file name is cleaned and the download uses a generic file type; open them only if you trust the sender."
+    ]
+  ],
+  "related": [
+    "xrechnung-viewer",
+    "fatturapa-viewer",
+    "ksef-viewer",
+    "peppol-ubl-invoice-viewer",
+    "e-fatura-ubl-tr-viewer",
+    "vietnam-e-invoice-viewer",
+    "cfdi-viewer",
+    "pdf-to-text"
+  ],
+  "xlinks": {
+    "xrechnung": "xrechnung-viewer",
+    "zugferd": "zugferd-factur-x-viewer",
+    "fatturapa": "fatturapa-viewer",
+    "ksef": "ksef-viewer",
+    "peppol": "peppol-ubl-invoice-viewer",
+    "efatura": "e-fatura-ubl-tr-viewer",
+    "vietnam": "vietnam-e-invoice-viewer",
+    "cfdi": "cfdi-viewer"
+  },
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Drop an e-invoice here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Choose a file</span></label>
+  <p class="drop__hint">XML, a PDF with an invoice inside (ZUGFeRD, Factur-X) or a signed .p7m. Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Print or save as PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Download JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Download XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Show raw XML</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Raw XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Only the start of a long file is shown here. Download the XML to get all of it.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>A PDF that is also an invoice</h2>
+<p>A ZUGFeRD or Factur-X file looks like any PDF invoice, but it carries a second copy of the invoice as XML, attached to the PDF the way an email attachment is attached to a message. People read the pages; programs read the XML. Since 1 January 2025 every business in Germany has to be able to receive structured e-invoices, and France requires the same from 1 September 2026, so these hybrid PDFs are now common.</p>
+<p>This page opens the PDF in your browser, reads the list of attached files, and tries the XML ones in this order: <code>factur-x.xml</code>, <code>zugferd-invoice.xml</code>, <code>xrechnung.xml</code>, then any other XML file. The first one that is a supported invoice is shown. It does not draw the PDF pages.</p>
+<h2>Profiles</h2>
+<p>The profile tells how much data the XML holds. MINIMUM and BASIC WL have header data and totals only. BASIC adds line items. EN 16931 (called COMFORT in older ZUGFeRD) is the full European standard. EXTENDED goes beyond it, and XRECHNUNG is the German public-sector profile. The page shows what each file contains and does not check it against the profile rules.</p>
+<h3>Tips</h3>
+<ul>
+  <li>If a PDF invoice has no attachment, ask the sender for the XML or for a ZUGFeRD / Factur-X version.</li>
+  <li>A bare XML file from the same standard opens here too; XRechnung XML is also read by the <a href="/tools/xrechnung-viewer/">XRechnung viewer</a>.</li>
+  <li>Use Download XML to keep the structured data that was inside the PDF.</li>
+</ul>

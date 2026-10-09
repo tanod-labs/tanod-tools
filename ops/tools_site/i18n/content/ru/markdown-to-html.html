@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Конвертер Markdown в HTML с предпросмотром | Tanod Tools",
+  "description": "Преобразуйте Markdown в чистый HTML в браузере: таблицы в стиле GitHub, списки задач и предпросмотр на лету. Небезопасный HTML удаляется. Бесплатно, без загрузки.",
+  "h1": "Конвертер Markdown в HTML",
+  "lede": "Введите или вставьте Markdown и получайте чистый HTML по мере ввода, с предпросмотром того, как он будет выглядеть.",
+  "blurb": "Преобразование Markdown в HTML с предпросмотром.",
+  "keywords": "markdown в html конвертер markdown html преобразовать md gfm github таблица предпросмотр рендер readme convert preview",
+  "limits": "Markdown до 5 МБ: набранный, вставленный или из файла .md или .txt. Результат обновляется по мере ввода.",
+  "howto_title": "Как преобразовать Markdown в HTML",
+  "howto": [
+    "Введите или вставьте Markdown либо откройте файл .md.",
+    "Читайте HTML справа или переключитесь на «Предпросмотр», чтобы увидеть готовый вид. Включите параметр полного документа, если нужна целая страница.",
+    "Скопируйте HTML или скачайте его файлом .html."
+  ],
+  "faq": [
+    ["Мой текст загружается на сервер?", "Нет. Markdown преобразуется в вашем браузере библиотекой marked с открытым исходным кодом, ничего никуда не отправляется и не сохраняется."],
+    ["Какой синтаксис Markdown поддерживается?", "CommonMark и дополнения GitHub: таблицы, списки задач (<code>- [x] готово</code>), зачёркивание через <code>~~</code>, ограждённые блоки кода и автоматические ссылки. Одиночные переводы строк, как в стандартном Markdown, объединяются в один абзац; включите <em>Переводы строк становятся &lt;br&gt;</em>, чтобы сохранить их, как в комментариях GitHub."],
+    ["Безопасно ли размещать этот HTML на сайте?", "Перед показом он очищается библиотекой DOMPurify с открытым исходным кодом. Скрипты, обработчики событий вроде <code>onerror</code>, ссылки <code>javascript:</code>, iframe и встроенные объекты удаляются, а строка под результатом перечисляет, что было убрано. Обычный HTML внутри Markdown, например <code>&lt;details&gt;</code> или <code>&lt;sup&gt;</code>, сохраняется. Как и с любым чужим содержимым, не отключайте защиту вашего собственного сайта."],
+    ["Почему в предпросмотре изображение показывается заглушкой?", "Предпросмотр никогда не загружает ничего с других сайтов, поэтому ваш текст не раскрывается этому сайту и страница остаётся приватной. Изображения по веб-адресам отображаются подписанной заглушкой с их адресом. В коде HTML по-прежнему находится обычный тег <code>&lt;img&gt;</code>, поэтому изображение появится там, где вы опубликуете страницу."],
+    ["Что добавляет параметр полного документа?", "Целую страницу вокруг HTML: doctype, <code>&lt;head&gt;</code> с кодировкой UTF-8, тег viewport для мобильных устройств и заголовок, взятый из первого заголовка. Оставьте параметр выключенным, если вставляете код в существующую страницу или CMS."],
+    ["Получают ли заголовки атрибуты id для ссылок?", "Нет. Заголовки выводятся обычными тегами от <code>&lt;h1&gt;</code> до <code>&lt;h6&gt;</code>. Если нужны якоря, добавьте id в шаблоне сайта или вручную."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="md" class="md-label">Markdown</label>
+      <textarea id="md" class="mono md-pane" spellcheck="false" autocomplete="off" placeholder="# Заголовок&#10;&#10;Немного **жирного** текста и [ссылка](https://example.com).&#10;&#10;- [x] Готово&#10;- [ ] Сделать"></textarea>
+    </div>
+    <div class="field md-result">
+      <div class="md-result__head">
+        <span class="label" id="view-l">Результат</span>
+        <div class="seg" role="radiogroup" aria-labelledby="view-l">
+          <label><input type="radio" name="view" value="code" checked>Код HTML</label>
+          <label><input type="radio" name="view" value="preview">Предпросмотр</label>
+        </div>
+      </div>
+      <textarea id="out" class="mono md-pane" readonly aria-label="Код HTML"></textarea>
+      <div id="preview" class="md-preview md-pane" tabindex="0" role="region" aria-label="Предпросмотр" hidden></div>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="breaks">Переводы строк становятся &lt;br&gt;</label>
+    <label class="check"><input type="checkbox" id="full">Обернуть в полный документ HTML</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Введите или вставьте Markdown, чтобы начать.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}Копировать HTML</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}Скачать .html</button>
+    <button class="btn btn--quiet" id="clear" type="button">Очистить</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/markdown,.md,.markdown,text/plain,.txt">{{mark:i-upload}}<span>Открыть файл .md</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Как Markdown превращается в HTML</h2>
+<p>Markdown — это способ записи форматированного текста обычными символами: <code>#</code> начинает заголовок, <code>**две звёздочки**</code> дают полужирный, строка с дефисом в начале — элемент списка. Так пишут файлы README, многие приложения для заметок и большинство форумов разработчиков. Браузерам, шаблонам писем и системам управления контентом нужен HTML, поэтому в какой-то момент Markdown приходится переводить.</p>
+<p>Этот конвертер следует CommonMark с дополнениями GitHub Flavored Markdown, поэтому таблицы, списки задач и зачёркивание работают так же, как на GitHub. Полученный HTML затем проходит через санитайзер, который удаляет всё, что могло бы выполнить код при показе HTML, и не трогает обычное форматирование.</p>
+<p>Вкладка предпросмотра показывает тот же HTML, отрисованный на странице. Ссылки открываются в новой вкладке, а изображения, размещённые на других сайтах, показываются заглушками и не загружаются, поэтому ничто из написанного вами не отправляется на другой сайт, пока вы работаете.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Есть HTML, а нужен Markdown? Используйте «<a href="/tools/html-to-markdown/">HTML в Markdown</a>».</li>
+  <li>Проверить длину публикации можно в инструменте «<a href="/tools/word-counter/">Подсчёт слов</a>».</li>
+  <li>Сравните два черновика в инструменте «<a href="/tools/text-diff/">Сравнить тексты</a>».</li>
+</ul>

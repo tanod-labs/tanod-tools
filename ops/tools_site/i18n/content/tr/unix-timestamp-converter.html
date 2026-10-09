@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Unix zaman damgası çevirici: epoch'tan tarihe | Tanod Tools",
+  "description": "Saniye, milisaniye, mikrosaniye veya nanosaniye cinsinden Unix zaman damgalarını herhangi bir saat diliminde tarihe, tarihleri de epoch'a çevirin. Ücretsiz, tarayıcıda.",
+  "h1": "Unix zaman damgası çevirici",
+  "lede": "Bir epoch zaman damgasını herhangi bir saat diliminde okunur bir tarihe ya da bir tarih ve saati zaman damgasına çevirin.",
+  "blurb": "Epoch zamanından tarihe ve tarihten zaman damgasına, her dilimde.",
+  "keywords": "epoch çevirici unix zamanı posix zamanı 1970'ten beri saniye milisaniye zaman damgasından tarihe tarihten zaman damgasına utc saat dilimi timestamp epoch converter unix time timestamp to date date to timestamp",
+  "limits": "1970'in her iki yanında yaklaşık 270.000 yıla kadar zaman damgaları (bir tarayıcının gösterebildiği aralık); yazılan tarihler 1 ile 9999 yılları arasında. Saat dilimi kuralları tarayıcınızın yerleşik saat dilimi verilerinden gelir.",
+  "howto_title": "Unix zaman damgası nasıl çevrilir",
+  "howto": [
+    "Bir zaman damgasını <strong>Zaman damgasından tarihe</strong> bölümüne yapıştırın. Birim (saniye, milisaniye, mikrosaniye veya nanosaniye) uzunluğundan algılanır ve değiştirebilirsiniz.",
+    "Tarihi UTC, ISO 8601 ve RFC 2822 biçimlerine ek olarak orada da görmek için bir saat dilimi seçin.",
+    "Ters yönde çevirmek için <strong>Tarihten zaman damgasına</strong> altına bir tarih ve saat girin; seçtiğiniz saat diliminde okunur."
+  ],
+  "faq": [
+    ["Unix zaman damgası nedir?", "1 Ocak 1970 00:00:00 UTC'den beri geçen saniye sayısıdır; artık saniyeler sayılmaz. Belirli bir anda dünyanın her yerinde aynıdır, zamanları saklamak için kullanılmasının nedeni budur; saat dilimi yalnızca birinin okuyacağı bir tarihe çevirdiğinizde önem kazanır."],
+    ["Birim nasıl algılanır?", "Büyüklüğüne göre. 100 milyardan küçük bir değer saniye olarak okunur (5138 yılına kadar olan tarihleri kapsar), 100 trilyona kadar milisaniye, 100 katrilyona kadar mikrosaniye, daha büyük her şey ise nanosaniye olarak okunur. 10 haneli bir sayı saniye, 13 hane milisaniye, 16 hane mikrosaniye, 19 hane nanosaniyedir. Tahmin yanlışsa birimi kendiniz seçin."],
+    ["Yaz saati yüzünden var olmayan bir saate ne olur?", "Saatler ileri alındığında bir yerel saat atlanır. Bu boşluğun içindeki bir tarih ve saat, çoğu yazılımın yaptığı gibi boşluğun uzunluğu kadar ileri alınır ve araç bunu belirtir. Saatler geri alındığında bir saat iki kez yaşanır; araç ilk oluşu kullanır ve ikincisinin zaman damgasını da gösterir."],
+    ["Zaman damgaları negatif olabilir mi?", "Evet. Negatif değerler 1970'ten önceki anlardır: -1, 31 Aralık 1969 23:59:59 UTC'dir. Çok eski tarihler, ISO 8601'in yaptığı gibi öngörülü Gregoryen takvimi kullanır."],
+    ["2038 sorunu nedir?", "Unix zamanını işaretli 32 bitlik bir sayı olarak saklayan sistemler yalnızca 2.147.483.647'ye kadar sayabilir; bu, 19 Ocak 2038 03:14:07 UTC'dir. Bir saniye sonra değer taşar. Bir zaman damgası bu aralığın ötesindeyse araç bunu belirtir. Günümüz sistemlerinin çoğu 64 bitlik zaman kullanır ve etkilenmez."],
+    ["Artık saniyeler dahil mi?", "Hayır. Unix zamanı her günü tam olarak 86.400 saniye sayar, JavaScript de öyle; bu yüzden 1972'den beri eklenen 27 artık saniye sayılmaz. Bu normaldir ve sunucuların, veritabanlarının ve programlama dillerinin bildirdiğiyle örtüşür."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="ts-now" aria-labelledby="ts-now-h">
+    <h2 class="util-h ts-h" id="ts-now-h">Geçerli Unix zamanı</h2>
+    <dl class="stats ts-now__stats">
+      <div><dt>Saniye</dt><dd id="now-s">0</dd></div>
+      <div><dt>Milisaniye</dt><dd id="now-ms">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn btn--sm" id="now-copy-s" type="button">{{mark:i-copy}}Saniyeyi kopyala</button>
+      <button class="btn btn--sm" id="now-copy-ms" type="button">{{mark:i-copy}}Milisaniyeyi kopyala</button>
+      <button class="btn btn--sm btn--quiet" id="now-pause" type="button" aria-pressed="false">Duraklat</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="tz">Saat dilimi</label>
+    <select id="tz"></select>
+    <span class="help">Aşağıdaki tarihleri göstermek ve girdiğiniz tarihi okumak için kullanılır.</span>
+  </div>
+
+  <h2 class="util-h ts-h">Zaman damgasından tarihe</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="ts-in">Unix zaman damgası</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="1700000000" aria-describedby="ts-detected">
+    </div>
+    <div class="field">
+      <label for="ts-unit">Birim</label>
+      <select id="ts-unit">
+        <option value="auto" selected>Uzunluğundan algıla</option>
+        <option value="s">Saniye</option>
+        <option value="ms">Milisaniye</option>
+        <option value="us">Mikrosaniye</option>
+        <option value="ns">Nanosaniye</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="ts-detected" aria-live="polite">Bir zaman damgası yazın veya yapıştırın.</p>
+  <dl class="dv-rows" id="ts-out" hidden>
+    <div><dt>UTC</dt><dd id="o-utc"></dd></div>
+    <div><dt id="o-zone-l">Saat diliminiz</dt><dd id="o-zone"></dd></div>
+    <div><dt>ISO 8601</dt><dd id="o-iso"></dd></div>
+    <div><dt>Saat farkıyla ISO 8601</dt><dd id="o-isoz"></dd></div>
+    <div><dt>RFC 2822</dt><dd id="o-rfc"></dd></div>
+    <div><dt>Göreli</dt><dd id="o-rel"></dd></div>
+    <div><dt>Saniye</dt><dd id="o-s"></dd></div>
+    <div><dt>Milisaniye</dt><dd id="o-ms"></dd></div>
+  </dl>
+  <p class="note" id="ts-note" hidden></p>
+
+  <h2 class="util-h ts-h">Tarihten zaman damgasına</h2>
+  <div class="opts ts-date">
+    <div class="field">
+      <label for="d-date">Tarih</label>
+      <input type="date" id="d-date" min="0001-01-01" max="9999-12-31">
+    </div>
+    <div class="field">
+      <label for="d-time">Saat</label>
+      <input type="time" id="d-time" step="1" value="00:00:00">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="d-now" type="button">Geçerli zamanı kullan</button>
+  </div>
+  <p class="tt__report" id="d-info" aria-live="polite">Bir tarih seçin.</p>
+  <dl class="dv-rows" id="d-out" hidden>
+    <div><dt>Saniye</dt><dd id="d-s"></dd></div>
+    <div><dt>Milisaniye</dt><dd id="d-ms"></dd></div>
+    <div><dt>ISO 8601 (UTC)</dt><dd id="d-iso"></dd></div>
+  </dl>
+  <p class="note" id="d-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Epoch zamanı nasıl çalışır</h2>
+<p>Bir Unix zaman damgası, Unix epoch'undan, yani 1 Ocak 1970 gece yarısı UTC'den itibaren saniyeleri sayar. Bir saat okumasını değil bir anı adlandırdığı için aynı sayı Manila'da, Londra'da ve New York'ta aynı anı anlatır. Saat dilimleri, onu bir tarihe çevirirken devreye girer: araç, o andaki yerel farkı ve yaz saatini bulmak için işletim sisteminizin kullandığı kuralların aynısı olan tarayıcınızın saat dilimi veritabanını kullanır.</p>
+<p>Birçok sistem daha ince birimler kullanır. JavaScript ve Java milisaniye sayar; bazı veritabanları ve Python'un <code>time.time_ns()</code> işlevi mikrosaniye veya nanosaniye kullanır. Böyle bir değeri saniye olarak yapıştırmak on binlerce yıl ötede bir tarih verir; bu yüzden araç birimi sayının büyüklüğünden tahmin eder ve hangisini seçtiğini gösterir. Mikrosaniye ve nanosaniye değerleri fazladan hanelerini ISO 8601 satırında korur.</p>
+<p>Tarihten zaman damgasına geçmek bir saat dilimi gerektirir, çünkü 09:00 her dilimde farklı bir anda yaşanır. Yazdığınız tarih, seçtiğiniz dilimde bir saat okuması olarak yorumlanır. Yaz saati boşluğuna ya da çakışmasına düşen okumalar işaretlenir, böylece hangi anı elde ettiğinizi bilirsiniz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Cron ifadeleri olarak yazılmış zamanlamaları, sonraki çalışma zamanlarını herhangi bir dilimde listeleyen <a href="/tools/cron-expression-explainer/">Cron ifadesi açıklayıcı</a> ile kontrol edebilirsiniz.</li>
+  <li>UUID sürüm 7 değerleri milisaniyelik bir zaman damgası taşır; <a href="/tools/uuid-generator/">UUID oluşturucu</a> bunu okuyabilir.</li>
+  <li>Zaman damgalarıyla dolu bir JSON yanıtını <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile düzenleyin.</li>
+</ul>

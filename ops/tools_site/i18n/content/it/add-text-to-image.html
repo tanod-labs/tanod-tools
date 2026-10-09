@@ -1,0 +1,147 @@
+<!--meta
+{
+  "title": "Aggiungi testo a un'immagine online: didascalie e meme | Tanod Tools",
+  "description": "Scrivi una didascalia o una filigrana su una foto: font, dimensione, colore, contorno, ombra e riquadro di sfondo, posizione dall'anteprima. Nulla viene caricato.",
+  "h1": "Aggiungi testo a un'immagine",
+  "lede": "Metti una didascalia, un titolo o una filigrana su un'immagine, posizionala esattamente dove vuoi e salva il risultato a dimensione piena.",
+  "blurb": "Aggiungi didascalie o filigrane con testo stilizzato su una foto.",
+  "keywords": "scrivere su foto testo su immagine didascalia meme filigrana titolo sovrapporre testo font etichetta annotare caption watermark",
+  "limits": "Una sola immagine alla volta (fino a 50 MB, circa 100 megapixel). I font sono Archivo, Bungee e i font serif, sans-serif e monospazio del tuo dispositivo.",
+  "howto_title": "Come aggiungere testo a un'immagine",
+  "howto": [
+    "Scegli un'immagine, poi scrivi il testo. Premi Invio per andare a capo.",
+    "Scegli font, dimensione e colore. Aggiungi un contorno, un'ombra o un riquadro di sfondo se il testo è difficile da leggere. Scegli una delle nove posizioni, oppure tocca l'anteprima per mettere il testo nel punto toccato.",
+    "Premi <strong>Aggiungi testo e salva</strong> per ottenere l'immagine alla dimensione originale."
+  ],
+  "faq": [
+    ["La mia immagine viene caricata?", "No. Il testo viene disegnato sull'immagine nel tuo browser, sul tuo dispositivo. Non viene inviato nulla a un server."],
+    ["Come si misura la dimensione del testo?", "Come percentuale della larghezza dell'immagine, quindi il testo occupa la stessa parte dell'immagine nella piccola anteprima e nel file a dimensione piena. Il 6% è una didascalia leggibile sulla maggior parte delle foto; usa il 10% o più per un titolo."],
+    ["Come posiziono il testo con precisione?", "Scegli una delle nove posizioni, poi usa le caselle di spostamento X e Y per muoverlo di una percentuale dell'immagine. Puoi anche toccare o cliccare l'anteprima per centrare il testo in quel punto. Con l'anteprima selezionata, i tasti freccia spostano il testo dello 0,5%, o del 5% tenendo premuto Maiusc."],
+    ["Quali font posso usare?", "Archivo e Bungee sono caricati da questo sito. Serif, sans-serif e monospazio usano il font che il tuo dispositivo assegna a quei nomi, quindi su un altro computer possono apparire leggermente diversi. L'immagine salvata mantiene l'aspetto esatto, perché le lettere sono disegnate nei pixel."],
+    ["Mantiene la trasparenza di un PNG?", "Sì. Cambiano solo i pixel sotto il testo, il contorno, l'ombra e il riquadro; il resto di un PNG trasparente rimane trasparente. Il JPEG non può memorizzare la trasparenza, quindi quelle aree diventano bianche se salvi in JPEG."],
+    ["Posso usare accenti, altri alfabeti o emoji?", "Sì, purché i font del tuo dispositivo contengano i caratteri. Archivo e Bungee coprono le lettere latine con accenti. Per altri sistemi di scrittura e per le emoji il browser ricorre a un font del tuo dispositivo che le include."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Rilascia un'immagine qui</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Scegli un'immagine</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP o AVIF. Oppure trascinala in un punto qualsiasi di questa pagina.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview txt-stage">
+    <canvas id="preview" tabindex="0" role="img" aria-label="Anteprima con il tuo testo. Tocca o clicca per posizionare il testo." aria-describedby="place-help"></canvas>
+  </div>
+  <p class="help" id="place-help">Tocca o clicca l'immagine per mettere il testo in quel punto. Con l'immagine selezionata, i tasti freccia spostano il testo dello 0,5%, e Maiusc con un tasto freccia del 5%.</p>
+  <div class="opts txt-opts">
+    <div class="field txt-opts__wide">
+      <label for="text">Testo</label>
+      <textarea id="text" rows="3" autocomplete="off" spellcheck="false" placeholder="La tua didascalia">La tua didascalia</textarea>
+    </div>
+    <div class="field">
+      <label for="font">Font</label>
+      <select id="font">
+        <option value="archivo" selected>Archivo</option>
+        <option value="bungee">Bungee</option>
+        <option value="serif">Serif</option>
+        <option value="sans">Sans-serif</option>
+        <option value="mono">Monospazio</option>
+      </select>
+      <label class="check"><input type="checkbox" id="bold" checked>Grassetto</label>
+    </div>
+    <div class="field">
+      <label for="size">Dimensione: <span class="num" id="size-out">6</span>% della larghezza</label>
+      <input type="range" id="size" min="1" max="40" step="0.5" value="6">
+    </div>
+    <div class="field">
+      <label for="color">Colore del testo</label>
+      <input type="color" id="color" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Allineamento del testo</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="left">A sinistra</label>
+        <label><input type="radio" name="align" value="center" checked>Al centro</label>
+        <label><input type="radio" name="align" value="right">A destra</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <span class="label">Contorno</span>
+      <label class="check"><input type="checkbox" id="outline" checked>Contorna le lettere</label>
+      <div class="txt-pair"><input type="color" id="outline-color" value="#111417" aria-label="Colore del contorno"><input type="range" id="outline-w" min="1" max="30" value="8" aria-label="Spessore del contorno"></div>
+    </div>
+    <div class="field">
+      <span class="label">Ombra</span>
+      <label class="check"><input type="checkbox" id="shadow">Aggiungi un'ombra</label>
+      <input type="color" id="shadow-color" value="#000000" aria-label="Colore dell'ombra">
+    </div>
+    <div class="field">
+      <span class="label">Riquadro di sfondo</span>
+      <label class="check"><input type="checkbox" id="box">Disegna un riquadro dietro il testo</label>
+      <div class="txt-pair"><input type="color" id="box-color" value="#111417" aria-label="Colore del riquadro"></div>
+    </div>
+    <div class="field">
+      <label for="box-opacity">Opacità del riquadro: <span class="num" id="box-opacity-out">70</span>%</label>
+      <input type="range" id="box-opacity" min="0" max="100" value="70">
+    </div>
+    <div class="field">
+      <label for="box-pad">Margine del riquadro: <span class="num" id="box-pad-out">40</span>% della dimensione del testo</label>
+      <input type="range" id="box-pad" min="0" max="150" value="40">
+    </div>
+    <fieldset class="field">
+      <legend>Posizione</legend>
+      <div class="pos" role="radiogroup" aria-label="Posizione sull'immagine">
+        <label><input type="radio" name="pos" value="0,0"><span class="visually-hidden">In alto a sinistra</span></label>
+        <label><input type="radio" name="pos" value="1,0"><span class="visually-hidden">In alto al centro</span></label>
+        <label><input type="radio" name="pos" value="2,0"><span class="visually-hidden">In alto a destra</span></label>
+        <label><input type="radio" name="pos" value="0,1"><span class="visually-hidden">Al centro a sinistra</span></label>
+        <label><input type="radio" name="pos" value="1,1"><span class="visually-hidden">Al centro</span></label>
+        <label><input type="radio" name="pos" value="2,1"><span class="visually-hidden">Al centro a destra</span></label>
+        <label><input type="radio" name="pos" value="0,2"><span class="visually-hidden">In basso a sinistra</span></label>
+        <label><input type="radio" name="pos" value="1,2" checked><span class="visually-hidden">In basso al centro</span></label>
+        <label><input type="radio" name="pos" value="2,2"><span class="visually-hidden">In basso a destra</span></label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="ox">Sposta a destra (% della larghezza)</label>
+      <input type="number" id="ox" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="oy">Sposta in basso (% dell'altezza)</label>
+      <input type="number" id="oy" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <fieldset class="field">
+      <legend>Salva come</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Stesso</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">Con Stesso, un PNG, JPEG o WebP mantiene il suo formato e tutto il resto viene scritto come PNG.</p>
+    </fieldset>
+  </div>
+  <p class="help" id="fit-help" aria-live="polite"></p>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Aggiungi testo e salva</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Ricomincia</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Rendere leggibile il testo su una foto</h2>
+<p>Il testo su un'immagine deve staccarsi da ciò che ha dietro, e le foto raramente offrono uno sfondo uniforme. Tre strumenti aiutano. Un contorno scuro mantiene leggibili le lettere bianche sulle zone chiare. Un'ombra morbida solleva leggermente il testo senza bordi netti. Un riquadro semitrasparente dietro le righe dà il contrasto più stabile, al prezzo di coprire una parte dell'immagine.</p>
+<p>Poiché la dimensione è una percentuale della larghezza dell'immagine, la composizione che vedi nell'anteprima è quella che ottieni nel file, per quanto grande sia l'originale. Anche margine, spessore del contorno e ombra si adattano al testo, quindi nulla appare più pesante a dimensione piena che sullo schermo.</p>
+<p>Metti le didascalie nel terzo inferiore, dove chi guarda se le aspetta, tieni le righe brevi e lascia un margine dal bordo; la griglia a nove punti mantiene automaticamente un piccolo margine. Il testo centrato è adatto ai titoli, quello allineato a sinistra a più righe di didascalia.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Se l'immagine è troppo movimentata per il testo, regola prima luminosità o contrasto con <a href="/tools/image-filters/">Filtri per foto</a>.</li>
+  <li>Incornicia l'immagine finita con <a href="/tools/add-border-to-image/">Aggiungi un bordo a un'immagine</a>.</li>
+  <li>Ti serve il testo su un PDF? <a href="/tools/watermark-pdf/">Aggiungi filigrana al PDF</a> applica il testo a ogni pagina.</li>
+</ul>

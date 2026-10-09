@@ -1,0 +1,61 @@
+<!--meta
+{
+  "title": "Tur ve CSV dışa aktarmalı online kronometre | Tanod Tools",
+  "description": "Tur ve ara süreli, en hızlı ve en yavaş turları işaretleyen, klavye kısayollu ücretsiz online kronometre. Kopyalama ve CSV indirme. Saniyenin yüzde birine duyarlı.",
+  "h1": "Kronometre",
+  "lede": "Başlatın, durdurun ve tur kaydedin; isterseniz klavyeyle. Süreler saniyenin yüzde biri hassasiyetle gösterilir.",
+  "blurb": "Tur, ara süre ve CSV dışa aktarmalı kronometre.",
+  "keywords": "kronometre online tur süresi ara süre zamanlayıcı yarış koşu antrenman kronometre çevrimiçi stopwatch lap timer split time chronometer",
+  "limits": "Ekran saat, dakika, saniye ve saniyenin yüzde birini gösterir ve 99 saate kadar çalışır. Turlar yalnızca sayfa açıkken tutulur; sekmeyi kapatmadan önce indirin veya kopyalayın.",
+  "howto_title": "Kronometre nasıl kullanılır",
+  "howto": [
+    "<strong>Başlat</strong> düğmesine basın ya da <kbd>Boşluk</kbd> tuşuna dokunun. Durdurmak için yeniden basın; <strong>Devam et</strong> kaldığınız yerden sürdürür.",
+    "Çalışırken tur kaydetmek için <strong>Tur</strong> düğmesine veya <kbd>L</kbd> tuşuna basın. Her satır tur süresini ve o anki ara süreyi gösterir.",
+    "Turları kopyalayın ya da hesap tablosu için CSV dosyası olarak indirin. <strong>Sıfırla</strong> veya <kbd>R</kbd> her şeyi temizler."
+  ],
+  "faq": [
+    ["Tur süresi ile ara süre arasındaki fark nedir?", "Tur süresi, o turun kendi başına ne kadar sürdüğüdür. Ara süre ise Tur düğmesine bastığınızda saatte görünen toplam süredir. 3:10,00 ara süreli 3. tur ile 1:00, 1:05 ve 1:05'lik turlar aynı hikâyenin iki farklı anlatımıdır."],
+    ["Ne kadar doğru?", "Bir düğmeye bastığınızda ve ekran yeniden çizildiğinde tarayıcının yüksek çözünürlüklü saatini okur, aradaki farkı saniyenin yüzde biri hassasiyetle gösterir. Asıl büyük hata, saniyenin onda biri ya da daha fazlası olan kendi tepki sürenizdir. Bir sporda rekor için süre tutmak uygun zamanlama ekipmanı gerektirir."],
+    ["Sekme değiştirirsem veya telefonu kilitlersem saymaya devam eder mi?", "Evet, çünkü yeniden çizim sayısına değil saate bakarak çalışır; döndüğünüzde doğru süre hemen görünür. Telefon tarayıcıyı tamamen askıya alırsa saat yine de ilerler, ancak bu sırada Tur düğmesine basamazsınız."],
+    ["Hangi klavye kısayolları var?", "<kbd>Boşluk</kbd> başlatır ve durdurur, <kbd>L</kbd> tur kaydeder, <kbd>R</kbd> sıfırlar. Bir alana yazarken ya da bir düğme odaktayken yok sayılırlar; böylece olağan klavye kullanımıyla çakışmazlar. Kullanmak için sayfada boş bir yere tıklayın."],
+    ["En hızlı ve en yavaş turlar nasıl seçilir?", "En az iki tur olduğunda en kısa tur süresi En hızlı, en uzunu En yavaş olarak etiketlenir; renkle birlikte sözcükle de belirtilir. Tüm turlar eşitse hiçbiri işaretlenmez. Hâlâ koşmakta olan tur sayılmaz."],
+    ["CSV'de ne bulunur?", "Bir başlık satırı, ardından her tur için tur numarası, tur süresi ve ara süreyi hh:mm:ss.cc biçiminde içeren bir satır. Hesap tablosu programları bunu doğrudan açar. Hiçbir şey yüklenmez: dosya tarayıcınızda oluşturulur."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack sw">
+  <div class="sw-display" id="sw-display" role="timer" aria-live="off" aria-label="Geçen süre" data-state="idle">00:00:00.00</div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="sw-start" type="button">Başlat</button>
+    <button class="btn btn--lg" id="sw-lap" type="button" aria-keyshortcuts="L" disabled>Tur</button>
+    <button class="btn btn--lg" id="sw-reset" type="button" aria-keyshortcuts="R" disabled>Sıfırla</button>
+  </div>
+  <p class="help sw-keys">Klavye: <kbd>Boşluk</kbd> başlat veya durdur, <kbd>L</kbd> tur, <kbd>R</kbd> sıfırla. Bunlar hiçbir alan ya da düğme odakta değilken çalışır.</p>
+  <div id="sw-lap-box" class="util-stack" hidden>
+    <div class="sw-head">
+      <h2 class="util-h">Turlar</h2>
+      <div class="actions">
+        <button class="btn btn--sm" id="sw-copy" type="button" disabled>Turları kopyala</button>
+        <button class="btn btn--sm" id="sw-csv" type="button" disabled>CSV indir</button>
+      </div>
+    </div>
+    <div class="calc-table">
+      <table class="dens sw-table">
+        <thead><tr><th scope="col">Tur</th><th scope="col">Tur süresi</th><th scope="col">Ara süre</th><th scope="col">Not</th></tr></thead>
+        <tbody id="sw-laps"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Tur süreleri, ara süreler ve tarayıcı kronometresi bunları nasıl ölçer</h2>
+<p>Bir kronometre, Tur düğmesine her bastığınızda iki sayı kaydeder. <em>Ara süre</em>, başladığınızdan beri geçen toplam süredir. <em>Tur süresi</em> ise ara süre eksi bir önceki ara süredir. Koşucular ve yüzücüler yavaşlayıp yavaşlamadıklarını görmek için tur sürelerine bakar; bir yemek tarifindeki adımları veya bir toplantıdaki turları ölçenler ise çoğunlukla ara süreleri ister. İkisini birden göstermek birini diğeriyle kontrol etmenizi sağlar: tur süreleri toplanınca son ara süreyi verir.</p>
+<p>Sayfa, Başlat'a bastığınızda ve her yeniden çizildiğinde tarayıcının monoton saatini kaydeder ve farkı gösterir. Hiçbir zaman "tik" toplamaz; bu yüzden tarayıcı arka plandaki bir sekmeyi yavaşlattığında sayı doğru kalır ve duraklatıp sürdürmek zaman kaybettirmez: duruştan önceki süre saklanır, yeni çalışma buna eklenir. Monoton saat, bilgisayarınız saatini ayarladığında veya yaz saati uygulaması değiştiğinde sıçramaz.</p>
+<p>Tur süreleri saniyenin yüzde biri cinsinden tam sayılar olarak tutulur. Bu, yuvarlanmış 1,234 ve 2,345 saniyelik turların toplamının yuvarlanmış toplamdan farklı çıktığı yuvarlama tuzağını önler; gördüğünüz değerler her zaman toplanır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Geriye doğru sayan ve çalan bir süre sınırı için <a href="/tools/countdown-timer/">Geri sayım sayacı</a> aracını kullanın.</li>
+  <li>Dışa aktardığınız süreleri düz saniyelere veya tarihlere <a href="/tools/unix-timestamp-converter/">Unix zaman damgası çevirici</a> ile dönüştürün.</li>
+  <li>Saat başlamadan önce adil bir oyun sırası mı lazım? <a href="/tools/random-name-picker/">Rastgele isim seçici</a> ile çekin.</li>
+</ul>

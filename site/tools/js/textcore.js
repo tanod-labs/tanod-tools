@@ -1,5 +1,5 @@
 // Shared helpers for the text tools. Text is never stored or sent anywhere.
-import { $, el, icon, debounce, dropzone, setStatus, textBlob, copyText, announce, fmtBytes, tick, tx, txn, EN, LOCALE, fmtNum } from "./core.js?v=5";
+import { $, el, icon, debounce, dropzone, setStatus, textBlob, copyText, announce, fmtBytes, tick, tx, txn, EN, LOCALE, fmtNum } from "./core.js?v=11";
 
 export const MAX_TEXT_BYTES = 5 * 1024 * 1024;
 export const LARGE = 50000; // characters; above this, live updates are debounced

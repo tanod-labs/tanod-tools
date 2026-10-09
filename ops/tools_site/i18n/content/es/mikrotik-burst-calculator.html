@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "Calculadora de burst MikroTik: limit, threshold y time | Tanod Tools",
+  "description": "Mira cuánto dura el burst de una queue de RouterOS con tu max-limit, burst-limit, burst-threshold y burst-time, con gráfica y líneas de queue y rate-limit PPP.",
+  "h1": "Calculadora de burst MikroTik",
+  "lede": "Ingresa max-limit, burst-limit, burst-threshold y burst-time y mira exactamente cuánto tiempo hace burst un cliente desde reposo, cuántos datos son y la línea de queue para pegar.",
+  "blurb": "Duración del burst, datos y gráfica de velocidad para los ajustes de burst de una queue.",
+  "keywords": "calculadora burst mikrotik burst limit burst threshold burst time max-limit simple queue burst rate-limit perfil ppp burst cómo funciona el burst queue routeros",
+  "local_text": "Funciona en tu navegador; nada de lo que escribes sale de tu dispositivo",
+  "limits": "Modela el burst de RouterOS para un cliente con demanda ilimitada, medido en pasos de burst-time/16 como lo hace RouterOS. El tráfico real es más irregular, y las queues padre pueden limitar a un cliente por debajo de estos números. MikroTik y RouterOS son marcas registradas de SIA Mikrotīkls. Esta herramienta es independiente y no está afiliada ni respaldada por MikroTik.",
+  "howto_title": "Cómo calcular los ajustes de burst en MikroTik",
+  "howto": [
+    "Ingresa max-limit, burst-limit, burst-threshold y burst-time para subida y bajada. Las velocidades aceptan k, M o G, como 20M.",
+    "Lee cuánto dura el burst desde reposo y mira la gráfica, que muestra la velocidad permitida y el promedio que RouterOS compara con el threshold.",
+    "Opcionalmente ingresa la duración de burst que quieres para obtener el threshold que la produce, y luego copia la línea de simple queue o de rate-limit PPP."
+  ],
+  "faq": [
+    ["¿Cómo funciona el burst en MikroTik?", "Cada burst-time/16, RouterOS calcula la velocidad promedio del cliente durante el último burst-time. Mientras ese promedio esté por debajo de burst-threshold, la queue deja que el cliente envíe hasta burst-limit; cuando el promedio alcanza el threshold, el cliente baja a max-limit. Un cliente que estuvo inactivo tiene un promedio de cero, así que una descarga nueva empieza en burst-limit y vuelve a max-limit después de unos segundos."],
+    ["¿Cuánto dura el burst?", "Partiendo de reposo con un cliente que toma todo lo que se le ofrece, el burst dura aproximadamente burst-threshold × burst-time ÷ burst-limit. Con burst-limit 40M, threshold 16M y burst-time 8s, son 16 × 8 ÷ 40 = 3.2 segundos. El promedio solo se revisa cada burst-time/16 (medio segundo aquí), así que el burst realmente termina en la primera revisión posterior a ese punto, a los 3.5 segundos; la calculadora recorre esas revisiones y muestra ambas cifras."],
+    ["¿Por qué burst-threshold debe estar por debajo de max-limit?", "Si el threshold está por encima de max-limit, un cliente que descarga a max-limit tiene un promedio menor que el threshold, así que el burst se activa de nuevo, el promedio sube, el burst se desactiva, y el cliente sigue oscilando. Con el threshold por debajo de max-limit, un cliente que sigue descargando se mantiene en max-limit y solo vuelve a hacer burst después de una pausa."],
+    ["¿Para qué sirve la línea de rate-limit?", "Los perfiles PPP, los secrets PPP y RADIUS (el atributo Mikrotik-Rate-Limit) aceptan los mismos límites en una sola cadena: max-limit, burst-limit, burst-threshold y burst-time, cada uno como rx/tx desde el lado del router, que es subida/bajada para el cliente. RouterOS construye una simple queue dinámica a partir de ella cuando el cliente se conecta."],
+    ["¿limit-at es parte del burst?", "No. limit-at es la velocidad que la queue garantiza cuando el padre está congestionado; el burst solo cambia cuánto por encima de max-limit puede llegar un cliente durante un rato. Mantén limit-at igual o por debajo de max-limit."],
+    ["¿Se envía algo a un servidor?", "No. La simulación y la gráfica se calculan en tu navegador."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="bc">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Subida (del cliente a internet)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-up-max">max-limit</label><input type="text" id="bc-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-burst">burst-limit</label><input type="text" id="bc-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-thr">burst-threshold</label><input type="text" id="bc-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-time">burst-time</label><input type="text" id="bc-up-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Bajada (de internet al cliente)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-down-max">max-limit</label><input type="text" id="bc-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-burst">burst-limit</label><input type="text" id="bc-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-thr">burst-threshold</label><input type="text" id="bc-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-time">burst-time</label><input type="text" id="bc-down-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="bc-want">Duración de burst que quieres (segundos)</label>
+      <input type="text" id="bc-want" class="mono" value="" placeholder="5" inputmode="numeric" autocomplete="off" aria-describedby="bc-want-h">
+      <span class="help" id="bc-want-h">Opcional: muestra el threshold que da un burst de esta duración.</span>
+    </div>
+    <dl class="ros-facts" id="bc-facts" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <div class="seg" role="radiogroup" aria-label="Dirección de la gráfica">
+      <label><input type="radio" name="bc-dir" value="down" checked>Bajada del cliente</label>
+      <label><input type="radio" name="bc-dir" value="up">Subida del cliente</label>
+    </div>
+    <figure class="ros-fig">
+      <div id="bc-chart"></div>
+      <figcaption id="bc-chart-t" class="help"></figcaption>
+    </figure>
+    <ul class="ros-legend" aria-hidden="true">
+      <li><i></i>Velocidad permitida</li>
+      <li class="k-avg"><i></i>Promedio durante burst-time</li>
+      <li class="k-thr"><i></i>burst-threshold</li>
+    </ul>
+    <label for="bc-out" class="label">Ajustes de la queue</label>
+    <textarea id="bc-out" class="mono gen-out ros-out ros-out--short" rows="8" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="bc-copy" type="button">Copiar</button>
+      <button class="btn" id="bc-dl" type="button">{{mark:i-download}}Descargar .rsc</button>
+    </div>
+    <ul class="ros-notes" id="bc-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>El burst en las queues de RouterOS, paso a paso</h2>
+<p>El burst permite que un cliente vaya más rápido que su max-limit durante un tiempo corto, de modo que las páginas web y las descargas pequeñas se sientan rápidas mientras las transferencias largas se estabilizan en la velocidad del plan. Lo controlan cuatro ajustes, cada uno dado como subida/bajada en una simple queue: <code>max-limit</code>, el techo normal; <code>burst-limit</code>, el techo más alto mientras hay burst; <code>burst-threshold</code>, la velocidad promedio a la que termina el burst; y <code>burst-time</code>, la ventana en la que se mide ese promedio.</p>
+<p>RouterOS divide burst-time en 16 intervalos. Después de cada intervalo promedia la velocidad del cliente durante los últimos 16 intervalos y la compara con el threshold: por debajo, el cliente puede usar burst-limit; igual o por encima, solo max-limit. Un cliente que viene de reposo empieza con un promedio de cero, envía a burst-limit, y el promedio sube hasta cruzar el threshold. Con un burst-time de 8 s, un burst-limit de 40M y un threshold de 16M, el promedio llega al threshold a los 3.2 s, y la siguiente revisión, a los 3.5 s, termina el burst; para entonces el cliente ha movido unos 17.5 MB. Luego el promedio se mantiene por encima del threshold mientras el cliente siga transfiriendo a max-limit, así que el siguiente burst necesita una pausa.</p>
+<h3>Cómo elegir los valores</h3>
+<ul>
+  <li>Fija burst-limit a la velocidad que quieres que sientan las transferencias cortas, a menudo de 1.5 a 2 veces max-limit.</li>
+  <li>Mantén burst-threshold por debajo de max-limit, normalmente entre 60 y 80% de este, y ajusta burst-time para obtener la duración de burst que quieres.</li>
+  <li>Desactiva FastTrack, o excluye de él a los clientes con queue: los paquetes con fasttrack se saltan por completo las simple queues. Genera las queues con el <a href="/tools/mikrotik-simple-queue-generator/">generador de simple queues</a> o como perfiles PPP con el <a href="/tools/mikrotik-pppoe-server-generator/">generador de servidor PPPoE</a>.</li>
+</ul>

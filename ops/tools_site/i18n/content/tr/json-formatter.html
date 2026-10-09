@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "JSON biçimlendirici ve doğrulayıcı, çevrimiçi | Tanod Tools",
+  "description": "JSON'u tarayıcınızda biçimlendirin, küçültün ve doğrulayın. Hatalarda tam satır ve sütun gösterilir. Anahtarları sıralayın, kopyalayın veya indirin.",
+  "h1": "JSON biçimlendirici ve doğrulayıcı",
+  "lede": "JSON'u düzenlemek, küçültmek veya denetlemek için yapıştırın; herhangi bir hatanın tam satırını ve sütununu görün.",
+  "blurb": "JSON'u biçimlendirin, küçültün ve doğrulayın.",
+  "keywords": "json biçimlendirme json düzenleme json doğrulama json küçültme anahtar sıralama json formatter pretty print beautify minify lint validate sort keys",
+  "limits": "Yapıştırılan ya da .json dosyasından alınan en fazla yaklaşık 10 MB girdi.",
+  "howto_title": "JSON nasıl biçimlendirilir ve doğrulanır",
+  "howto": [
+    "JSON'unuzu kutuya yapıştırın veya sayfaya bir .json dosyası bırakın.",
+    "Düzeni seçin: 2 boşluk, 4 boşluk, sekme ya da küçültülmüş. Alfabetik olmalarını istiyorsanız Anahtarları sırala'yı açın.",
+    "JSON geçersizse sorunun altında bir işaretle satır ve sütunu görürsünüz. Geçerliyse sonucu kopyalayın veya indirin."
+  ],
+  "faq": [
+    ["JSON'um yükleniyor mu?", "Hayır. Tarayıcınızda ayrıştırılır ve biçimlendirilir; hiçbir zaman gönderilmez veya saklanmaz. Bu yüzden paylaşmak istemeyeceğiniz yapılandırmaları ya da verileri rahatça yapıştırabilirsiniz."],
+    ["Geçerli JSON ne sayılır?", "Standart biçim: çift tırnaklı anahtarlar ve dizeler; yorum, sondaki virgül, tek tırnak, <code>undefined</code> veya <code>NaN</code> yok. JavaScript nesne sabitleri veya yorumlu yapılandırma dosyaları gibi JSON'a benzeyen birçok dosya kesin olarak geçerli değildir ve işaretlenir."],
+    ["Biçimlendirme verimi değiştirir mi?", "Hayır. Sayılar yazıldığı gibi korunur (JavaScript'in tam olarak tutamayacağı çok uzun olanlar dahil), dizeler kaçış dizilerini korur ve anahtarlar, Anahtarları sırala'yı açmadıkça sırasını korur. Yalnızca boşluklar değişir."],
+    ["Anahtarları sırala nasıl çalışır?", "Her nesnedeki, her düzeydeki anahtarlar karakterlerine göre alfabetik sıralanır. Dizilerde sıra korunur, çünkü dizi öğelerinin sırası genellikle önemlidir."],
+    ["İstatistikler neyi gösterir?", "Bayt cinsinden girdi ve çıktı boyutunu, tüm düzeylerdeki toplam nesne anahtarı sayısını ve düz bir nesnenin derinliğinin 1 olduğu en yüksek iç içelik derinliğini."],
+    ["Girdi ne kadar büyük olabilir?", "Yaklaşık 10 MB. Sekmenin donma riskini almak yerine daha büyük girdi reddedilir. Çıktı alanı ilk iki milyon karaktere kadarını gösterir; Kopyala ve İndir her zaman tamamını içerir."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop is-compact" id="drop">
+  <label class="btn btn--sm"><input type="file" accept="application/json,.json,text/plain,.txt">{{mark:i-upload}}<span>.json dosyası aç</span></label>
+  <span class="drop__hint">Ya da aşağıya yapıştırın veya bu sayfada herhangi bir yere bir dosya bırakın.</span>
+</div>
+<div class="field">
+  <label for="j-in">JSON</label>
+  <textarea id="j-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder='{"name": "example", "tags": [1, 2, 3]}'></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="j-lay-l">Düzen</span>
+    <div class="seg" role="radiogroup" aria-labelledby="j-lay-l">
+      <label><input type="radio" name="layout" value="2" checked>2 boşluk</label>
+      <label><input type="radio" name="layout" value="4">4 boşluk</label>
+      <label><input type="radio" name="layout" value="tab">Sekme</label>
+      <label><input type="radio" name="layout" value="min">Küçült</label>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Anahtarlar</span>
+    <label class="check"><input type="checkbox" id="j-sort">Anahtarları sırala (tüm düzeyler)</label>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="j-err" hidden></pre>
+<div id="j-result" hidden>
+  <dl class="stats" id="j-stats">
+    <div><dt>Girdi</dt><dd id="j-s-in">0</dd></div>
+    <div><dt>Çıktı</dt><dd id="j-s-out">0</dd></div>
+    <div><dt>Anahtar</dt><dd id="j-s-keys">0</dd></div>
+    <div><dt>Derinlik</dt><dd id="j-s-depth">0</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="j-out-l">Sonuç</span>
+    <pre class="out util-json" id="j-out" tabindex="0" aria-labelledby="j-out-l"></pre>
+    <span class="help" id="j-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="j-copy" type="button">Kopyala</button>
+    <button class="btn" id="j-dl" type="button">.json indir</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="j-clear" type="button">Temizle</button>
+  </div>
+</div>
+<!--explain-->
+<h2>JSON'u biçimlendirme ve denetleme</h2>
+<p>JSON, veri için küçük ve katı bir metin biçimidir: süslü parantezli nesneler, köşeli parantezli diziler ve dize, sayı, <code>true</code>, <code>false</code> veya <code>null</code> olan değerler. Makineler boşluğu umursamaz ama insanlar umursar; bu yüzden bir biçimlendirici iç içe verileri okunur kılmak için girinti ve satır sonu ekler, bir küçültücü ise yer kazanmak için bunları kaldırır.</p>
+<p>Bu araç metninizi kendi ayrıştırıcısıyla okur; böylece bir şeyin ters gittiği tam karakteri gösterebilir. En sık yapılan hatalar, son öğeden sonra gelen virgül, çift yerine tek tırnak, tırnaksız bir anahtar, bir yorum veya sonda eksik bir parantezdir. Hata, satırı ve sütunu, o satırın bir kopyasını ve konumun altında bir işaret gösterir.</p>
+<p>Biçimlendirme yalnızca boşlukları değiştirir. Sayılar ve dize kaçışları yazıldığı gibi korunur; bu yüzden 12345678901234567890 gibi uzun bir kimlik, veriler JavaScript sayılarına okunsaydı olacağı gibi yuvarlanmaz.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Bir yapılandırmanın iki sürümünü mü karşılaştırıyorsunuz? İkisini de aynı seçeneklerle biçimlendirin, ardından <a href="/tools/text-diff/">Metin karşılaştır</a> aracını kullanın.</li>
+  <li>JSON'unuzun içinde bir Base64 değeri mi var? <a href="/tools/base64-encode-decode/">Base64 kodla ve çöz</a> ile çözün.</li>
+  <li>Verinin bir elektronik tabloda olması mı gerekiyor? <a href="/tools/json-to-csv/">JSON'dan CSV'ye</a> aracını veya ters yön için <a href="/tools/csv-to-json/">CSV'den JSON'a</a> aracını kullanın.</li>
+</ul>

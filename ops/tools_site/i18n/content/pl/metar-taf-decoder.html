@@ -1,0 +1,43 @@
+<!--meta
+{
+  "title": "Dekoder METAR i TAF: pogoda lotnicza po ludzku | Tanod Tools",
+  "description": "Wklej surowy METAR, SPECI lub TAF i zobacz opis prostym językiem: wiatr, widzialność, zjawiska, chmury, temperaturę, ciśnienie i kategorię lotu.",
+  "h1": "Dekoder METAR i TAF",
+  "lede": "Wklej surowy komunikat METAR lub TAF i przeczytaj go prostym językiem: wiatr, widzialność, zjawiska pogodowe, chmury, temperaturę, nastawę wysokościomierza i okresy prognozy.",
+  "blurb": "Surowe komunikaty pogodowe METAR i TAF, wyjaśnione.",
+  "keywords": "metar taf dekoder pogoda lotnicza speci cavok wiatr widzialność podstawa chmur kategoria lotu vfr ifr nastawa qnh dekodowanie tłumaczenie komunikat pogodowy lotnisko",
+  "limits": "Tylko do nauki i szybkiego odczytu. Nie do planowania lotu ani nawigacji: zawsze korzystaj z oficjalnych odpraw. Uwagi (RMK) są pokazywane tak, jak zapisano, a każda grupa, której dekoder nie rozumie, jest wypisana, a nie zgadywana.",
+  "howto_title": "Jak odczytać METAR lub TAF",
+  "howto": [
+    "Wklej surowy komunikat do pola, zaczynając od METAR, SPECI, TAF lub czteroliterowego kodu stacji. Kilka komunikatów oddzielonych znakiem = lub w osobnych wierszach zostanie zdekodowanych jeden po drugim.",
+    "Przeczytaj opis poniżej: każda grupa kodu jest zamieniona na słowa, a jednostki przeliczone na węzły, km/h, stopy i metry, °C i °F oraz hPa i inHg.",
+    "Sprawdź kategorię lotu i każdą linię oznaczoną jako niezdekodowana. Nieznane grupy są pokazane dokładnie tak, jak zapisano."
+  ],
+  "faq": [
+    ["Czym różni się METAR od TAF?", "METAR to obserwacja pogody na lotnisku w danej chwili, zwykle wydawana co godzinę (SPECI to nieplanowana aktualizacja po istotnej zmianie). TAF to prognoza dla lotniska, zwykle na 24 do 30 godzin, podzielona na prognozę bazową i grupy zmian."],
+    ["Jak czytać grupę wiatru, na przykład 29016G25KT?", "Pierwsze trzy cyfry to kierunek, z którego wieje wiatr, w stopniach prawdziwych (290 to zachód-północny zachód), kolejne dwie lub trzy cyfry to prędkość (16), G dodaje prędkość porywów (25), a ostatnie litery to jednostka: KT to węzły, MPS metry na sekundę, KMH kilometry na godzinę. VRB oznacza kierunek zmienny, a 00000KT ciszę."],
+    ["Co oznaczają grupy zmian w TAF?", "FM (from, od) rozpoczyna nowy zestaw warunków o podanej godzinie i zastępuje wszystko, co było wcześniej. BECMG oznacza stopniową zmianę w podanym okresie. TEMPO oznacza krótkotrwałe wahania, trwające każdorazowo krócej niż godzinę i łącznie mniej niż połowę okresu. PROB30 i PROB40 podają prawdopodobieństwo warunków, które po nich następują. INTER to starsze określenie TEMPO."],
+    ["Jak wyznaczane są kategorie lotu?", "Dekoder stosuje amerykańskie progi FAA, wyznaczane z najniższej warstwy chmur o zachmurzeniu dużym lub całkowitym (podstawa chmur) oraz z widzialności: VFR powyżej 3000 ft i 5 SM, MVFR od 1000 do 3000 ft lub 3 do 5 SM, IFR od 500 do poniżej 1000 ft lub 1 do poniżej 3 SM, a LIFR poniżej 500 ft lub 1 SM. CAVOK liczy się jako VFR. W innych krajach obowiązują inne limity, więc traktuj to jako wskazówkę."],
+    ["Dlaczego część mojego komunikatu jest pokazana jako niezdekodowana?", "Dekoder obsługuje podstawowe grupy ICAO i FAA. Grupy regionalne, wojskowe kody kolorów, grupy stanu pasa oraz wszystko z literówkami są wypisywane tak, jak zapisano, zamiast być zgadywane. Uwagi po RMK nigdy nie są interpretowane."],
+    ["Czy strona gdzieś wysyła mój komunikat?", "Nie. Komunikat jest dekodowany przez JavaScript w Twojej przeglądarce i nic nie jest przesyłane. Jeśli chcesz dekodować komunikaty z poziomu kodu, API dekodera opisane w przewodniku poniżej robi to samo."]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="mt-in">Surowy METAR lub TAF</label>
+  <textarea id="mt-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="METAR KSFO 080256Z 29016KT 10SM FEW003 16/13 A2986" aria-describedby="mt-msg"></textarea>
+  <span class="help">Jeden komunikat lub kilka oddzielonych znakiem = albo wierszami zaczynającymi się od METAR, SPECI lub TAF.</span>
+</div>
+<div class="actions">
+  <button class="btn" id="mt-example" type="button">Pokaż inny przykład</button>
+  <button class="btn btn--quiet" id="mt-clear" type="button">Wyczyść</button>
+</div>
+<p class="note mt-msg" id="mt-msg" role="status" aria-live="polite"></p>
+<div class="mt-out" id="mt-out" aria-live="polite"></div>
+<!--explain-->
+<h2>Jak dekoder czyta komunikat</h2>
+<p>METAR lub TAF to ciąg grup oddzielonych spacjami, występujących w ustalonej kolejności, zdefiniowanej w Załączniku 3 ICAO i w WMO Manual on Codes nr 306 (FM 15 METAR i FM 51 TAF), a w Stanach Zjednoczonych w Aeronautical Information Manual FAA 7-1-30. Dekoder odczytuje kod stacji, dzień i godzinę w UTC (DDHHMMZ), wiatr (kierunek, prędkość, porywy i zmienność), widzialność w metrach lub milach statutowych, zasięg widzialności na drodze startowej (RVR), zjawiska pogodowe, warstwy chmur, widzialność pionową, temperaturę i punkt rosy oraz nastawę wysokościomierza (Q to hPa, A to inHg w setnych częściach).</p>
+<p>Kody zjawisk łączą intensywność (- słabe, + silne, VC w sąsiedztwie), określniki (TS, SH, FZ i inne) oraz zjawiska (RA deszcz, SN śnieg, FG mgła, BR zamglenie i tak dalej). Grupy chmur podają zachmurzenie (FEW, SCT, BKN, OVC) i podstawę w setkach stóp nad poziomem terenu, a CB lub TCU oznaczają chmury konwekcyjne. Wilgotność względna jest szacowana z temperatury i punktu rosy wzorem Magnusa, es = 6.1094 e^(17.625 T / (T + 243.04)), więc jest przybliżona.</p>
+<p>Kategorie lotu wynikają z definicji FAA: podstawa chmur to najniższa warstwa o zachmurzeniu dużym lub całkowitym albo widzialność pionowa, a kategorię wyznacza gorsza z wartości: podstawa chmur lub widzialność. W TAF każda grupa bazowa lub zmian jest dekodowana osobno, z przedziałem czasu w UTC i własną kategorią. Czas podawany jest jako dzień miesiąca i godzina UTC, bo komunikaty nie zawierają miesiąca ani roku.</p>
+<p><strong>Nie do planowania lotu ani nawigacji.</strong> To narzędzie edukacyjne do czytania komunikatów. Przed lotem zawsze pobieraj pogodę z oficjalnego źródła.</p>

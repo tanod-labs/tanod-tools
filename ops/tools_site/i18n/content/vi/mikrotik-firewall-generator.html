@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Tạo tường lửa MikroTik cho RouterOS v7 | Tanod Tools",
+  "description": "Tạo tường lửa RouterOS v7 được gia cố: input và forward chain, FastTrack, drop invalid, ping giới hạn tốc độ, NAT và khóa dịch vụ. Chạy trong trình duyệt.",
+  "h1": "Tạo tường lửa MikroTik",
+  "lede": "Chọn interface WAN và LAN cùng các subnet quản trị, và nhận cấu hình nền tường lửa RouterOS v7 có chú thích để bạn xem lại và dán vào.",
+  "blurb": "Cấu hình nền tường lửa RouterOS v7 được gia cố, có khóa dịch vụ.",
+  "keywords": "tạo tường lửa mikrotik quy tắc firewall routeros v7 firewall filter input chain forward chain fasttrack drop invalid winbox giới hạn ip service gia cố bảo mật router script rsc mikrotik firewall rules hardening secure router",
+  "local_text": "Chạy trong trình duyệt; những gì bạn nhập không bao giờ rời khỏi thiết bị",
+  "limits": "Tạo cú pháp RouterOS v7 cho IPv4, kèm cấu hình nền IPv6 tùy chọn. Tên interface và danh sách được kiểm tra; script không được thử nghiệm trên router của bạn, nên hãy đọc kỹ trước khi áp dụng. MikroTik và RouterOS là nhãn hiệu của SIA Mikrotīkls. Công cụ này độc lập và không liên kết hay được MikroTik xác nhận.",
+  "howto_title": "Cách tạo tường lửa MikroTik",
+  "howto": [
+    "Nhập các interface hướng ra internet (ví dụ <code>ether1</code> hoặc <code>pppoe-out1</code>) và các interface nội bộ (thường là <code>bridge</code>).",
+    "Liệt kê các subnet bạn dùng để quản trị router. Chỉ chúng mới truy cập được WinBox và SSH, nên hãy bao gồm địa chỉ bạn đang kết nối từ đó.",
+    "Chọn các tùy chọn, đọc script và các ghi chú bên cạnh, rồi bật Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> trong terminal) và dán vào, hoặc tải tệp .rsc xuống và import."
+  ],
+  "faq": [
+    ["Vì sao input chain tách riêng khỏi forward chain?", "Input chain lọc các gói tin gửi đến chính router: WinBox, SSH, DNS, API. Forward chain lọc các gói tin đi xuyên qua nó giữa LAN và internet. Một router có thể mở toang ở input trong khi mạng LAN phía sau hoàn toàn an toàn, đó là cách nhiều thiết bị MikroTik trở thành open DNS resolver hoặc proxy."],
+    ["Vì sao chấp nhận kết nối established và related trước?", "Gần như mọi gói tin đều thuộc một kết nối mà tường lửa đã cho phép. Chấp nhận chúng ở quy tắc đầu tiên nghĩa là mỗi gói tin chỉ được kiểm tra một lần thay vì đi qua cả chain, và phản hồi cho truy vấn DNS hay NTP của chính router đi qua mà không cần quy tắc thêm. Gói tin invalid bị drop ngay sau đó."],
+    ["FastTrack làm gì, và khi nào nên tắt?", "FastTrack đánh dấu các kết nối established để gói tin của chúng bỏ qua phần lớn tường lửa, có thể nhân thông lượng lên nhiều lần trên router nhỏ. Điểm cần lưu ý: gói tin được fasttrack cũng bỏ qua simple queue, queue tree, quy tắc mangle và chính sách IPsec. Nếu bạn giới hạn băng thông theo từng khách hàng hoặc dùng policy routing, hãy tắt FastTrack hoặc loại các kết nối đó ra."],
+    ["Công cụ này có khiến tôi bị khóa khỏi router không?", "Có thể, nếu máy tính bạn dùng để quản trị không nằm trong subnet quản trị và LAN không được tin cậy. Hãy bật Safe Mode trước (<kbd>Ctrl</kbd>+<kbd>X</kbd> trong terminal, hoặc nút Safe Mode trong WinBox): nếu phiên của bạn bị ngắt, RouterOS hoàn tác mọi thứ kể từ khi Safe Mode bắt đầu."],
+    ["Tôi có thể dán vào router vẫn đang ở cấu hình mặc định không?", "Có. Interface list, thành viên của list và mục address-list chỉ được thêm khi còn thiếu. Khi không dùng chế độ thay thế, các quy tắc mới được nối thêm sau các quy tắc mặc định, nên quy tắc mặc định \"drop all not coming from LAN\" có thể đứng trước; hãy xem lại thứ tự, hoặc dùng chế độ thay thế trên router mà bạn có thể truy cập trực tiếp."],
+    ["Cấu hình của tôi có được gửi đi đâu không?", "Không. Script được JavaScript trong trang này ghép lại. Không có gì bạn nhập bị tải lên, lưu hay ghi log, và trang hoạt động ngoại tuyến sau khi đã tải."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Interface</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">Interface WAN</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">Hướng ra internet, ngăn cách bằng dấu phẩy. Chúng được thêm vào interface list WAN.</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">Interface LAN</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">Thường là bridge. Chúng được thêm vào interface list LAN.</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Quản trị</legend>
+      <div class="field">
+        <label for="fw-mgmt">Subnet quản trị</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">Chỉ các subnet này truy cập được WinBox (8291) và SSH (22). Hãy bao gồm địa chỉ bạn đang kết nối từ đó.</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">Cổng cần mở trên router</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">Tùy chọn, cho các dịch vụ do chính router cung cấp ra internet, như WireGuard.</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>Tin cậy LAN (chấp nhận mọi thứ từ LAN đến router)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>Giới hạn WinBox và SSH trong các subnet quản trị, và tắt telnet, FTP, WebFig và API</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>Giới hạn neighbour discovery và MAC access trong LAN; tắt bandwidth test server, proxy, SOCKS và UPnP</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Tùy chọn</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>FastTrack các kết nối established</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>Trả lời ping, có giới hạn tốc độ</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>Masquerade (source NAT) ra WAN</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">Các đường hầm IPsec kết thúc tại router này</label>
+        <label class="check"><input type="checkbox" id="fw-v6">Thêm cả tường lửa IPv6</label>
+        <label class="check"><input type="checkbox" id="fw-replace">Chế độ thay thế: xóa các quy tắc filter và NAT hiện có trước</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Nguy cơ bị khóa khỏi router.</strong> Hãy thử trong môi trường lab, hoặc bật Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> trong terminal) trước khi áp dụng cho router ở xa.</span></p>
+    <label for="fw-out" class="label">Script RouterOS v7</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">Sao chép script</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}Tải xuống .rsc</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Tường lửa được tạo ra làm gì</h2>
+<p>Script theo cùng cấu trúc với cấu hình mặc định của chính MikroTik, nhưng chặt chẽ hơn. <strong>Input chain</strong> bảo vệ router: nó chấp nhận các gói tin thuộc kết nối đã được cho phép, drop gói invalid, trả lời ping ở mức giới hạn, cho các subnet quản trị truy cập WinBox và SSH, chấp nhận LAN (hoặc chỉ DNS, DHCP, NTP và ICMP từ đó), và drop mọi thứ còn lại bằng một quy tắc cuối không có điều kiện. Chính quy tắc drop vô điều kiện ở cuối biến một danh sách ngoại lệ thành chính sách từ chối mặc định.</p>
+<p><strong>Forward chain</strong> bảo vệ mạng phía sau router. Lưu lượng established và related được chấp nhận (và có thể được fasttrack), gói tin invalid bị drop, và các kết nối mới đến từ WAN bị drop trừ khi một quy tắc destination NAT (port forward) đã tạo ra chúng. Quy tắc cuối cùng đó là thứ ngăn internet truy cập trực tiếp các địa chỉ riêng phía sau router, điều mà riêng masquerade không làm được.</p>
+<h3>Dịch vụ và các thành phần hỗ trợ</h3>
+<p>RouterOS mặc định lắng nghe trên nhiều dịch vụ quản trị. Script tắt các dịch vụ văn bản thuần (telnet, FTP, WebFig qua HTTP) và API, đồng thời thêm giới hạn địa chỉ cho WinBox và SSH như một lớp thứ hai phía sau tường lửa. MAC Telnet, MAC WinBox và neighbour discovery hoạt động ở lớp 2 và bỏ qua quy tắc firewall IP, nên chúng được giới hạn trong interface list LAN. Bandwidth test server, web proxy, SOCKS và UPnP bị tắt; hãy bật lại chỉ những gì bạn dùng.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Đã có tường lửa? Dán bản export của bạn vào <a href="/tools/mikrotik-firewall-auditor/">Kiểm tra tường lửa MikroTik</a> để xem nó còn thiếu gì.</li>
+  <li>Công khai một máy chủ phía sau router? <a href="/tools/mikrotik-port-forwarding/">Tạo port forwarding MikroTik</a> viết các quy tắc dst-nat, kèm hairpin NAT.</li>
+  <li>Cần danh sách chặn hoặc danh sách cho phép? Hãy tạo bằng <a href="/tools/mikrotik-address-list-generator/">Tạo address list MikroTik</a>.</li>
+</ul>

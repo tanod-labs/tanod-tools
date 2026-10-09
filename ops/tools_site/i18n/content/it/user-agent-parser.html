@@ -1,0 +1,53 @@
+<!--meta
+{
+  "title": "Analizzatore di user agent: browser, OS e dispositivo | Tanod Tools",
+  "description": "Scopri cosa dice lo user agent del tuo browser, o incolla una stringa qualsiasi, e ottieni browser, motore, sistema operativo, dispositivo e CPU, più Client Hints.",
+  "h1": "Analizzatore di user agent",
+  "lede": "Scomponi una stringa user agent in browser, motore, sistema operativo, dispositivo e CPU, a partire da quella del tuo browser.",
+  "blurb": "Analizza qualsiasi stringa user agent e vedi la tua con i Client Hints.",
+  "keywords": "analizzatore user agent qual è il mio user agent stringa ua rilevamento browser client hints useragent decoder navigator.userAgent googlebot curl user agent parser",
+  "limits": "L'analisi usa ua-parser-js 1.0.41 (MIT) ed è basata su pattern, quindi stringhe insolite o falsificate possono essere lette male. I Client Hints sono mostrati solo per il browser che stai usando ora, e solo dove quel browser li supporta (i browser Chromium sì; Firefox e Safari no).",
+  "howto_title": "Come leggere una stringa user agent",
+  "howto": [
+    "Lo user agent del tuo browser viene analizzato appena la pagina si carica. Per controllarne un altro, incollalo nella casella, per esempio da un log del server.",
+    "Leggi le righe di browser, motore, sistema operativo, dispositivo e CPU. Trattale come ciò che la stringa dichiara, non come fatti dimostrati.",
+    "Per il tuo browser, confronta il risultato con la sezione Client Hints, che può mostrare dettagli che la stringa accorciata omette."
+  ],
+  "faq": [
+    ["Cos'è una stringa user agent?", "È una riga di testo che un browser o un programma invia con ogni richiesta web per dire cos'è. A causa di decenni di trucchi di compatibilità, quasi ogni browser inizia con <code>Mozilla/5.0</code> e cita diversi altri browser, quindi leggerne una richiede il riconoscimento di pattern e non una semplice divisione."],
+    ["Perché Windows 11 risulta come Windows 10?", "Chrome e gli altri browser Chromium congelano la parte della piattaforma della stringa su \"Windows NT 10.0\", qualunque sia la vera versione di Windows. Solo i Client Hints possono distinguerli: una versione della piattaforma pari o superiore a 13 significa Windows 11. Questa pagina mostra quel valore per il tuo browser quando è disponibile."],
+    ["Perché il mio iPad dice di essere un Mac?", "Da iPadOS 13, Safari richiede per impostazione predefinita i siti desktop e invia uno user agent Macintosh. La sola stringa non può distinguere un Mac da un iPad, anche se una pagina può verificare la presenza di un touchscreen. Lo stesso vale per macOS: nella stringa la versione è congelata a 10_15_7."],
+    ["Cos'è la User-Agent reduction?", "Chrome sta eliminando dettagli dalla stringa per ridurre il tracciamento passivo: la versione minore appare come 0.0.0, il modello del dispositivo Android appare come una singola lettera K e la versione del sistema è fissa. I siti che hanno bisogno dei dettagli devono richiederli con i Client Hints."],
+    ["Cosa sono i Client Hints?", "Sono intestazioni strutturate e un'API JavaScript (<code>navigator.userAgentData</code>) che permettono a una pagina di richiedere dettagli specifici, come l'architettura o la versione completa del browser, invece di leggerli dalla stringa. Oggi li supportano solo i browser basati su Chromium."],
+    ["Posso fidarmi di uno user agent per decisioni di sicurezza?", "No. Chiunque può inviare qualsiasi stringa, e i bot spesso fingono di essere Chrome. Va bene per le statistiche e per scegliere un layout, ma non per il controllo degli accessi. Per verificare Googlebot, un sito controlla invece l'indirizzo IP del visitatore con una ricerca DNS inversa."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="u-in">Stringa user agent</label>
+    <textarea id="u-in" class="mono ua-in" rows="3" autocomplete="off" spellcheck="false" aria-describedby="u-info"></textarea>
+    <span class="help" id="u-info" aria-live="polite"></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="u-own" type="button">Usa quello del mio browser</button>
+    <button class="btn btn--primary" id="u-copy" type="button">Copia il risultato</button>
+  </div>
+  <dl class="dv-rows" id="u-rows" aria-label="User agent analizzato"></dl>
+  <p class="note" id="u-notes" hidden></p>
+  <h2 class="util-h">Client Hints del tuo browser</h2>
+  <dl class="dv-rows" id="u-hints" aria-label="Client Hints"></dl>
+  <p class="tt__report" id="u-hints-info" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Cosa ti dice uno user agent, e cosa nasconde</h2>
+<p>Lo user agent è nato come modo per un server di vedere quale browser stava facendo la richiesta, per inviare una pagina che funzionasse lì. I browser poi si sono copiati i nomi a vicenda per ottenere le pagine migliori, ed è per questo che oggi una stringa Chrome dice anche Mozilla, AppleWebKit, KHTML, Gecko e Safari. Un parser aggira il problema verificando i pattern in un ordine accurato e scegliendo la corrispondenza più specifica.</p>
+<p>La stringa viene anche accorciata di proposito. La User-Agent reduction di Chrome fissa la versione di Windows a NT 10.0, quella di macOS a 10_15_7, il modello Android a K e il numero di build a 0.0.0, in modo che la stringa non sia più una buona impronta digitale. I dettagli non sono scomparsi: una pagina che li richiede tramite i Client Hints ottiene versione della piattaforma, architettura, modello e versione completa del browser, e il browser del visitatore decide se rispondere.</p>
+<p>Usa la stringa per decisioni di massima e per i log, non per la fiducia. I crawler e gli strumenti da riga di comando come curl inviano le loro stringhe brevi, e tutto può essere falsificato. Se stai inseguendo un bug di layout, il rilevamento delle funzionalità nella pagina è più affidabile della lettura del nome del browser.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Un log del server pieno di risposte 403 o 429 a un solo client? Cerca i codici nei <a href="/tools/http-status-codes/">Codici di stato HTTP</a>.</li>
+  <li>Gli user agent negli URL o nelle query string sono spesso in percent-encoding; decodificali con <a href="/tools/url-encode-decode/">Codifica e decodifica URL</a>.</li>
+  <li>Le intestazioni copiate da una richiesta a volte contengono valori Base64; leggili con <a href="/tools/base64-encode-decode/">Codifica e decodifica Base64</a>.</li>
+</ul>

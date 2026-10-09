@@ -1,6 +1,6 @@
-import { $, fmtBytes, dropzone, setStatus, showResults, clearNode, baseName, announce, UserError, tx } from "./core.js?v=5";
-import { loadPdfLib } from "./pdfcore.js?v=5";
-import { serverInit, runServerJob, serverJob, fileToBase64, blobFromBase64, checkSize, available } from "./servercore.js?v=5";
+import { $, fmtBytes, dropzone, setStatus, showResults, clearNode, baseName, announce, UserError, tx } from "./core.js?v=11";
+import { loadPdfLib } from "./pdfcore.js?v=11";
+import { serverInit, runServerJob, serverJob, fileToBase64, blobFromBase64, checkSize, available } from "./servercore.js?v=11";
 
 const drop = $("#drop"), work = $("#work"), status = $("#status"), result = $("#result"), go = $("#go");
 const pw = $("#pw");

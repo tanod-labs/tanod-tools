@@ -1,0 +1,87 @@
+<!--meta
+{
+  "title": "MikroTik बर्स्ट कैलकुलेटर (burst-limit, threshold) | Tanod Tools",
+  "description": "देखें कि आपके max-limit, burst-limit, burst-threshold और burst-time से RouterOS क्यू कितनी देर बर्स्ट करती है, रेट चार्ट और क्यू व PPP rate-limit लाइनों के साथ।",
+  "h1": "MikroTik बर्स्ट कैलकुलेटर",
+  "lede": "max-limit, burst-limit, burst-threshold और burst-time भरें और देखें कि क्लाइंट खाली स्थिति से कितनी देर बर्स्ट करता है, वह कितना डेटा होता है, और पेस्ट करने के लिए क्यू लाइन।",
+  "blurb": "क्यू बर्स्ट सेटिंग के लिए बर्स्ट अवधि, डेटा और रेट चार्ट।",
+  "keywords": "मिक्रोटिक बर्स्ट कैलकुलेटर बर्स्ट लिमिट बर्स्ट थ्रेशोल्ड बर्स्ट टाइम सिंपल क्यू ppp प्रोफ़ाइल बर्स्ट mikrotik burst calculator burst limit burst threshold burst time max-limit simple queue burst rate-limit ppp profile burst how burst works routeros queue",
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो टाइप करते हैं वह आपके डिवाइस से बाहर नहीं जाता",
+  "limits": "असीमित माँग वाले एक क्लाइंट के लिए RouterOS बर्स्ट का मॉडल बनाता है, जिसे RouterOS की तरह burst-time/16 के चरणों में मापा जाता है। असली ट्रैफ़िक ज़्यादा झटकेदार होता है, और पैरेंट क्यू क्लाइंट को इन संख्याओं से नीचे सीमित कर सकती हैं। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik बर्स्ट सेटिंग की गणना कैसे करें",
+  "howto": [
+    "अपलोड और डाउनलोड के लिए max-limit, burst-limit, burst-threshold और burst-time भरें। रेट में k, M या G चलता है, जैसे 20M।",
+    "पढ़ें कि खाली स्थिति से बर्स्ट कितनी देर चलता है, और चार्ट देखें, जो अनुमत रेट और वह औसत दिखाता है जिसे RouterOS थ्रेशोल्ड से मिलाता है।",
+    "चाहें तो अपनी मनचाही बर्स्ट अवधि भरकर वह थ्रेशोल्ड पाएं जो उसे देता है, फिर सिंपल क्यू या PPP rate-limit लाइन कॉपी करें।"
+  ],
+  "faq": [
+    ["MikroTik पर बर्स्ट कैसे काम करता है?", "हर burst-time/16 पर RouterOS पिछले burst-time में क्लाइंट का औसत रेट निकालता है। जब तक वह औसत burst-threshold से नीचे है, क्यू क्लाइंट को burst-limit तक भेजने देती है; औसत के थ्रेशोल्ड तक पहुँचते ही क्लाइंट max-limit पर आ जाता है। खाली बैठे क्लाइंट का औसत शून्य होता है, इसलिए नया डाउनलोड burst-limit पर शुरू होता है और कुछ सेकंड बाद max-limit पर लौट आता है।"],
+    ["बर्स्ट कितनी देर चलता है?", "खाली स्थिति से शुरू करके, जब क्लाइंट मिलने वाला सब कुछ ले ले, बर्स्ट लगभग burst-threshold × burst-time ÷ burst-limit देर चलता है। burst-limit 40M, थ्रेशोल्ड 16M और burst-time 8s के साथ यह 16 × 8 ÷ 40 = 3.2 सेकंड है। औसत हर burst-time/16 (यहाँ आधे सेकंड) पर ही दोबारा जाँचा जाता है, इसलिए बर्स्ट असल में उस बिंदु के बाद की पहली जाँच पर, 3.5 सेकंड पर खत्म होता है; कैलकुलेटर इन जाँचों से गुज़रता है और दोनों आँकड़े दिखाता है।"],
+    ["burst-threshold, max-limit से नीचे क्यों होना चाहिए?", "अगर थ्रेशोल्ड max-limit से ऊपर है, तो max-limit पर डाउनलोड करते क्लाइंट का औसत थ्रेशोल्ड से नीचे रहता है, इसलिए बर्स्ट फिर चालू हो जाता है, औसत बढ़ता है, बर्स्ट बंद हो जाता है, और क्लाइंट बार-बार ऊपर-नीचे होता रहता है। थ्रेशोल्ड के max-limit से नीचे होने पर, लगातार डाउनलोड करता क्लाइंट max-limit पर ही रहता है और रुकने के बाद ही दोबारा बर्स्ट करता है।"],
+    ["rate-limit लाइन किसलिए है?", "PPP प्रोफ़ाइल, PPP सीक्रेट और RADIUS (Mikrotik-Rate-Limit एट्रिब्यूट) यही सीमाएँ एक स्ट्रिंग के रूप में लेते हैं: max-limit, burst-limit, burst-threshold और burst-time, हर एक राउटर की तरफ़ से rx/tx के रूप में, जो क्लाइंट के लिए अपलोड/डाउनलोड है। क्लाइंट के कनेक्ट होने पर RouterOS इससे एक डायनामिक सिंपल क्यू बनाता है।"],
+    ["क्या limit-at बर्स्ट का हिस्सा है?", "नहीं। limit-at वह रेट है जिसकी क्यू गारंटी देती है जब पैरेंट में भीड़ हो; बर्स्ट सिर्फ़ यह बदलता है कि क्लाइंट कुछ समय के लिए max-limit से कितना ऊपर जा सकता है। limit-at को max-limit के बराबर या उससे कम रखें।"],
+    ["क्या कुछ सर्वर को भेजा जाता है?", "नहीं। सिमुलेशन और चार्ट आपके ब्राउज़र में निकाले जाते हैं।"]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="bc">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>अपलोड (क्लाइंट से इंटरनेट)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-up-max">max-limit</label><input type="text" id="bc-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-burst">burst-limit</label><input type="text" id="bc-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-thr">burst-threshold</label><input type="text" id="bc-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-up-time">burst-time</label><input type="text" id="bc-up-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>डाउनलोड (इंटरनेट से क्लाइंट)</legend>
+      <div class="opts">
+        <div class="field"><label for="bc-down-max">max-limit</label><input type="text" id="bc-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-burst">burst-limit</label><input type="text" id="bc-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-thr">burst-threshold</label><input type="text" id="bc-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="bc-down-time">burst-time</label><input type="text" id="bc-down-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="bc-want">आपकी मनचाही बर्स्ट अवधि (सेकंड)</label>
+      <input type="text" id="bc-want" class="mono" value="" placeholder="5" inputmode="numeric" autocomplete="off" aria-describedby="bc-want-h">
+      <span class="help" id="bc-want-h">वैकल्पिक: वह थ्रेशोल्ड दिखाता है जो इतनी लंबी बर्स्ट देता है।</span>
+    </div>
+    <dl class="ros-facts" id="bc-facts" aria-live="polite" hidden></dl>
+  </div>
+  <div class="ros-gen__out">
+    <div class="seg" role="radiogroup" aria-label="चार्ट की दिशा">
+      <label><input type="radio" name="bc-dir" value="down" checked>क्लाइंट डाउनलोड</label>
+      <label><input type="radio" name="bc-dir" value="up">क्लाइंट अपलोड</label>
+    </div>
+    <figure class="ros-fig">
+      <div id="bc-chart"></div>
+      <figcaption id="bc-chart-t" class="help"></figcaption>
+    </figure>
+    <ul class="ros-legend" aria-hidden="true">
+      <li><i></i>अनुमत रेट</li>
+      <li class="k-avg"><i></i>burst-time पर औसत</li>
+      <li class="k-thr"><i></i>burst-threshold</li>
+    </ul>
+    <label for="bc-out" class="label">क्यू सेटिंग</label>
+    <textarea id="bc-out" class="mono gen-out ros-out ros-out--short" rows="8" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="bc-copy" type="button">कॉपी करें</button>
+      <button class="btn" id="bc-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="bc-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS क्यू में बर्स्ट, चरण-दर-चरण</h2>
+<p>बर्स्ट क्लाइंट को थोड़े समय के लिए अपने max-limit से तेज़ जाने देता है, ताकि वेब पेज और छोटे डाउनलोड तेज़ लगें जबकि लंबे ट्रांसफ़र प्लान के रेट पर टिक जाएं। इसे चार सेटिंग नियंत्रित करती हैं, जो सिंपल क्यू में हर एक अपलोड/डाउनलोड के रूप में दी जाती हैं: <code>max-limit</code>, सामान्य सीमा; <code>burst-limit</code>, बर्स्ट के दौरान की ऊँची सीमा; <code>burst-threshold</code>, वह औसत रेट जिस पर बर्स्ट रुकता है; और <code>burst-time</code>, वह खिड़की जिसमें वह औसत मापा जाता है।</p>
+<p>RouterOS burst-time को 16 खानों में बाँटता है। हर खाने के बाद वह पिछले 16 खानों में क्लाइंट का औसत रेट निकालता है और उसे थ्रेशोल्ड से मिलाता है: उससे नीचे होने पर क्लाइंट burst-limit इस्तेमाल कर सकता है; बराबर या ऊपर होने पर सिर्फ़ max-limit। खाली स्थिति से आने वाले क्लाइंट का औसत शून्य से शुरू होता है, वह burst-limit पर भेजता है, और औसत तब तक बढ़ता है जब तक थ्रेशोल्ड पार न कर ले। 8 s burst-time, 40M burst-limit और 16M थ्रेशोल्ड के साथ, औसत 3.2 s बाद थ्रेशोल्ड तक पहुँचता है, और अगली जाँच, 3.5 s पर, बर्स्ट खत्म कर देती है; तब तक क्लाइंट लगभग 17.5 MB ट्रांसफ़र कर चुका होता है। फिर जब तक क्लाइंट max-limit पर ट्रांसफ़र करता रहता है, औसत थ्रेशोल्ड के ऊपर रहता है, इसलिए अगले बर्स्ट के लिए ठहराव चाहिए।</p>
+<h3>मान चुनना</h3>
+<ul>
+  <li>burst-limit को उस गति पर रखें जैसी आप चाहते हैं कि छोटे ट्रांसफ़र लगें, अक्सर max-limit का 1.5 से 2 गुना।</li>
+  <li>burst-threshold को max-limit से नीचे रखें, आम तौर पर उसका 60 से 80%, और मनचाही बर्स्ट अवधि पाने के लिए burst-time ट्यून करें।</li>
+  <li>FastTrack बंद करें, या क्यू वाले क्लाइंट को उससे बाहर रखें: fasttrack किए पैकेट सिंपल क्यू को पूरी तरह छोड़ देते हैं। क्यू <a href="/tools/mikrotik-simple-queue-generator/">MikroTik सिंपल क्यू जनरेटर</a> से बनाएं, या PPP प्रोफ़ाइल के रूप में <a href="/tools/mikrotik-pppoe-server-generator/">MikroTik PPPoE सर्वर जनरेटर</a> से।</li>
+</ul>

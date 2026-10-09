@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Calculadora de distância de voo entre aeroportos | Tanod Tools",
+  "description": "Distância em grande círculo entre dois aeroportos (código IATA ou ICAO) ou duas coordenadas, em km, milhas náuticas e milhas, com rumo, ponto médio e tempo de voo.",
+  "h1": "Calculadora de distância de voo",
+  "lede": "Descubra a distância em grande círculo entre dois aeroportos ou dois pontos, em quilômetros, milhas náuticas e milhas terrestres, com o rumo, o ponto médio e um tempo de voo aproximado.",
+  "blurb": "Distância em grande círculo entre aeroportos, com rumo e tempo de voo.",
+  "keywords": "distancia de voo grande circulo aeroporto iata icao milhas nauticas quilometros rumo ponto medio tempo de voo haversine comprimento da rota quanto falta distancia entre aeroportos",
+  "limits": "Estimativa em linha reta, em grande círculo, numa Terra esférica (raio médio de 6.371 km), com precisão de cerca de 0,5%. Não serve para planejamento de voo nem para navegação: as rotas reais são mais longas por causa das aerovias, dos ventos e dos procedimentos. Dados dos aeroportos: OurAirports, domínio público, cerca de 4.500 aeroportos grandes e médios com código IATA.",
+  "howto_title": "Como achar a distância entre dois aeroportos",
+  "howto": [
+    "Digite o código de um aeroporto (IATA, como JFK, ou ICAO, como EGLL) ou parte do nome em cada campo e escolha na lista. Ou mude para coordenadas e informe latitude e longitude em graus decimais.",
+    "Defina a velocidade de cruzeiro e a unidade para ver um tempo de voo aproximado.",
+    "Leia a distância em km, milhas náuticas e milhas, o rumo inicial e o final, e o ponto médio da rota."
+  ],
+  "faq": [
+    ["O que é distância em grande círculo?", "É o caminho mais curto entre dois pontos de uma esfera, ao longo do arco de um círculo centrado no meio da Terra. Os voos longos seguem rotas próximas a ele, e por isso parecem curvos num mapa plano."],
+    ["Qual a precisão?", "A fórmula de haversine numa esfera de raio médio de 6.371 km fica a cerca de 0,5% da distância real sobre a forma levemente achatada da Terra: de JFK a Londres Heathrow ela dá cerca de 5.540 km. As coordenadas são arredondadas para cerca de 100 metros, o que não importa nessa escala."],
+    ["Por que meu voo real é mais longo?", "As aeronaves seguem aerovias, evitam áreas restritas e mau tempo e usam procedimentos de saída e chegada, então a distância voada costuma ser de 5 a 10% maior que a do grande círculo. O tempo de voo aqui é simplesmente a distância dividida pela velocidade informada, sem táxi, subida, descida, vento nem espera."],
+    ["O que é o rumo inicial?", "É a direção da bússola, em graus a partir do norte verdadeiro, que você tomaria ao sair do primeiro ponto ao longo do grande círculo. Ele muda no caminho, então o rumo final no destino é diferente. O rumo é verdadeiro, não magnético."],
+    ["Quais aeroportos estão incluídos?", "Aeroportos grandes e médios que têm código IATA, tirados dos dados de domínio público do OurAirports, cerca de 4.500. Se o seu não estiver na lista, use o modo de coordenadas. Os códigos e nomes são comparados no seu navegador, e a lista só é baixada deste site quando você abre esta página."],
+    ["O que é uma milha náutica?", "Uma milha náutica equivale exatamente a 1.852 metros, aproximadamente um minuto de latitude. A aviação a usa para distância e, como nós (milhas náuticas por hora), para velocidade."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Informar os dois locais como</legend>
+  <div class="seg" role="radiogroup">
+    <label><input type="radio" name="fd-mode" value="air" checked>Aeroportos</label>
+    <label><input type="radio" name="fd-mode" value="geo">Coordenadas</label>
+  </div>
+</fieldset>
+<div class="fd" id="fd-air">
+  <div class="field fd__pt">
+    <label for="fd-a">Origem</label>
+    <input type="text" id="fd-a" autocomplete="off" spellcheck="false" placeholder="JFK" aria-describedby="fd-a-pick">
+    <div class="fd__pick" id="fd-a-pick"></div>
+  </div>
+  <button class="btn btn--icon fd__swap" id="fd-swap" type="button" aria-label="Trocar os dois locais">{{mark:convert-image}}</button>
+  <div class="field fd__pt">
+    <label for="fd-b">Destino</label>
+    <input type="text" id="fd-b" autocomplete="off" spellcheck="false" placeholder="LHR" aria-describedby="fd-b-pick">
+    <div class="fd__pick" id="fd-b-pick"></div>
+  </div>
+</div>
+<div class="fd" id="fd-geo" hidden>
+  <div class="opts fd__pt">
+    <div class="field"><label for="fd-lat1">Origem, latitude</label><input type="text" id="fd-lat1" inputmode="decimal" autocomplete="off" placeholder="40.6398"></div>
+    <div class="field"><label for="fd-lon1">Origem, longitude</label><input type="text" id="fd-lon1" inputmode="decimal" autocomplete="off" placeholder="-73.7789"></div>
+  </div>
+  <button class="btn btn--icon fd__swap" id="fd-swap2" type="button" aria-label="Trocar os dois locais">{{mark:convert-image}}</button>
+  <div class="opts fd__pt">
+    <div class="field"><label for="fd-lat2">Destino, latitude</label><input type="text" id="fd-lat2" inputmode="decimal" autocomplete="off" placeholder="51.4706"></div>
+    <div class="field"><label for="fd-lon2">Destino, longitude</label><input type="text" id="fd-lon2" inputmode="decimal" autocomplete="off" placeholder="-0.4619"></div>
+  </div>
+</div>
+<p class="help">A latitude é positiva ao norte e negativa ao sul; a longitude é positiva a leste e negativa a oeste.</p>
+<div class="opts">
+  <div class="field">
+    <label for="fd-speed">Velocidade de cruzeiro</label>
+    <input type="text" id="fd-speed" inputmode="decimal" autocomplete="off" value="450">
+  </div>
+  <div class="field">
+    <label for="fd-unit">Unidade de velocidade</label>
+    <select id="fd-unit">
+      <option value="kt" selected>nós</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="fd-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="fd-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Distância</span> <span class="calc-main__val num" id="fd-main"></span></p>
+  <p class="fd__route" id="fd-route"></p>
+  <dl class="stats" id="fd-stats"></dl>
+</div>
+<!--explain-->
+<h2>Como a distância é calculada</h2>
+<p>A distância usa a fórmula de haversine (R. W. Sinnott, "Virtues of the Haversine", Sky and Telescope, 1984). Com latitudes φ1, φ2 e longitudes λ1, λ2: a = sin²(Δφ/2) + cos φ1 · cos φ2 · sin²(Δλ/2), e então d = 2R · atan2(√a, √(1−a)), em que R é o raio médio da Terra de 6.371,0088 km (IUGG). Os quilômetros são convertidos em milhas náuticas dividindo por 1,852 e em milhas terrestres dividindo por 1,609344, ambos exatos.</p>
+<p>O rumo inicial é θ = atan2(sin Δλ · cos φ2, cos φ1 · sin φ2 − sin φ1 · cos φ2 · cos Δλ), e o ponto médio do grande círculo segue as fórmulas dos Movable Type Scripts de Chris Veness, que são trigonometria esférica padrão. O rumo final é o inverso do rumo de volta a partir do destino, girado meia volta.</p>
+<p>Como a Terra é um esferoide achatado, métodos elipsoidais como o de Vincenty podem diferir em até cerca de 0,5%. Para comprimento de rota, vento e combustível, esta página é apenas uma estimativa. <strong>Não serve para planejamento de voo nem para navegação.</strong> As posições dos aeroportos vêm do conjunto de dados de domínio público OurAirports e são os pontos de referência dos aeroportos, não as cabeceiras das pistas.</p>

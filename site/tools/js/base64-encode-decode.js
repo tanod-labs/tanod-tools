@@ -1,4 +1,4 @@
-import { $, $$, debounce, dropzone, copyText, textBlob, setStatus, fmtBytes, fmtNum, tick, announce, UserError, friendlyError, tx } from "./core.js?v=5";
+import { $, $$, debounce, dropzone, copyText, textBlob, setStatus, fmtBytes, fmtNum, tick, announce, UserError, friendlyError, tx } from "./core.js?v=11";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 const STD = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

@@ -1,4 +1,4 @@
-import { $, el, copyText, textBlob, announce, tx, EN, fmtNum } from "./core.js?v=5";
+import { $, el, copyText, textBlob, announce, tx, EN, fmtNum } from "./core.js?v=11";
 
 /* Times are whole centiseconds. Elapsed time is measured with performance.now() deltas, never by counting ticks,
    so a throttled background tab still shows the right time when it wakes up. */

@@ -1,0 +1,58 @@
+<!--meta
+{
+  "title": "Audyt firewalla MikroTik na podstawie eksportu RouterOS | Tanod Tools",
+  "description": "Wklej eksport /export z RouterOS, aby znaleźć typowe luki: input bez końcowego drop, wystawiony WinBox lub SSH, otwarty resolver DNS, proxy, przesłonięte reguły.",
+  "h1": "Audyt firewalla MikroTik",
+  "lede": "Wklej /export swojego routera i uzyskaj uporządkowaną według ważności listę typowych luk w firewallu i usługach, każdą z wierszem źródłowym i proponowaną poprawką.",
+  "blurb": "Znajdź wystawione usługi, otwarte resolvery i błędy w regułach w eksporcie.",
+  "keywords": "audyt firewalla mikrotik routeros kontrola bezpieczeństwa przegląd eksportu winbox wystawiony otwarty resolver dns allow-remote-requests łańcuch input drop przesłonięte reguły utwardzanie lista kontrolna firewall audit",
+  "local_text": "Eksport jest sprawdzany w Twojej przeglądarce i nigdy nie opuszcza urządzenia",
+  "limits": "Heurystyczny przegląd jednego eksportu, a nie pełny audyt bezpieczeństwa: czyta /ip firewall filter i nat, /ip service, DNS, proxy, SOCKS, UPnP, SNMP, serwer bandwidth test, dostęp po MAC i użytkowników oraz ocenia osiągalność z WAN. Firewall IPv6, reguły raw i mangle, skrypty, ustawienia Wi-Fi i VPN nie są sprawdzane. MikroTik i RouterOS są znakami towarowymi SIA Mikrotīkls. To narzędzie jest niezależne i nie jest powiązane z MikroTik ani przez niego rekomendowane.",
+  "howto_title": "Jak zrobić audyt firewalla MikroTik",
+  "howto": [
+    "W terminalu na routerze uruchom <code>/export hide-sensitive</code> (na v7 <code>/export</code> domyślnie ukrywa sekrety) i skopiuj wynik albo zapisz go poleceniem <code>/export file=config</code> i otwórz tutaj plik .rsc.",
+    "Wklej go do pola. Opcjonalnie wklej też <code>/user print</code>, ponieważ eksporty pomijają użytkowników.",
+    "Przejrzyj wyniki od góry. Każdy pokazuje wiersz, którego dotyczy, i proponowaną poprawkę; zmiany wprowadzaj z włączonym Safe Mode."
+  ],
+  "faq": [
+    ["Czy bezpiecznie jest wklejać tutaj moją konfigurację?", "Eksport jest odczytywany przez JavaScript na tej stronie i nigdy nie opuszcza urządzenia: nie ma przesyłania ani przetwarzania po stronie serwera, a polityka bezpieczeństwa strony blokuje połączenia z innymi witrynami. Mimo to użyj <code>/export hide-sensitive</code> na v6 (v7 domyślnie ukrywa sekrety), aby w tekście w ogóle nie było haseł ani kluczy."],
+    ["Jak audytor ocenia, czy usługa jest wystawiona?", "Rozpoznaje interfejsy WAN na podstawie list interfejsów, reguł masquerade, klientów DHCP i PPPoE, a potem przechodzi łańcuch input tak, jak zrobiłoby to nowe połączenie z internetu na port usługi, podążając za skokami. Jeśli pierwsza dopasuje się reguła accept albo nic nie odrzuca pakietu przed końcem łańcucha, usługa jest uznawana za osiągalną. Reguły z warunkami, których nie potrafi ocenić, są liczone jako ewentualnie akceptujące, a nigdy jako odrzucające, więc woli ostrzec za dużo niż za mało."],
+    ["Co oznacza „reguła nigdy nie zadziała”?", "Wcześniejsza reguła w tym samym łańcuchu pasuje do każdego pakietu, do którego pasowałaby późniejsza, i go akceptuje lub odrzuca, więc późniejsza reguła nigdy nie widzi pakietu. Zwykle to reguła dodana na końcu łańcucha zamiast nad regułą łapiącą wszystko, dlatego nowe reguły „nie działają”."],
+    ["Dlaczego otwarty resolver DNS ma znaczenie?", "Przy allow-remote-requests=yes router odpowiada na DNS na każdym interfejsie. Jeśli łańcuch input nie odrzuca DNS z WAN, każdy może go wykorzystać do wzmacniania ataków DDoS, a dostawcy internetu regularnie blokują lub ostrzegają klientów, których routery to robią."],
+    ["Audytor nic nie znalazł. Czy mój router jest bezpieczny?", "Niekoniecznie. Sprawdza zestaw typowych, groźnych błędów w tym, co pokazuje eksport. Nie widzi luk samej wersji firmware poza kilkoma znanymi, haseł użytkowników, zaplanowanych skryptów ani niczego poza menu wymienionymi w opisie narzędzia. Aktualizuj RouterOS i resztę przejrzyj ręcznie."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-audit" id="au">
+  <div class="ros-paste" id="au-form">
+    <div class="field">
+      <label for="au-in">Eksport RouterOS</label>
+      <textarea id="au-in" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/ip firewall filter&#10;add action=accept chain=input connection-state=established,related&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}Otwórz plik .rsc<input type="file" id="au-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="au-sample" type="button">Wypróbuj słaby przykład</button>
+    </div>
+    <details class="ros-more">
+      <summary>Opcjonalnie: konta użytkowników (/user print)</summary>
+      <div class="field">
+        <label for="au-users">Wynik polecenia /user print</label>
+        <textarea id="au-users" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+      </div>
+    </details>
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Heurystyka, a nie pełny audyt.</strong> Sprawdza typowe błędy w tym, co pokazuje eksport. Czysty wynik nie dowodzi, że router jest bezpieczny.</span></p>
+  </div>
+  <div class="ros-results" id="au-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="au-copy" type="button" hidden>Kopiuj raport</button></div>
+</div>
+<!--explain-->
+<h2>Co sprawdza audytor</h2>
+<p>Audytor czyta menu eksportu, które decydują o tym, jak bardzo router jest wystawiony. W firewallu szuka <strong>łańcucha input bez domyślnego odrzucania</strong> (RouterOS akceptuje wszystko, co dotrze do końca łańcucha), brakujących szybkich ścieżek <strong>established/related</strong> i <strong>odrzucania pakietów invalid</strong>, łańcucha forward, który pozwala nowym połączeniom z WAN dotrzeć do LAN, reguł akceptujących wszystko oraz <strong>reguł, które nigdy nie zadziałają</strong>, ponieważ wcześniejsza reguła już przejmuje wszystkie ich pakiety. Następnie ustala, port po porcie, czy WinBox, SSH, telnet, FTP, WebFig i API są osiągalne z internetu, uwzględniając ograniczenia adresowe każdej usługi.</p>
+<p>Poza firewallem oznacza <strong>otwarty resolver DNS</strong>, włączone proxy webowe lub SOCKS (częsty znak przejętego routera), UPnP, SNMP z domyślną wspólnotą, serwer bandwidth test, MAC Telnet i MAC WinBox na wszystkich interfejsach, przekierowania portów publikujące RDP, SMB, bazy danych lub SSH na cały internet, domyślne konto <code>admin</code>, gdy wkleisz <code>/user print</code>, oraz wersje RouterOS z wyciekiem poświadczeń WinBox z 2018 roku.</p>
+<h3>Czego nie sprawdza</h3>
+<ul>
+  <li>Firewalla IPv6, tabel raw i mangle, skryptów i wpisów schedulera, zabezpieczeń Wi-Fi, ustawień VPN i IPsec oraz siły haseł.</li>
+  <li>Reguł dynamicznych i usług dodawanych w trakcie działania przez pakiety, które nigdy nie pojawiają się w eksporcie.</li>
+  <li>Wszystkiego, co zależy od Twojej sieci poza routerem. Napraw znalezione problemy, a potem wygeneruj czystą konfigurację bazową w narzędziu <a href="/tools/mikrotik-firewall-generator/">Generator firewalla MikroTik</a> i porównaj wynik w narzędziu <a href="/tools/routeros-export-diff/">Porównanie eksportów RouterOS</a>.</li>
+</ul>

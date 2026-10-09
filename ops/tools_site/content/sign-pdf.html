@@ -1,0 +1,144 @@
+<!--meta
+{
+  "category": "pdf",
+  "name": "Sign PDF",
+  "title": "Sign a PDF online: draw or type your signature | Tanod Tools",
+  "description": "Sign a PDF in your browser: draw or type your signature, place it on any page, add the date and save. Free, no signup, and the file never leaves your device.",
+  "h1": "Sign a PDF",
+  "lede": "Draw or type your signature, put it where you want it on a page, add the date if you like, and save the signed PDF. It all happens on your device.",
+  "blurb": "Draw or type a signature and place it on a PDF page.",
+  "keywords": "sign pdf add signature to pdf esign electronic signature draw signature type signature fill and sign sign document online initials date stamp",
+  "limits": "One PDF at a time, up to 200 MB and 500 pages. The signature is added to the page as a picture. It is not a digital signature with a certificate, so it does not prove who signed or that the file was left unchanged. Password-protected PDFs can't be edited.",
+  "howto_title": "How to sign a PDF",
+  "howto": [
+    "Choose a PDF file, or drag it onto the page.",
+    "Draw your signature, or switch to <strong>Typing</strong> and enter your name. Tick the box to add the date.",
+    "Pick the page, then drag the signature into place, tap where it should go, or use the sliders for position and size. Press <strong>Add signature</strong> and download the signed PDF."
+  ],
+  "faq": [
+    ["Is my PDF or my signature uploaded?", "No. The page is drawn and the signature is added by code running in your browser, using the open-source pdf.js and pdf-lib libraries. Neither the PDF nor the signature is sent to a server or stored, and both are gone when you close the tab."],
+    ["Is this a legally binding signature?", "Many people and organisations accept a picture of a signature on everyday documents, but whether it is enough depends on the document, on who asked for it and on the law where you are. This is not a certificate-based digital signature: it does not show who signed or that the file stayed the same afterwards. If you are unsure, ask whoever requested the signature what they accept."],
+    ["Can I sign more than one page?", "Yes. Choose <em>Every page</em> to put the same signature in the same place on all pages, which suits initials. Position and size are kept in proportion to each page, so pages of different sizes work too. To sign different pages in different places, sign once, then open the result and sign again."],
+    ["Can the signature be removed afterwards?", "It becomes part of the page, so every PDF viewer shows it, but it is an ordinary picture and someone with a PDF editor could remove it. Your original file is not changed: you download a new copy. Add a password with <a href=\"/tools/protect-pdf/\">Protect PDF</a> if you want to limit who can change the signed copy."],
+    ["Why does my typed signature look different on another device?", "Typed signatures use fonts that are installed on your device, and script styles differ between systems. The preview shows what will be saved. The saved signature is a picture, so it looks the same wherever the PDF is opened."],
+    ["Does it work on rotated pages?", "Yes. The page is shown the way it appears in a viewer, and the signature is turned with the page so it stands upright. Cropped pages are handled too: the position is measured inside the visible area."]
+  ],
+  "related": ["watermark-pdf", "protect-pdf", "add-page-numbers-to-pdf", "merge-pdf", "edit-pdf-metadata", "pdf-to-jpg"],
+  "app_category": "BusinessApplication",
+  "howto_time": "PT2M"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Drop a PDF here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choose a PDF</span></label>
+  <p class="drop__hint">Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">Your signature</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Create it by</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Drawing</label>
+          <label><input type="radio" name="sg-mode" value="type">Typing</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="Signature pad. Draw your signature here with a mouse, finger or pen."></canvas>
+        <span class="help">Draw with a mouse, finger or pen. If you can't draw, choose Typing.</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Undo last stroke</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Clear</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Your name</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Type your name">
+        </div>
+        <div class="field">
+          <label for="sg-font">Style</label>
+          <select id="sg-font">
+            <option value="script" selected>Script</option>
+            <option value="hand">Handwriting</option>
+            <option value="serif">Classic italic</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Preview of your typed signature"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Ink</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Black</label>
+          <label><input type="radio" name="sg-ink" value="blue">Blue</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">Add the date under the signature</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Date text</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Place it on the page</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Previous page">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Page</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Next page">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">Drag the signature on the page, tap where it should go, or use the sliders.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">Left to right: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">Top to bottom: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Size: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">Sign</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>This page</label>
+            <label><input type="radio" name="sg-scope" value="all">Every page</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Add signature</button>
+    <span class="help" id="sg-hint">Draw or type your signature first.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>How a signature gets onto a PDF page</h2>
+<p>A PDF page is a fixed layout, so signing it means adding something to the page, not typing into it. This tool turns your signature into a small picture with a transparent background, together with the date line if you ticked that box, and draws that picture on the page you chose. Your browser shows you the page using pdf.js and writes the new copy with pdf-lib, so the page you see is the page that gets signed.</p>
+<p>The position and the size are stored as fractions of the page, not as fixed measurements. That is why one set of sliders suits pages of different sizes when you sign every page, and why a page that is stored turned sideways still receives a signature that stands upright. Your original file is never modified; you download a separate signed copy.</p>
+<p>What you get is an image of a signature, which is how most people sign forms, letters and agreements by hand and then scan them. It is not a cryptographic digital signature. Those use a certificate issued to you, protect the file from changes after signing and need a service built for the purpose. Which kind a document needs depends on the document and on who asked for the signature.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Draw slowly and fill the pad: the signature is trimmed to the ink, so a bigger drawing gives a sharper result at the same size on the page.</li>
+  <li>Lock the signed copy with a password using <a href="/tools/protect-pdf/">Protect PDF</a>, or stamp every page with <a href="/tools/watermark-pdf/">Watermark PDF</a>.</li>
+  <li>Need to add a signed page to another document first? <a href="/tools/merge-pdf/">Merge PDF</a> joins files in the order you choose.</li>
+</ul>

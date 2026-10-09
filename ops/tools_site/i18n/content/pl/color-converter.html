@@ -1,0 +1,109 @@
+<!--meta
+{
+  "title": "Konwerter kolorów: HEX, RGB, HSL, CMYK i kontrast | Tanod Tools",
+  "description": "Przeliczaj kolory między HEX, RGB, HSL, HSV i CMYK, sprawdzaj nazwy kolorów CSS i współczynnik kontrastu WCAG tekstu na tle. Bezpłatnie, w przeglądarce.",
+  "h1": "Konwerter kolorów",
+  "lede": "Przelicz kolor między HEX, RGB, HSL, HSV i CMYK oraz sprawdź, czy dwa kolory mają wystarczający kontrast dla czytelnego tekstu.",
+  "blurb": "HEX, RGB, HSL, CMYK i sprawdzanie kontrastu WCAG.",
+  "keywords": "konwerter kolorów hex na rgb rgb na hex hsl cmyk hsv próbnik kolorów kontrast współczynnik kontrastu wcag dostępność nazwy kolorów css color converter",
+  "limits": "Odczytuje HEX (3, 4, 6 lub 8 cyfr), rgb(), hsl(), hsv(), cmyk() i nazwy kolorów CSS; inną składnię kolorów CSS odczytuje przeglądarka, o ile potrafi. HSL, HSV i CMYK są pokazywane z jednym miejscem po przecinku.",
+  "howto_title": "Jak przeliczyć kolor",
+  "howto": [
+    "Wpisz lub wklej kolor w dowolnym popularnym formacie, na przykład <code>#1636a3</code>, <code>rgb(22, 54, 163)</code>, <code>hsl(226, 76%, 36%)</code> lub <code>navy</code>, albo wybierz go próbnikiem kolorów.",
+    "Skopiuj potrzebny format z listy. Wartości aktualizują się w trakcie pisania.",
+    "W sekcji <strong>Sprawdzanie kontrastu</strong> podaj kolor tekstu i kolor tła, aby zobaczyć ich współczynnik kontrastu i to, czy spełniają WCAG AA i AAA."
+  ],
+  "faq": [
+    ["Czy wartość CMYK nadaje się do druku?", "Tylko w przybliżeniu. CMYK tutaj to prosty wzór przeliczający ekranowy RGB bez profilu kolorów, którego używa większość konwerterów online. Drukarnie pracują z konkretnymi farbami i papierem, opisanymi profilem ICC, więc do prac drukarskich przeliczaj kolory w programie graficznym z profilem otrzymanym od drukarni."],
+    ["Jak obliczany jest współczynnik kontrastu?", "Według wzoru WCAG 2: dla każdego koloru obliczana jest luminancja względna z wartości sRGB, a współczynnik to (jaśniejszy + 0,05) podzielone przez (ciemniejszy + 0,05). Mieści się w zakresie od 1:1 (brak kontrastu) do 21:1 (czerń na bieli). Aktualny tekst WCAG używa we wzorze progu 0,04045; starsze wersje podawały 0,03928, co daje ten sam wynik dla każdego koloru 8-bitowego."],
+    ["Jakich współczynników wymagają AA i AAA?", "Zwykły tekst wymaga 4,5:1 dla AA i 7:1 dla AAA. Duży tekst, czyli co najmniej 24 px zwykły lub około 18,7 px pogrubiony, wymaga 3:1 dla AA i 4,5:1 dla AAA. Ikony, obramowania pól i inne elementy interfejsu wymagają 3:1 (WCAG 1.4.11). Współczynnik nie jest zaokrąglany w górę: 4,49:1 nie spełnia AA dla zwykłego tekstu."],
+    ["Co z kolorami przezroczystymi?", "Częściowo przezroczysty kolor tekstu jest najpierw mieszany z tłem, tak jak pokazuje go ekran, i mierzony jest kolor po zmieszaniu. Częściowo przezroczyste tło jest traktowane tak, jakby leżało na bieli. Kanały są po zmieszaniu zaokrąglane do liczb całkowitych, tak jak pokazałby je wyświetlacz."],
+    ["Dlaczego wartości HSL zmieniają się nieco po przeliczeniu z powrotem?", "Kolory ekranowe mają 256 poziomów na kanał, więc większość wartości HSL i HSV nie trafia dokładnie w żaden z nich. Konwerter zachowuje wewnętrznie pełną precyzję i zaokrągla tylko do wyświetlenia: HEX i RGB do liczb całkowitych, HSL, HSV i CMYK do jednego miejsca po przecinku."],
+    ["Czy zna nazwy kolorów CSS?", "Tak, wszystkie 148 nazwanych kolorów CSS, takich jak <code>rebeccapurple</code> i <code>cornflowerblue</code>. Wpisz nazwę, aby ją przeliczyć; gdy kolor dokładnie odpowiada nazwie, nazwa też jest pokazywana. Niektóre kolory mają dwie nazwy, na przykład <code>aqua</code> i <code>cyan</code>."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="col-top">
+    <div class="util-stack">
+      <div class="col-in">
+        <div class="field">
+          <label for="c-in">Kolor</label>
+          <input type="text" id="c-in" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="c-info">
+        </div>
+        <div class="field">
+          <label for="c-pick">Próbnik</label>
+          <input type="color" id="c-pick" value="#1636a3">
+        </div>
+      </div>
+      <p class="tt__report" id="c-info" aria-live="polite"></p>
+    </div>
+    <div class="col-swatch" aria-hidden="true"><i id="c-swatch"></i></div>
+  </div>
+  <dl class="dv-rows" id="c-out">
+    <div><dt>HEX</dt><dd id="o-hex"></dd></div>
+    <div><dt>RGB</dt><dd id="o-rgb"></dd></div>
+    <div><dt>HSL</dt><dd id="o-hsl"></dd></div>
+    <div><dt>HSV / HSB</dt><dd id="o-hsv"></dd></div>
+    <div><dt>CMYK</dt><dd id="o-cmyk"></dd></div>
+    <div><dt>Nazwa CSS</dt><dd id="o-name"></dd></div>
+  </dl>
+
+  <h2 class="util-h">Sprawdzanie kontrastu</h2>
+  <div class="col-pair">
+    <div class="col-in">
+      <div class="field">
+        <label for="k-fg">Kolor tekstu</label>
+        <input type="text" id="k-fg" class="mono" value="#1636a3" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-fg-pick">Próbnik</label>
+        <input type="color" id="k-fg-pick" value="#1636a3">
+      </div>
+    </div>
+    <div class="col-in">
+      <div class="field">
+        <label for="k-bg">Kolor tła</label>
+        <input type="text" id="k-bg" class="mono" value="#ffffff" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="k-bg-pick">Próbnik</label>
+        <input type="color" id="k-bg-pick" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--sm" id="k-swap" type="button">Zamień kolory</button>
+    <button class="btn btn--sm btn--quiet" id="k-use" type="button">Użyj przeliczonego koloru jako koloru tekstu</button>
+  </div>
+  <p class="tt__report" id="k-info" aria-live="polite"></p>
+  <div class="col-sample" id="k-sample" aria-hidden="true">
+    <span class="col-sample__big">Duży tekst, 24 px</span>
+    <span class="col-sample__small">Zwykły tekst akapitu w rozmiarze 15 px, którego używa większość akapitów.</span>
+  </div>
+  <p>Współczynnik kontrastu <span class="col-ratio" id="k-ratio" aria-live="polite">–</span></p>
+  <table class="col-checks">
+    <thead><tr><th scope="col">Zastosowanie</th><th scope="col">Wymaga</th><th scope="col">Wynik</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Zwykły tekst, AA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Zwykły tekst, AAA</th><td class="num">7:1</td><td><span class="col-badge" data-min="7"></span></td></tr>
+      <tr><th scope="row">Duży tekst, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+      <tr><th scope="row">Duży tekst, AAA</th><td class="num">4,5:1</td><td><span class="col-badge" data-min="4.5"></span></td></tr>
+      <tr><th scope="row">Ikony i elementy interfejsu, AA</th><td class="num">3:1</td><td><span class="col-badge" data-min="3"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" id="k-note" hidden></p>
+</div>
+<!--explain-->
+<h2>Formaty kolorów i kontrast</h2>
+<p>HEX i RGB opisują kolor ekranowy jako ilości czerwieni, zieleni i błękitu od 0 do 255; HEX po prostu zapisuje każdą ilość jako dwie cyfry szesnastkowe, z opcjonalną trzecią parą dla krycia. HSL i HSV opisują te same kolory przez odcień (kąt na kole barw), nasycenie oraz jasność lub wartość, co ułatwia wybranie jaśniejszej lub bardziej przygaszonej wersji koloru. To różne współrzędne tych samych kolorów sRGB, więc przeliczanie między nimi jest dokładne z wyjątkiem zaokrągleń.</p>
+<p>CMYK jest inny: opisuje farbę, a prawdziwe przeliczenie zależy od procesu druku. Pokazana wartość pochodzi z naiwnego wzoru (czerń to 1 minus najjaśniejszy kanał, a pozostałe farby uzupełniają resztę), przydatnego do prac orientacyjnych, ale niezastępującego profilu drukarskiego.</p>
+<p>Sprawdzanie kontrastu stosuje wzór kontrastu WCAG 2, używany w audytach dostępności i narzędziach deweloperskich przeglądarek. Mierzy wyłącznie kontrast luminancji, więc nie powie ci nic o parach kolorów problematycznych przy ślepocie barw, takich jak czerwony na zielonym, a bardzo cienkie lub małe czcionki mogą wymagać większego kontrastu niż minimum.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz koloru piksela ze zdjęcia lub zrzutu ekranu? Użyj narzędzia <a href="/tools/image-color-picker/">Pobierz kolor z obrazu</a>.</li>
+  <li>Robisz kod QR w kolorach marki? <a href="/tools/qr-code-generator/">Generator kodów QR</a> ostrzega, gdy kontrast jest zbyt niski do zeskanowania.</li>
+  <li>Przeliczasz liczby szesnastkowe, które nie są kolorami? Wypróbuj <a href="/tools/number-base-converter/">Konwerter systemów liczbowych</a>.</li>
+  <li>Sprawdzasz kontrast w kodzie lub dla agenta AI? Zobacz <a href="https://tanod.dev/learn/color-contrast-checker-api.html">przewodnik po API sprawdzania kontrastu kolorów</a>.</li>
+</ul>

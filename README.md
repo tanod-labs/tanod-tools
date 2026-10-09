@@ -1,7 +1,8 @@
 # Tanod Tools
 
-The source of [Tanod Tools](https://tanod.dev/tools/): 100 free tools for PDFs, images, text, code
-and everyday calculations. 94 of them run entirely in your browser, and your files never leave
+The source of [Tanod Tools](https://tanod.dev/tools/): 153 free tools for PDFs, images, text, code,
+e-invoices (XRechnung, Factur-X, FatturaPA, Peppol, KSeF, e-Fatura, Vietnam, Mexico CFDI), aviation,
+MikroTik routers and everyday calculations. 147 of them run entirely in your browser, and your files never leave
 your device. This repository holds the code that runs in the browser and the generator that
 builds the pages, so you can read it, run it locally and check the privacy claims yourself.
 
@@ -26,7 +27,7 @@ This is how the site states it, on every tools page:
 | Kind | Tools |
 |---|---|
 | **Server** (6): the file or URL you choose is sent to tanod.dev | Compress PDF, OCR PDF, Web page to PDF, Protect PDF, Unlock PDF, Image to text (OCR) |
-| **Browser only** (94): nothing is sent | Everything else |
+| **Browser only** (147): nothing is sent | Everything else |
 
 The browser-only tools by category:
 

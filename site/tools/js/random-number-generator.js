@@ -1,6 +1,6 @@
-import { $, copyText, textBlob, setStatus, txn, tx, EN, fmtNum, announce } from "./core.js?v=5";
-import { DECIMAL } from "./i18n.js?v=5";
-import { randBelow, sampleDistinct } from "./randcore.js?v=5";
+import { $, copyText, textBlob, setStatus, txn, tx, EN, fmtNum, announce } from "./core.js?v=11";
+import { DECIMAL } from "./i18n.js?v=11";
+import { randBelow, sampleDistinct } from "./randcore.js?v=11";
 
 const MAX_COUNT = 10000;
 const MAX_DIGITS = 30;

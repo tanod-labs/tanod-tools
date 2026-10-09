@@ -1,0 +1,71 @@
+<!--meta
+{
+  "title": "Markdown'dan HTML'ye dönüştürücü ve önizleme | Tanod Tools",
+  "description": "Markdown'ı tarayıcınızda temiz HTML'ye çevirin: GitHub tarzı tablolar, görev listeleri ve canlı önizleme. Güvenli olmayan HTML kaldırılır. Ücretsiz, yükleme yok.",
+  "h1": "Markdown'dan HTML'ye dönüştürücü",
+  "lede": "Markdown yazın veya yapıştırın; yazdıkça temiz HTML alın ve nasıl görüneceğinin önizlemesine bakın.",
+  "blurb": "Markdown'ı önizlemeyle HTML'ye dönüştürün.",
+  "keywords": "markdown html dönüştürme md gfm github tablo önizleme oluşturma readme markdown to html convert preview render",
+  "limits": "Yazılan, yapıştırılan ya da bir .md veya .txt dosyasından alınan en fazla yaklaşık 5 MB Markdown. Sonuç siz yazdıkça güncellenir.",
+  "howto_title": "Markdown nasıl HTML'ye dönüştürülür",
+  "howto": [
+    "Markdown'ınızı yazın veya yapıştırın ya da bir .md dosyası açın.",
+    "HTML'i sağda okuyun ya da oluşturulmuş halini görmek için Önizleme'ye geçin. Eksiksiz bir sayfa gerekiyorsa tam belge seçeneğini açın.",
+    "HTML'i kopyalayın veya .html dosyası olarak indirin."
+  ],
+  "faq": [
+    ["Metnim yükleniyor mu?", "Hayır. Markdown, açık kaynaklı marked kitaplığıyla tarayıcınızda dönüştürülür; hiçbir şey bir yere gönderilmez veya saklanmaz."],
+    ["Hangi Markdown sözdizimi destekleniyor?", "CommonMark artı GitHub eklemeleri: tablolar, görev listeleri (<code>- [x] done</code>), <code>~~</code> ile üstü çizili metin, çitli kod blokları ve otomatik bağlantılar. Tek satır sonları, standart Markdown'daki gibi tek bir paragrafta birleştirilir; GitHub yorumlarında olduğu gibi korunmaları için <em>Satır sonları &lt;br&gt; olsun</em> seçeneğini açın."],
+    ["HTML'i bir web sitesine koymak güvenli mi?", "Siz görmeden önce açık kaynaklı DOMPurify kitaplığıyla temizlenir. Script'ler, <code>onerror</code> gibi olay işleyicileri, <code>javascript:</code> bağlantıları, iframe'ler ve gömülü nesneler kaldırılır; sonucun altındaki satır nelerin çıkarıldığını listeler. Markdown içine yazılan <code>&lt;details&gt;</code> veya <code>&lt;sup&gt;</code> gibi olağan HTML korunur. Başkasından gelen her içerikte olduğu gibi kendi sitenizin korumalarını yerinde tutun."],
+    ["Önizlemede bir resim neden yer tutucu olarak görünüyor?", "Önizleme başka bir web sitesinden hiçbir şey yüklemez; böylece metniniz o siteye açığa çıkmaz ve sayfa gizli kalır. Web adreslerinden gelen resimler, adresleriyle birlikte etiketli bir yer tutucu olarak görünür. HTML kodu yine olağan <code>&lt;img&gt;</code> etiketini içerir; bu yüzden resim, yayımladığınız her yerde görünecektir."],
+    ["Tam belge seçeneği ne ekler?", "HTML'in çevresine eksiksiz bir sayfa: bir doctype, UTF-8 karakter kümeli bir <code>&lt;head&gt;</code>, bir mobil viewport etiketi ve ilk başlıktan alınan bir başlık. Mevcut bir sayfaya veya bir içerik yönetim sistemine yapıştırıyorsanız kapalı bırakın."],
+    ["Başlıklar bağlantılar için id öznitelikleri alıyor mu?", "Hayır. Başlıklar düz <code>&lt;h1&gt;</code> ile <code>&lt;h6&gt;</code> etiketleri olarak üretilir. Çapa (anchor) gerekiyorsa id'leri sitenizin şablonuna veya elle ekleyin."]
+  ]
+}
+-->
+<!--tool-->
+<div class="tt">
+  <div class="tt__panes tt__panes--2">
+    <div class="field">
+      <label for="md" class="md-label">Markdown</label>
+      <textarea id="md" class="mono md-pane" spellcheck="false" autocomplete="off" placeholder="# Bir başlık&#10;&#10;Biraz **kalın** metin ve bir [bağlantı](https://example.com).&#10;&#10;- [x] Tamamlandı&#10;- [ ] Yapılacak"></textarea>
+    </div>
+    <div class="field md-result">
+      <div class="md-result__head">
+        <span class="label" id="view-l">Sonuç</span>
+        <div class="seg" role="radiogroup" aria-labelledby="view-l">
+          <label><input type="radio" name="view" value="code" checked>HTML kodu</label>
+          <label><input type="radio" name="view" value="preview">Önizleme</label>
+        </div>
+      </div>
+      <textarea id="out" class="mono md-pane" readonly aria-label="HTML kodu"></textarea>
+      <div id="preview" class="md-preview md-pane" tabindex="0" role="region" aria-label="Önizleme" hidden></div>
+    </div>
+  </div>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="breaks">Satır sonları &lt;br&gt; olsun</label>
+    <label class="check"><input type="checkbox" id="full">Tam bir HTML belgesine sar</label>
+  </div>
+  <p class="tt__report" id="report" aria-live="polite">Başlamak için Markdown yazın veya yapıştırın.</p>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button" disabled>{{mark:i-copy}}HTML'i kopyala</button>
+    <button class="btn" id="dl" type="button" disabled>{{mark:i-download}}.html indir</button>
+    <button class="btn btn--quiet" id="clear" type="button">Temizle</button>
+    <span class="spacer"></span>
+    <div class="drop is-compact wc__open" id="drop">
+      <label class="btn btn--primary"><input type="file" accept="text/markdown,.md,.markdown,text/plain,.txt">{{mark:i-upload}}<span>.md dosyası aç</span></label>
+    </div>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+</div>
+<!--explain-->
+<h2>Markdown nasıl HTML olur</h2>
+<p>Markdown, biçimlendirilmiş metni düz karakterlerle yazmanın bir yoludur: <code>#</code> bir başlık başlatır, <code>**iki yıldız**</code> kalın yapar, tireyle başlayan bir satır bir liste öğesidir. README dosyalarının, birçok not uygulamasının ve çoğu geliştirici forumunun kullandığı biçim budur. Tarayıcılar, e-posta şablonları ve içerik sistemleri HTML ister; bu yüzden bir noktada Markdown'ın çevrilmesi gerekir.</p>
+<p>Bu dönüştürücü, GitHub Flavored Markdown eklemeleriyle birlikte CommonMark'ı izler; böylece tablolar, görev listeleri ve üstü çizili metin GitHub'daki gibi çalışır. Ürettiği HTML ardından, HTML gösterildiğinde kod çalıştırabilecek her şeyi kaldıran, olağan biçimlendirmeye ise dokunmayan bir temizleyiciden geçirilir.</p>
+<p>Önizleme sekmesi aynı HTML'i sayfada oluşturulmuş olarak gösterir. Bağlantılar yeni sekmede açılır ve başka yerde barındırılan resimler getirilmek yerine yer tutucu olarak gösterilir; böylece siz çalışırken yazdığınız hiçbir şey başka bir siteye gönderilmez.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>HTML'iniz var ve Markdown mı istiyorsunuz? <a href="/tools/html-to-markdown/">HTML'den Markdown'a</a> aracını kullanın.</li>
+  <li>Bir yazının uzunluğunu <a href="/tools/word-counter/">Kelime sayacı</a> ile kontrol edin.</li>
+  <li>İki taslağı <a href="/tools/text-diff/">Metin karşılaştır</a> ile karşılaştırın.</li>
+</ul>

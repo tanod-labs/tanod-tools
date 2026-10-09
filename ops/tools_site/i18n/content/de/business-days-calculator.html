@@ -1,0 +1,120 @@
+<!--meta
+{
+  "title": "Werktage berechnen: Arbeitstage zählen oder addieren | Tanod Tools",
+  "description": "Werktage zwischen zwei Daten zählen oder zu einem Datum addieren und abziehen, mit eigenem Wochenende und Feiertagen. Kostenlos, im Browser.",
+  "h1": "Werktage-Rechner",
+  "lede": "Zählen Sie die Arbeitstage zwischen zwei Daten oder addieren und subtrahieren Sie Werktage von einem Datum, mit Ihrem Wochenende und Ihrer eigenen Feiertagsliste.",
+  "blurb": "Arbeitstage zwischen Daten oder zu einem Datum addieren, mit Feiertagen.",
+  "keywords": "werktage rechner arbeitstage berechnen werktage zwischen zwei daten arbeitstage zählen networkdays arbeitstag addieren werktage addieren werktage abziehen wochenende freitag samstag feiertage ohne wochenenden",
+  "local_text": "Läuft in Ihrem Browser; nichts, was Sie eingeben, verlässt Ihr Gerät",
+  "limits": "Daten von Jahr 1 bis 9999 im gregorianischen Kalender. Dieses Tool hat keine Feiertagsdaten: Es überspringt nur die Daten, die Sie selbst angeben, und ein angegebener Feiertag, der auf ein Wochenende fällt, wird nicht doppelt abgezogen. Die Zählung folgt denselben Regeln wie die Tabellenfunktionen NETWORKDAYS und WORKDAY (NETTOARBEITSTAGE und ARBEITSTAG).",
+  "howto_title": "So zählen Sie Werktage",
+  "howto": [
+    "Wählen Sie <em>Werktage zählen</em> und geben Sie Start- und Enddatum ein, oder wählen Sie <em>Werktage addieren oder subtrahieren</em> und geben Sie ein Startdatum und eine Anzahl Tage ein.",
+    "Wählen Sie Ihr Wochenende (Samstag und Sonntag, Freitag und Samstag, nur Sonntag oder beliebige Tage) und fügen Sie gesetzliche Feiertage als <code>YYYY-MM-DD</code> ein, einen pro Zeile.",
+    "Lesen Sie die Werktage oder das resultierende Datum ab, zusammen mit den Kalendertagen, Wochenendtagen und Feiertagen, die übersprungen wurden."
+  ],
+  "faq": [
+    ["Werden das Startdatum und das Enddatum mitgezählt?", "Standardmäßig werden beide mitgezählt, so wie es die Tabellenfunktion NETWORKDAYS tut: Montag bis Freitag einer Woche sind 5 Werktage. Deaktivieren Sie <em>Startdatum mitzählen</em> oder <em>Enddatum mitzählen</em>, um eines davon wegzulassen. Beim Addieren von Werktagen wird das Startdatum nie mitgezählt, wie bei WORKDAY: Ein Werktag nach einem Freitag ist der folgende Montag."],
+    ["Wie verwende ich ein anderes Wochenende als Samstag und Sonntag?", "Wählen Sie <em>Freitag und Samstag</em> für das Wochenende, das in vielen Ländern des Nahen Ostens gilt, <em>Nur Sonntag</em> für eine Sechstagewoche oder <em>Benutzerdefiniert</em>, um beliebige Wochentage anzukreuzen. Mindestens ein Wochentag muss ein Arbeitstag bleiben."],
+    ["Wie gebe ich Feiertage ein?", "Tippen oder fügen Sie ein Datum pro Zeile in der Form <code>YYYY-MM-DD</code> ein, zum Beispiel <code>2026-12-25</code>. Text hinter dem Datum in derselben Zeile, etwa der Name des Feiertags, wird ignoriert. Ein Feiertag, der auf ein Wochenende fällt, ändert das Ergebnis nicht, weil dieser Tag ohnehin übersprungen wird."],
+    ["Warum gibt es keine eingebauten gesetzlichen Feiertage?", "Gesetzliche Feiertage unterscheiden sich nach Land, Region und Jahr, und manche werden per Erlass festgelegt, daher rät das Tool nicht. Alles läuft hier in Ihrem Browser mit den Daten, die Sie angeben. Wenn die Feiertage eines Landes automatisch ergänzt werden sollen, sehen Sie sich die unten verlinkte Werktage-API an."],
+    ["Was ist, wenn das Enddatum vor dem Startdatum liegt?", "Das Tool vertauscht die beiden Daten, zählt die Tage dazwischen und weist darauf hin, sodass das Ergebnis immer eine positive Zahl ist. Die Optionen für Start und Ende wechseln mit den Daten."],
+    ["Wie wirken die Optionen für Start- und Enddatum, wenn beide Daten gleich sind?", "Sind beide Optionen aktiviert, zählt ein einzelnes Datum als ein Tag, und das ist ein Werktag, sofern es kein Wochenende und kein angegebener Feiertag ist. Ist eine der beiden Optionen deaktiviert, ist der Zeitraum leer und das Ergebnis ist 0."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">Was möchten Sie tun?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Werktage zählen</label>
+      <label><input type="radio" name="bd-mode" value="add">Werktage addieren oder subtrahieren</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Startdatum</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">Enddatum</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Startdatum mitzählen</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Enddatum mitzählen</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Startdatum</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Rechenart</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Addieren</label>
+          <label><input type="radio" name="bd-op" value="sub">Subtrahieren</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Werktage</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Wochenende</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Samstag und Sonntag</option>
+        <option value="fri-sat">Freitag und Samstag</option>
+        <option value="sun">Nur Sonntag</option>
+        <option value="custom">Benutzerdefiniert</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Wochenendtage</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Feiertage (optional)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">Ein Datum pro Zeile als YYYY-MM-DD. Es gibt keine eingebaute Feiertagsliste.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Werktage</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Kalendertage</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Übersprungene Wochenendtage</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Übersprungene Feiertage</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Wie Werktage gezählt werden</h2>
+<p>Ein Werktag oder Arbeitstag ist jeder Tag, der weder ein Wochenendtag noch ein Feiertag ist. Um sie zwischen zwei Daten zu zählen, nimmt der Rechner jeden Kalendertag im Zeitraum, entfernt die gewählten Wochenendtage und entfernt dann die angegebenen Feiertage, die auf die übrigen Tage fallen. Was übrig bleibt, ist die Anzahl der Werktage. Die drei Zahlen unter dem Ergebnis zeigen, wie viele Kalendertage betrachtet und wie viele davon als Wochenende oder Feiertag übersprungen wurden.</p>
+<p>Ob der erste und der letzte Tag zum Zeitraum gehören, spielt eine Rolle. Montag bis Freitag einer Woche ergibt mit beiden Enden 5 und ohne das Startdatum 4. Die Voreinstellungen entsprechen der Tabellenfunktion <code>NETWORKDAYS</code>, die beide Enden zählt.</p>
+<p>Das Addieren von Werktagen funktioniert andersherum, wie <code>WORKDAY</code>. Das Tool beginnt am Tag nach dem Startdatum und geht vorwärts, beim Subtrahieren rückwärts, und zählt nur Tage, die keine Wochenendtage oder Feiertage sind, bis es die gewünschte Anzahl erreicht hat. Das Startdatum selbst wird nie mitgezählt, daher ergibt das Addieren von 0 Tagen das Startdatum, auch wenn es auf ein Wochenende fällt.</p>
+<p>Das Wochenende ist eine Einstellung, weil es nicht überall gleich ist. Viele Länder haben Samstag und Sonntag, mehrere im Nahen Osten Freitag und Samstag, und manche Betriebe arbeiten sechs Tage. Die Feiertage geben Sie selbst an. Verschobene oder Ersatzfeiertage werden nicht automatisch ergänzt, tragen Sie also den Tag ein, der tatsächlich begangen wird.</p>
+<h3>Für Entwickler / KI-Agenten</h3>
+<p>Sie brauchen das im Code oder für einen KI-Agenten? Die Werktage-API zählt genauso und ergänzt die gesetzlichen Feiertage eines Landes automatisch, sodass Sie keine Feiertagsliste pflegen müssen. Siehe die <a href="https://tanod.dev/learn/business-days-api.html">Anleitung zur Werktage-API</a>.</p>
+<h3>Tipps</h3>
+<ul>
+  <li>Sie brauchen einfache Kalendertage, Wochen oder Monate zwischen zwei Daten? Nutzen Sie den <a href="/tools/date-difference-calculator/">Tage-zwischen-zwei-Daten-Rechner</a>.</li>
+  <li>Sie addieren Monate oder Jahre zu einem Datum? Der <a href="/tools/date-calculator/">Datumsrechner</a> kommt mit Monatsenden zurecht.</li>
+  <li>Sie arbeiten über Ländergrenzen hinweg? Vergleichen Sie Bürozeiten mit dem <a href="/tools/time-zone-converter/">Zeitzonenumrechner</a>.</li>
+</ul>

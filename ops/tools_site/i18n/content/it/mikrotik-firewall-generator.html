@@ -1,0 +1,97 @@
+<!--meta
+{
+  "title": "Generatore di firewall MikroTik per RouterOS v7 | Tanod Tools",
+  "description": "Crea un firewall RouterOS v7 rafforzato: input e forward chain, FastTrack, drop degli invalid, ping con limite di frequenza, NAT e blocco dei servizi. Nel browser.",
+  "h1": "Generatore di firewall MikroTik",
+  "lede": "Scegli le interfacce WAN e LAN e le subnet di gestione, e ottieni una base di firewall RouterOS v7 commentata da rivedere e incollare.",
+  "blurb": "Base di firewall RouterOS v7 rafforzata, con blocco dei servizi.",
+  "keywords": "regole firewall mikrotik firewall routeros v7 firewall filter input chain forward chain fasttrack drop invalid winbox limitare ip service hardening router mikrotik sicuro script rsc",
+  "local_text": "Funziona nel browser; nulla di ciò che scrivi lascia il tuo dispositivo",
+  "limits": "Genera la sintassi RouterOS v7 per IPv4, con una base IPv6 facoltativa. I nomi di interfacce e liste vengono controllati; lo script non è testato sul tuo router, quindi leggilo prima di applicarlo. MikroTik e RouterOS sono marchi di SIA Mikrotīkls. Questo strumento è indipendente e non è affiliato né approvato da MikroTik.",
+  "howto_title": "Come creare un firewall MikroTik",
+  "howto": [
+    "Inserisci le interfacce rivolte a Internet (per esempio <code>ether1</code> o <code>pppoe-out1</code>) e quelle locali (di solito <code>bridge</code>).",
+    "Elenca le subnet da cui gestisci il router. Solo queste raggiungeranno WinBox e SSH, quindi includi l'indirizzo da cui ti stai connettendo ora.",
+    "Scegli le opzioni, leggi lo script e le note accanto, poi attiva la Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> nel terminale) e incollalo, oppure scarica il file .rsc e importalo."
+  ],
+  "faq": [
+    ["Perché la input chain è separata dalla forward chain?", "La input chain filtra i pacchetti destinati al router stesso: WinBox, SSH, DNS, l'API. La forward chain filtra i pacchetti che lo attraversano tra la LAN e Internet. Un router può essere del tutto aperto in input mentre la LAN dietro di esso è perfettamente al sicuro, ed è così che molti dispositivi MikroTik finiscono per essere resolver DNS o proxy aperti."],
+    ["Perché accettare per prime le connessioni established e related?", "Quasi ogni pacchetto appartiene a una connessione già consentita dal firewall. Accettarli nella prima regola significa che ogni pacchetto viene controllato una sola volta invece di percorrere l'intera chain, e le risposte alle query DNS o NTP del router stesso passano senza regole aggiuntive. I pacchetti invalid vengono scartati subito dopo."],
+    ["Che cosa fa FastTrack e quando devo disattivarlo?", "FastTrack contrassegna le connessioni established in modo che i loro pacchetti saltino gran parte del firewall, cosa che può moltiplicare il throughput sui router piccoli. Il rovescio della medaglia: i pacchetti con fasttrack saltano anche simple queue, queue tree, regole mangle e policy IPsec. Se limiti la banda per cliente o usi il policy routing, lascia FastTrack disattivato o escludi quelle connessioni."],
+    ["Mi bloccherà l'accesso?", "Può farlo se il computer da cui gestisci non è in una subnet di gestione e la LAN non è considerata affidabile. Attiva prima la Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> in un terminale, o il pulsante Safe Mode in WinBox): se la sessione cade, RouterOS annulla tutto quello che è stato fatto dall'avvio della Safe Mode."],
+    ["Posso incollarlo su un router che ha ancora la configurazione predefinita?", "Sì. Le liste di interfacce, i membri delle liste e le voci delle address list vengono aggiunti solo se mancano. Senza la modalità di sostituzione, le nuove regole vengono accodate dopo quelle predefinite, quindi la regola predefinita \"drop all not coming from LAN\" può venire per prima; rivedi l'ordine, oppure usa la modalità di sostituzione su un router raggiungibile in locale."],
+    ["La mia configurazione viene inviata da qualche parte?", "No. Lo script viene assemblato da JavaScript in questa pagina. Nulla di ciò che scrivi viene caricato, conservato o registrato, e una volta caricata la pagina funziona anche offline."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="fw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Interfacce</legend>
+      <div class="opts">
+        <div class="field">
+          <label for="fw-wan">Interfacce WAN</label>
+          <input type="text" id="fw-wan" class="mono" value="ether1" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-wan-h">
+          <span class="help" id="fw-wan-h">Rivolte a Internet, separate da virgole. Entrano nella lista di interfacce WAN.</span>
+        </div>
+        <div class="field">
+          <label for="fw-lan">Interfacce LAN</label>
+          <input type="text" id="fw-lan" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-lan-h">
+          <span class="help" id="fw-lan-h">Di solito il bridge. Entrano nella lista di interfacce LAN.</span>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Gestione</legend>
+      <div class="field">
+        <label for="fw-mgmt">Subnet di gestione</label>
+        <input type="text" id="fw-mgmt" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-mgmt-h">
+        <span class="help" id="fw-mgmt-h">Solo queste raggiungono WinBox (8291) e SSH (22). Includi l'indirizzo da cui ti connetti.</span>
+      </div>
+      <div class="field">
+        <label for="fw-open">Porte da aprire sul router</label>
+        <input type="text" id="fw-open" class="mono" value="" placeholder="udp/13231, tcp/8443" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="fw-open-h">
+        <span class="help" id="fw-open-h">Facoltativo, per i servizi che il router stesso offre a Internet, come WireGuard.</span>
+      </div>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-lanall" checked>Considera attendibile la LAN (accetta tutto dalla LAN verso il router)</label>
+        <label class="check"><input type="checkbox" id="fw-svc" checked>Limita WinBox e SSH alle subnet di gestione e disattiva telnet, FTP, WebFig e API</label>
+        <label class="check"><input type="checkbox" id="fw-extra" checked>Limita neighbour discovery e accesso MAC alla LAN; disattiva il server bandwidth test, il proxy, SOCKS e UPnP</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Opzioni</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="fw-fast" checked>FastTrack delle connessioni established</label>
+        <label class="check"><input type="checkbox" id="fw-ping" checked>Rispondi al ping, con limite di frequenza</label>
+        <label class="check"><input type="checkbox" id="fw-nat" checked>Masquerade (source NAT) verso la WAN</label>
+        <label class="check"><input type="checkbox" id="fw-ipsec">I tunnel IPsec terminano su questo router</label>
+        <label class="check"><input type="checkbox" id="fw-v6">Aggiungi anche un firewall IPv6</label>
+        <label class="check"><input type="checkbox" id="fw-replace">Modalità di sostituzione: rimuovi prima le regole filter e NAT esistenti</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Rischio di perdere l'accesso.</strong> Prova in un laboratorio, oppure attiva la Safe Mode (<kbd>Ctrl</kbd>+<kbd>X</kbd> nel terminale) prima di applicarlo a un router remoto.</span></p>
+    <label for="fw-out" class="label">Script RouterOS v7</label>
+    <textarea id="fw-out" class="mono gen-out ros-out" rows="22" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="fw-copy" type="button">Copia script</button>
+      <button class="btn" id="fw-dl" type="button">{{mark:i-download}}Scarica .rsc</button>
+    </div>
+    <ul class="ros-notes" id="fw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Che cosa fa il firewall generato</h2>
+<p>Lo script segue la stessa struttura della configurazione predefinita di MikroTik, resa più rigorosa. La <strong>input chain</strong> protegge il router: accetta i pacchetti appartenenti a connessioni già consentite, scarta quelli invalid, risponde a una frequenza limitata di ping, lascia che le subnet di gestione raggiungano WinBox e SSH, accetta la LAN (o solo DNS, DHCP, NTP e ICMP da essa) e scarta tutto il resto con una regola finale senza condizioni. È un drop finale incondizionato a trasformare un elenco di eccezioni in una politica di default-deny.</p>
+<p>La <strong>forward chain</strong> protegge la rete dietro il router. Il traffico established e related viene accettato (e a scelta sottoposto a fasttrack), i pacchetti invalid vengono scartati e le nuove connessioni in arrivo dalla WAN vengono scartate, a meno che non le abbia create una regola di destination NAT (un port forward). Quest'ultima regola è quella che impedisce a Internet di raggiungere direttamente gli indirizzi privati dietro il router, cosa che il solo masquerade non fa.</p>
+<h3>Servizi e supporti</h3>
+<p>RouterOS ascolta per impostazione predefinita su diversi servizi di gestione. Lo script disattiva quelli in chiaro (telnet, FTP, WebFig su HTTP) e l'API, e aggiunge una restrizione di indirizzo a WinBox e SSH come secondo livello dietro il firewall. MAC Telnet, MAC WinBox e neighbour discovery operano al livello 2 e ignorano le regole del firewall IP, quindi vengono limitati alla lista di interfacce LAN. Il server bandwidth test, il proxy web, SOCKS e UPnP sono disattivati; riattiva solo ciò che usi.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Hai già un firewall? Incolla il tuo export nella <a href="/tools/mikrotik-firewall-auditor/">Verifica del firewall MikroTik</a> per vedere cosa manca.</li>
+  <li>Pubblichi un server dietro il router? Il generatore di <a href="/tools/mikrotik-port-forwarding/">Port forwarding su MikroTik</a> scrive le regole dst-nat, con hairpin NAT.</li>
+  <li>Ti serve una blocklist o una allowlist? Creala con il <a href="/tools/mikrotik-address-list-generator/">Generatore di address list MikroTik</a>.</li>
+</ul>

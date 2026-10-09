@@ -1,0 +1,120 @@
+<!--meta
+{
+  "title": "Calculadora de dias úteis: contar ou somar dias úteis | Tanod Tools",
+  "description": "Conte os dias úteis entre duas datas ou some e subtraia dias úteis de uma data. Escolha o fim de semana e liste feriados. Grátis, no navegador.",
+  "h1": "Calculadora de dias úteis",
+  "lede": "Conte os dias úteis entre duas datas, ou some e subtraia dias úteis de uma data, com o fim de semana que você usa e a sua própria lista de feriados.",
+  "blurb": "Dias úteis entre datas, ou somar dias a uma data, com feriados.",
+  "keywords": "calculadora de dias úteis dias úteis entre duas datas contar dias úteis somar dias úteis subtrair dias úteis prazo em dias úteis dia útil fim de semana sexta sábado feriados excluindo fins de semana networkdays workday",
+  "local_text": "Funciona no seu navegador; nada do que você digita sai do seu dispositivo",
+  "limits": "Datas do ano 1 ao 9999 no calendário gregoriano. Esta ferramenta não tem dados de feriados: ela ignora apenas as datas que você mesmo listar, e um feriado listado que cai num fim de semana não é descontado duas vezes. A contagem segue as mesmas regras das funções de planilha NETWORKDAYS e WORKDAY.",
+  "howto_title": "Como contar dias úteis",
+  "howto": [
+    "Escolha <em>Contar dias úteis</em> e informe a data inicial e a data final, ou escolha <em>Somar ou subtrair dias úteis</em> e informe uma data inicial e uma quantidade de dias.",
+    "Selecione o seu fim de semana (sábado e domingo, sexta e sábado, só domingo ou os dias que você quiser) e cole os feriados no formato <code>YYYY-MM-DD</code>, um por linha.",
+    "Veja os dias úteis, ou a data resultante, junto com os dias corridos, os dias de fim de semana e os feriados que foram ignorados."
+  ],
+  "faq": [
+    ["A data inicial e a data final entram na conta?", "Por padrão, as duas entram, como na função de planilha NETWORKDAYS: de segunda a sexta de uma mesma semana são 5 dias úteis. Desmarque <em>Contar a data inicial</em> ou <em>Contar a data final</em> para deixar uma das pontas de fora. Ao somar dias úteis, a data inicial nunca é contada, como em WORKDAY: um dia útil depois de uma sexta-feira é a segunda-feira seguinte."],
+    ["Como uso um fim de semana diferente de sábado e domingo?", "Escolha <em>Sexta e sábado</em> para o fim de semana usado em muitos países do Oriente Médio, <em>Só domingo</em> para uma semana de seis dias, ou <em>Personalizado</em> para marcar qualquer combinação de dias da semana. Pelo menos um dia da semana precisa continuar sendo dia útil."],
+    ["Como informo os feriados?", "Digite ou cole uma data por linha no formato <code>YYYY-MM-DD</code>, por exemplo <code>2026-12-25</code>. O texto depois da data na mesma linha, como o nome do feriado, é ignorado. Um feriado que cai num fim de semana não altera o resultado, porque esse dia já é ignorado."],
+    ["Por que não há feriados nacionais embutidos?", "Os feriados variam conforme o país, a região e o ano, e alguns são decretados, então a ferramenta não tenta adivinhar. Tudo aqui roda no seu navegador a partir das datas que você informa. Se você precisa que os feriados de um país sejam incluídos para você, veja a API de dias úteis indicada abaixo."],
+    ["E se a data final for anterior à data inicial?", "A ferramenta inverte as duas datas, conta os dias entre elas e avisa que fez isso, de modo que o resultado seja sempre um número positivo. As opções de início e fim são trocadas junto com as datas."],
+    ["Como as opções de data inicial e data final funcionam quando as datas são iguais?", "Com as duas opções marcadas, uma única data conta como um dia, que é dia útil, a menos que seja fim de semana ou um feriado listado. Com qualquer uma das opções desmarcada, o período fica vazio e o resultado é 0."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="bd">
+  <div class="field">
+    <span class="label" id="bd-mode-l">O que você quer fazer?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="bd-mode-l">
+      <label><input type="radio" name="bd-mode" value="count" checked>Contar dias úteis</label>
+      <label><input type="radio" name="bd-mode" value="add">Somar ou subtrair dias úteis</label>
+    </div>
+  </div>
+
+  <div id="bd-count">
+    <div class="opts">
+      <div class="field">
+        <label for="bd-a">Data inicial</label>
+        <input type="date" id="bd-a" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <label for="bd-b">Data final</label>
+        <input type="date" id="bd-b" min="0001-01-01" max="9999-12-31">
+      </div>
+    </div>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="bd-ins" checked>Contar a data inicial</label>
+      <label class="check"><input type="checkbox" id="bd-ine" checked>Contar a data final</label>
+    </div>
+  </div>
+
+  <div id="bd-add" hidden>
+    <div class="opts calc-add">
+      <div class="field">
+        <label for="bd-s">Data inicial</label>
+        <input type="date" id="bd-s" min="0001-01-01" max="9999-12-31">
+      </div>
+      <div class="field">
+        <span class="label" id="bd-op-l">Operação</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bd-op-l">
+          <label><input type="radio" name="bd-op" value="add" checked>Somar</label>
+          <label><input type="radio" name="bd-op" value="sub">Subtrair</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bd-n">Dias úteis</label>
+        <input type="number" id="bd-n" min="0" max="100000" step="1" value="10" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+
+  <div class="opts">
+    <div class="field">
+      <label for="bd-we">Fim de semana</label>
+      <select id="bd-we">
+        <option value="sat-sun" selected>Sábado e domingo</option>
+        <option value="fri-sat">Sexta e sábado</option>
+        <option value="sun">Só domingo</option>
+        <option value="custom">Personalizado</option>
+      </select>
+    </div>
+  </div>
+  <fieldset class="gen-fs" id="bd-wd-f" hidden>
+    <legend>Dias de fim de semana</legend>
+    <div class="util-checks" id="bd-wd"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="bd-hol">Feriados (opcional)</label>
+    <textarea id="bd-hol" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2026-12-25&#10;2026-12-26" aria-describedby="bd-hol-h"></textarea>
+    <span class="help" id="bd-hol-h">Uma data por linha, no formato YYYY-MM-DD. Não há lista de feriados embutida.</span>
+  </div>
+
+  <div class="status" id="status" role="status" hidden></div>
+  <div class="calc-res" id="bd-res" hidden>
+    <p class="calc-main" aria-live="polite"><span class="calc-main__label" id="bd-main-l">Dias úteis</span> <span id="bd-main" class="calc-main__val"></span></p>
+    <dl class="stats">
+      <div><dt>Dias corridos</dt><dd id="bd-cal">0</dd></div>
+      <div><dt>Dias de fim de semana ignorados</dt><dd id="bd-wk">0</dd></div>
+      <div><dt>Feriados ignorados</dt><dd id="bd-hd">0</dd></div>
+    </dl>
+    <p class="help" id="bd-note"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>Como os dias úteis são contados</h2>
+<p>Um dia útil é qualquer dia que não seja nem de fim de semana nem feriado. Para contá-los entre duas datas, a calculadora pega todos os dias do calendário no período, remove os dias de fim de semana que você escolheu e depois remove os feriados listados que caem nos dias restantes. O que sobra é o número de dias úteis. Os três valores abaixo do resultado mostram quantos dias corridos foram analisados e quantos deles foram ignorados por serem fim de semana ou feriado.</p>
+<p>Importa saber se o primeiro e o último dia fazem parte do período. Contar de segunda a sexta de uma semana com as duas pontas incluídas dá 5, e sem a data inicial dá 4. Os padrões seguem a função de planilha <code>NETWORKDAYS</code>, que conta as duas pontas.</p>
+<p>Somar dias úteis funciona no sentido inverso, como em <code>WORKDAY</code>. A ferramenta começa no dia seguinte à data inicial e avança, ou recua quando você subtrai, contando apenas os dias que não são de fim de semana nem feriados, até chegar à quantidade pedida. A própria data inicial nunca é contada, então somar 0 dia devolve a data inicial, mesmo que ela caia num fim de semana.</p>
+<p>O fim de semana é uma configuração porque não é igual em todo lugar. Muitos países usam sábado e domingo, vários do Oriente Médio usam sexta e sábado, e alguns locais de trabalho funcionam seis dias. Os feriados ficam por sua conta. Feriados transferidos ou compensados não são acrescentados automaticamente, então liste o dia que de fato será observado.</p>
+<h3>Para desenvolvedores / agentes de IA</h3>
+<p>Precisa disso em código, ou para um agente de IA? A API de dias úteis faz a mesma contagem e ainda acrescenta automaticamente os feriados nacionais de um país, sem que você precise manter uma lista de feriados. Veja o <a href="https://tanod.dev/learn/business-days-api.html">guia da API de dias úteis</a>.</p>
+<h3>Dicas</h3>
+<ul>
+  <li>Precisa de dias corridos, semanas ou meses entre duas datas? Use a ferramenta <a href="/tools/date-difference-calculator/">Dias entre datas</a>.</li>
+  <li>Vai somar meses ou anos a uma data? A <a href="/tools/date-calculator/">calculadora de datas</a> trata as datas de fim de mês.</li>
+  <li>Trabalha com vários países? Compare os horários de expediente com o <a href="/tools/time-zone-converter/">conversor de fuso horário</a>.</li>
+</ul>

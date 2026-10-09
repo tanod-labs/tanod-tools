@@ -1,0 +1,62 @@
+<!--meta
+{
+  "category": "mikrotik",
+  "name": "MikroTik firewall auditor",
+  "title": "MikroTik firewall auditor for RouterOS exports | Tanod Tools",
+  "description": "Paste a RouterOS /export to find common hardening gaps: input chain without a final drop, exposed WinBox or SSH, open DNS resolver, proxy, shadowed rules and more.",
+  "h1": "MikroTik firewall auditor",
+  "lede": "Paste your router's /export and get a prioritised list of common firewall and service hardening gaps, each with the line it came from and a suggested fix.",
+  "blurb": "Find exposed services, open resolvers and rule mistakes in an export.",
+  "keywords": "mikrotik firewall audit routeros security check export review winbox exposed open dns resolver allow-remote-requests input chain drop shadowed rules hardening checklist",
+  "local_text": "Your export is checked in your browser and never leaves your device",
+  "limits": "A heuristic review of one export, not a full security audit: it reads /ip firewall filter and nat, /ip service, DNS, proxy, SOCKS, UPnP, SNMP, the bandwidth test server, MAC access and users, and judges reachability from the WAN. IPv6 firewall, raw and mangle rules, scripts, wireless and VPN settings are not checked. MikroTik and RouterOS are trademarks of SIA Mikrotīkls. This tool is independent and not affiliated with or endorsed by MikroTik.",
+  "howto_title": "How to audit a MikroTik firewall",
+  "howto": [
+    "In a terminal on the router, run <code>/export hide-sensitive</code> (on v7 <code>/export</code> already hides secrets) and copy the output, or save it with <code>/export file=config</code> and open the .rsc file here.",
+    "Paste it into the box. Optionally paste <code>/user print</code> too, since exports leave users out.",
+    "Work through the findings from the top. Each shows the line it is about and a suggested fix; apply changes with Safe Mode on."
+  ],
+  "faq": [
+    ["Is it safe to paste my configuration here?", "The export is read by JavaScript in this page and never leaves your device: there is no upload, no server-side processing, and the page's security policy blocks connections to other sites. Still, use <code>/export hide-sensitive</code> on v6 (v7 hides secrets by default) so passwords and keys are not in the text at all."],
+    ["How does the auditor decide whether a service is exposed?", "It identifies the WAN interfaces from interface lists, masquerade rules, DHCP and PPPoE clients, then walks the input chain as a new connection from the internet to the service's port would, following jumps. If an accept rule matches first, or nothing drops the packet before the end of the chain, the service counts as reachable. Rules with conditions it can't judge are counted as possibly accepting and never as dropping, so it errs toward warning you."],
+    ["What does \"rule can never match\" mean?", "An earlier rule in the same chain matches every packet the later rule would, and accepts or drops it, so the later rule never sees a packet. It is usually a rule added at the end of the chain instead of above the catch-all, which is why new rules \"don't work\"."],
+    ["Why does an open DNS resolver matter?", "With allow-remote-requests=yes the router answers DNS on every interface. If the input chain doesn't drop DNS from the WAN, anyone can use it to amplify DDoS attacks, and ISPs regularly block or warn customers whose routers do."],
+    ["The auditor found nothing. Is my router secure?", "Not necessarily. It checks a set of common, high-impact mistakes in what an export shows. It doesn't see the firmware version's own vulnerabilities beyond a few known ones, users' passwords, scheduled scripts, or anything outside the menus listed under the tool. Keep RouterOS updated and review the rest by hand."]
+  ],
+  "related": ["mikrotik-firewall-generator", "routeros-export-diff", "routeros-v7-migration-helper", "mikrotik-port-forwarding", "mikrotik-address-list-generator"],
+  "app_category": "SecurityApplication"
+}
+-->
+<!--tool-->
+<div class="ros-audit" id="au">
+  <div class="ros-paste" id="au-form">
+    <div class="field">
+      <label for="au-in">RouterOS export</label>
+      <textarea id="au-in" class="mono" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" placeholder="/ip firewall filter&#10;add action=accept chain=input connection-state=established,related&#10;…"></textarea>
+    </div>
+    <div class="actions">
+      <label class="btn btn--sm">{{mark:i-upload}}Open .rsc file<input type="file" id="au-file" accept=".rsc,.txt,text/plain"></label>
+      <button class="btn btn--sm" id="au-sample" type="button">Try a weak sample</button>
+    </div>
+    <details class="ros-more">
+      <summary>Optional: user accounts (/user print)</summary>
+      <div class="field">
+        <label for="au-users">Output of /user print</label>
+        <textarea id="au-users" class="mono" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+      </div>
+    </details>
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Heuristic, not a full audit.</strong> It checks common mistakes in what the export shows. A clean result doesn't prove the router is secure.</span></p>
+  </div>
+  <div class="ros-results" id="au-res" aria-live="polite" hidden></div>
+  <div class="actions"><button class="btn" id="au-copy" type="button" hidden>Copy report</button></div>
+</div>
+<!--explain-->
+<h2>What the auditor checks</h2>
+<p>The auditor reads the menus of an export that decide how exposed a router is. In the firewall it looks for an <strong>input chain without a default deny</strong> (RouterOS accepts whatever reaches the end of a chain), missing <strong>established/related</strong> fast paths and <strong>invalid-packet drops</strong>, a forward chain that lets new WAN connections reach the LAN, accept-everything rules, and <strong>rules that can never match</strong> because an earlier rule already takes all their packets. It then works out, port by port, whether WinBox, SSH, telnet, FTP, WebFig and the API can be reached from the internet, taking each service's own address restriction into account.</p>
+<p>Outside the firewall it flags an <strong>open DNS resolver</strong>, an enabled web proxy or SOCKS proxy (a common sign of a compromised router), UPnP, SNMP with the default community, the bandwidth test server, MAC Telnet and MAC WinBox on all interfaces, port forwards that publish RDP, SMB, databases or SSH to the whole internet, the default <code>admin</code> account when you paste <code>/user print</code>, and RouterOS versions with the 2018 WinBox credential leak.</p>
+<h3>What it doesn't check</h3>
+<ul>
+  <li>The IPv6 firewall, raw and mangle tables, scripts and scheduler entries, wireless security, VPN and IPsec settings, and password strength.</li>
+  <li>Dynamic rules and services added by packages at runtime, which never appear in an export.</li>
+  <li>Anything that depends on your network beyond the router. Fix the findings, then generate a clean baseline with the <a href="/tools/mikrotik-firewall-generator/">MikroTik firewall generator</a> and compare the result with the <a href="/tools/routeros-export-diff/">RouterOS export diff</a>.</li>
+</ul>

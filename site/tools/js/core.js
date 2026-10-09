@@ -1,7 +1,7 @@
 // Tanod Tools shared core. Everything here runs in the browser; nothing is sent anywhere.
-import { tx, txn, fmtNum as fmtLocal, EN } from "./i18n.js?v=5";
+import { tx, txn, fmtNum as fmtLocal, EN } from "./i18n.js?v=11";
 
-export { tx, txn, txf, LANG, LOCALE, EN, parseNum, dateFormat, listText } from "./i18n.js?v=5";
+export { tx, txn, txf, LANG, LOCALE, EN, parseNum, dateFormat, listText } from "./i18n.js?v=11";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));

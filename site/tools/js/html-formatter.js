@@ -1,6 +1,6 @@
-import { loadScript } from "./vendorload.js?v=5";
-import { initFormatter, loadFailed, $, $$ } from "./fmtcore.js?v=5";
-import { tx } from "./core.js?v=5";
+import { loadScript } from "./vendorload.js?v=11";
+import { initFormatter, loadFailed, $, $$ } from "./fmtcore.js?v=11";
+import { tx } from "./core.js?v=11";
 
 const SRC = "/tools/vendor/js-beautify/beautifier.min.js";
 let lib = null;

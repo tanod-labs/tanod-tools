@@ -1,6 +1,6 @@
-import { loadScript } from "./vendorload.js?v=5";
-import { initFormatter, loadFailed, $, $$ } from "./fmtcore.js?v=5";
-import { tx } from "./core.js?v=5";
+import { loadScript } from "./vendorload.js?v=11";
+import { initFormatter, loadFailed, $, $$ } from "./fmtcore.js?v=11";
+import { tx } from "./core.js?v=11";
 
 /* ---------------------------------------------------------------- minifier
    A tokenizer, not a pile of regular expressions: strings, url(...) and comments are recognised first, so

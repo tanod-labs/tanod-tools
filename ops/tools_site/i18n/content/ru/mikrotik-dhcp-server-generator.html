@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Генератор DHCP-сервера и IP-пула для MikroTik | Tanod Tools",
+  "description": "Создайте DHCP-сервер RouterOS: IP-пул, сервер, сетевые параметры (шлюз, DNS, домен, NTP) и статические аренды с проверкой по подсети. Работает в браузере.",
+  "h1": "Генератор DHCP-сервера MikroTik",
+  "lede": "Укажите интерфейс и подсеть и получите IP-пул, DHCP-сервер, сетевые параметры и статические аренды в виде одного проверенного скрипта RouterOS.",
+  "blurb": "IP-пул, DHCP-сервер, сеть и статические аренды.",
+  "keywords": "dhcp сервер mikrotik настройка routeros ip pool dhcp-server network шлюз dns-server статическая аренда резервирование mac-адреса lease-time скрипт dhcp vlan dhcp",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт синтаксис RouterOS v7 (корректный и для v6) для DHCP-сервера IPv4 на одном интерфейсе. Пользовательские опции DHCP и релеи не охвачены. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен этой компанией.",
+  "howto_title": "Как настроить DHCP-сервер на MikroTik",
+  "howto": [
+    "Введите интерфейс, к которому подключены клиенты (мост или интерфейс VLAN), и его подсеть; шлюз и пул будут предложены на её основе.",
+    "Настройте пул, DNS-серверы, домен и время аренды и добавьте статические аренды для устройств, которым нужен постоянный адрес.",
+    "Скопируйте скрипт или скачайте файл .rsc и выполните его; примечания укажут всё, что стоит перепроверить."
+  ],
+  "faq": [
+    ["Из каких частей состоит DHCP-сервер RouterOS?", "Вместе работают три раздела: <code>/ip pool</code> содержит адреса для выдачи, <code>/ip dhcp-server</code> привязывает сервер к интерфейсу и пулу, а <code>/ip dhcp-server network</code> содержит то, что сообщается клиентам: шлюз, DNS-серверы, домен и NTP-серверы для этой подсети. Самому маршрутизатору также нужен собственный адрес на интерфейсе, который скрипт может добавить."],
+    ["Статические аренды должны быть внутри пула или вне его?", "Подойдёт и то и другое: RouterOS никогда не выдаёт адрес, закреплённый статической арендой. Если держать постоянные устройства вне динамического диапазона, например с .2 по .9, а пул начать с .10, план легче читать и нет путаницы при удалении аренды."],
+    ["Какое время аренды выбрать?", "Для домашней или офисной сети обычно подходят сутки. Гостевым сетям и хотспотам с множеством коротких визитов лучше час или меньше, чтобы адреса быстро возвращались в пул. Очень короткая аренда означает больше продлений, но в небольшой сети это ничего не стоит."],
+    ["Нужен ли allow-remote-requests, чтобы клиенты использовали маршрутизатор как DNS?", "Да, и именно это превращает маршрутизатор в открытый резолвер, если файрвол не блокирует DNS из внешней сети. Инструмент добавляет параметр, только когда вы включаете его, и напоминает проверить цепочку input."],
+    ["План моей сети куда-нибудь отправляется?", "Нет. Проверки и скрипт выполняются в вашем браузере."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="dh">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Сеть</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-if">Интерфейс</label><input type="text" id="dh-if" class="mono" value="bridge" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-net">Подсеть</label><input type="text" id="dh-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-gw">Шлюз (адрес маршрутизатора)</label><input type="text" id="dh-gw" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-pool">Диапазон пула</label><input type="text" id="dh-pool" class="mono" value="192.168.88.10-192.168.88.254" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-addr" checked>Добавить адрес шлюза на интерфейс</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Параметры для клиентов</legend>
+      <div class="opts">
+        <div class="field"><label for="dh-dns">DNS-серверы</label><input type="text" id="dh-dns" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-domain">Домен</label><input type="text" id="dh-domain" class="mono" value="lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-ntp">NTP-серверы</label><input type="text" id="dh-ntp" class="mono" value="" placeholder="необязательно" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-lease">Время аренды</label><input type="text" id="dh-lease" class="mono" value="1d" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="dh-name">Имя сервера и пула</label><input type="text" id="dh-name" class="mono" value="dhcp-lan" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="dh-dnsrv">Маршрутизатор отвечает на DNS-запросы из LAN (allow-remote-requests)</label></div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Статические аренды</legend>
+      <ul class="ros-rows" id="dh-leases"></ul>
+      <button class="btn btn--sm ros-add" id="dh-add" type="button">{{mark:i-plus}}Добавить статическую аренду</button>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="dh-out" class="label">Скрипт RouterOS</label>
+    <textarea id="dh-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="dh-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="dh-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="dh-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>DHCP в RouterOS по частям</h2>
+<p>В RouterOS DHCP-сервер состоит из трёх частей, и пропуск одной из них — обычная причина того, что клиенты не получают адрес. <strong>Пул</strong> — это просто именованный набор диапазонов адресов. <strong>Сервер</strong> слушает один интерфейс и выдаёт адреса из своего пула. Запись <strong>network</strong> подбирается по подсети и содержит параметры, передаваемые с каждой арендой: шлюз, DNS-серверы, доменное имя и NTP-серверы. Кроме того, на интерфейсе нужен собственный адрес маршрутизатора в этой подсети, иначе серверу нечего обслуживать.</p>
+<p>Страница сверяет части между собой, прежде чем что-либо записать: шлюз и пул должны находиться внутри подсети, пул не должен включать адрес сети, широковещательный адрес и адрес шлюза, а статические аренды должны быть уникальными и находиться внутри подсети. Статические аренды записываются в <code>/ip dhcp-server lease</code> с именем сервера, поэтому каждое устройство всегда получает один и тот же адрес.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Планируете адресацию? Инструмент «<a href="/tools/subnet-calculator/">Калькулятор подсетей</a>» показывает диапазон хостов и размер любого префикса.</li>
+  <li>Один DHCP-сервер на каждую VLAN: сначала создайте интерфейсы VLAN в инструменте «<a href="/tools/mikrotik-vlan-generator/">Генератор VLAN для MikroTik</a>», затем выполните этот инструмент один раз для каждой VLAN.</li>
+  <li>Если маршрутизатор отвечает на DNS, убедитесь, что файрвол блокирует DNS из интернета; в этом поможет «<a href="/tools/mikrotik-firewall-generator/">Генератор файрвола MikroTik</a>».</li>
+</ul>

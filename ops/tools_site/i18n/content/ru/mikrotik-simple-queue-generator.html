@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "Simple Queue для MikroTik: скорость по IP | Tanod Tools",
+  "description": "Simple queue для RouterOS на каждый IP или все узлы подсети: max-limit, limit-at, burst и родительская очередь для общего тарифа. С комментариями, в браузере.",
+  "h1": "Генератор Simple Queue для MikroTik",
+  "lede": "Один раз задайте тариф по скорости и получите simple queue для каждого адреса клиента, при желании с burst и родительской очередью, ограничивающей всю группу.",
+  "blurb": "Ограничение скорости по IP с burst и родительской очередью.",
+  "keywords": "генератор simple queue mikrotik микротик ограничение скорости по ip routeros queue simple max-limit limit-at burst limit parent queue wisp управление полосой hotspot ограничение скорости клиента скрипт",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт синтаксис RouterOS v7 (подходит и для v6) для целей IPv4, до 2048 очередей. Все очереди получают один и тот же тариф; когда много клиентов делят один канал, PCQ меньше нагружает процессор. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен компанией.",
+  "howto_title": "Как ограничить скорость по IP на MikroTik",
+  "howto": [
+    "Перечислите адреса клиентов (по одному в строке, при желании с именем) или укажите подсеть, чтобы создать очередь для каждого её узла.",
+    "Задайте тариф: max-limit для отдачи и загрузки, а также limit-at и burst, если они нужны. Скорости пишутся с суффиксами k, M или G.",
+    "При желании добавьте родительскую очередь с общей пропускной способностью канала, затем скопируйте скрипт или скачайте файл .rsc."
+  ],
+  "faq": [
+    ["Какая сторона в max-limit — отдача?", "Скорости simple queue записываются как отдача/загрузка с точки зрения цели: max-limit=5M/20M позволяет клиенту отправлять 5 Мбит/с и получать 20 Мбит/с. Генератор подписывает поля именно так, поэтому помнить порядок не нужно."],
+    ["Почему моя очередь ничего не ограничивает?", "Самая частая причина — FastTrack: соединения с FastTrack обходят simple queue. Отключите правило fasttrack в /ip firewall filter или исключите из него адреса, для которых заданы очереди. Проверьте и порядок: simple queue сопоставляются сверху вниз, и более ранняя очередь с пересекающейся целью забирает трафик первой."],
+    ["Что делают limit-at и родительская очередь?", "Родительская очередь ограничивает всю группу реальной пропускной способностью канала. Параметр limit-at — скорость, гарантированная каждому потомку, когда родитель перегружен; выше неё потомки делят оставшуюся полосу вплоть до своего max-limit. Если сумма значений limit-at больше, чем у родителя, выполнить их все невозможно."],
+    ["Сколько simple queue выдержит маршрутизатор?", "Это зависит от процессора и трафика, но каждый пакет проходит список с самого начала, поэтому тысячи очередей обходятся дорого. Для больших однотипных тарифов тип очереди PCQ честно ограничивает каждого клиента одной очередью; такую очередь создаёт генератор PCQ."],
+    ["Нужен ли префикс для цели /32?", "RouterOS в любом случае хранит цели из одного адреса как /32. Генератор записывает их с /32, чтобы цели одинаково выглядели в экспорте."],
+    ["Отправляется ли мой тариф куда-либо?", "Нет. Очереди создаются в вашем браузере, и ничего из введённого вами не покидает устройство."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="sq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Клиенты</legend>
+      <div class="seg" role="radiogroup" aria-label="Клиенты">
+        <label><input type="radio" name="sq-mode" value="list" checked>Список адресов</label>
+        <label><input type="radio" name="sq-mode" value="subnet">Все узлы подсети</label>
+      </div>
+      <div class="field" id="sq-list-f">
+        <label for="sq-list">Адреса или сети, после каждого необязательно имя</label>
+        <textarea id="sq-list" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">192.168.88.10 alice
+192.168.88.11 bob
+192.168.88.64/28 office</textarea>
+      </div>
+      <div class="opts" id="sq-net-f" hidden>
+        <div class="field">
+          <label for="sq-net">Подсеть</label>
+          <input type="text" id="sq-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="sq-skip">Пропустить эти адреса</label>
+          <input type="text" id="sq-skip" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sq-prefix">Префикс имени (для строк без имени)</label>
+        <input type="text" id="sq-prefix" class="mono" value="client-" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Тариф на клиента</legend>
+      <div class="opts">
+        <div class="field"><label for="sq-up-max">Отдача, max-limit</label><input type="text" id="sq-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-max">Загрузка, max-limit</label><input type="text" id="sq-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-at">Отдача, limit-at</label><input type="text" id="sq-up-at" class="mono" value="" placeholder="необязательно" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-at">Загрузка, limit-at</label><input type="text" id="sq-down-at" class="mono" value="" placeholder="необязательно" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-burst">Разрешить burst</label></div>
+      <div class="opts" id="sq-burst-f" hidden>
+        <div class="field"><label for="sq-up-burst">Отдача, burst-limit</label><input type="text" id="sq-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-burst">Загрузка, burst-limit</label><input type="text" id="sq-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-thr">Отдача, burst-threshold</label><input type="text" id="sq-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-thr">Загрузка, burst-threshold</label><input type="text" id="sq-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-time">burst-time</label><input type="text" id="sq-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Родительская очередь</legend>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-parent">Ограничить группу родительской очередью</label></div>
+      <div class="opts" id="sq-parent-f" hidden>
+        <div class="field"><label for="sq-pname">Имя родителя</label><input type="text" id="sq-pname" class="mono" value="total" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-ptarget">Цель родителя</label><input type="text" id="sq-ptarget" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pup">Общая отдача</label><input type="text" id="sq-pup" class="mono" value="50M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pdown">Общая загрузка</label><input type="text" id="sq-pdown" class="mono" value="200M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="sq-out" class="label">Скрипт RouterOS</label>
+    <textarea id="sq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="sq-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="sq-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="sq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Simple queue вкратце</h2>
+<p>Simple queue в разделе <code>/queue simple</code> ограничивает трафик к своей <em>цели</em> и от неё: адреса, сети или интерфейса. RouterOS сверяет каждый пакет со списком сверху вниз и помещает его в первую очередь, цель которой подходит, в любом направлении, поэтому одна очередь ограничивает и отдачу клиента, и его загрузку. Поэтому simple queue — самый быстрый способ дать каждому абоненту или устройству свой тариф и обычный выбор для небольших маршрутизаторов WISP и hotspot.</p>
+<p>У каждой очереди есть <code>max-limit</code> (потолок), необязательный <code>limit-at</code> (скорость, гарантированная, пока родитель перегружен) и необязательные параметры burst. Очередь <code>parent</code> объединяет потомков под общим лимитом: max-limit родителя должен равняться реальной пропускной способности канала, чуть ниже того, что даёт провайдер, чтобы пакеты ждали в очереди на маршрутизаторе, а не в модеме, и действовали приоритеты тарифа.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Значения burst-threshold и burst-time рассчитайте в инструменте <a href="/tools/mikrotik-burst-calculator/">Калькулятор Burst для MikroTik</a>.</li>
+  <li>Сотни клиентов на одном тарифе? Одна <a href="/tools/mikrotik-pcq-generator/">очередь PCQ</a> даёт каждому равную долю при гораздо меньшей нагрузке на процессор.</li>
+  <li>Очереди PPPoE-абонентов берутся из rate-limit профиля; см. <a href="/tools/mikrotik-pppoe-server-generator/">Генератор PPPoE-сервера MikroTik</a>.</li>
+</ul>

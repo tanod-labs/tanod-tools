@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "MikroTik PCQ जनरेटर: हर यूज़र को बराबर बैंडविड्थ | Tanod Tools",
+  "description": "RouterOS के PCQ queue type के साथ simple queue या mangle मार्क वाला queue tree बनाएं, ताकि हर क्लाइंट को लिंक का बराबर और सीमित हिस्सा मिले। आपके ब्राउज़र में।",
+  "h1": "MikroTik PCQ जनरेटर",
+  "lede": "एक Per Connection Queue से लिंक को सभी क्लाइंट में बराबर बाँटें: हर यूज़र की स्पीड और कुल स्पीड चुनें, और queue type के साथ simple queue या queue tree पाएं।",
+  "blurb": "PCQ queue type, simple queue या queue tree के साथ।",
+  "keywords": "mikrotik pcq जनरेटर, पीसीक्यू, per connection queue, routeros pcq-rate, pcq-classifier, dst-address, src-address, queue tree, mangle packet mark, हर यूज़र को बराबर बैंडविड्थ, बैंडविड्थ बँटवारा, wisp fair share",
+  "limits": "यह IPv4 के लिए RouterOS v7 सिंटैक्स बनाता है (v6 में भी मान्य)। queue tree तरीका उन कनेक्शन को मार्क करता है जो LAN क्लाइंट WAN की ओर खोलते हैं; बाकी बिना सीमा के गुज़रते हैं। pcq-limit और pcq-total-limit अपने डिफ़ॉल्ट मान पर रहते हैं। MikroTik और RouterOS, SIA Mikrotīkls के ट्रेडमार्क हैं। यह टूल स्वतंत्र है और MikroTik से संबद्ध या उसके द्वारा समर्थित नहीं है।",
+  "howto_title": "MikroTik पर PCQ कैसे सेट करें",
+  "howto": [
+    "तरीका चुनें: LAN सबनेट के लिए एक simple queue (सबसे आसान) या mangle मार्क से चलने वाला queue tree (ज़्यादा नियंत्रण)।",
+    "हर क्लाइंट की स्पीड डालें, या कुल स्पीड को बराबर बाँटने के लिए 0 डालें। साथ ही कुल अपलोड और डाउनलोड अपनी असली लिंक स्पीड से थोड़ा कम रखें।",
+    "स्क्रिप्ट कॉपी करें या .rsc फ़ाइल डाउनलोड करें, और पक्का करें कि जिस ट्रैफ़िक पर सीमा लगानी है उसके लिए FastTrack बंद हो।"
+  ],
+  "faq": [
+    [
+      "PCQ क्या करता है?",
+      "PCQ queue type पैकेट को एक classifier (आमतौर पर क्लाइंट का एड्रेस) के आधार पर sub-queue में छाँटता है और बारी-बारी से हर sub-queue को सेवा देता है। pcq-rate सेट हो तो हर sub-queue उसी स्पीड पर सीमित रहती है; pcq-rate 0 हो तो parent की सीमा उस समय सक्रिय क्लाइंट में बराबर बँट जाती है। इस तरह एक queue सैकड़ों क्लाइंट को बराबर हिस्सा दे देती है, जिसके लिए वरना सैकड़ों simple queue चाहिए होतीं।"
+    ],
+    [
+      "डाउनलोड को dst-address और अपलोड को src-address से क्यों क्लासिफ़ाई करते हैं?",
+      "डाउनलोड पैकेट क्लाइंट की ओर जाते हैं, इसलिए क्लाइंट का एड्रेस destination होता है; अपलोड पैकेट उसी से आते हैं, इसलिए वह source होता है। इन्हें उलट दें तो सारे क्लाइंट एक ही sub-queue में चले जाएंगे, जो रिमोट सर्वर के एड्रेस पर आधारित होगी।"
+    ],
+    [
+      "queue tree में parent=global और forward chain क्यों इस्तेमाल होते हैं?",
+      "अपलोड पैकेट को source NAT से पहले क्लासिफ़ाई करना होता है, इससे पहले कि क्लाइंट का एड्रेस WAN एड्रेस से बदल जाए, और global queue source NAT से पहले चलती है। forward chain में मार्क करने पर डाउनलोड पैकेट तब दिखते हैं जब destination NAT क्लाइंट का एड्रेस लौटा चुका होता है। इसके बजाय WAN इंटरफ़ेस पर मार्क करें तो सारे अपलोड एक ही sub-queue में चले जाते हैं।"
+    ],
+    [
+      "address mask किसलिए है?",
+      "/32 रखने पर हर एड्रेस की अपनी sub-queue बनती है। जो WISP हर ग्राहक को छोटा सबनेट देता है, जैसे /29, वह mask 29 रख सकता है, ताकि पूरा सबनेट एक sub-queue और एक स्पीड साझा करे।"
+    ],
+    [
+      "PCQ का कोई असर नहीं दिख रहा। क्या जाँचूँ?",
+      "सबसे पहले FastTrack: fasttrack हुए पैकेट mangle और सभी queue को छोड़ देते हैं। फिर कुल स्पीड: अगर max-limit उससे ज़्यादा है जो लाइन असल में देती है, तो queue कभी भरती ही नहीं, और पैकेट आपके राउटर के बजाय ISP के उपकरण में कतार में लगते हैं।"
+    ],
+    [
+      "क्या मेरा कॉन्फ़िगरेशन कहीं भेजा जाता है?",
+      "नहीं। सब कुछ आपके ब्राउज़र में ही बनता है।"
+    ]
+  ],
+  "local_text": "आपके ब्राउज़र में चलता है; आप जो भी टाइप करते हैं, वह आपके डिवाइस से बाहर नहीं जाता"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pcq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>तरीका</legend>
+      <div class="seg" role="radiogroup" aria-label="तरीका">
+        <label><input type="radio" name="pcq-method" value="simple" checked>Simple queue</label>
+        <label><input type="radio" name="pcq-method" value="tree">Queue tree + mangle</label>
+      </div>
+      <div class="field" id="pcq-simple-f">
+        <label for="pcq-target">LAN सबनेट (target)</label>
+        <input type="text" id="pcq-target" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="pcq-tree-f" hidden>
+        <div class="field"><label for="pcq-lan">LAN interface list</label><input type="text" id="pcq-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-wan">WAN interface list</label><input type="text" id="pcq-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>स्पीड</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-down-rate">हर क्लाइंट का डाउनलोड (pcq-rate)</label><input type="text" id="pcq-down-rate" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-rate">हर क्लाइंट का अपलोड (pcq-rate)</label><input type="text" id="pcq-up-rate" class="mono" value="2M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-down-max">कुल डाउनलोड</label><input type="text" id="pcq-down-max" class="mono" value="95M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="pcq-up-max">कुल अपलोड</label><input type="text" id="pcq-up-max" class="mono" value="45M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <span class="help">हर क्लाइंट के लिए 0 या खाली का मतलब है कुल स्पीड का बराबर हिस्सा।</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>विकल्प</legend>
+      <div class="opts">
+        <div class="field"><label for="pcq-mask">Address mask (प्रति एक sub-queue)</label><input type="text" id="pcq-mask" class="mono" value="32" inputmode="numeric" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="pcq-name">नाम का उपसर्ग</label><input type="text" id="pcq-name" class="mono" value="pcq" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pcq-out" class="label">RouterOS स्क्रिप्ट</label>
+    <textarea id="pcq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pcq-copy" type="button">स्क्रिप्ट कॉपी करें</button>
+      <button class="btn" id="pcq-dl" type="button">{{mark:i-download}}.rsc डाउनलोड करें</button>
+    </div>
+    <ul class="ros-notes" id="pcq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Per Connection Queue व्यवहार में</h2>
+<p>PCQ एक queue type है, जिसे <code>/queue type</code> के तहत <code>kind=pcq</code> के साथ बनाया जाता है और फिर simple queue या queue tree उसे इस्तेमाल करती है। इसका <code>pcq-classifier</code> तय करता है कि क्या एक स्ट्रीम गिना जाएगा: डाउनलोड के लिए <code>dst-address</code>, यानी हर क्लाइंट का डाउनलोड एक स्ट्रीम है, और अपलोड के लिए <code>src-address</code>। RouterOS ये sub-stream अपने आप बनाता है और शांत होने पर हटा देता है, इसलिए क्लाइंट के आने-जाने पर आपको कुछ सँभालना नहीं पड़ता।</p>
+<p>नतीजा दो सेटिंग से तय होता है। <code>pcq-rate</code> हर स्ट्रीम की सीमा तय करता है; इसे 0 रखें तो स्ट्रीम बस वही बराबर-बराबर बाँट लेती हैं जो queue का <code>max-limit</code> अनुमति देता है। PCQ इस्तेमाल करने वाली queue का max-limit लिंक की असली क्षमता से थोड़ा कम रखें: PCQ बैंडविड्थ तभी बराबर बाँट सकता है जब पैकेट ऊपर वाले मॉडेम के बजाय आपके राउटर में कतार में लगें।</p>
+<h3>Simple queue या queue tree?</h3>
+<p>Simple queue तरीके में मार्किंग की ज़रूरत नहीं होती: LAN सबनेट को target बनाकर एक ही queue और <code>queue=upload-type/download-type</code>। Queue tree तरीका mangle से LAN से WAN जाने वाले कनेक्शन मार्क करता है और <code>parent=global</code> के नीचे दो queue बनाता है; यह स्थानीय नेटवर्कों के बीच के ट्रैफ़िक को बिना सीमा के छोड़ता है और प्राथमिकता वाली क्लास के लिए शुरुआती बिंदु है। हर हाल में, हर क्लाइंट की burst सेटिंग simple queue में ही होती है; इन्हें <a href="/tools/mikrotik-simple-queue-generator/">MikroTik सिंपल क्यू जनरेटर</a> और <a href="/tools/mikrotik-burst-calculator/">MikroTik बर्स्ट कैलकुलेटर</a> से मिलाकर देखें।</p>

@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Chuyển YAML sang JSON online | Tanod Tools",
+  "description": "Chuyển YAML sang JSON ngay trong trình duyệt. Hỗ trợ anchor, alias, merge key và tệp nhiều tài liệu, báo lỗi kèm dòng và cột. Miễn phí và riêng tư.",
+  "h1": "Chuyển YAML sang JSON",
+  "lede": "Dán YAML và nhận lại JSON, với anchor và merge key đã được giải quyết và đúng dòng của mọi lỗi cú pháp.",
+  "blurb": "Chuyển đổi YAML sang JSON.",
+  "keywords": "yaml sang json chuyển yaml thành json phân tích yml kubernetes docker compose openapi cấu hình anchor alias yaml to json convert parse config anchors aliases",
+  "limits": "Đầu vào tối đa khoảng 10 MB. Công cụ đọc YAML 1.2 chỉ với các kiểu chuẩn; các tag tùy chỉnh như <code>!!python/object</code> bị từ chối, không được thực thi.",
+  "howto_title": "Cách chuyển YAML sang JSON",
+  "howto": [
+    "Dán YAML của bạn vào ô, hoặc nhấn <strong>Chèn mẫu</strong>.",
+    "Chọn 2 dấu cách, 4 dấu cách, tab hoặc <strong>Thu gọn</strong> cho bố cục JSON.",
+    "Nếu YAML có lỗi cú pháp, bạn sẽ thấy dòng và cột của nó. Nếu không, hãy sao chép JSON hoặc tải xuống dưới dạng tệp <code>.json</code>."
+  ],
+  "faq": [
+    [
+      "YAML của tôi có bị tải lên không?",
+      "Không. Bộ phân tích YAML được tải từ trang web này vào lần đầu bạn dán gì đó và chạy trong trình duyệt của bạn. Cấu hình có chứa mật khẩu hay khóa không được gửi đi đâu cả."
+    ],
+    [
+      "Tại sao yes vẫn là văn bản \"yes\"?",
+      "Công cụ này theo YAML 1.2, trong đó chỉ <code>true</code> và <code>false</code> là boolean. Các từ <code>yes</code>, <code>no</code>, <code>on</code> và <code>off</code> vẫn là chuỗi, tránh được cái gọi là vấn đề Na Uy, khi mã quốc gia <code>NO</code> bị biến thành <code>false</code> bởi các bộ phân tích YAML 1.1. Nếu bên dùng dữ liệu của bạn là bộ phân tích YAML 1.1, nó có thể đọc các từ đó khác đi."
+    ],
+    [
+      "Ngày và timestamp được xử lý thế nào?",
+      "Một giá trị như <code>2024-05-01</code> được giữ làm chuỗi \"2024-05-01\". JSON không có kiểu ngày, và chuyển nó thành số hay định dạng khác sẽ làm mất thông tin."
+    ],
+    [
+      "Còn số nguyên rất lớn thì sao?",
+      "Số nguyên vượt quá 9.007.199.254.740.991 (2<sup>53</sup> - 1) được ghi từng chữ số thay vì bị làm tròn, nên một ID như 12345678901234567890 được giữ nguyên. Lưu ý rằng chương trình đọc JSON đó sau này bằng số JavaScript thông thường sẽ làm tròn nó."
+    ],
+    [
+      "Anchor, alias và merge key có được hỗ trợ không?",
+      "Có. Anchor <code>&amp;name</code> và alias <code>*name</code> được mở rộng, và <code>&lt;&lt;: *name</code> gộp một mapping vào mapping khác. Vì JSON không có tham chiếu, mỗi alias được ghi đầy đủ."
+    ],
+    [
+      "Giới hạn alias và mức trần 20 MB là gì?",
+      "Một tệp YAML nhỏ có thể dùng các alias mở rộng thành thứ khổng lồ, gọi là alias bomb. Tệp có hơn 10.000 alias bị từ chối, và việc chuyển đổi dừng lại nếu JSON vượt quá 20 MB, để thẻ của bạn không bị treo."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Chèn mẫu</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Xóa</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="name: example
+tags: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Bố cục</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 dấu cách</label>
+      <label><input type="radio" name="indent" value="4">4 dấu cách</label>
+      <label><input type="radio" name="indent" value="tab">Tab</label>
+      <label><input type="radio" name="indent" value="min">Thu gọn</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Đầu vào</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Đầu ra</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Thay đổi</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Kết quả</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Sao chép</button>
+    <button class="btn" id="f-dl" type="button">Tải xuống .json</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Từ YAML sang JSON</h2>
+<p>YAML và JSON mô tả cùng một loại dữ liệu: mapping, danh sách và giá trị đơn giản. YAML do con người viết, dùng thụt lề thay cho dấu ngoặc nhọn, có chú thích và các lối tắt như anchor; JSON là thứ mà hầu hết chương trình và API mong đợi. Việc chuyển đổi giữa chúng rất phổ biến khi một manifest Kubernetes, tệp Compose hay mô tả OpenAPI phải được đưa vào thứ chỉ đọc JSON.</p>
+<p>Một số tính năng của YAML không có tương đương trong JSON, nên bộ chuyển đổi giải quyết chúng. Anchor (<code>&amp;base</code>) đánh dấu một khối mà alias (<code>*base</code>) có thể dùng lại, và merge key (<code>&lt;&lt;</code>) sao chép các mục của một mapping vào mapping khác; trong JSON mỗi cái đó trở thành một bản sao đầy đủ. Chú thích bị bỏ, vì JSON không chứa được chúng. Tệp có nhiều tài liệu ngăn cách bằng <code>---</code> trở thành một mảng JSON.</p>
+<p>Quy tắc kiểu theo YAML 1.2: <code>true</code> và <code>false</code> là boolean, <code>null</code> và <code>~</code> là null, số là số, và mọi thứ khác, kể cả <code>yes</code> và <code>2024-05-01</code>, là văn bản. Lỗi cú pháp kèm dòng và cột, và các nguyên nhân thường gặp nhất là dùng tab để thụt lề, một khóa lặp lại trong cùng mapping, và một giá trị không được thụt lề bên dưới khóa của nó.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Cần đi theo chiều ngược lại? <a href="/tools/json-to-yaml/">JSON sang YAML</a> đặt các giá trị như "yes" trong dấu nháy để chúng không bị đổi nghĩa.</li>
+  <li>Kiểm tra hoặc làm gọn kết quả bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+  <li>Có dữ liệu dạng bảng? <a href="/tools/csv-to-json/">CSV sang JSON</a> xử lý bảng tính.</li>
+</ul>

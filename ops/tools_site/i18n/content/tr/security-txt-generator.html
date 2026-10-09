@@ -1,0 +1,123 @@
+<!--meta
+{
+  "title": "security.txt oluşturucu ve denetleyici (RFC 9116) | Tanod Tools",
+  "description": "/.well-known/ için doğru alanlarla bir security.txt yazın ya da kendi dosyanızı RFC 9116'ya göre denetleyin: Contact, Expires, https bağlantıları, Canonical, imza.",
+  "h1": "security.txt oluşturucu ve denetleyici",
+  "lede": "Araştırmacılar size nasıl ulaşacağını bilsin diye geçerli bir RFC 9116 security.txt hazırlayın ya da var olan bir dosyayı yapıştırıp neyin yanlış olduğunu görün. <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">AB Siber Dayanıklılık Yasası (Cyber Resilience Act, CRA)</a> hazırlığının bir parçası.",
+  "blurb": "security.txt oluşturun ve RFC 9116'ya göre denetleyin.",
+  "keywords": "security.txt oluşturucu security.txt denetleyici security.txt nedir security.txt nasıl yapılır güvenlik açığı bildirim iletişim siber dayanıklılık yasası pgp imza security.txt generator security.txt checker rfc 9116 well-known security.txt validator vulnerability disclosure contact expires canonical pgp cyber resilience act",
+  "limits": "Metni yalnızca RFC 9116'ya göre denetler. Web sitenizi çekmez (yazdığınız hiçbir şey bu sayfadan çıkmaz, bu yüzden dosyayı yapıştırın), OpenPGP imzasını doğrulamaz ve bir adresin çalışıp çalışmadığını sınamaz. Bir şablondur, hukuki tavsiye değildir.",
+  "howto_title": "security.txt nasıl hazırlanır ve denetlenir",
+  "howto": [
+    "En az bir Contact girin (e-posta adresi, telefon numarası ya da https:// sayfası) ve Expires tarihini kontrol edin. Policy ve Preferred-Languages gibi istediğiniz isteğe bağlı alanları doldurun.",
+    "Dosyayı kopyalayın ya da indirin ve alan adınızda <code>/.well-known/security.txt</code> adresinde, HTTPS üzerinden düz metin olarak yayımlayın.",
+    "Var olan bir dosyayı denetlemek için metnini denetleyiciye yapıştırın. Önce hataları giderin, sonra uyarılara bakın. Canonical alanını sınamak için dosyayı sunduğunuz adresi ekleyin.",
+    "Süresi dolmadan Expires tarihini yenilemek için takviminize bir hatırlatma koyun."
+  ],
+  "faq": [
+    ["Siber Dayanıklılık Yasası bir security.txt dosyası zorunlu kılıyor mu?", "Hayır. Düzenleme, üreticilerden koordineli bir güvenlik açığı bildirim politikası ve güvenlik açıklarını bildirmek için yayımlanmış bir yol bekler. security.txt bu iletişim bilgisini yayımlamanın yaygın yoludur ve uygulayıcılar bunu önerir, ancak düzenleme bu biçimi adıyla anmaz. Bkz. <a href=\"/learn/cyber-resilience-act-reporting-small-vendors.html\">küçük üreticiler için rehber</a>."],
+    ["Dosyayı tam olarak nereye koymalıyım?", "<code>https://alan-adiniz/.well-known/security.txt</code> adresine, HTTPS üzerinden ve <code>text/plain; charset=utf-8</code> içerik türüyle. RFC 9116, eski kurulumlar için <code>/security.txt</code> adresinde bir kopyaya da izin verir. Kapsamak istediğiniz her alan adında ve alt alan adında yayımlayın."],
+    ["Expires ne kadar ileride olmalı?", "RFC 9116, araştırmacıların iletişim bilgilerinin güncel tutulduğuna güvenebilmesi için tarihin bir yıldan kısa bir süre ileride olmasını söyler. Oluşturucu varsayılan olarak bir yıldan biraz kısa bir tarih seçer. Tarih geçtiğinde okuyuculara dosyayı yok saymaları söylenir, bu yüzden zamanında yenileyin."],
+    ["Dosyayı PGP ile imzalamam gerekiyor mu?", "Hayır, imzalamak isteğe bağlıdır ama önerilir. İmzalı dosya, <code>gpg --clearsign security.txt</code> ile üretilen, OpenPGP ile düz metin olarak imzalanmış bir iletidir. Denetleyici imzalı biçimi tanır ve yapısını kontrol eder, ancak imzanın kendisini doğrulayamaz; bunun için <code>gpg --verify</code> kullanın."],
+    ["Denetleyici neden sitemi çekmiyor?", "Sayfanın gizliliğini korumak için: tamamen tarayıcınızda çalışır ve başka sitelere istek göndermez. Dosyanızı bir tarayıcı sekmesinde açın, metni kopyalayıp buraya yapıştırın. Bu, ziyaretçilerin gerçekte ne aldığını da denetlemiş olur."],
+    ["Canonical alanı ne işe yarar?", "Dosyanın sunulması gereken adresleri listeler; böylece okuyucu, bir adreste bulduğu dosyanın gerçekten oraya ait olduğunu doğrulayabilir. Dosyayı sunduğunuz adresi girerseniz denetleyici, Canonical satırlarından birinin onunla eşleştiğini sınar."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack stx">
+  <section class="stx-sec" aria-labelledby="stx-gen-h">
+    <h2 class="util-h" id="stx-gen-h">security.txt oluşturun</h2>
+    <div class="util-split gen-meta">
+      <div class="util-split__main">
+        <fieldset class="gen-fs">
+          <legend>Zorunlu</legend>
+          <div class="field">
+            <label for="stx-contact">Contact (her satıra bir tane)</label>
+            <textarea id="stx-contact" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="security@example.com&#10;https://example.com/report" aria-describedby="stx-contact-h"></textarea>
+            <span class="help" id="stx-contact-h">Bir e-posta adresi, ülke kodlu bir telefon numarası ya da bir https:// sayfası. Araştırmacılar önce ilk satırı dener.</span>
+          </div>
+          <div class="field">
+            <label for="stx-expires">Expires (bu günün sonu, UTC)</label>
+            <input type="date" id="stx-expires" aria-describedby="stx-exp-h">
+            <span class="help gen-warn" id="stx-exp-h"></span>
+          </div>
+        </fieldset>
+        <fieldset class="gen-fs">
+          <legend>İsteğe bağlı</legend>
+          <div class="field">
+            <label for="stx-pol">Policy</label>
+            <input type="text" id="stx-pol" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/disclosure-policy">
+            <span class="help">Güvenlik açığı bildirim politikanız. <a href="/tools/vulnerability-disclosure-policy-generator/">Burada bir tane yazın.</a></span>
+          </div>
+          <div class="field">
+            <label for="stx-enc">Encryption (her satıra bir tane)</label>
+            <textarea id="stx-enc" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/pgp-key.txt"></textarea>
+            <span class="help">Genel anahtarınıza giden bir https:// bağlantısı, bir dns: kaydı ya da bir openpgp4fpr: parmak izi.</span>
+          </div>
+          <div class="field">
+            <label for="stx-lang">Preferred-Languages</label>
+            <input type="text" id="stx-lang" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="en, de">
+            <span class="help">Virgülle ayrılmış dil kodları.</span>
+          </div>
+          <div class="field">
+            <label for="stx-canon">Canonical (her satıra bir tane)</label>
+            <textarea id="stx-canon" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/.well-known/security.txt"></textarea>
+            <span class="help">Bu dosyanın sunulacağı adres. Özellikle imzalı dosyalar için önerilir.</span>
+          </div>
+          <div class="field">
+            <label for="stx-ack">Acknowledgments</label>
+            <input type="text" id="stx-ack" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/thanks">
+            <span class="help">Sorun bildiren araştırmacılara teşekkür eden bir sayfa.</span>
+          </div>
+          <div class="field">
+            <label for="stx-hire">Hiring</label>
+            <input type="text" id="stx-hire" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/jobs">
+            <span class="help">Güvenlik alanındaki iş ilanlarınızın bulunduğu bir sayfa.</span>
+          </div>
+        </fieldset>
+      </div>
+      <div class="util-split__side gen-side">
+        <label for="stx-out" class="label">security.txt dosyanız</label>
+        <textarea id="stx-out" class="mono gen-out gen-out--tall" rows="12" readonly spellcheck="false" wrap="off"></textarea>
+        <div class="actions">
+          <button class="btn btn--primary" id="stx-copy" type="button">Kopyala</button>
+          <button class="btn" id="stx-dl" type="button">security.txt dosyasını indir</button>
+        </div>
+        <ul class="stx-list" id="stx-gen-list" aria-label="Dosyayla ilgili notlar"></ul>
+        <h3 class="util-h">Nereye konur</h3>
+        <p class="help">Dosyayı <code>security.txt</code> adıyla kaydedin ve <code>https://your-domain/.well-known/security.txt</code> adresinde, HTTPS üzerinden düz metin olarak (<code>text/plain; charset=utf-8</code>) sunun. Kapsamak istediğiniz her alan adında aynısını yapın. İmzalamak için <code>gpg --clearsign security.txt</code> komutunu çalıştırın ve çıkan sonucu yayımlayın.</p>
+      </div>
+    </div>
+  </section>
+  <section class="stx-sec" aria-labelledby="stx-chk-h">
+    <h2 class="util-h" id="stx-chk-h">security.txt denetleyin</h2>
+    <div class="field">
+      <label for="stx-in">Bir security.txt dosyasının metnini yapıştırın</label>
+      <textarea id="stx-in" class="mono gen-out" rows="9" autocomplete="off" spellcheck="false" autocapitalize="off" wrap="off" aria-describedby="stx-sum"></textarea>
+    </div>
+    <div class="field">
+      <label for="stx-url">Dosyanın sunulduğu adres (isteğe bağlı)</label>
+      <input type="text" id="stx-url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="example.com">
+      <span class="help">Bir alan adı ya da tam adres. Canonical alanının eşleştiğini sınamak için kullanılır. Hiçbir şey çekilmez.</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn--sm" id="stx-example" type="button">Örnek yükle</button>
+      <button class="btn btn--sm btn--quiet" id="stx-clear" type="button">Temizle</button>
+    </div>
+    <p class="tt__report" id="stx-sum" aria-live="polite"></p>
+    <ul class="stx-list" id="stx-list" aria-label="Denetim sonuçları"></ul>
+  </section>
+</div>
+<!--explain-->
+<h2>security.txt ne işe yarar</h2>
+<p>Bir araştırmacı, müşteri ya da CERT yazılımınızda bir zayıflık bulduğunda ilk sorun, bunu kime söyleyeceğidir. security.txt, sabit bir adreste, <code>/.well-known/security.txt</code> konumunda duran küçük bir metin dosyasıdır ve bu soruyu yanıtlar: bir iletişim bilgisi, bir son kullanma tarihi ve isteğe bağlı olarak bildirim politikanıza ve genel anahtarınıza bağlantılar. Biçimi RFC 9116 tanımlar; birçok tarayıcı, bug bounty platformu ve ulusal CERT başka yere bakmadan önce bu dosyaya bakar.</p>
+<p>AB'deki bir yazılım üreticisi için bu dosya, Siber Dayanıklılık Yasası (Cyber Resilience Act, CRA) kapsamındaki yükümlülükleri de destekler: Ek I, dışarıdan kişilerin güvenlik açığı bildirebileceği yayımlanmış bir yol ve bunları ele alan bir süreç bekler. Düzenleme bu biçimi adıyla anmaz, ancak iletişim bilgisini yayımlamanın olağan yolu budur. <a href="/learn/cyber-resilience-act-reporting-small-vendors.html">Küçük üreticiler için raporlama rehberi</a>, 24 saatlik süre dahil, kurulumun geri kalanını anlatır.</p>
+<h2>Alanlar</h2>
+<p>Contact ve Expires zorunludur. Contact birden çok kez geçebilir ve bir URI olmalıdır: <code>mailto:</code>, <code>tel:</code> ya da <code>https:</code>. Expires bir kez geçer, <code>2027-12-31T23:59:59Z</code> gibi bir tarih ve saat olarak yazılır ve RFC 9116 bir yıldan kısa bir süre ister. Encryption, Acknowledgments, Policy, Hiring ve Canonical isteğe bağlı bağlantılardır ve her web adresi https kullanmalıdır. Preferred-Languages bir kez geçer ve dil kodlarını listeler. RFC'nin tanımlamadığı alanları okuyucular yok sayar; denetleyici bunları genellikle yazım hatası olduğu için uyarı olarak işaretler.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Tek bir kişinin adresi yerine birkaç kişinin okuduğu bir posta kutusu kullanın ve ona yazarak deneyin.</li>
+  <li>Bir <a href="/tools/vulnerability-disclosure-policy-generator/">güvenlik açığı bildirim politikası</a> yazın ve Policy alanıyla bağlayın.</li>
+  <li>Bir bildirim gelmeden önce sürelerinizi bilin: <a href="/tools/cra-incident-clock/">CRA 24 saatlik olay saati</a>, haberdar olduğunuz anı tarihli son tarihlere çevirir.</li>
+</ul>

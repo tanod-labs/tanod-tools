@@ -305,4 +305,81 @@ export default [
       await t.shot("done", 1280);
     },
   },
+
+  /* ------------------------------------------------------------ business days */
+  {
+    page: "business-days-calculator",
+    name: "count (both ends, exclusions, weekends, holidays) and add/subtract",
+    async run(t) {
+      await t.go();
+      const set = (sel, v) => t.page.setValue(sel, v);
+      const stats = async () => [await get(t, "#bd-main"), await get(t, "#bd-cal"), await get(t, "#bd-wk"), await get(t, "#bd-hd")];
+      const range = async (a, b) => { await set("#bd-a", a); await set("#bd-b", b); };
+      await range("2024-03-04", "2024-03-08"); // Monday to Friday
+      t.eq(await stats(), ["5", "5", "0", "0"], "Mon-Fri counts both ends like NETWORKDAYS");
+      await t.page.click("#bd-ins");
+      t.eq(await get(t, "#bd-main"), "4", "start date excluded");
+      await t.page.click("#bd-ine");
+      t.eq(await get(t, "#bd-main"), "3", "both excluded");
+      await t.page.click("#bd-ins");
+      await t.page.click("#bd-ine");
+      await range("2024-03-01", "2024-03-04"); // Friday to Monday
+      t.eq(await stats(), ["2", "4", "2", "0"], "Fri..Mon: 2 business, 4 calendar, 2 weekend");
+      await set("#bd-hol", "2024-03-04 Monday holiday\n# comment\n2024-03-02\n2024-03-04");
+      t.eq(await stats(), ["1", "4", "2", "1"], "holiday on Monday skipped once; Saturday holiday ignored");
+      await set("#bd-hol", "");
+      await set("#bd-we", "fri-sat");
+      t.eq(await stats(), ["2", "4", "2", "0"], "Fri+Sat weekend: Sun and Mon work");
+      await set("#bd-we", "sun");
+      t.eq(await stats(), ["3", "4", "1", "0"], "Sunday-only weekend");
+      await set("#bd-we", "custom");
+      t.eq(await get(t, "#bd-main"), "2", "custom defaults to Sat+Sun");
+      await t.page.click("#bd-wd input[value='1']");
+      t.eq(await stats(), ["1", "4", "3", "0"], "custom: Mon, Sat, Sun off");
+      await set("#bd-we", "sat-sun");
+      await range("2024-03-04", "2024-03-01"); // end before start
+      t.eq(await get(t, "#bd-main"), "2", "reversed dates swap");
+      t.assert((await get(t, "#bd-note")).includes("swapped"), "swap noted");
+      await range("2024-03-06", "2024-03-06");
+      t.eq(await stats(), ["1", "1", "0", "0"], "same day counted once");
+      await t.page.click("#bd-ins");
+      t.eq(await get(t, "#bd-main"), "0", "same day with start excluded is empty");
+      await t.page.click("#bd-ins");
+      await range("2024-03-04", "2024-03-");
+      t.eq(await t.page.eval(`document.querySelector("#bd-res").hidden`), true, "bad date hides result");
+      await range("2024-03-04", "2024-03-08");
+      await set("#bd-hol", "2024-13-45");
+      t.assert((await get(t, "#status")).includes("YYYY-MM-DD"), "bad holiday line reported");
+      await set("#bd-hol", "");
+      // add / subtract
+      await t.page.click('input[name="bd-mode"][value="add"]');
+      await set("#bd-s", "2024-03-01"); // Friday
+      await set("#bd-n", "1");
+      t.eq(await get(t, "#bd-main"), "Monday, 4 March 2024", "Friday + 1 business day");
+      t.eq(await stats().then((s) => s.slice(1)), ["3", "2", "0"], "3 calendar days, 2 weekend days");
+      await set("#bd-n", "10");
+      t.eq(await get(t, "#bd-main"), "Friday, 15 March 2024", "Friday + 10");
+      await set("#bd-n", "0");
+      t.eq(await get(t, "#bd-main"), "Friday, 1 March 2024", "+0 returns the start date");
+      await set("#bd-s", "2024-03-02"); // Saturday
+      await set("#bd-n", "1");
+      t.eq(await get(t, "#bd-main"), "Monday, 4 March 2024", "Saturday + 1");
+      await t.page.click('input[name="bd-op"][value="sub"]');
+      t.eq(await get(t, "#bd-main"), "Friday, 1 March 2024", "Saturday - 1");
+      await set("#bd-s", "2024-03-04");
+      await set("#bd-hol", "2024-03-01");
+      t.eq(await get(t, "#bd-main"), "Thursday, 29 February 2024", "Monday - 1 skipping a Friday holiday and the weekend");
+      t.eq(await stats().then((s) => s.slice(1)), ["4", "2", "1"], "4 calendar, 2 weekend, 1 holiday");
+      await set("#bd-hol", "");
+      await t.page.click('input[name="bd-op"][value="add"]');
+      await set("#bd-we", "fri-sat");
+      await set("#bd-s", "2024-03-01"); // Friday, a weekend day here
+      await set("#bd-n", "1");
+      t.eq(await get(t, "#bd-main"), "Sunday, 3 March 2024", "Fri+Sat weekend: next working day is Sunday");
+      await set("#bd-n", "1.5");
+      t.eq(await t.page.eval(`document.querySelector("#bd-n").getAttribute("aria-invalid")`), "true", "fraction rejected");
+      await t.shot("done", 375);
+      await t.shot("done", 1280);
+    },
+  },
 ];

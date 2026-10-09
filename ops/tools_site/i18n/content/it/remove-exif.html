@@ -1,0 +1,60 @@
+<!--meta
+{
+  "title": "Rimuovi dati EXIF dalle foto, GPS incluso | Tanod Tools",
+  "description": "Scopri cosa rivela una foto (posizione GPS, fotocamera, data), poi elimina i dati EXIF, XMP e IPTC senza ricodificare l'immagine. Nel browser, nulla viene caricato.",
+  "h1": "Rimuovi i dati EXIF dalle foto",
+  "lede": "Guarda la posizione, la fotocamera e la data nascoste in una foto, poi rimuovile senza toccare l'immagine stessa.",
+  "blurb": "Elimina GPS, fotocamera e altri metadati dalle foto.",
+  "keywords": "rimuovere exif eliminare metadati foto posizione gps privacy cancellare dati exif xmp iptc pulire foto exif remover",
+  "limits": "Fino a 50 immagini per gruppo, 50 MB ciascuna. JPEG, PNG e WebP vengono ripuliti senza ricodifica; GIF, BMP e AVIF vengono ridisegnati e salvati come PNG.",
+  "howto_title": "Come rimuovere i dati EXIF da una foto",
+  "howto": [
+    "Scegli le tue foto, oppure trascinale sulla pagina. Ognuna elenca ciò che contiene, con l'eventuale posizione GPS segnalata.",
+    "Lascia attivo \"Mantieni l'orientamento\" perché le foto che ne dipendono non si girino di lato, oppure disattivalo per rimuovere tutto.",
+    "Premi <strong>Rimuovi i metadati</strong>, poi scarica le copie pulite o uno .zip. I file vengono rinominati con \"-clean\"."
+  ],
+  "faq": [
+    ["Le mie foto vengono caricate?", "No. Il file viene letto e riscritto nel tuo browser e nulla viene inviato a un server. Puoi controllare l'elenco di ciò che contiene ogni foto prima che venga cambiato qualsiasi cosa."],
+    ["Ricomprime il mio JPEG?", "No. Per JPEG, PNG e WebP lo strumento riscrive il contenitore del file ed elimina i blocchi di metadati. I dati dell'immagine vengono copiati byte per byte, quindi non c'è perdita di qualità e i pixel restano identici."],
+    ["Che cosa viene rimosso esattamente?", "JPEG: EXIF e XMP (APP1), IPTC (APP13), commenti e blocchi applicativi diversi dall'intestazione JFIF, dal profilo colore e dal flag colore Adobe. PNG: chunk di testo (tEXt, zTXt, iTXt, che possono contenere XMP), EXIF e data di modifica. WebP: chunk EXIF e XMP. Vengono eliminati anche i dati accodati dopo la fine di un'immagine JPEG o PNG."],
+    ["Cos'è \"Mantieni l'orientamento\"?", "Molte fotocamere salvano una foto di lato e aggiungono un tag di orientamento che dice ai visualizzatori di ruotarla. Se quel tag viene rimosso, la foto può apparire di lato. Con questa opzione attiva (il valore predefinito), viene riscritto un minuscolo blocco EXIF con solo il numero di orientamento quando l'originale non era dritto. Non contiene dettagli su posizione o fotocamera. Disattiva l'opzione per rimuovere anche quello."],
+    ["Il profilo colore viene rimosso?", "No. Un profilo colore ICC incorporato viene mantenuto perché rimuoverlo può cambiare l'aspetto dei colori. Descrive la gestione del colore, non dove o come è stata scattata la foto."],
+    ["Quanto è affidabile l'elenco di ciò che è stato trovato?", "Legge i campi EXIF standard (fotocamera, obiettivo, data, software, GPS, orientamento) e conta il resto. I produttori di fotocamere aggiungono dati privati nei propri formati, che vengono contati ma non descritti. Il file ripulito viene controllato dopo la scrittura per confermare che non resti alcun metadato EXIF di posizione, fotocamera, XMP o testo."],
+    ["Che fine fanno i file GIF, BMP o AVIF?", "Questo strumento non modifica quei contenitori. Ridisegna l'immagine e la salva come PNG, che non contiene metadati. Una GIF diventa il suo primo fotogramma."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Rilascia qui le foto</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple>{{mark:i-plus}}<span data-pick-label>Scegli le foto</span></label>
+  <p class="drop__hint">JPEG, PNG o WebP (anche GIF, BMP, AVIF). Oppure trascinale in un punto qualsiasi di questa pagina.</p>
+</div>
+<ol class="files" id="files" aria-label="Foto da ripulire" hidden></ol>
+<div id="opts" hidden>
+  <div class="opts opts--wide">
+    <div class="field">
+      <label class="check"><input type="checkbox" id="keep-orient" checked>Mantieni l'orientamento perché le foto non si girino di lato</label>
+      <p class="help">Riscrive un minuscolo blocco EXIF con il solo numero di orientamento, e solo se la foto non è già dritta.</p>
+    </div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Rimuovi i metadati</button>
+  <span class="help" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Cancella tutto</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Cosa può rivelare una foto</h2>
+<p>La maggior parte delle fotocamere e dei telefoni scrive informazioni extra in ogni foto: marca e modello, l'ora dello scatto, il software che l'ha modificata e, se la posizione è attiva, le coordinate GPS del punto in cui eri. Quel blocco si chiama EXIF. I programmi di editing aggiungono blocchi XMP e IPTC con didascalie, nomi degli autori e parole chiave. Molti siti li eliminano quando carichi un file, ma non tutti, e un file inviato per email o in chat di solito conserva tutto.</p>
+<p>Questo strumento mostra prima cosa contiene ogni foto, poi lo rimuove riscrivendo il contenitore del file. Un JPEG è una sequenza di blocchi etichettati seguita dall'immagine compressa; i blocchi di metadati vengono omessi e i dati dell'immagine copiati invariati. Per questo il risultato non è ricompresso e ha lo stesso aspetto.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Controlla l'elenco prima di condividere: una posizione segnalata significa che la foto contiene delle coordinate.</li>
+  <li>Screenshot ed esportazioni modificate possono contenere ancora metadati di testo. Passa anche quelli da qui.</li>
+  <li>Per ridurre anche il peso del file, usa poi <a href="/tools/compress-image/">Comprimi immagine</a>; ricodifica ed elimina anch'essa i metadati.</li>
+</ul>

@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Calcolatore di subnet IPv4 e IPv6 (CIDR) | Tanod Tools",
+  "description": "Inserisci un indirizzo IPv4 o IPv6 con prefisso o maschera: ottieni rete, broadcast, intervallo di host, conteggi, wildcard mask, vista binaria e divisione in subnet.",
+  "h1": "Calcolatore di subnet",
+  "lede": "Calcola rete, intervallo di host e conteggi di qualsiasi subnet IPv4 o IPv6, poi dividila in subnet più piccole.",
+  "blurb": "Calcolatore CIDR IPv4 e IPv6 con intervalli di host e divisione in subnet.",
+  "keywords": "calcolatore subnet calcolatore cidr calcolatore ip subnet mask netmask wildcard mask indirizzo broadcast host utilizzabili prefisso ipv6 subnetting rfc 1918 subnet calculator",
+  "limits": "Solo IPv4 e IPv6, una subnet alla volta. Il tipo di indirizzo si legge dagli intervalli IANA per usi speciali integrati nella pagina, quindi non sa nulla di chi possieda un indirizzo pubblico. Le tabelle di divisione in subnet si fermano a 256 righe.",
+  "howto_title": "Come calcolare una subnet",
+  "howto": [
+    "Scrivi un indirizzo con la lunghezza del prefisso, come <code>192.168.1.10/24</code> o <code>2001:db8::/32</code>. Funziona anche un indirizzo IPv4 con maschera decimale puntata, come <code>192.168.1.10 255.255.255.0</code>.",
+    "Leggi l'indirizzo di rete, l'intervallo di host e i conteggi. Se l'indirizzo aveva dei bit host impostati, la pagina ti dice a quale rete è stato normalizzato.",
+    "Per progettare reti più piccole, inserisci un prefisso più lungo in <strong>Dividi in</strong> e leggi la tabella delle subnet."
+  ],
+  "faq": [
+    ["Perché gli host utilizzabili sono due in meno degli indirizzi?", "In una normale subnet IPv4 il primo indirizzo identifica la rete e l'ultimo è l'indirizzo di broadcast, quindi nessuno dei due può essere assegnato a un dispositivo. Una /24 ha 256 indirizzi e 254 host utilizzabili. Esistono due eccezioni: una /31 ha due indirizzi ed entrambi sono utilizzabili su un collegamento punto-punto (RFC 3021), e una /32 è un singolo host."],
+    ["Cosa mostra una wildcard mask?", "È la netmask rovesciata: i bit a 0 devono corrispondere e quelli a 1 vengono ignorati. Per 255.255.255.0 la wildcard è 0.0.0.255. Le access list degli apparati Cisco e le istruzioni network di OSPF usano questa forma."],
+    ["Perché 010.0.0.1 viene rifiutato?", "Uno zero iniziale fa sì che alcuni sistemi leggano quella parte come ottale, quindi 010 varrebbe 8, mentre altri la leggono come decimale 10. Lo stesso testo può indicare due macchine diverse, quindi la pagina ti chiede di scrivere il numero senza lo zero."],
+    ["In cosa differisce IPv6 in un calcolo di subnet?", "IPv6 non ha un indirizzo di broadcast, quindi ogni indirizzo di un prefisso può essere assegnato e il conteggio è semplicemente 2 elevato a (128 meno il prefisso). Le normali subnet di una LAN sono /64. La pagina mostra l'indirizzo nella forma compressa della RFC 5952 e in forma completa, con tutti e otto i gruppi da 4 cifre."],
+    ["Qual è la forma compressa di un indirizzo IPv6?", "Gli zeri iniziali di ogni gruppo vengono eliminati e la sequenza più lunga di due o più gruppi tutti a zero viene sostituita da <code>::</code>, scegliendo la sequenza più a sinistra in caso di parità. Un singolo gruppo di zeri non viene mai compresso, quindi <code>2001:db8:0:1:1:1:1:1</code> mantiene il suo 0."],
+    ["I miei indirizzi vengono inviati da qualche parte?", "No. Il calcolo viene eseguito nel tuo browser con interi di grandi dimensioni, nulla di ciò che scrivi viene inviato altrove, e funziona anche offline una volta caricata la pagina."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="field">
+    <label for="s-in">Indirizzo IP con prefisso o maschera</label>
+    <input type="text" id="s-in" class="mono sn-in" value="192.168.1.10/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="s-info">
+  </div>
+  <div class="cron-presets" role="group" aria-label="Esempi">
+    <button class="btn btn--sm" type="button" data-sn="192.168.1.10/24">192.168.1.10/24</button>
+    <button class="btn btn--sm" type="button" data-sn="10.0.0.0/8">10.0.0.0/8</button>
+    <button class="btn btn--sm" type="button" data-sn="172.16.5.9 255.255.240.0">172.16.5.9 + maschera</button>
+    <button class="btn btn--sm" type="button" data-sn="100.64.0.0/10">100.64.0.0/10</button>
+    <button class="btn btn--sm" type="button" data-sn="2001:db8:0:0:1:0:0:1/64">2001:db8::1:0:0:1/64</button>
+    <button class="btn btn--sm" type="button" data-sn="fd12:3456:789a::/48">fd12:3456:789a::/48</button>
+  </div>
+  <p class="tt__report" id="s-info" aria-live="polite"></p>
+  <div id="s-result" hidden>
+    <dl class="dv-rows sn-rows" id="s-rows" aria-label="Dettagli della subnet"></dl>
+    <p class="note" id="s-note" hidden></p>
+    <h2 class="util-h">Dividi in subnet più piccole</h2>
+    <div class="opts">
+      <div class="field">
+        <label for="s-split">Dividi con lunghezza del prefisso /</label>
+        <input type="number" id="s-split" inputmode="numeric" min="1" max="128" step="1" placeholder="per esempio 26" aria-describedby="s-split-help">
+        <span class="help" id="s-split-help">Lascia vuoto per non dividere. Deve essere più lungo del prefisso qui sopra.</span>
+      </div>
+    </div>
+    <p class="tt__report" id="s-split-info" aria-live="polite"></p>
+    <div class="sn-table-wrap" id="s-table-wrap" hidden>
+      <table class="sn-table" id="s-table"><caption class="visually-hidden">Subnet</caption><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Subnet e notazione CIDR</h2>
+<p>Un indirizzo IP ha due parti: i bit iniziali identificano la rete e i bit restanti identificano l'host al suo interno. La lunghezza del prefisso dopo la barra dice quanti bit iniziali appartengono alla rete, quindi <code>192.168.1.10/24</code> significa che i primi 24 dei 32 bit sono la rete e gli ultimi 8 identificano uno dei 256 indirizzi. Mettendo a 0 tutti i bit host si ottiene l'indirizzo di rete; mettendoli tutti a 1 si ottiene l'indirizzo di broadcast, ed è per questo che normalmente non vengono assegnati ai dispositivi.</p>
+<p>La netmask è la stessa informazione scritta come indirizzo: 24 bit a uno seguiti da 8 bit a zero fanno 255.255.255.0. Sono valide solo le maschere contigue, quindi qualcosa come 255.0.255.0 viene rifiutato. IPv6 funziona allo stesso modo con 128 bit, ma senza indirizzo di broadcast e con un intervallo molto più ampio: una normale subnet LAN /64 contiene 2<sup>64</sup> indirizzi, circa 18 miliardi di miliardi.</p>
+<p>Alcuni intervalli hanno un significato speciale ovunque compaiano. 10.0.0.0/8, 172.16.0.0/12 e 192.168.0.0/16 sono privati e non vengono instradati su Internet, 100.64.0.0/10 è lo spazio di indirizzi condiviso per il NAT di livello carrier, 169.254.0.0/16 è link-local e i blocchi 192.0.2.0, 198.51.100.0 e 203.0.113.0 sono riservati alla documentazione. La pagina indica l'intervallo in cui rientra il tuo indirizzo.</p>
+<h3>Consigli</h3>
+<ul>
+  <li>Converti un ottetto o un intero indirizzo tra binario e decimale con il <a href="/tools/number-base-converter/">Convertitore di basi numeriche</a>.</li>
+  <li>Imposti anche i permessi dei file su un server? Il <a href="/tools/chmod-calculator/">Calcolatore chmod</a> trasforma 755 in rwxr-xr-x e viceversa.</li>
+  <li>Leggi il codice di stato di un controllo di integrità fallito nei <a href="/tools/http-status-codes/">Codici di stato HTTP</a>.</li>
+</ul>

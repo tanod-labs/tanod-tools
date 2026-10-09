@@ -1,0 +1,80 @@
+<!--meta
+{
+  "title": "Przytnij obraz online: bezpłatnie, co do piksela | Tanod Tools",
+  "description": "Przytnij JPG, PNG lub WebP w przeglądarce. Przeciągnij ramkę, użyj gotowych proporcji albo wpisz dokładne wartości w pikselach. Nic nie jest przesyłane, format zostaje.",
+  "h1": "Przytnij obraz",
+  "lede": "Przeciągnij ramkę przycinania nad obrazem albo wpisz dokładne wartości w pikselach, a potem zapisz przycięty egzemplarz.",
+  "blurb": "Wytnij z obrazu potrzebną część.",
+  "keywords": "przycinanie obrazu kadrowanie wycinanie obcinanie proporcje kwadrat 16:9 4:3 ramka przycinania zdjęcie crop",
+  "limits": "Jeden obraz naraz, do 50 MB i około 100 megapikseli. PNG, JPEG, WebP, GIF, BMP i AVIF (tam, gdzie przeglądarka potrafi je otworzyć).",
+  "howto_title": "Jak przyciąć obraz",
+  "howto": [
+    "Wybierz obraz albo przeciągnij go na stronę.",
+    "Przeciągnij ramkę, aby ją przesunąć, i uchwyty w rogach, aby zmienić jej rozmiar. Wybierz proporcje, jeśli ich potrzebujesz, albo wpisz X, Y, szerokość i wysokość w pikselach.",
+    "Naciśnij <strong>Przytnij obraz</strong>, a potem pobierz wynik."
+  ],
+  "faq": [
+    ["Czy mój obraz jest przesyłany?", "Nie. Przycięcie jest wykonywane w przeglądarce na podstawie pliku z twojego urządzenia. Nic nie jest wysyłane na serwer."],
+    ["Czy mogę używać klawiatury zamiast myszy?", "Tak. Aktywuj ramkę przycinania (przejdź do niej klawiszem Tab albo kliknij ją), a potem strzałkami przesuwaj ją, a Shift ze strzałkami zmieniaj jej rozmiar. Pola X, Y, szerokość i wysokość przyjmują też dokładne wartości w pikselach."],
+    ["Czy przycinanie obniża jakość?", "Piksele wewnątrz ramki są kopiowane bez zmian, w pełnej rozdzielczości, a nie z podglądu o rozmiarze ekranu. JPEG i WebP są zapisywane ponownie z jakością 92, więc występuje niewielka rekompresja; PNG pozostaje bezstratny."],
+    ["W jakim formacie jest wynik?", "Takim samym jak oryginał: PNG zostaje PNG, JPEG zostaje JPEG, a WebP zostaje WebP. GIF, BMP i AVIF są zapisywane jako PNG (GIF staje się swoją pierwszą klatką)."],
+    ["Co robią gotowe proporcje?", "Blokują ramkę na stosunku szerokości do wysokości, takim jak 1:1 dla kwadratu lub 16:9 dla panoramicznego kadru, i utrzymują go podczas zmiany rozmiaru. Wybierz Dowolne, aby przyciąć do dowolnego kształtu."],
+    ["Czy dane EXIF są zachowywane?", "Nie. Przycięty plik to nowy obraz bez metadanych aparatu i GPS, zapisany w orientacji, w jakiej się wyświetla."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Upuść obraz tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Wybierz obraz</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP lub AVIF. Lub przeciągnij go w dowolne miejsce na tej stronie.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="cropstage" id="stage">
+    <div class="crop">
+      <canvas id="cv" aria-label="Podgląd przycinanego obrazu" role="img"></canvas>
+      <div class="crop__box" id="box" tabindex="0" role="group" aria-label="Obszar przycinania" aria-describedby="crop-help">
+        <i class="crop__h" data-h="nw" aria-hidden="true"></i><i class="crop__h" data-h="ne" aria-hidden="true"></i>
+        <i class="crop__h" data-h="sw" aria-hidden="true"></i><i class="crop__h" data-h="se" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+  <p class="help" id="crop-help">Przeciągnij ramkę, aby ją przesunąć, a róg, aby zmienić rozmiar. Gdy ramka jest aktywna, strzałki ją przesuwają, a Shift ze strzałkami zmienia jej rozmiar.</p>
+  <div class="opts crop-opts">
+    <fieldset class="field crop-opts__ratio">
+      <legend>Proporcje</legend>
+      <div class="seg">
+        <label><input type="radio" name="ratio" value="free" checked>Dowolne</label>
+        <label><input type="radio" name="ratio" value="1:1">1:1</label>
+        <label><input type="radio" name="ratio" value="4:3">4:3</label>
+        <label><input type="radio" name="ratio" value="16:9">16:9</label>
+        <label><input type="radio" name="ratio" value="3:2">3:2</label>
+        <label><input type="radio" name="ratio" value="9:16">9:16</label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="crop-x">X (px)</label><input type="number" id="crop-x" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-y">Y (px)</label><input type="number" id="crop-y" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="crop-w">Szerokość (px)</label><input type="number" id="crop-w" min="1" inputmode="numeric"></div>
+    <div class="field"><label for="crop-h">Wysokość (px)</label><input type="number" id="crop-h" min="1" inputmode="numeric"></div>
+  </div>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Przytnij obraz</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Przycinanie bez utraty rozdzielczości</h2>
+<p>Przycinanie zachowuje prostokąt oryginalnych pikseli, a resztę odrzuca. Obraz widoczny na ekranie to zmniejszony podgląd, aby mieścił się na stronie; samo przycięcie jest wykonywane na obrazie w pełnej rozdzielczości, z użyciem wartości X, Y, szerokości i wysokości pokazanych w polach. Te liczby są wyrażone w pikselach samego obrazu, a nie ekranu.</p>
+<p>Użyj proporcji, gdy wynik ma pasować do ramki: 1:1 dla kwadratowego awatara, 16:9 dla miniatury wideo, 4:3 lub 3:2 dla popularnych kształtów zdjęć, 9:16 dla pionowej relacji. Ramka zachowuje ten kształt podczas zmiany rozmiaru, a wpisanie szerokości lub wysokości aktualizuje drugi wymiar.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Najpierw przytnij, a potem zmniejsz rozmiar narzędziami <a href="/tools/resize-image/">Zmień rozmiar obrazu</a> i <a href="/tools/compress-image/">Kompresuj obraz</a>.</li>
+  <li>Zdjęcie obrócone w złą stronę? Naprawi to narzędzie <a href="/tools/rotate-image/">Obróć obraz</a>.</li>
+  <li>Robisz ikonę z fragmentu obrazu? Przytnij do 1:1, a potem użyj narzędzia <a href="/tools/favicon-generator/">Generator favicon</a>.</li>
+</ul>

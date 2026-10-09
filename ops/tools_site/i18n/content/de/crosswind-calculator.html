@@ -1,0 +1,70 @@
+<!--meta
+{
+  "title": "Seitenwind und Gegenwind berechnen | Tanod Tools",
+  "description": "Geben Sie Piste und Wind ein und erhalten Sie Gegen- oder Rückenwind und Seitenwindkomponente, mit Böen, für beide Pistenenden. Knoten, km/h, mph oder m/s.",
+  "h1": "Seitenwind und Gegenwind berechnen",
+  "lede": "Geben Sie Piste und Wind ein und sehen Sie die Komponenten für Gegenwind (oder Rückenwind) und Seitenwind an beiden Pistenenden, für gleichmäßigen Wind und für Böen.",
+  "blurb": "Gegenwind-, Rückenwind- und Seitenwindkomponenten für eine Piste.",
+  "keywords": "seitenwind rechner gegenwind rückenwind rueckenwind komponente piste landebahn windrichtung böen boen knoten pilot landung start winkel sinus kosinus berechnen",
+  "limits": "Einfache Trigonometrie auf Basis des eingegebenen Winds. Nicht für die Flugplanung oder Navigation geeignet: Nutzen Sie den erprobten Seitenwindgrenzwert des Luftfahrzeugs und die offizielle Windmeldung, und beachten Sie, dass Pistennummern und Turmwinde missweisend sind, METAR-Winde dagegen rechtweisend.",
+  "howto_title": "So ermitteln Sie die Seitenwindkomponente",
+  "howto": [
+    "Geben Sie die Pistennummer (etwa 27 oder 09L) oder deren Richtung in Grad (etwa 275) ein.",
+    "Geben Sie die Richtung ein, aus der der Wind kommt, seine Geschwindigkeit und, falls gemeldet, die Böengeschwindigkeit. Wählen Sie die Geschwindigkeitseinheit.",
+    "Lesen Sie Gegen- oder Rückenwind und Seitenwind für jedes Pistenende ab. Prüfen Sie, welches Ende Gegenwind bringt."
+  ],
+  "faq": [
+    ["Wie wird der Seitenwind berechnet?", "Man nimmt den Winkel zwischen Windrichtung und Pistenrichtung. Der Seitenwind ist die Windgeschwindigkeit mal dem Sinus dieses Winkels, der Gegenwind die Windgeschwindigkeit mal dem Kosinus. Ein Wind mit 20 Knoten, der 30 Grad von der Piste abweicht, ergibt 10 Knoten Seitenwind und etwa 17 Knoten Gegenwind."],
+    ["Sollte ich die Böengeschwindigkeit verwenden?", "Ja, Piloten prüfen normalerweise beides. Die Spalte für Böen zeigt die Komponenten für die Spitzenböe, also den schlimmsten Fall, auf den Sie beim Abfangen oder Ausrollen treffen können."],
+    ["Was bedeuten links und rechts?", "Rechts bedeutet, dass der Wind von der rechten Seite weht, wenn Sie in Lande- oder Startrichtung entlang der Piste blicken. Links bedeutet von links. Ein negativer Gegenwind ist ein Rückenwind."],
+    ["Bedeutet die Pistennummer Grad?", "Eine Pistennummer ist die missweisende Richtung geteilt durch zehn und gerundet: Piste 27 zeigt auf etwa 270 Grad, Piste 09 auf etwa 090. Das Gegenende liegt 180 Grad entfernt (09 und 27 oder 36 und 18). Eine dreistellige Zahl wird als exakte Richtung verwendet."],
+    ["Beziehen sich Wind und Piste auf dasselbe Bezugssystem?", "Das sollten sie. Turm- und ATIS-Winde werden in Grad missweisend angegeben, METAR- und TAF-Winde dagegen in Grad rechtweisend. Der Unterschied ist die örtliche Missweisung, die wenige oder auch mehr als zehn Grad betragen kann. Verwenden Sie für beide Eingaben dasselbe Bezugssystem."],
+    ["Welcher Seitenwind ist sicher?", "Das hängt vom Luftfahrzeug, der Piste und dem Piloten ab. Das Flughandbuch nennt einen maximal erprobten Seitenwind, der kein gesetzlicher Grenzwert ist, aber ein guter Anhaltspunkt. Dieser Rechner nennt keine Grenzwerte."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="cw-rwy">Pistennummer oder Richtung</label>
+    <input type="text" id="cw-rwy" autocomplete="off" spellcheck="false" value="27" placeholder="27 oder 275" aria-describedby="cw-msg">
+    <span class="help">Eine oder zwei Ziffern sind eine Pistennummer, drei Ziffern eine Richtung in Grad.</span>
+  </div>
+  <div class="field">
+    <label for="cw-dir">Windrichtung, aus (Grad)</label>
+    <input type="text" id="cw-dir" inputmode="decimal" autocomplete="off" value="320" placeholder="320" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-spd">Windgeschwindigkeit</label>
+    <input type="text" id="cw-spd" inputmode="decimal" autocomplete="off" value="18" placeholder="18" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-gust">Böengeschwindigkeit (optional)</label>
+    <input type="text" id="cw-gust" inputmode="decimal" autocomplete="off" value="26" placeholder="26" aria-describedby="cw-msg">
+  </div>
+  <div class="field">
+    <label for="cw-unit">Geschwindigkeitseinheit</label>
+    <select id="cw-unit">
+      <option value="kt" selected>Knoten</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+      <option value="ms">m/s</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="cw-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="cw-res" hidden>
+  <div class="calc-table">
+    <table class="dens">
+      <caption class="visually-hidden">Windkomponenten für jedes Pistenende</caption>
+      <thead><tr><th scope="col">Pistenende</th><th scope="col">Wind</th><th scope="col">Gegen- oder Rückenwind</th><th scope="col">Seitenwind</th></tr></thead>
+      <tbody id="cw-rows"></tbody>
+    </table>
+  </div>
+  <p class="help" id="cw-info"></p>
+</div>
+<!--explain-->
+<h2>Die Formel</h2>
+<p>Sei θ der Winkel von der Pistenrichtung zur Richtung, aus der der Wind weht, und V die Windgeschwindigkeit. Die Komponente entlang der Piste ist Gegenwind = V · cos θ (negativ bedeutet Rückenwind), die Komponente quer dazu ist Seitenwind = V · sin θ, positiv von rechts und negativ von links. Das ist die in der Pilotenausbildung übliche Zerlegung im Winddreieck, etwa im FAA Pilot's Handbook of Aeronautical Knowledge (FAA-H-8083-25, Kapitel zur Flugleistung) und im Airplane Flying Handbook (FAA-H-8083-3).</p>
+<p>Das Gegenende der Piste hat eine um 180 Grad versetzte Richtung, daher ist sein Gegenwind das Negative des ersten und sein Seitenwind wechselt die Seite. Die Pistennummer ist die missweisende Richtung in Zehnergrad, auf die nächste Zehn gerundet. Geschwindigkeiten werden exakt umgerechnet (1 Knoten = 1,852 km/h, 1 mph = 1,609344 km/h, 1 m/s = 3,6 km/h).</p>
+<p>Die Berechnung ignoriert Windscherung, Böenfronten und Geländeeffekte und verwendet einen einzigen Windwert. <strong>Nicht für die Flugplanung oder Navigation geeignet.</strong></p>

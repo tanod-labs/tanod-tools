@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Chuyển ảnh sang Base64 và data URL | Tanod Tools",
+  "description": "Chuyển ảnh PNG, JPG, WebP, GIF hoặc SVG sang Base64: data URL, CSS background, thẻ img HTML hoặc Markdown, sẵn sàng để sao chép. Chạy trong trình duyệt, không tải lên.",
+  "h1": "Ảnh sang Base64",
+  "lede": "Biến ảnh thành data URL Base64 để dán thẳng vào HTML, CSS, Markdown hoặc JSON.",
+  "blurb": "Ảnh dưới dạng data URL cho HTML hoặc CSS.",
+  "keywords": "ảnh sang base64 chuyển hình ảnh thành base64 data uri data url png sang base64 jpg sang base64 svg css background nhúng ảnh trực tiếp image to base64 inline embed",
+  "limits": "Mỗi lần một ảnh, tối đa 10 MB. PNG, JPEG, WebP, GIF, BMP, AVIF và SVG.",
+  "howto_title": "Cách chuyển ảnh sang Base64",
+  "howto": [
+    "Chọn một ảnh, hoặc kéo thả vào trang.",
+    "Chọn dạng bạn cần: data URL, Base64 thuần, CSS, thẻ img HTML hoặc Markdown.",
+    "Nhấn <strong>Sao chép</strong>, hoặc tải văn bản xuống dưới dạng tệp."
+  ],
+  "faq": [
+    ["Data URL là gì?", "Là cách đặt các byte của một tệp vào bên trong một liên kết. Nó bắt đầu bằng <code>data:</code>, loại tệp như <code>image/png</code>, rồi <code>;base64,</code>, tiếp theo là văn bản Base64. Trình duyệt hiển thị nó đúng như khi ảnh được tải từ một tệp riêng."],
+    ["Vì sao Base64 lớn hơn ảnh?", "Base64 viết mỗi 3 byte thành 4 ký tự văn bản, nên văn bản lớn hơn tệp khoảng 33 phần trăm. Các máy chủ web nén văn bản sẽ lấy lại được một phần, nhưng ảnh nhúng vẫn lớn hơn cùng ảnh đó khi phục vụ riêng."],
+    ["Khi nào nên nhúng ảnh trực tiếp?", "Cho những thứ nhỏ: biểu tượng, nền nhỏ và ảnh giữ chỗ dưới vài kilobyte, hoặc khi cần một tệp HTML hay email độc lập, đầy đủ. Ảnh lớn nên để dưới dạng tệp riêng, vì data URL không thể được lưu cache riêng và bị tải lại với mỗi trang hoặc stylesheet chứa nó. Công cụ sẽ cảnh báo khi vượt quá 100 KB."],
+    ["Loại tệp được xác định như thế nào?", "Từ các byte trong tệp, không phải từ tên, nên một ảnh PNG được lưu với đuôi .jpg vẫn nhận <code>image/png</code>. Tệp SVG được nhận diện từ nội dung văn bản và gắn nhãn <code>image/svg+xml</code>."],
+    ["Ảnh của tôi có bị tải lên không?", "Không. Ảnh được đọc và mã hóa trong trình duyệt, trên thiết bị của bạn."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-base64 drop__mark}}
+  <p class="drop__title">Thả ảnh vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg">{{mark:i-plus}}<span data-pick-label>Chọn ảnh</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, AVIF hoặc SVG. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="work" class="b64i" hidden>
+  <div class="b64i__head">
+    <div class="preview b64i__preview"><canvas id="cv" role="img" aria-label="Xem trước ảnh"></canvas></div>
+    <dl class="stats b64i__stats">
+      <div><dt>Loại</dt><dd id="s-type">-</dd></div>
+      <div><dt>Điểm ảnh</dt><dd id="s-dims">-</dd></div>
+      <div><dt>Tệp</dt><dd id="s-file">-</dd></div>
+      <div><dt>Base64</dt><dd id="s-b64">-</dd></div>
+    </dl>
+  </div>
+  <p class="note" id="big" hidden></p>
+  <fieldset class="field">
+    <legend>Kết quả</legend>
+    <div class="seg b64i__seg">
+      <label><input type="radio" name="fmt" value="data" checked>Data URL</label>
+      <label><input type="radio" name="fmt" value="raw">Base64</label>
+      <label><input type="radio" name="fmt" value="css">CSS</label>
+      <label><input type="radio" name="fmt" value="html">HTML</label>
+      <label><input type="radio" name="fmt" value="md">Markdown</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="out">Kết quả</label>
+    <textarea id="out" class="mono b64i__out" rows="8" readonly spellcheck="false"></textarea>
+    <p class="help num" id="out-len"></p>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button">Sao chép</button>
+    <button class="btn" id="dl" type="button">Tải xuống .txt</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Nhúng ảnh dưới dạng văn bản</h2>
+<p>HTML, CSS, JSON, Markdown và nội dung email đều là văn bản, nhưng ảnh là dữ liệu nhị phân. Base64 bắc cầu giữa hai thứ bằng cách viết các byte của ảnh với 64 ký tự an toàn, nhờ đó cả bức ảnh có thể nằm trong một quy tắc stylesheet, một thẻ <code>img</code> hoặc một tệp cấu hình mà không cần tải riêng.</p>
+<p>Công cụ này đọc tệp trong trình duyệt của bạn, kiểm tra loại thật của nó từ những byte đầu tiên, rồi dựng đoạn mã bạn chọn quanh văn bản đã mã hóa. Bản thân ảnh không bị thay đổi: giải mã Base64 sẽ trả lại đúng tệp gốc.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Hãy thu nhỏ ảnh trước bằng <a href="/tools/compress-image/">Nén ảnh</a> hoặc <a href="/tools/resize-image/">Đổi kích thước ảnh</a>; mỗi byte tiết kiệm được sẽ tiết kiệm thêm một phần ba trong Base64.</li>
+  <li>Với biểu tượng đơn giản, SVG thường nhỏ hơn bất kỳ PNG nào, kể cả khi ở dạng Base64.</li>
+  <li>Để giải mã Base64 trở lại thành tệp, hoặc mã hóa bất kỳ tệp nào khác, hãy dùng <a href="/tools/base64-encode-decode/">Mã hóa và giải mã Base64</a>.</li>
+</ul>

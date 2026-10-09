@@ -1,0 +1,68 @@
+<!--meta
+{
+  "title": "Zulu saati çevirici: yerel saatten UTC'ye | Tanod Tools",
+  "description": "Yerel saati herhangi bir saat dilimi için Zulu'ya (UTC) ve geri çevirin; METAR tarzı DDHHMMZ zaman gruplarını da okuyun. Tarayıcınızın saat dilimi verisini kullanır.",
+  "h1": "Zulu saati (UTC) çevirici",
+  "lede": "Yerel saati Zulu'ya (UTC) ya da tersine, herhangi bir saat dilimi için çevirin ve METAR tarzı DDHHMMZ zaman gruplarını okuyun.",
+  "blurb": "Yerel saatten Zulu'ya (UTC) ve METAR DDHHMMZ gruplarına.",
+  "keywords": "zulu saati çevirici utc gmt yerel saat havacılık z saati ddhhmmz metar zaman grubu saat dilimi çevirici askeri saat 24 saat yaz saati uygulaması",
+  "limits": "Tarayıcınızda yerleşik saat dilimi verisini, yaz saati kuralları dahil, kullanır. Uçuş planlaması veya seyrüsefer için kullanılmaz: resmî saati ve NOTAM geçerliliğini kendiniz kontrol edin.",
+  "howto_title": "Yerel saat Zulu'ya nasıl çevrilir",
+  "howto": [
+    "Tarihi, saati ve içinde bulunduğu saat dilimini seçin. İlk kutu kendi saat diliminizle başlar.",
+    "Gösterileceği dilimi seçin: varsayılan, Zulu saati veya Z da denen UTC'dir.",
+    "Çevrilen saati ve DDHHMMZ grubunu okuyun. Bir METAR veya TAF'taki zaman grubunu çözmek için ikinci bölüme yazın."
+  ],
+  "faq": [
+    ["Zulu saati nedir?", "Zulu saati, Eşgüdümlü Evrensel Zaman'dır (UTC); sapması olmayan askerî saat diliminin NATO fonetik adı olan Z harfiyle yazılır. Havacılık, meteoroloji ve ordu, yaz saati değişikliği olmayan tek bir saat herkeste olsun diye bunu kullanır."],
+    ["081405Z gibi bir zaman grubu nasıl okunur?", "İlk iki rakam ayın günü (08), sonraki ikisi saat (14), son ikisi dakikadır (05); her zaman UTC'dir. Yani 081405Z, ayın 8. günü UTC 14:05'tir. METAR, TAF ve NOTAM saatleri bu biçimi kullanır. Ay ve yıl belirtilmez; bu yüzden araç referans tarihe en yakın olanı seçer."],
+    ["UTC ile GMT aynı mıdır?", "Gündelik kullanımda evet: saatler aynı zamanı gösterir. Kesin konuşmak gerekirse GMT, Dünya'nın dönüşüne dayalı bir saat dilimidir; UTC ise artık saniyelerle ona 0,9 saniye içinde tutulan atomik bir zaman ölçeğidir. Havacılık UTC kullanır."],
+    ["Zulu saatinde yaz saati var mı?", "Hayır. UTC asla değişmez. Yerel bir saat diliminin UTC'den farkı, yaz saati başladığında veya bittiğinde değişir; bu yüzden uçuş çizelgesini UTC ile okumak daha kolaydır."],
+    ["Yaz saati geçişinde ne olur?", "Saatler ileri alındığında yerel saatin bir saati yoktur ve araç en yakın geçerli saate gider. Saatler geri alındığında bir saat iki kez yaşanır; araç ilkini kullanır ve size bildirir."],
+    ["Araç saat dilimi kurallarını nereden alıyor?", "Tarayıcınızın yerleşik IANA saat dilimi veritabanından (Intl API); bu yüzden hiçbir şey indirilmez. Eski bir tarayıcıda bazı ülkeler için güncel olmayan kurallar olabilir."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <label for="zt-date">Tarih</label>
+    <input type="date" id="zt-date">
+  </div>
+  <div class="field">
+    <label for="zt-time">Saat</label>
+    <input type="time" id="zt-time">
+  </div>
+  <div class="field">
+    <label for="zt-from">Bu saatin saat dilimi</label>
+    <select id="zt-from"></select>
+  </div>
+  <div class="field">
+    <label for="zt-to">Şurada göster</label>
+    <select id="zt-to"></select>
+  </div>
+</div>
+<div class="actions">
+  <button class="btn" id="zt-now" type="button">Şu anki saati kullan</button>
+  <button class="btn btn--quiet" id="zt-swap" type="button">Dilimlerin yerini değiştir</button>
+</div>
+<p class="note" id="zt-note" role="status" aria-live="polite" hidden></p>
+<dl class="stats" id="zt-stats"></dl>
+<h2 class="util-h" id="zt-grp-h">METAR veya TAF zaman grubunu okuyun</h2>
+<div class="opts">
+  <div class="field">
+    <label for="zt-grp">Zaman grubu (DDHHMMZ)</label>
+    <input type="text" id="zt-grp" class="mono" autocomplete="off" spellcheck="false" value="081405Z" placeholder="081405Z" aria-describedby="zt-grp-msg">
+  </div>
+  <div class="field">
+    <label for="zt-ref">Bu UTC tarihine en yakın</label>
+    <input type="date" id="zt-ref">
+  </div>
+</div>
+<p class="note" id="zt-grp-msg" role="status" aria-live="polite"></p>
+<dl class="stats" id="zt-grp-stats"></dl>
+<!--explain-->
+<h2>Dönüşüm nasıl çalışır</h2>
+<p>UTC (Eşgüdümlü Evrensel Zaman), BIPM tarafından sürdürülen ve ITU-R Tavsiye Kararı TF.460'ta tanımlanan uluslararası sivil zaman standardıdır. Havacılıkta, askerî saat dilimi harfi Zulu'dan gelen Z soneki ile ve METAR, TAF ve SIGMET mesajlarında kullanılan ICAO zaman grubu biçimi DDHHMMZ ile yazılır (ICAO Ek 3, WMO No. 306). Yerel saat, UTC artı dilimin farkıdır; bu fark yaz saati kuralları nedeniyle tarihe bağlıdır.</p>
+<p>Sayfa, girdiğiniz tarih ve saati diliminin o anda sahip olduğu farkı kullanarak bir ana çevirir, sonra bu anı diğer dilimde gösterir. Bunun için işletim sistemlerinin kullandığı veri olan IANA Saat Dilimi Veritabanı, tarayıcınızın Intl API'si üzerinden kullanılır. Yaz saati başlangıcında atlanan saate düşen geçersiz bir yerel saat boşluk kadar ileri alınır; tekrarlanan saatteki belirsiz bir saat ise ilk oluşumu kullanır.</p>
+<p>Bir zaman grubunda ay veya yıl yoktur; bu yüzden araç önceki, aynı ve sonraki ayı dener ve verdiğiniz referans tarihe (varsayılan olarak bugün, UTC) en yakın tarihi tutar; bir hava raporu normalde takvimle böyle eşleştirilir. <strong>Uçuş planlaması veya seyrüsefer için kullanılmaz.</strong></p>

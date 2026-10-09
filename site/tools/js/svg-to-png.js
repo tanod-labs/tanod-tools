@@ -1,7 +1,7 @@
 // SVG to PNG: the SVG is loaded as an image (from a data: URL, never inserted into the page), so scripts in it
 // don't run and nothing it links to is fetched. It is drawn on a canvas at the output size and saved as PNG.
-import { $, fmtBytes, dropzone, setStatus, runJob, showResults, clearNode, announce, friendlyError, UserError, baseName, tx, EN, fmtNum } from "./core.js?v=5";
-import { newCanvas, ctx2d, release, canvasToBlob, previewInto, dims, MAX_PIXELS } from "./imgcore.js?v=5";
+import { $, fmtBytes, dropzone, setStatus, runJob, showResults, clearNode, announce, friendlyError, UserError, baseName, tx, EN, fmtNum } from "./core.js?v=11";
+import { newCanvas, ctx2d, release, canvasToBlob, previewInto, dims, MAX_PIXELS } from "./imgcore.js?v=11";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const UNIT = { "": 1, px: 1, in: 96, cm: 96 / 2.54, mm: 96 / 25.4, pt: 4 / 3, pc: 16, q: 96 / 101.6 };

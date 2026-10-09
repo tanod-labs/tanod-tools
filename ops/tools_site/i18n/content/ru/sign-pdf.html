@@ -1,0 +1,139 @@
+<!--meta
+{
+  "title": "Подписать PDF онлайн: нарисуйте или введите подпись | Tanod Tools",
+  "description": "Подпишите PDF в браузере: нарисуйте или напечатайте подпись, поставьте на страницу, добавьте дату. Бесплатно, без регистрации, файл не покидает устройство.",
+  "h1": "Подписать PDF",
+  "lede": "Нарисуйте или напечатайте подпись, поставьте её в нужное место страницы, при желании добавьте дату и сохраните подписанный PDF. Всё происходит на вашем устройстве.",
+  "blurb": "Нарисуйте или напечатайте подпись и поставьте на страницу PDF.",
+  "keywords": "подписать pdf поставить подпись в pdf добавить подпись в pdf вставить подпись в pdf нарисовать подпись подпись мышкой подпись от руки напечатать подпись подписать документ онлайн инициалы дата sign pdf add signature to pdf esign electronic signature draw signature type signature fill and sign",
+  "limits": "Один PDF за раз, до 200 МБ и до 500 страниц. Подпись добавляется на страницу как изображение. Это не цифровая подпись с сертификатом, поэтому она не подтверждает, кто подписал документ и что файл не менялся. PDF, защищённые паролем, редактировать нельзя.",
+  "howto_title": "Как подписать PDF",
+  "howto": [
+    "Выберите файл PDF или перетащите его на страницу.",
+    "Нарисуйте подпись или переключитесь на <strong>Напечатать</strong> и введите своё имя. Чтобы добавить дату, поставьте флажок.",
+    "Выберите страницу, затем перетащите подпись на место, коснитесь нужной точки или задайте положение и размер ползунками. Нажмите <strong>Добавить подпись</strong> и скачайте подписанный PDF."
+  ],
+  "faq": [
+    ["Загружается ли мой PDF или моя подпись?", "Нет. Страница отображается библиотекой pdf.js, а подпись добавляется библиотекой pdf-lib (обе с открытым исходным кодом) прямо в вашем браузере. Ни PDF, ни подпись не отправляются на сервер и не сохраняются; когда вы закрываете вкладку, они исчезают."],
+    ["Имеет ли такая подпись юридическую силу?", "Многие люди и организации принимают изображение подписи на обычных документах, но хватит ли этого, зависит от самого документа, от того, кто её просит, и от законов вашей страны. Это не цифровая подпись на основе сертификата: она не показывает, кто подписал документ и что файл после этого не менялся. Если сомневаетесь, спросите у того, кто запросил подпись, что именно он принимает."],
+    ["Можно ли подписать больше одной страницы?", "Да. Выберите <em>Все страницы</em>, чтобы поставить одну и ту же подпись в одном и том же месте на всех страницах: это удобно для инициалов. Положение и размер задаются в долях страницы, поэтому страницы разных размеров тоже подходят. Чтобы подписать разные страницы в разных местах, подпишите один раз, затем откройте результат и подпишите снова."],
+    ["Можно ли потом удалить подпись?", "Она становится частью страницы, поэтому её показывает любая программа для просмотра PDF, но это обычное изображение, и тот, у кого есть редактор PDF, может его удалить. Исходный файл не меняется: вы скачиваете новую копию. Чтобы ограничить круг тех, кто может менять подписанную копию, добавьте пароль в инструменте «<a href=\"/tools/protect-pdf/\">Защитить PDF паролем</a>»."],
+    ["Почему напечатанная подпись на другом устройстве выглядит иначе?", "Напечатанные подписи используют шрифты, установленные на вашем устройстве, а каллиграфические стили в разных системах отличаются. Предпросмотр показывает то, что будет сохранено. Сохранённая подпись — это изображение, поэтому она выглядит одинаково, где бы ни открыли PDF."],
+    ["Работает ли это на повёрнутых страницах?", "Да. Страница показывается так, как её видит программа просмотра, а подпись поворачивается вместе со страницей и стоит ровно. Обрезанные страницы тоже поддерживаются: положение отсчитывается внутри видимой области."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Перетащите сюда PDF</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Выбрать PDF</span></label>
+  <p class="drop__hint">Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="sg">
+    <section class="sg__col" aria-labelledby="sg-h1">
+      <h3 class="util-h" id="sg-h1">Ваша подпись</h3>
+      <div class="field">
+        <span class="label" id="sg-mode-l">Как создать подпись</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-mode-l">
+          <label><input type="radio" name="sg-mode" value="draw" checked>Нарисовать</label>
+          <label><input type="radio" name="sg-mode" value="type">Напечатать</label>
+        </div>
+      </div>
+      <div class="field" id="sg-draw">
+        <canvas id="sg-pad" class="sg-pad" width="900" height="300" role="img" aria-label="Поле для подписи. Нарисуйте здесь подпись мышью, пальцем или стилусом."></canvas>
+        <span class="help">Рисуйте мышью, пальцем или стилусом. Если рисовать не получается, выберите «Напечатать».</span>
+        <div class="actions">
+          <button class="btn btn--sm" id="sg-undo" type="button" disabled>Отменить последний штрих</button>
+          <button class="btn btn--sm" id="sg-clear" type="button" disabled>Очистить</button>
+        </div>
+      </div>
+      <div id="sg-type" hidden>
+        <div class="field">
+          <label for="sg-text">Ваше имя</label>
+          <input id="sg-text" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Введите своё имя">
+        </div>
+        <div class="field">
+          <label for="sg-font">Стиль</label>
+          <select id="sg-font">
+            <option value="script" selected>Каллиграфический</option>
+            <option value="hand">Рукописный</option>
+            <option value="serif">Классический курсив</option>
+          </select>
+        </div>
+        <canvas id="sg-typed" class="sg-pad" width="900" height="300" role="img" aria-label="Предпросмотр напечатанной подписи"></canvas>
+      </div>
+      <div class="field">
+        <span class="label" id="sg-ink-l">Цвет чернил</span>
+        <div class="seg" role="radiogroup" aria-labelledby="sg-ink-l">
+          <label><input type="radio" name="sg-ink" value="black" checked>Чёрный</label>
+          <label><input type="radio" name="sg-ink" value="blue">Синий</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="sg-date-on">Добавить дату под подписью</label>
+      </div>
+      <div class="field" id="sg-date-field" hidden>
+        <label for="sg-date">Текст даты</label>
+        <input id="sg-date" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section class="sg__col" aria-labelledby="sg-h2">
+      <h3 class="util-h" id="sg-h2">Размещение на странице</h3>
+      <div class="sg-nav">
+        <button class="btn btn--sm btn--icon" id="sg-prev" type="button" aria-label="Предыдущая страница">{{mark:i-arrow-left}}</button>
+        <label class="sg-nav__label" for="sg-page">Страница</label>
+        <input id="sg-page" type="number" min="1" max="1" step="1" value="1" inputmode="numeric">
+        <span class="help" id="sg-of"></span>
+        <button class="btn btn--sm btn--icon" id="sg-next" type="button" aria-label="Следующая страница">{{mark:i-arrow-right}}</button>
+      </div>
+      <div class="sg-stage" id="sg-stage">
+        <canvas id="sg-stamp" class="sg-stamp" aria-hidden="true" hidden></canvas>
+      </div>
+      <p class="help" id="sg-view-error" hidden></p>
+      <p class="help">Перетащите подпись по странице, коснитесь места, куда её нужно поставить, или воспользуйтесь ползунками.</p>
+      <div class="opts">
+        <div class="field">
+          <label for="sg-x">По горизонтали: <span class="num" id="sg-x-v"></span></label>
+          <input id="sg-x" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-y">По вертикали: <span class="num" id="sg-y-v"></span></label>
+          <input id="sg-y" type="range" min="0" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="sg-w">Размер: <span class="num" id="sg-w-v"></span></label>
+          <input id="sg-w" type="range" min="5" max="90" step="1" value="30">
+        </div>
+        <div class="field">
+          <span class="label" id="sg-scope-l">Подписать</span>
+          <div class="seg" role="radiogroup" aria-labelledby="sg-scope-l">
+            <label><input type="radio" name="sg-scope" value="this" checked>Эту страницу</label>
+            <label><input type="radio" name="sg-scope" value="all">Все страницы</label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Добавить подпись</button>
+    <span class="help" id="sg-hint">Сначала нарисуйте или напечатайте подпись.</span>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Как подпись попадает на страницу PDF</h2>
+<p>Страница PDF устроена как фиксированный макет, поэтому подписать её — значит добавить что-то на страницу, а не вписать подпись в текст. Инструмент превращает вашу подпись (вместе со строкой даты, если вы отметили этот флажок) в небольшое изображение с прозрачным фоном и рисует его на выбранной странице. Браузер показывает страницу с помощью pdf.js, а новую копию записывает с помощью pdf-lib, так что подписывается именно та страница, которую вы видите.</p>
+<p>Положение и размер хранятся как доли страницы, а не в фиксированных единицах измерения. Поэтому один набор ползунков подходит для страниц разных размеров, когда вы подписываете все страницы, и поэтому даже страница, которая хранится повёрнутой набок, получает подпись в нормальном положении. Исходный файл никогда не изменяется: вы скачиваете отдельную подписанную копию.</p>
+<p>В итоге вы получаете изображение подписи. Именно так большинство людей и подписывают бланки, письма и договоры: ставят подпись от руки, а затем сканируют. Это не криптографическая цифровая подпись. Такие подписи используют выданный вам сертификат, защищают файл от изменений после подписания и требуют специального сервиса. Какой вид подписи нужен, зависит от документа и от того, кто её запросил.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Рисуйте не спеша и используйте всё поле: подпись обрезается по границам рисунка, поэтому более крупный рисунок при том же размере на странице получается чётче.</li>
+  <li>Закройте подписанную копию паролем в инструменте «<a href="/tools/protect-pdf/">Защитить PDF паролем</a>» или нанесите штамп на каждую страницу в инструменте «<a href="/tools/watermark-pdf/">Водяной знак для PDF</a>».</li>
+  <li>Нужно сначала добавить подписанную страницу в другой документ? «<a href="/tools/merge-pdf/">Объединить PDF</a>» соединяет файлы в выбранном вами порядке.</li>
+</ul>

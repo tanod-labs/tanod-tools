@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "YAML'dan JSON'a dönüştürücü online | Tanod Tools",
+  "description": "YAML'ı tarayıcınızda JSON'a dönüştürün. Anchor, alias, birleştirme anahtarları ve çok belgeli dosyaları destekler; hatalar satır ve sütunla gösterilir. Ücretsiz ve özel.",
+  "h1": "YAML'dan JSON'a dönüştürücü",
+  "lede": "YAML'ı yapıştırın ve JSON olarak geri alın; anchor'lar ve birleştirme anahtarları çözülür, her sözdizimi hatasının tam satırı gösterilir.",
+  "blurb": "YAML'ı JSON'a dönüştürün.",
+  "keywords": "yaml json dönüştür yaml'dan json'a yml ayrıştır kubernetes docker compose openapi yapılandırma anchor alias yaml to json convert parse config anchors aliases",
+  "limits": "Yaklaşık 10 MB'a kadar girdi. Yalnızca standart türlerle YAML 1.2 okur; <code>!!python/object</code> gibi özel etiketler çalıştırılmaz, reddedilir.",
+  "howto_title": "YAML JSON'a nasıl dönüştürülür",
+  "howto": [
+    "YAML'ınızı kutuya yapıştırın ya da <strong>Örnek ekle</strong> düğmesine basın.",
+    "JSON düzeni için 2 boşluk, 4 boşluk, sekme veya <strong>Küçült</strong> seçeneğini seçin.",
+    "YAML'da sözdizimi hatası varsa satırını ve sütununu görürsünüz. Aksi halde JSON'u kopyalayın ya da <code>.json</code> dosyası olarak indirin."
+  ],
+  "faq": [
+    [
+      "YAML'im yükleniyor mu?",
+      "Hayır. YAML ayrıştırıcısı, bir şey yapıştırdığınızda ilk kez bu siteden yüklenir ve tarayıcınızda çalışır. İçinde parola ya da anahtar bulunan yapılandırma hiçbir yere gönderilmez."
+    ],
+    [
+      "yes neden hâlâ \"yes\" metni olarak kalıyor?",
+      "Bu araç, yalnızca <code>true</code> ve <code>false</code> değerlerinin boolean olduğu YAML 1.2'yi izler. <code>yes</code>, <code>no</code>, <code>on</code> ve <code>off</code> kelimeleri dize olarak kalır; bu, <code>NO</code> ülke kodunun YAML 1.1 ayrıştırıcılarında <code>false</code> olduğu, Norveç sorunu denen durumu önler. Tüketicisi bir YAML 1.1 ayrıştırıcısıysa bu kelimeleri farklı okuyabilir."
+    ],
+    [
+      "Tarihlere ve zaman damgalarına ne olur?",
+      "<code>2024-05-01</code> gibi bir değer \"2024-05-01\" dizesi olarak korunur. JSON'da tarih türü yoktur ve bunu bir sayıya ya da farklı bir biçime çevirmek bilgi kaybettirir."
+    ],
+    [
+      "Çok büyük tam sayılar ne olur?",
+      "9.007.199.254.740.991'i (2<sup>53</sup> - 1) aşan tam sayılar yuvarlanmak yerine hane hane yazılır; böylece 12345678901234567890 gibi bir kimlik korunur. JSON'u sonradan sıradan JavaScript sayılarıyla okuyan bir programın bunu yuvarlayacağını unutmayın."
+    ],
+    [
+      "Anchor, alias ve birleştirme anahtarları destekleniyor mu?",
+      "Evet. <code>&amp;name</code> anchor'ları ve <code>*name</code> alias'ları genişletilir; <code>&lt;&lt;: *name</code> bir eşlemeyi diğerine birleştirir. JSON'da başvuru olmadığı için her alias tam olarak yazılır."
+    ],
+    [
+      "Alias sınırı ve 20 MB üst sınırı nedir?",
+      "Küçük bir YAML dosyası, alias bombası denen, devasa bir şeye genişleyen alias'lar kullanabilir. 10.000'den fazla alias içeren dosyalar reddedilir ve JSON 20 MB'ı geçecekse dönüştürme durur; böylece sekmeniz donmaz."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="field">
+  <div class="fmt-head">
+    <label for="f-in">YAML</label>
+    <span class="fmt-head__btns">
+      <button class="btn btn--quiet btn--sm" id="f-sample" type="button">Örnek ekle</button>
+      <button class="btn btn--quiet btn--sm" id="f-clear" type="button">Temizle</button>
+    </span>
+  </div>
+  <textarea id="f-in" class="mono util-tall" rows="10" autocomplete="off" spellcheck="false" placeholder="name: example
+tags: [a, b]"></textarea>
+</div>
+<div class="opts">
+  <div class="field">
+    <span class="label" id="o-ind-l">Düzen</span>
+    <div class="seg" role="radiogroup" aria-labelledby="o-ind-l">
+      <label><input type="radio" name="indent" value="2" checked>2 boşluk</label>
+      <label><input type="radio" name="indent" value="4">4 boşluk</label>
+      <label><input type="radio" name="indent" value="tab">Sekme</label>
+      <label><input type="radio" name="indent" value="min">Küçült</label>
+    </div>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out util-err" id="f-err" hidden></pre>
+<div id="f-result" hidden>
+  <div class="note fmt-note" id="f-note" hidden><span class="fmt-note__text"></span></div>
+  <dl class="stats">
+    <div><dt>Girdi</dt><dd id="f-s-in">0</dd></div>
+    <div><dt>Çıktı</dt><dd id="f-s-out">0</dd></div>
+    <div><dt>Değişim</dt><dd id="f-s-delta">0%</dd></div>
+  </dl>
+  <div class="field">
+    <span class="label" id="f-out-l">Sonuç</span>
+    <pre class="out util-json" id="f-out" tabindex="0" aria-labelledby="f-out-l"></pre>
+    <span class="help" id="f-trunc" hidden></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="f-copy" type="button">Kopyala</button>
+    <button class="btn" id="f-dl" type="button">.json indir</button>
+  </div>
+</div>
+<!--explain-->
+<h2>YAML'dan JSON'a</h2>
+<p>YAML ve JSON aynı türden veriyi tanımlar: eşlemeler, listeler ve basit değerler. YAML insanlar tarafından, küme parantezleri yerine girinti, yorumlar ve anchor gibi kısayollarla yazılır; JSON ise çoğu program ve API'nin beklediği biçimdir. Bir Kubernetes manifestosunun, bir Compose dosyasının ya da bir OpenAPI tanımının yalnızca JSON okuyan bir şeye verilmesi gerektiğinde ikisi arasında dönüştürmek yaygındır.</p>
+<p>Bazı YAML özelliklerinin JSON'da karşılığı yoktur; bu yüzden dönüştürücü bunları çözer. Bir anchor (<code>&amp;base</code>) bir alias'ın (<code>*base</code>) yeniden kullanabileceği bir bloğu işaretler ve birleştirme anahtarı (<code>&lt;&lt;</code>) bir eşlemenin girdilerini diğerine kopyalar; JSON'da bunların her biri tam bir kopya olur. Yorumlar atılır, çünkü JSON bunları tutamaz. <code>---</code> ile ayrılmış birden çok belge içeren bir dosya JSON dizisi olur.</p>
+<p>Tür kuralları YAML 1.2'yi izler: <code>true</code> ve <code>false</code> boolean, <code>null</code> ve <code>~</code> null, sayılar sayıdır ve <code>yes</code> ile <code>2024-05-01</code> dahil geri kalan her şey metindir. Sözdizimi hataları satır ve sütun taşır; en sık nedenler girinti için kullanılan bir sekme, aynı eşlemede tekrarlanan bir anahtar ve anahtarının altında girintilenmemiş bir değerdir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Ters yöne mi gitmeniz gerekiyor? <a href="/tools/json-to-yaml/">JSON'dan YAML'a</a>, yolculuktan sağ çıksınlar diye "yes" gibi değerleri tırnaklar.</li>
+  <li>Sonucu <a href="/tools/json-formatter/">JSON biçimlendir ve doğrula</a> ile denetleyin veya düzenleyin.</li>
+  <li>Elinizde bunun yerine tablo verisi mi var? Hesap tabloları için <a href="/tools/csv-to-json/">CSV'den JSON'a</a> var.</li>
+</ul>

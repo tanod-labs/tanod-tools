@@ -1,0 +1,110 @@
+<!--meta
+{
+  "title": "Mã hóa và giải mã Base64 cho văn bản và tệp | Tanod Tools",
+  "description": "Mã hóa văn bản hoặc tệp sang Base64 và giải mã ngược lại. Hỗ trợ UTF-8, Base64 an toàn cho URL và data URL, ngay trong trình duyệt, không tải lên.",
+  "h1": "Mã hóa và giải mã Base64",
+  "lede": "Chuyển văn bản hoặc tệp sang Base64 và ngược lại, với các tùy chọn UTF-8, an toàn cho URL và data URL.",
+  "blurb": "Mã hóa và giải mã văn bản và tệp Base64.",
+  "keywords": "base64 mã hóa base64 giải mã base64 encode decode chuyển tệp sang base64 data url utf-8 url-safe tệp",
+  "limits": "Tệp tối đa 25 MB. Chức năng Base64 sang tệp nhận dữ liệu đầu vào giải mã ra tối đa 25 MB.",
+  "howto_title": "Cách mã hóa hoặc giải mã Base64",
+  "howto": [
+    "Với văn bản, gõ hoặc dán vào ô, chọn Mã hóa hoặc Giải mã, và kết quả hiện ra khi bạn gõ.",
+    "Bật Base64 an toàn cho URL hoặc ngắt dòng 76 ký tự nếu nơi bạn dán vào yêu cầu.",
+    "Với tệp, chuyển sang Tệp và thả tệp vào để lấy Base64 hoặc data URL của nó. Để làm ngược lại, dán Base64, đặt tên tệp và tải xuống."
+  ],
+  "faq": [
+    ["Văn bản hoặc tệp của tôi có bị tải lên không?", "Không. Mọi thứ được chuyển đổi ngay trong trình duyệt của bạn và không có gì được gửi đi hay lưu trữ."],
+    ["Công cụ có xử lý được chữ có dấu và emoji không?", "Có. Văn bản được chuyển thành các byte UTF-8 trước khi mã hóa và được giải mã dưới dạng UTF-8 sau đó, nên các ký tự như é, ö, ✓ và emoji được chuyển đổi qua lại chính xác. (Hàm <code>btoa</code> tích hợp sẵn của trình duyệt sẽ bị lỗi với chúng.)"],
+    ["Base64 an toàn cho URL là gì?", "Nó đổi các ký tự <code>+</code> và <code>/</code> thành <code>-</code> và <code>_</code> rồi bỏ phần đệm <code>=</code> ở cuối, để kết quả có thể nằm trong URL hoặc tên tệp. Khi giải mã, công cụ này chấp nhận cả hai bảng ký tự."],
+    ["Vì sao khi giải mã lại báo có ký tự không hợp lệ?", "Base64 chỉ dùng chữ cái, chữ số, dấu cộng và dấu gạch chéo (hoặc dấu trừ và dấu gạch dưới), với các dấu bằng ở cuối. Dấu cách và dấu xuống dòng được bỏ qua, nhưng mọi thứ khác đều được báo kèm vị trí để bạn tìm ra."],
+    ["Data URL có khác Base64 thuần không?", "Data URL là Base64 kèm tiền tố như <code>data:image/png;base64,</code>, để trình duyệt dùng trực tiếp làm nguồn ảnh hoặc tệp. Hãy bật tùy chọn data URL ở chế độ Tệp để lấy dạng đó."],
+    ["Vì sao Base64 lớn hơn tệp của tôi?", "Base64 viết mỗi 3 byte thành 4 ký tự, nên văn bản mã hóa lớn hơn bản gốc khoảng một phần ba. Đây là cách để mang dữ liệu nhị phân dưới dạng văn bản, không phải một hình thức mã hóa bảo mật hay nén."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>Chuyển đổi</legend>
+  <div class="seg" role="radiogroup" aria-label="Chế độ">
+    <label><input type="radio" name="mode" value="text" checked>Văn bản</label>
+    <label><input type="radio" name="mode" value="file">Tệp</label>
+  </div>
+</fieldset>
+
+<div id="b-textpanel" class="util-stack">
+  <div class="field">
+    <span class="label" id="b-dir-l">Chiều chuyển đổi</span>
+    <div class="seg" role="radiogroup" aria-labelledby="b-dir-l">
+      <label><input type="radio" name="dir" value="encode" checked>Mã hóa</label>
+      <label><input type="radio" name="dir" value="decode">Giải mã</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="b-in">Đầu vào</label>
+    <textarea id="b-in" class="mono" rows="6" autocomplete="off" spellcheck="false" placeholder="Gõ hoặc dán vào đây"></textarea>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="b-url">Bảng ký tự an toàn cho URL (- _ và không đệm)</label>
+    <label class="check" id="b-wrap-l"><input type="checkbox" id="b-wrap">Ngắt dòng sau 76 ký tự</label>
+  </div>
+  <div class="field">
+    <label for="b-out">Đầu ra</label>
+    <textarea id="b-out" class="mono" rows="6" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="b-copy" type="button" disabled>Sao chép</button>
+    <button class="btn" id="b-dl" type="button" disabled>Tải xuống .txt</button>
+    <button class="btn btn--quiet" id="b-swap" type="button" disabled>Dùng đầu ra làm đầu vào</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="b-clear" type="button">Xóa</button>
+  </div>
+</div>
+
+<div id="b-filepanel" class="util-stack" hidden>
+  <div class="drop" id="drop">
+    {{mark:i-upload drop__mark}}
+    <p class="drop__title">Thả tệp vào để mã hóa</p>
+    <label class="btn btn--primary btn--lg"><input type="file">{{mark:i-plus}}<span>Chọn tệp</span></label>
+    <p class="drop__hint">Tối đa 25 MB. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+  </div>
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="f-url">Bảng ký tự an toàn cho URL (- _ và không đệm)</label>
+    <label class="check"><input type="checkbox" id="f-wrap">Ngắt dòng sau 76 ký tự</label>
+    <label class="check"><input type="checkbox" id="f-data">Tạo data: URL</label>
+  </div>
+  <div id="f-result" hidden>
+    <p class="help" id="f-info"></p>
+    <pre class="out" id="f-out" tabindex="0" aria-label="Xem trước Base64"></pre>
+    <div class="actions">
+      <button class="btn btn--primary" id="f-copy" type="button">Sao chép</button>
+      <button class="btn" id="f-dl" type="button">Tải xuống .txt</button>
+    </div>
+  </div>
+
+  <h2 class="util-h">Base64 sang tệp</h2>
+  <div class="field">
+    <label for="d-in">Base64 (hoặc data: URL)</label>
+    <textarea id="d-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Dán Base64 vào đây"></textarea>
+  </div>
+  <div class="field">
+    <label for="d-name">Tên tệp</label>
+    <input type="text" id="d-name" value="decoded.bin" autocomplete="off" spellcheck="false">
+    <span class="help" id="d-info"></span>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="d-dl" type="button" disabled>Giải mã và tải xuống</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Base64 dùng để làm gì</h2>
+<p>Base64 biểu diễn một dãy byte bất kỳ bằng 64 ký tự văn bản an toàn: A-Z, a-z, 0-9, dấu cộng và dấu gạch chéo. Cứ 3 byte trở thành 4 ký tự, với phần đệm <code>=</code> để lấp nhóm cuối. Nhờ vậy dữ liệu nhị phân có thể được đặt an toàn vào email, JSON, HTML, URL và những nơi khác chỉ xử lý văn bản. Đây là một phép mã hóa dữ liệu, không phải mã hóa bảo mật: ai cũng có thể đảo ngược nó.</p>
+<p>Văn bản trước hết được chuyển thành byte, và bảng mã ký tự rất quan trọng. Công cụ này dùng UTF-8, chuẩn của web, nên văn bản không phải tiếng Anh và các ký hiệu vẫn nguyên vẹn sau khi chuyển đổi qua lại. Khi giải mã, công cụ kiểm tra kết quả có phải UTF-8 hợp lệ không và báo cho bạn nếu không, thường nghĩa là dữ liệu đó là một tệp chứ không phải văn bản.</p>
+<p>Chế độ Tệp đọc tệp trong trình duyệt và mã hóa từng lát nhỏ để trang luôn phản hồi mượt. Ở chiều ngược lại, công cụ giải mã Base64 đã dán thành các byte và đưa chúng cho bạn dưới dạng tệp tải xuống. Nó xem những byte đầu tiên để gợi ý phần mở rộng tệp cho các định dạng phổ biến như PNG, JPEG, GIF, PDF và ZIP.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Đang làm việc với JSON chứa các giá trị Base64? Hãy làm gọn nó bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>.</li>
+  <li>Cần các mã định danh ngẫu nhiên? Xem <a href="/tools/uuid-generator/">Tạo UUID</a>.</li>
+  <li>Thoát ký tự cho liên kết hoặc chuỗi truy vấn là việc khác: hãy dùng <a href="/tools/url-encode-decode/">Mã hóa và giải mã URL</a>. Để đọc JWT, vốn là Base64url bên trong, hãy dùng <a href="/tools/jwt-decoder/">Giải mã JWT</a>.</li>
+</ul>

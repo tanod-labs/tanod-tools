@@ -1,0 +1,122 @@
+<!--meta
+{
+  "title": "MikroTik simple queue oluşturucu: IP başına bant | Tanod Tools",
+  "description": "IP başına veya alt ağdaki her ana makine için RouterOS simple queue oluşturun: max-limit, limit-at, burst ve parent queue. Tarayıcınızda çalışır.",
+  "h1": "MikroTik simple queue oluşturucu",
+  "lede": "Bant genişliği planını bir kez belirleyin; her istemci adresi için bir simple queue alın. İsteğe bağlı burst ve tüm grubu sınırlayan bir parent queue da ekleyebilirsiniz.",
+  "blurb": "Burst ve parent queue'lu IP başına bant sınırları.",
+  "keywords": "mikrotik simple queue oluşturucu ip başına bant genişliği sınırı routeros queue simple max-limit limit-at burst limit parent queue wisp bant genişliği yönetimi hotspot istemci hız sınırı betik mikrotik simple queue generator bandwidth limit per ip",
+  "limits": "IPv4 hedefleri için RouterOS v7 sözdizimi üretir (v6'da da geçerlidir); en fazla 2048 kuyruk. Her kuyruk aynı planı alır; tek hattı paylaşan çok sayıda istemci için PCQ işlemciyi daha az yorar. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantısı yoktur ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te IP başına bant genişliği nasıl sınırlanır",
+  "howto": [
+    "İstemci adreslerini listeleyin (her satıra bir adres, isteğe bağlı olarak ardından bir ad) ya da içindeki her ana makineyi kuyruğa almak için bir alt ağ girin.",
+    "Planı yükleme ve indirme max-limit olarak girin; kullanıyorsanız limit-at ve burst değerlerini de ekleyin. Hızlarda k, M veya G kullanılır.",
+    "İsterseniz toplam hat kapasitesi için bir parent queue ekleyin, ardından betiği kopyalayın veya .rsc dosyasını indirin."
+  ],
+  "faq": [
+    [
+      "max-limit içinde hangi taraf yükleme?",
+      "Simple queue hızları hedefin bakış açısından yükleme/indirme olarak yazılır: max-limit=5M/20M istemcinin 5 Mbit/sn göndermesine ve 20 Mbit/sn almasına izin verir. Oluşturucu alanları bu şekilde etiketler, böylece sırayı hatırlamanız gerekmez."
+    ],
+    [
+      "Kuyruğum neden hiçbir şeyi sınırlamıyor?",
+      "En yaygın neden FastTrack'tir: fasttrack'lenen bağlantılar simple queue'ları atlar. /ip firewall filter içindeki fasttrack kuralını devre dışı bırakın ya da kuyruğa alınan adresleri onun dışında tutun. Sırayı da kontrol edin: simple queue'lar yukarıdan aşağı eşleştirilir ve hedefi örtüşen önceki bir kuyruk trafiği ilk o alır."
+    ],
+    [
+      "limit-at ve parent queue ne yapar?",
+      "Parent queue tüm grubu hattın gerçek kapasitesinde sınırlar. limit-at, parent dolduğunda her alt kuyruğa garanti edilen hızdır; bunun üzerinde alt kuyruklar kalan bant genişliğini max-limit değerlerine kadar paylaşır. limit-at değerlerinin toplamı parent'ı aşarsa hepsi karşılanamaz."
+    ],
+    [
+      "Bir yönlendirici kaç simple queue taşıyabilir?",
+      "İşlemciye ve trafiğe bağlıdır, ancak her paket listeyi baştan yürüdüğü için binlerce kuyruk pahalıya gelir. Büyük ve düz planlarda bir PCQ queue type'ı tek kuyrukla her istemciyi adil biçimde sınırlar; MikroTik PCQ oluşturucu bunu yazar."
+    ],
+    [
+      "/32 hedefte önek gerekir mi?",
+      "RouterOS tek adresli hedefleri her durumda /32 olarak saklar. Oluşturucu bunları /32 ile yazar, böylece hedefler bir dışa aktarmada aynı görünür."
+    ],
+    [
+      "Planım bir yere gönderiliyor mu?",
+      "Hayır. Kuyruklar tarayıcınızda üretilir ve yazdığınız hiçbir şey cihazınızdan çıkmaz."
+    ]
+  ],
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz"
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="sq">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>İstemciler</legend>
+      <div class="seg" role="radiogroup" aria-label="İstemciler">
+        <label><input type="radio" name="sq-mode" value="list" checked>Adres listesi</label>
+        <label><input type="radio" name="sq-mode" value="subnet">Bir alt ağdaki her ana makine</label>
+      </div>
+      <div class="field" id="sq-list-f">
+        <label for="sq-list">Adresler veya ağlar; her birinin ardından isteğe bağlı ad</label>
+        <textarea id="sq-list" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">192.168.88.10 alice
+192.168.88.11 bob
+192.168.88.64/28 office</textarea>
+      </div>
+      <div class="opts" id="sq-net-f" hidden>
+        <div class="field">
+          <label for="sq-net">Alt ağ</label>
+          <input type="text" id="sq-net" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="sq-skip">Bu adresleri atla</label>
+          <input type="text" id="sq-skip" class="mono" value="192.168.88.1" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sq-prefix">Ad öneki (adı olmayan satırlar için)</label>
+        <input type="text" id="sq-prefix" class="mono" value="client-" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>İstemci başına plan</legend>
+      <div class="opts">
+        <div class="field"><label for="sq-up-max">Yükleme max-limit</label><input type="text" id="sq-up-max" class="mono" value="5M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-max">İndirme max-limit</label><input type="text" id="sq-down-max" class="mono" value="20M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-at">Yükleme limit-at</label><input type="text" id="sq-up-at" class="mono" value="" placeholder="isteğe bağlı" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-at">İndirme limit-at</label><input type="text" id="sq-down-at" class="mono" value="" placeholder="isteğe bağlı" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-burst">Burst'e izin ver</label></div>
+      <div class="opts" id="sq-burst-f" hidden>
+        <div class="field"><label for="sq-up-burst">Yükleme burst-limit</label><input type="text" id="sq-up-burst" class="mono" value="10M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-burst">İndirme burst-limit</label><input type="text" id="sq-down-burst" class="mono" value="40M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-up-thr">Yükleme burst-threshold</label><input type="text" id="sq-up-thr" class="mono" value="4M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-down-thr">İndirme burst-threshold</label><input type="text" id="sq-down-thr" class="mono" value="16M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-time">burst-time</label><input type="text" id="sq-time" class="mono" value="8s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Parent queue</legend>
+      <div class="ros-checks"><label class="check"><input type="checkbox" id="sq-parent">Grubu bir parent queue ile sınırla</label></div>
+      <div class="opts" id="sq-parent-f" hidden>
+        <div class="field"><label for="sq-pname">Parent adı</label><input type="text" id="sq-pname" class="mono" value="total" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-ptarget">Parent target</label><input type="text" id="sq-ptarget" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pup">Toplam yükleme</label><input type="text" id="sq-pup" class="mono" value="50M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="sq-pdown">Toplam indirme</label><input type="text" id="sq-pdown" class="mono" value="200M" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="sq-out" class="label">RouterOS betiği</label>
+    <textarea id="sq-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="sq-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="sq-dl" type="button">{{mark:i-download}}İndir .rsc</button>
+    </div>
+    <ul class="ros-notes" id="sq-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Simple queue'lar kısaca</h2>
+<p><code>/queue simple</code> altındaki bir simple queue, <em>hedefi</em> olan bir adrese, ağa veya arayüze gelen ve ondan çıkan trafiği sınırlar. RouterOS her paketi listede baştan kontrol eder ve hedefi (her iki yönde) eşleşen ilk kuyruğa koyar; bu nedenle tek bir kuyruk bir istemcinin hem yüklemesini hem indirmesini şekillendirir. Bu da simple queue'ları her müşteriye veya cihaza kendi planını vermenin en hızlı yolu ve küçük WISP ile hotspot yönlendiricilerinde olağan seçim yapar.</p>
+<p>Her kuyruğun bir <code>max-limit</code> değeri (tavan), isteğe bağlı bir <code>limit-at</code> değeri (parent'ı tıkandığında kendisine garanti edilen hız) ve isteğe bağlı burst ayarları vardır. Bir <code>parent</code> kuyruk, alt kuyrukları bir toplam altında gruplar: parent'ın max-limit değeri hattın gerçek kapasitesi, yani ISS'nin sağladığının biraz altı olmalıdır; böylece paketler modemde değil yönlendiricide kuyruğa girer ve planın öncelikleri geçerli olur.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>burst-threshold ve burst-time değerlerini <a href="/tools/mikrotik-burst-calculator/">MikroTik burst hesaplayıcı</a> ile bulun.</li>
+  <li>Aynı planda yüzlerce istemci mi var? Tek bir <a href="/tools/mikrotik-pcq-generator/">MikroTik PCQ oluşturucu</a> kuyruğu, çok daha az işlemci kullanarak her birine eşit pay verir.</li>
+  <li>PPPoE müşterileri kuyruklarını profilin rate-limit değerinden alır; bkz. <a href="/tools/mikrotik-pppoe-server-generator/">MikroTik PPPoE sunucu oluşturucu</a>.</li>
+</ul>

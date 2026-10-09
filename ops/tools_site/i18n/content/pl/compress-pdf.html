@@ -1,0 +1,65 @@
+<!--meta
+{
+  "title": "Kompresuj PDF online: zmniejsz plik PDF za darmo | Tanod Tools",
+  "description": "Zmniejsz plik PDF do e-maila lub przesłania. Prawdziwa kompresja: zdjęcia są zmniejszane i kodowane od nowa. Bezpłatnie, bez rejestracji, plik jest usuwany.",
+  "h1": "Kompresuj PDF",
+  "lede": "Zmniejsz plik PDF, aby zmieścił się w e-mailu lub formularzu przesyłania. Zeskanowane strony i zdjęcia są zmniejszane i kodowane od nowa; tekst pozostaje ostry.",
+  "blurb": "Zmniejsz plik PDF: zdjęcia są zmniejszane i kodowane od nowa.",
+  "keywords": "zmniejsz pdf kompresja pdf mniejszy pdf zmniejszenie rozmiaru pdf optymalizacja pdf rozmiar do e-maila kompresor pdf",
+  "limits": "Jeden plik PDF do 10 MB. Przetwarzane na naszym serwerze, potem usuwane. 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich narzędzi serwerowych. Pliki PDF chronione hasłem trzeba najpierw odblokować. Większe pliki: <a href=\"/learn/compress-pdf-api.html\">Compress PDF API</a> (płatne za wywołanie).",
+  "howto_title": "Jak skompresować plik PDF",
+  "howto": [
+    "Wybierz plik PDF do 10 MB albo przeciągnij go na stronę.",
+    "Wybierz <strong>Zalecana</strong> dla większości plików, <strong>Silna</strong> dla najmniejszego pliku albo <strong>Bezstratna</strong>, aby nie ruszać obrazów.",
+    "Naciśnij <strong>Kompresuj PDF</strong>, sprawdź nowy rozmiar i pobierz mniejszy plik."
+  ],
+  "faq": [
+    ["Czy mój plik PDF jest przesyłany?", "Tak. W odróżnieniu od większości narzędzi na tej stronie to działa na naszym serwerze: plik PDF jest wysyłany przez HTTPS, kompresowany, a wynik wraca prosto do twojej przeglądarki. Plik istnieje na serwerze tylko w trakcie zadania, w pamięci i w prywatnym folderze tymczasowym, który jest usuwany w chwili zakończenia zadania. Nie zapisujemy pliku PDF ani wyniku i nigdy nie rejestrujemy zawartości plików."],
+    ["Dlaczego to narzędzie potrzebuje serwera?", "Prawdziwa kompresja PDF oznacza zdekodowanie każdego obrazu w pliku, zmniejszenie go do rozmiaru strony i zakodowanie od nowa, a potem przepisanie całego pliku. Wymaga to bibliotek PDF i obrazów, które w przeglądarce są wolne lub niedostępne, dlatego to narzędzie działa na naszym serwerze, a nie na twoim urządzeniu."],
+    ["O ile mniejszy będzie mój plik PDF?", "Zależy od zawartości. Skany i pliki PDF pełne zdjęć często zmniejszają się o połowę lub więcej. Pliki PDF zawierające głównie tekst są zwykle już małe i mogą stracić tylko kilka procent. Jeśli nie da się zmniejszyć pliku, dostaniesz taką informację i nic się nie zmieni."],
+    ["Co robią trzy poziomy?", "<em>Zalecana</em> koduje zdjęcia od nowa jako JPEG o jakości 75 i zmniejsza każdy obraz ostrzejszy niż 150 dpi w rozmiarze wydruku. <em>Silna</em> używa jakości 50 i 96 dpi, dając najmniejszy plik z wyraźnie bardziej miękkimi zdjęciami. <em>Bezstratna</em> nie rusza obrazów i przepisuje tylko strukturę pliku. Tekst i grafika wektorowa nigdy nie są rasteryzowane."],
+    ["Czy coś jest usuwane z mojego pliku PDF?", "Dla bezpieczeństwa usuwany jest osadzony JavaScript, załączone pliki i inna aktywna zawartość, a nieużywane obiekty są pomijane. Strony, tekst, obrazy, linki i zakładki zostają."],
+    ["Czy jest jakiś limit?", "Pliki do 10 MB i 10 bezpłatnych zadań na serwerze dziennie na osobę, wspólnych dla wszystkich naszych narzędzi serwerowych. Liczą się tylko zadania zakończone powodzeniem, a licznik odnawia się o północy UTC. Dla większych plików lub większej liczby zadań <a href=\"/learn/compress-pdf-api.html\">Compress PDF API</a> jest płatne za wywołanie."],
+    ["Czym jest weryfikacja, że nie jesteś botem?", "Przed uruchomieniem zadania Cloudflare Turnstile sprawdza, że z narzędzia korzysta człowiek, a nie bot. Zwykle jest niewidoczna; czasem prosi o zaznaczenie pola. Dzięki niej automatyczny ruch nie zużywa bezpłatnej mocy."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:compress-pdf drop__mark}}
+  <p class="drop__title">Upuść plik PDF tutaj</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Wybierz plik PDF</span></label>
+  <p class="drop__hint">Lub przeciągnij go w dowolne miejsce na tej stronie. Do 10 MB.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="opts opts--wide">
+    <div class="field">
+      <span class="label" id="level-l">Kompresja</span>
+      <div class="seg" role="radiogroup" aria-labelledby="level-l">
+        <label><input type="radio" name="level" value="recommended" checked>Zalecana</label>
+        <label><input type="radio" name="level" value="extreme">Silna</label>
+        <label><input type="radio" name="level" value="lossless">Bezstratna</label>
+      </div>
+      <span class="help">Zalecana pasuje do większości plików. Silna daje najmniejszy plik z bardziej miękkimi zdjęciami. Bezstratna nie rusza obrazów.</span>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="go" type="button" disabled>Kompresuj PDF</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Zacznij od nowa</button>
+  </div>
+</div>
+<!--srv-->
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Jak działa kompresja PDF</h2>
+<p>Większość wagi dużego pliku PDF to obrazy: zeskanowane strony, zdjęcia, zrzuty ekranu. Nasz serwer otwiera plik, znajduje każdy obraz podobny do zdjęcia i sprawdza, jak jest ostry w rozmiarze, w jakim jest wydrukowany na stronie. Wszystko, co jest ostrzejsze niż limit danego poziomu, jest zmniejszane, a potem ponownie zapisywane jako JPEG. Obraz jest zastępowany tylko wtedy, gdy daje to oszczędność co najmniej 10 procent, a struktura pliku jest przepisywana z jak najmocniej skompresowanymi strumieniami.</p>
+<p>Wynik nigdy nie jest większy od oryginału. Gdy nic nie da się zaoszczędzić, dostaniesz taką informację i zachowasz posiadany plik.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Do e-maila najpierw wypróbuj Zalecaną; przełącz na Silną tylko wtedy, gdy plik nadal jest za duży.</li>
+  <li>Potrzebujesz tylko niektórych stron? Najpierw wyodrębnij je narzędziem <a href="/tools/extract-pdf-pages/">Wyodrębnij strony z PDF</a>; mniej stron to mniejszy plik. To narzędzie działa w przeglądarce.</li>
+  <li>Zmniejszasz zdjęcia, a nie plik PDF? <a href="/tools/compress-image/">Kompresuj obraz</a> działa na urządzeniu, bez przesyłania.</li>
+</ul>

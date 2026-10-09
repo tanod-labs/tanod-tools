@@ -1,0 +1,75 @@
+<!--meta
+{
+  "title": "Resmi Base64'e ve data URL'ye çevirin | Tanod Tools",
+  "description": "PNG, JPG, WebP, GIF veya SVG resmi Base64'e çevirin: data URL, CSS arka planı, HTML img etiketi ya da Markdown olarak kopyalamaya hazır. Tarayıcıda çalışır, yükleme yok.",
+  "h1": "Resmi Base64'e çevir",
+  "lede": "Bir resmi, doğrudan HTML, CSS, Markdown veya JSON içine yapıştırabileceğiniz bir Base64 data URL'ye dönüştürün.",
+  "blurb": "HTML veya CSS için data URL olarak resim.",
+  "keywords": "resmi base64'e çevirme data uri data url png base64 jpg base64 svg css arka plan gömme resim base64 image to base64 inline embed",
+  "limits": "Aynı anda bir resim, en fazla 10 MB. PNG, JPEG, WebP, GIF, BMP, AVIF ve SVG.",
+  "howto_title": "Resim Base64'e nasıl çevrilir",
+  "howto": [
+    "Bir resim seçin veya sayfaya sürükleyin.",
+    "İhtiyacınız olan biçimi seçin: data URL, düz Base64, CSS, HTML img etiketi ya da Markdown.",
+    "<strong>Kopyala</strong> düğmesine basın veya metni dosya olarak indirin."
+  ],
+  "faq": [
+    ["Data URL nedir?", "Bir dosyanın baytlarını bir bağlantının içine koymanın yoludur. <code>data:</code> ile başlar, ardından <code>image/png</code> gibi dosya türü ve <code>;base64,</code> gelir; sonra Base64 metni yer alır. Tarayıcılar bunu, resim ayrı bir dosyadan yüklenmiş gibi aynen gösterir."],
+    ["Base64 neden resimden büyük?", "Base64, her 3 baytı 4 metin karakteri olarak yazar; bu yüzden metin dosyadan yaklaşık yüzde 33 daha büyüktür. Metni sıkıştıran web sunucuları bunun bir kısmını geri kazanır, ama gömülü bir resim yine de aynı resmin tek başına sunulmasından büyüktür."],
+    ["Bir resmi ne zaman gömmeliyim?", "Küçük şeyler için: birkaç kilobaytın altındaki simgeler, küçük arka planlar ve yer tutucular veya tek parça, kendi içinde eksiksiz bir HTML dosyası ya da e-posta gerektiğinde. Büyük resimler ayrı dosya olarak daha iyidir; çünkü bir data URL kendi başına önbelleğe alınamaz ve onu içeren her sayfayla veya stil sayfasıyla yeniden indirilir. Araç, 100 KB'ın üzerinde sizi uyarır."],
+    ["Dosya türü nasıl belirlenir?", "Adına değil, dosyadaki baytlara bakılarak; bu yüzden .jpg uzantısıyla kaydedilmiş bir PNG yine <code>image/png</code> olarak işaretlenir. SVG dosyaları metinlerinden tanınır ve <code>image/svg+xml</code> olarak etiketlenir."],
+    ["Resmim yükleniyor mu?", "Hayır. Resim, cihazınızda, tarayıcınızda okunur ve kodlanır."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:image-to-base64 drop__mark}}
+  <p class="drop__title">Bir resmi buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg">{{mark:i-plus}}<span data-pick-label>Resim seçin</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP, AVIF veya SVG. Ya da bu sayfada herhangi bir yere sürükleyin.</p>
+</div>
+<div id="work" class="b64i" hidden>
+  <div class="b64i__head">
+    <div class="preview b64i__preview"><canvas id="cv" role="img" aria-label="Resim önizlemesi"></canvas></div>
+    <dl class="stats b64i__stats">
+      <div><dt>Tür</dt><dd id="s-type">-</dd></div>
+      <div><dt>Piksel</dt><dd id="s-dims">-</dd></div>
+      <div><dt>Dosya</dt><dd id="s-file">-</dd></div>
+      <div><dt>Base64</dt><dd id="s-b64">-</dd></div>
+    </dl>
+  </div>
+  <p class="note" id="big" hidden></p>
+  <fieldset class="field">
+    <legend>Çıktı</legend>
+    <div class="seg b64i__seg">
+      <label><input type="radio" name="fmt" value="data" checked>Data URL</label>
+      <label><input type="radio" name="fmt" value="raw">Base64</label>
+      <label><input type="radio" name="fmt" value="css">CSS</label>
+      <label><input type="radio" name="fmt" value="html">HTML</label>
+      <label><input type="radio" name="fmt" value="md">Markdown</label>
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="out">Sonuç</label>
+    <textarea id="out" class="mono b64i__out" rows="8" readonly spellcheck="false"></textarea>
+    <p class="help num" id="out-len"></p>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="copy" type="button">Kopyala</button>
+    <button class="btn" id="dl" type="button">.txt indir</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Resimleri metin olarak gömme</h2>
+<p>HTML, CSS, JSON, Markdown ve e-posta gövdeleri metindir, ama resimler ikilidir (binary). Base64 ikisini birbirine bağlar: resmin baytlarını 64 güvenli karakterle yazar; böylece bütün resim ayrı bir indirme gerektirmeden bir stil kuralının, bir <code>img</code> etiketinin veya bir yapılandırma dosyasının içinde durabilir.</p>
+<p>Bu araç dosyayı tarayıcınızda okur, gerçek türünü ilk baytlardan denetler ve seçtiğiniz parçacığı kodlanmış metnin çevresine kurar. Resmin kendisi değişmez: Base64'ü çözmek özgün dosyayı birebir geri verir.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Önce resmi <a href="/tools/compress-image/">Resim sıkıştır</a> veya <a href="/tools/resize-image/">Resim boyutlandır</a> ile küçültün; kazandığınız her bayt Base64'te üçte bir daha fazla kazanç demektir.</li>
+  <li>Basit simgelerde SVG, Base64 olsa bile çoğu zaman herhangi bir PNG'den küçüktür.</li>
+  <li>Base64'ü yeniden dosyaya çözmek veya başka bir dosyayı kodlamak için <a href="/tools/base64-encode-decode/">Base64 kodla ve çöz</a> aracını kullanın.</li>
+</ul>

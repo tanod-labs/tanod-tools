@@ -14,7 +14,7 @@ export const SERVER_TOOLS = ["compress-pdf", "ocr-pdf", "image-to-text", "url-to
 // Localized pages of the server tools (/es/tools/comprimir-pdf/ ...) get the same CSP: the Caddyfile's @tools_server
 // matcher must list them too (python3 ops/tools_site/build.py --caddy prints it).
 export const SLUGS = JSON.parse(readFileSync(new URL("../i18n/slugs.json", import.meta.url), "utf8"));
-export const LANG_PREFIX = { "en": "", "es": "/es", "pt-BR": "/pt", "fr": "/fr", "de": "/de", "id": "/id" };
+export const LANG_PREFIX = { "en": "", "es": "/es", "pt-BR": "/pt", "fr": "/fr", "de": "/de", "id": "/id", "it": "/it", "tr": "/tr", "vi": "/vi", "ru": "/ru", "pl": "/pl", "hi": "/hi" };
 export const toolPath = (lang, slug) => `${LANG_PREFIX[lang]}/tools/${lang === "en" ? slug : SLUGS[slug][lang].slug}/`;
 const SERVER_PAGES = new Set(Object.keys(LANG_PREFIX).flatMap((l) => SERVER_TOOLS.map((s) => toolPath(l, s))));
 const SERVER_PATH = { test: (path) => [...SERVER_PAGES].some((p) => path.startsWith(p)) };

@@ -1,0 +1,96 @@
+<!--meta
+{
+  "title": "Generatore di espressioni cron con prossime esecuzioni | Tanod Tools",
+  "description": "Crea una pianificazione cron a cinque campi con preset e controlli, leggila in italiano semplice e controlla le prossime esecuzioni in qualsiasi fuso orario.",
+  "h1": "Generatore di espressioni cron",
+  "lede": "Costruisci una pianificazione crontab da semplici scelte, poi controlla cosa dice in parole semplici e quando verrà eseguita la prossima volta.",
+  "blurb": "Crea una pianificazione cron con i controlli e vedi le prossime esecuzioni.",
+  "keywords": "generatore espressioni cron creare cron generatore crontab pianificazione cron cron job ogni 5 minuti sintassi cron giorni feriali alle 9 cron expression generator cron builder",
+  "limits": "Cron standard a cinque campi come usato da Vixie cron e cronie: minuto, ora, giorno del mese, mese e giorno della settimana. Quartz e altri formati con il campo dei secondi non vengono generati, e le espressioni incollate che i controlli non possono mostrare restano come scritte.",
+  "howto_title": "Come creare un'espressione cron",
+  "howto": [
+    "Parti da un preset, oppure imposta ogni campo per eseguire sempre, ogni N unità a partire da un inizio, su valori specifici o tra due valori.",
+    "Controlla l'espressione, la sua descrizione in parole semplici e le prossime esecuzioni nel fuso orario usato dal tuo server.",
+    "Copia l'espressione nel tuo crontab, nella pianificazione della CI o nel tuo scheduler. Puoi anche incollare un'espressione esistente per caricarla nei controlli."
+  ],
+  "faq": [
+    ["Come eseguo un job ogni 15 minuti?", "Imposta Minuto su <em>Ogni 15 minuti a partire da 0</em>, che scrive <code>*/15 * * * *</code>. Il job viene eseguito ai minuti 0, 15, 30 e 45 di ogni ora."],
+    ["Come si scrive un inizio diverso da 0?", "Un inizio come il minuto 5 con un passo di 10 si scrive <code>5-59/10</code>, che viene eseguito a 5, 15, 25, 35, 45 e 55. La forma più breve <code>5/10</code> funziona in alcune versioni di cron ma viene rifiutata da altre, quindi la forma lunga è la scelta portabile."],
+    ["Perché alcuni giorni sono scelti con intervalli e altri con elenchi?", "Tre o più valori consecutivi si scrivono come intervallo, quindi dal lunedì al venerdì è <code>1-5</code>, mentre lunedì, mercoledì e venerdì sono <code>1,3,5</code>. Entrambi significano esattamente i valori che hai selezionato."],
+    ["Cosa succede se imposto sia il giorno del mese sia il giorno della settimana?", "Il cron standard esegue il job quando uno dei due corrisponde, non entrambi. <code>0 9 1 * 1</code> viene eseguito il primo del mese e ogni lunedì. Lo strumento aggiunge una nota quando le tue scelte rientrano in quel caso."],
+    ["Quale fuso orario usano le prossime esecuzioni?", "Quello che scegli sotto l'espressione. Cron stesso usa il fuso orario della macchina o del container su cui gira, a meno che il crontab imposti <code>CRON_TZ</code>. Molti server usano UTC, quindi verifica prima di fidarti di un orario."],
+    ["Supporta i secondi, @daily o la sintassi Quartz?", "Costruisce solo espressioni a cinque campi. Incollare <code>@daily</code> o un'altra scorciatoia funziona e viene convertito nei suoi cinque campi. Le espressioni a sei campi e in stile Quartz vengono rifiutate, perché il loro primo campo è quello dei secondi. <a href=\"/tools/cron-expression-explainer/\">Spiega un'espressione cron</a> lo spiega nel dettaglio."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="cg-out">
+    <p class="label" id="g-expr-l">Espressione cron</p>
+    <div class="cg-expr-row">
+      <p class="cg-expr mono" id="g-expr" aria-labelledby="g-expr-l" aria-live="polite">* * * * *</p>
+      <button class="btn btn--primary" id="g-copy" type="button">Copia</button>
+    </div>
+    <p class="cron-say" id="g-say" aria-live="polite"></p>
+    <p class="tt__report" id="g-info" aria-live="polite"></p>
+    <p class="note" id="g-note" hidden></p>
+  </div>
+  <div class="cron-presets" role="group" aria-label="Preset">
+    <button class="btn btn--sm" type="button" data-cron="* * * * *">Ogni minuto</button>
+    <button class="btn btn--sm" type="button" data-cron="*/5 * * * *">Ogni 5 minuti</button>
+    <button class="btn btn--sm" type="button" data-cron="*/15 * * * *">Ogni 15 minuti</button>
+    <button class="btn btn--sm" type="button" data-cron="0 * * * *">Ogni ora</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * *">Ogni giorno a mezzanotte</button>
+    <button class="btn btn--sm" type="button" data-cron="30 9 * * 1-5">Nei giorni feriali alle 09:30</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 * * 0">Ogni domenica</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1,15 * *">Il 1° e il 15</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 * *">Il primo del mese</button>
+    <button class="btn btn--sm" type="button" data-cron="0 0 1 1 *">Ogni anno</button>
+  </div>
+  <div class="cg-fields" id="g-fields"></div>
+  <div class="cg-load">
+    <div class="field">
+      <label for="g-load">Carica un'espressione esistente</label>
+      <div class="cg-load-row">
+        <input type="text" id="g-load" class="mono" placeholder="*/10 8-18 * * 1-5" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="g-load-info">
+        <button class="btn" id="g-load-btn" type="button">Carica</button>
+      </div>
+      <span class="help" id="g-load-info" aria-live="polite">Incolla un'espressione a cinque campi o una scorciatoia come @daily.</span>
+    </div>
+  </div>
+  <h2 class="util-h">Prossime esecuzioni</h2>
+  <div class="opts">
+    <div class="field">
+      <label for="g-tz">Fuso orario</label>
+      <select id="g-tz"></select>
+    </div>
+    <div class="field">
+      <label for="g-from">A partire da</label>
+      <input type="datetime-local" id="g-from" step="60">
+      <span class="help">Lascia vuoto per partire da adesso.</span>
+    </div>
+    <div class="field">
+      <label for="g-count">Quante</label>
+      <select id="g-count">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+  </div>
+  <p class="tt__report" id="g-runs-info"></p>
+  <ol class="cron-runs" id="g-runs" aria-label="Orari delle prossime esecuzioni"></ol>
+  <p class="note" id="g-runs-note" hidden></p>
+  <p class="help">Hai già un'espressione e vuoi solo che ti venga spiegata? Usa <a href="/tools/cron-expression-explainer/">Spiega un'espressione cron</a>.</p>
+</div>
+<!--explain-->
+<h2>Costruire una pianificazione cron</h2>
+<p>Un'espressione cron è composta da cinque campi separati da spazi: minuto, ora, giorno del mese, mese e giorno della settimana. Ogni campo risponde a una domanda su quando il job deve essere eseguito, e il job parte quando tutti corrispondono. Lasciare un campo come <code>*</code> significa ogni valore, ed è per questo che <code>0 * * * *</code> viene eseguito all'inizio di ogni ora e <code>0 0 * * *</code> una volta al giorno a mezzanotte.</p>
+<p>Il generatore offre per ogni campo quattro modi di dire ciò che vuoi. Un passo come <code>*/15</code> significa ogni 15° valore, un elenco come <code>1,15</code> sceglie valori esatti, un intervallo come <code>9-17</code> copre tutto ciò che sta tra due valori, e <code>*</code> significa ogni valore. Quando selezioni dei valori, le sequenze di tre o più consecutivi vengono scritte come intervallo, quindi dal lunedì al venerdì dà <code>1-5</code> anziché <code>1,2,3,4,5</code>.</p>
+<p>Due trappole colgono la maggior parte delle persone. Cron usa l'orologio della macchina su cui gira, quindi un job impostato per le 09:00 parte alle 09:00 dell'ora del server, che potrebbe non essere la tua; l'elenco delle prossime esecuzioni ti permette di controllare in più fusi. E quando sia il campo del giorno del mese sia quello del giorno della settimana sono limitati, un job viene eseguito quando uno dei due corrisponde, il che può significare molte più esecuzioni del previsto.</p>
+<h3>Suggerimenti</h3>
+<ul>
+  <li>Per leggere un'espressione scritta da qualcun altro, incollala in <a href="/tools/cron-expression-explainer/">Spiega un'espressione cron</a>.</li>
+  <li>Converti un orario di esecuzione preso da un log in timestamp Unix, e viceversa, con il <a href="/tools/unix-timestamp-converter/">Convertitore di timestamp Unix</a>.</li>
+  <li>Gli script pianificati hanno bisogno del bit di esecuzione; ricava il modo giusto nel <a href="/tools/chmod-calculator/">Calcolatore chmod</a>.</li>
+</ul>

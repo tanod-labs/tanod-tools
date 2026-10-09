@@ -1,5 +1,5 @@
-import { $, el, live, openTextFile, fmtInt, tx, txn, wireCopy, announce } from "./textcore.js?v=5";
-import { analyse, countLines } from "./wordcore.js?v=5";
+import { $, el, live, openTextFile, fmtInt, tx, txn, wireCopy, announce } from "./textcore.js?v=11";
+import { analyse, countLines } from "./wordcore.js?v=11";
 
 const area = $("#text");
 const status = $("#status");

@@ -50,9 +50,9 @@ export default [
       t.eq(imageInfo(bytes).format, "png", "png out");
       const shown = await t.page.eval(`document.querySelector("#files").textContent + " " + document.querySelector("#result").textContent`);
       const dec = t.num(1.5).replace(/\d/g, "");
-      const unit = t.lang === "fr" ? "Ko|Mo" : "KB|MB";
+      const unit = t.lang === "fr" ? "Ko|Mo" : t.lang === "ru" ? "КБ|МБ" : "KB|MB";
       t.assert(new RegExp(`\\d\\${dec}\\d+\\s(${unit})`).test(shown), `sizes like 1${dec}23 ${unit}: ${shown.slice(0, 200)}`);
-      t.assert(!/\d\.\d+\s(KB|MB)/.test(shown), "no English decimal point in sizes");
+      if (dec !== ".") t.assert(!/\d\.\d+\s(KB|MB|КБ|МБ)/.test(shown), "no English decimal point in sizes");
       await t.shot("done", 1280);
     },
   },
@@ -88,13 +88,13 @@ export default [
     page: "percentage-calculator",
     name: "calc: decimal comma input, grouped output, localized formula",
     async run(t) {
-      await t.page.setValue("#p1-a", "12,5");
+      await t.page.setValue("#p1-a", t.num(12.5));
       await t.page.setValue("#p1-b", "80");
       t.eq(await t.text("#p1-out .pc__val"), "10", "12,5 % of 80");
       await t.page.setValue("#p1-a", "15");
       await t.page.setValue("#p1-b", t.num(1000000));
       t.eq(await t.text("#p1-out .pc__val"), t.num(150000), "grouped input and output");
-      await t.page.setValue("#p1-a", "2,5");
+      await t.page.setValue("#p1-a", t.num(2.5));
       await t.page.setValue("#p1-b", "3");
       t.eq(await t.text("#p1-out .pc__val"), t.num(0.075), "decimal output");
       t.assert((await t.text("#p1-out .pc__formula")).includes(t.num(2.5)), "formula uses the decimal comma");

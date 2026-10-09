@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "ZUGFeRD / Factur-X görüntüleyici: PDF'teki XML'i okuyun | Tanod Tools",
+  "description": "ZUGFeRD veya Factur-X PDF'inin içindeki XML faturayı çıkarıp normal fatura olarak okuyun. Yazdırın ya da JSON alın. Ücretsiz, yükleme yok.",
+  "h1": "ZUGFeRD / Factur-X görüntüleyici",
+  "lede": "Bir ZUGFeRD veya Factur-X PDF'i açın ve içine gizlenmiş fatura verilerini görün. Ekli XML, PDF'ten tarayıcınızda çıkarılır ve fatura olarak gösterilir. Dosya cihazınızdan hiç çıkmaz.",
+  "blurb": "ZUGFeRD veya Factur-X PDF'indeki XML faturayı çıkarıp okuyun.",
+  "keywords": "zugferd görüntüleyici zugferd viewer factur-x görüntüleyici factur-x viewer zugferd pdf açma zugferd xml okuma factur-x xml çıkarma pdf içindeki xml fatura pdf/a-3 xml eklenmiş hibrit e-fatura pdf e-fatura görüntüleyici",
+  "limits": "Bir seferde tek dosya, en fazla 25 MB. Ekli bir fatura dosyası (factur-x.xml, zugferd-invoice.xml veya xrechnung.xml) bulunan bir PDF/A-3 gerekir; sıradan bir PDF'te fatura verisi yoktur ve sayfa bunu söyler. PDF'in sayfaları gösterilmez, yalnızca içindeki veriler gösterilir. Yalnızca görüntüleyicidir: doğrulama yapmaz ve hiçbir yere hiçbir şey göndermez.",
+  "howto_title": "ZUGFeRD veya Factur-X PDF'i nasıl okunur",
+  "howto": [
+    "ZUGFeRD veya Factur-X PDF'ini seçin ya da sayfaya sürükleyin. XML dosyası da olur.",
+    "Sayfa, PDF'e eklenmiş XML'i bulur ve fatura olarak gösterir: taraflar, kalemler, KDV, toplamlar ve ödeme bilgileri.",
+    "Temiz bir kopya için <strong>Yazdır veya PDF olarak kaydet</strong>, veriler için <strong>JSON indir</strong>, PDF'in içindeki dosyayı almak için <strong>XML indir</strong> düğmesine basın."
+  ],
+  "faq": [
+    [
+      "PDF'im yükleniyor mu?",
+      "Hayır. PDF tarayıcınızda açık kaynaklı pdf.js kitaplığıyla açılır, ekli XML orada okunur ve hiçbir şey sunucuya gönderilmez. Sekmeyi kapattığınızda her şey silinir."
+    ],
+    [
+      "ZUGFeRD ile Factur-X arasındaki fark nedir?",
+      "Aynı standarttırlar. ZUGFeRD Almanya'daki, Factur-X ise Fransa'daki addır; ZUGFeRD 2 ile Factur-X 1 teknik olarak özdeştir. İkisi de içine XML fatura (UN/CEFACT CII) eklenmiş bir PDF/A-3 belgesidir. Profil (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED veya XRECHNUNG), XML'in ne kadar veri taşıdığını belirtir."
+    ],
+    [
+      "PDF'imde neden fatura verisi olmadığını söylüyor?",
+      "Sıradan bir PDF, faturanın yalnızca bir görüntüsüdür. Yapılandırılmış veri ancak PDF'i üreten program XML'i eklemişse bulunur. PDF okuyucunuzda ekli bir dosya olup olmadığına bakın. Yoksa PDF bir e-fatura değildir; onun yerine metnini okumak için <a href=\"/tools/pdf-to-text/\">PDF'ten metne</a> aracını deneyin."
+    ],
+    [
+      "Hangi profiller çalışır?",
+      "CII XML kullanan tüm profiller. MINIMUM ve BASIC WL toplamları taşır ama kalem içermez; sayfa bunu belirtir. BASIC, EN 16931, EXTENDED ve XRECHNUNG ise kalemleri de taşır. Eski ZUGFeRD 1.0 biçimi desteklenmez."
+    ],
+    [
+      "PDF sayfalarını XML ile karşılaştırıyor mu?",
+      "Hayır. PDF'in sayfaları gösterilmez ve hiçbir karşılaştırma yapılmaz. Hibrit biçimlerde fatura verisi olarak genellikle XML geçerli sayıldığından burada görünen de odur."
+    ],
+    [
+      "Ekli belgeler açılıyor mu?",
+      "Hayır. XML'in içine eklenmiş belgeler (örneğin bir puantaj çizelgesi) yalnızca bir İndir düğmesiyle listelenir. Dosya adı temizlenir ve indirme genel bir dosya türüyle yapılır; bunları yalnızca göndericiye güveniyorsanız açın."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">E-faturayı buraya bırakın</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Dosya seçin</span></label>
+  <p class="drop__hint">XML, içinde fatura bulunan bir PDF (ZUGFeRD, Factur-X) ya da imzalı bir .p7m dosyası. İsterseniz dosyayı bu sayfanın herhangi bir yerine sürükleyin.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}Yazdır veya PDF olarak kaydet</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}JSON indir</button>
+    <button class="btn" id="ei-xml" type="button" hidden>XML indir</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Ham XML'i göster</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Baştan başla</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="Ham XML" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Uzun bir dosyanın yalnızca başı burada gösterilir. Tamamını almak için XML'i indirin.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Aynı zamanda fatura olan bir PDF</h2>
+<p>ZUGFeRD veya Factur-X dosyası sıradan bir PDF fatura gibi görünür, ancak faturanın ikinci bir kopyasını XML olarak taşır; bu kopya, bir e-posta ekinin iletiye eklenmesi gibi PDF'e eklenmiştir. İnsanlar sayfaları okur, programlar XML'i. Almanya'da her işletme 1 Ocak 2025'ten beri yapılandırılmış e-faturaları alabilmek zorundadır, Fransa da aynı zorunluluğu 1 Eylül 2026'dan itibaren getiriyor; bu yüzden bu hibrit PDF'ler artık yaygındır.</p>
+<p>Bu sayfa PDF'i tarayıcınızda açar, ekli dosyaların listesini okur ve XML olanları şu sırayla dener: <code>factur-x.xml</code>, <code>zugferd-invoice.xml</code>, <code>xrechnung.xml</code>, ardından diğer XML dosyaları. Desteklenen bir fatura olan ilk dosya gösterilir. PDF sayfalarını çizmez.</p>
+<h2>Profiller</h2>
+<p>Profil, XML'in ne kadar veri taşıdığını söyler. MINIMUM ve BASIC WL yalnızca başlık verilerini ve toplamları içerir. BASIC kalemleri de ekler. EN 16931 (eski ZUGFeRD sürümlerinde COMFORT adıyla geçer) tam Avrupa standardıdır. EXTENDED bunun da ötesine geçer, XRECHNUNG ise Almanya'daki kamu sektörü profilidir. Sayfa her dosyanın içindekini gösterir; dosyayı profil kurallarına göre denetlemez.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>PDF faturada ek yoksa göndericiden XML'i ya da faturanın ZUGFeRD / Factur-X sürümünü isteyin.</li>
+  <li>Aynı standartta yalın bir XML dosyası da burada açılır; XRechnung XML'i ayrıca <a href="/tools/xrechnung-viewer/">XRechnung görüntüleyici</a> ile de okunur.</li>
+  <li>PDF'in içindeki yapılandırılmış veriyi saklamak için XML indir düğmesini kullanın.</li>
+</ul>

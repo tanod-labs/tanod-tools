@@ -1,0 +1,72 @@
+<!--meta
+{
+  "title": "UUID oluşturucu: v4 ve v7, ayrıca denetleyici | Tanod Tools",
+  "description": "Rastgele sürüm 4 veya zamana göre sıralı sürüm 7 UUID'leri toplu üretin, kopyalayın ya da indirin; bir UUID'nin sürümünü ve zaman damgasını denetleyin. Ücretsiz.",
+  "h1": "UUID oluşturucu",
+  "lede": "Sürüm 4 (rastgele) veya sürüm 7 (zamana göre sıralı) UUID'ler üretin ve elinizdeki herhangi bir UUID'yi denetleyin.",
+  "blurb": "v4 ve v7 UUID üretin, birini denetleyin.",
+  "keywords": "uuid oluşturucu guid uuid4 uuid7 benzersiz kimlik tanımlayıcı doğrula unique identifier validate",
+  "limits": "Bir seferde 1 ile 1.000 arasında UUID.",
+  "howto_title": "UUID'ler nasıl üretilir",
+  "howto": [
+    "Tamamen rastgele kimlikler için sürüm 4'ü, oluşturulma zamanına göre sıralanan kimlikler için sürüm 7'yi seçin.",
+    "İhtiyacınız olan sayıyı ve biçim seçeneklerini ayarlayın: büyük harf, tiresiz ya da küme parantezli.",
+    "Listeyi kopyalayın veya metin dosyası olarak indirin. Sürümünü okumak için bir UUID'yi denetleyiciye yapıştırın."
+  ],
+  "faq": [
+    ["Hangi sürümü kullanmalıyım?", "Sürüm 4, 122 rastgele bittir ve olağan varsayılandır. Sürüm 7 başa milisaniye cinsinden Unix zaman damgasını koyar; böylece değerler oluşturulma sırasına göre sıralanır ve bu, veritabanı dizinlerini düzenli tutar. Sıralama önemliyse ve oluşturulma zamanının kimlikten okunabilmesinde sakınca yoksa v7'yi kullanın."],
+    ["UUID'ler bir yere gönderiliyor mu?", "Hayır. Tarayıcınızın güvenli rastgele sayı üretecinden tarayıcınızda üretilir; gönderilmez veya saklanmaz."],
+    ["İki UUID çakışabilir mi?", "Sürüm 4 için olasılık ihmal edilebilir düzeydedir: gerçekçi bir risk görmek için yıllarca saniyede milyarlarca üretmeniz gerekir. Aynı milisaniyede oluşturulan sürüm 7 değerleri, rastgele bitlerdeki bir sayaçla ayrı ve artan tutulur."],
+    ["GUID, UUID ile aynı mı?", "GUID, aynı 128 bitlik biçim için Microsoft'un kullandığı addır. Bazı araçlar GUID'leri büyük harfle ya da küme parantezi içinde yazar; buradaki seçenekler bunu yapabilir."],
+    ["Denetleyici neyi okur?", "Tire, küme parantezi ya da <code>urn:uuid:</code> öneki olan veya olmayan bir UUID'yi kabul eder; sürümü, varyantı ve sürüm 7 için ilk 48 bitte saklanan zaman damgasını bildirir. Bir kimliğin gerçekten bir şey tarafından verilip verilmediğini söyleyemez."],
+    ["Sürüm 7 düzeni standart mı?", "Evet. RFC 9562'yi izler: 48 bit Unix milisaniyesi, sürüm, 12 bitlik bir sayaç, varyant ve 62 rastgele bit."]
+  ]
+}
+-->
+<!--tool-->
+<div class="opts">
+  <div class="field">
+    <span class="label" id="uu-ver-l">Sürüm</span>
+    <div class="seg" role="radiogroup" aria-labelledby="uu-ver-l">
+      <label><input type="radio" name="ver" value="4" checked>Sürüm 4</label>
+      <label><input type="radio" name="ver" value="7">Sürüm 7</label>
+    </div>
+  </div>
+  <div class="field">
+    <label for="uu-count">Kaç tane</label>
+    <input type="number" id="uu-count" min="1" max="1000" value="5">
+  </div>
+</div>
+<div class="util-checks">
+  <label class="check"><input type="checkbox" id="uu-upper">Büyük harf</label>
+  <label class="check"><input type="checkbox" id="uu-nohy">Tiresiz</label>
+  <label class="check"><input type="checkbox" id="uu-brace">Küme parantezi içine al</label>
+</div>
+<div class="actions">
+  <button class="btn btn--primary btn--lg" id="uu-gen" type="button">Üret</button>
+  <button class="btn" id="uu-copy" type="button">Tümünü kopyala</button>
+  <button class="btn" id="uu-dl" type="button">.txt indir</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<pre class="out" id="uu-out" tabindex="0" aria-label="Üretilen UUID'ler"></pre>
+<h2 class="util-h">UUID denetle</h2>
+<div class="field">
+  <label for="uu-in">Bir UUID yapıştırın</label>
+  <input type="text" id="uu-in" class="mono" autocomplete="off" spellcheck="false" placeholder="018f3c1e-2b4a-7c3d-8e5f-0123456789ab">
+</div>
+<div class="status" id="uu-check" role="status" hidden></div>
+<dl class="stats" id="uu-stats" hidden>
+  <div><dt>Sürüm</dt><dd id="uu-v">-</dd></div>
+  <div><dt>Varyant</dt><dd id="uu-var" class="util-small">-</dd></div>
+  <div id="uu-tsbox" hidden><dt>Zaman damgası (UTC)</dt><dd id="uu-ts" class="util-small">-</dd></div>
+</dl>
+<!--explain-->
+<h2>UUID nedir, v4 ile v7 arasındaki fark</h2>
+<p>UUID, beş grupta 32 onaltılık hane olarak yazılan 128 bitlik bir tanımlayıcıdır. Alan çok geniş olduğu için sistemler merkezi bir sayaç olmadan bağımsız olarak kimlik oluşturabilir ve yine de bunların benzersiz olmasını bekleyebilir.</p>
+<p>Sürüm 4 bir UUID'de 128 bitin 122'si rastgeledir; geri kalanı sürümü (4) ve varyantı taşır. Sürüm 7 bir UUID, Unix milisaniyesi cinsinden oluşturulma zamanıyla başlar, ardından bir sayaç ve rastgele bitler gelir. Zaman başta olduğu için yeni kimlikler eskilerden sonra sıralanır; bu, tamamen rastgele anahtarlara göre veritabanı dizinleri için daha uygundur. Bedeli, oluşturulma zamanının kimlikten okunabilmesidir.</p>
+<p>Bu araç tarayıcının güvenli rastgele üretecini kullanır. Bir milisaniye içinde sürüm 7 değerleri 12 bitlik bir sayaçla artar; böylece bir toplu üretim kesin olarak sıralıdır.</p>
+<h3>İpuçları</h3>
+<ul>
+  <li>Kimlik değil de parola mı lazım? <a href="/tools/password-generator/">Parola oluşturucu</a> aracını kullanın.</li>
+  <li>Bir kimliği <a href="/tools/qr-code-generator/">QR kod oluşturucu</a> ile taranabilir koda çevirin.</li>
+</ul>

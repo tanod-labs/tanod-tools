@@ -1,0 +1,93 @@
+<!--meta
+{
+  "category": "pdf",
+  "name": "PDF to text",
+  "title": "PDF to text converter online, free | Tanod Tools",
+  "description": "Extract the text from a PDF in your browser, page by page. Copy it or download a .txt file. Free, no signup, nothing uploaded. Scanned PDFs need OCR.",
+  "h1": "PDF to text",
+  "lede": "Pull the text out of a PDF page by page, then copy it or save it as a .txt file. A scanned PDF has no text to pull: for those, use <a href=\"/tools/ocr-pdf/\">OCR PDF</a>.",
+  "blurb": "Extract text from a PDF, copy it or save a .txt file.",
+  "keywords": "extract text from pdf pdf to txt copy text from pdf pdf text extractor pdf to plain text convert pdf to text page by page scanned pdf ocr",
+  "limits": "One PDF at a time, up to 200 MB and 500 pages. This reads the text that is stored in the PDF. A scanned PDF is only pictures of pages and has none, so it needs <a href=\"/tools/ocr-pdf/\">OCR PDF</a> instead. Tables and columns come out line by line, and password-protected PDFs can't be opened.",
+  "howto_title": "How to extract text from a PDF",
+  "howto": [
+    "Choose a PDF file, or drag it onto the page.",
+    "Wait a moment while each page is read. Choose all pages or a range such as 1-3, 5, and whether to mark where each page starts.",
+    "Press <strong>Download .txt</strong>, or copy all the text, or copy one page from the list."
+  ],
+  "faq": [
+    ["Is my PDF uploaded?", "No. Your browser reads the text with the open-source pdf.js library, on your device. Nothing is sent to a server, and the text is gone when you close the tab."],
+    ["Why did I get no text, or text from only some pages?", "The tool reads the text that is stored in the PDF. A scanned PDF stores each page as a picture, with no text behind it, so there is nothing to read. The same goes for scanned pages added to an otherwise normal document. Use <a href=\"/tools/ocr-pdf/\">OCR PDF</a> to recognise the letters in the pictures. Pages with no text are flagged in the page-by-page list."],
+    ["Is the formatting kept?", "No. You get plain text: letters, numbers and line breaks. Fonts, colours, images and page layout are left out. Lines break where they break in the PDF, and a blank line is added where the gap between two lines is bigger than usual, as between paragraphs."],
+    ["How do I join the broken lines into paragraphs?", "Paste the text into <a href=\"/tools/remove-line-breaks/\">Remove line breaks</a>. It joins the lines inside each paragraph, keeps the blank lines between paragraphs and can repair words split by a hyphen at the end of a line."],
+    ["Why is some text in a strange order, or split into odd pieces?", "Text comes out in the order the PDF stores it, which is usually the reading order but not always. Tables, pages with several columns, and PDFs exported from design programs can come out jumbled, and some PDFs store text in pieces that do not match the words you see."],
+    ["Does it work with languages other than English?", "Yes. The text is read as Unicode, so accented letters, Cyrillic, Greek, Hindi, Chinese and other scripts come out, as long as the PDF has a proper text layer. If a PDF uses an unusual font setup, copying gives garbled characters in any program; running OCR on it is the usual fix."]
+  ],
+  "related": ["ocr-pdf", "extract-pdf-pages", "remove-line-breaks", "word-counter", "pdf-to-jpg", "merge-pdf"],
+  "app_category": "BusinessApplication"
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-pdf drop__mark}}
+  <p class="drop__title">Drop a PDF here</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="application/pdf,.pdf">{{mark:i-plus}}<span data-pick-label>Choose a PDF</span></label>
+  <p class="drop__hint">Or drag it anywhere on this page.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note pt-ocr" id="pt-ocr" hidden></div>
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="scope-l">Pages</span>
+      <div class="seg" role="radiogroup" aria-labelledby="scope-l">
+        <label><input type="radio" name="scope" value="all" checked>All pages</label>
+        <label><input type="radio" name="scope" value="range">Some pages</label>
+      </div>
+    </div>
+    <div class="field" id="range-field" hidden>
+      <label for="range">Page range</label>
+      <input id="range" type="text" placeholder="1-3, 5, 8-" autocomplete="off" spellcheck="false" aria-describedby="range-help">
+      <span class="help" id="range-help"></span>
+    </div>
+    <div class="field">
+      <span class="label">Options</span>
+      <label class="check"><input type="checkbox" id="pt-marks" checked>Mark where each page starts</label>
+    </div>
+  </div>
+  <dl class="stats pt-stats">
+    <div><dt>Pages</dt><dd id="pt-n-pages">0</dd></div>
+    <div><dt>With text</dt><dd id="pt-n-text">0</dd></div>
+    <div><dt>Words</dt><dd id="pt-n-words">0</dd></div>
+    <div><dt>Characters</dt><dd id="pt-n-chars">0</dd></div>
+  </dl>
+  <div class="field">
+    <label for="pt-out">Extracted text</label>
+    <textarea id="pt-out" class="mono pt-out" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary btn--lg" id="pt-dl" type="button">{{mark:i-download}}Download .txt</button>
+    <button class="btn btn--lg" id="pt-copy" type="button">Copy all text</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Start over</button>
+  </div>
+  <h3 class="util-h">Page by page</h3>
+  <div class="calc-table pt-table" tabindex="0" role="region" aria-label="Text found on each page">
+    <table class="dv-table">
+      <thead><tr><th scope="col">Page</th><th scope="col">Words</th><th scope="col">Characters</th><th scope="col"><span class="visually-hidden">Copy</span></th></tr></thead>
+      <tbody id="pt-rows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>Where the text in a PDF comes from</h2>
+<p>A PDF made by a word processor, a browser or a design program stores its words as text: each run of letters comes with a font and a position on the page. That stored text is what this tool reads. Your browser opens the file with pdf.js, asks every page for its text, and puts the runs back into lines in the order the file lists them. It never looks at how the page appears on screen.</p>
+<p>A scanned PDF is different. A scanner or a phone camera produces a picture of each page, and the PDF holds only those pictures, so there is no text to read: you see words, but the file does not contain them. Turning the pictures back into text is a different job called optical character recognition, which <a href="/tools/ocr-pdf/">OCR PDF</a> does. Pages with no text are marked in the list under the text box so you can tell scans from normal pages in a mixed file.</p>
+<p>The result is plain text with no formatting. Lines end where they end in the PDF, and a blank line is added where the gap between two lines is clearly bigger than the usual spacing on that page, which is how paragraphs and headings are separated. The ligatures that some fonts use for pairs such as fi and fl are turned back into separate letters, and invisible soft hyphens are dropped.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Scanned pages show up as pages with no text. Run <a href="/tools/ocr-pdf/">OCR PDF</a> on them and read the result.</li>
+  <li>Paste the text into <a href="/tools/remove-line-breaks/">Remove line breaks</a> to turn the stacked lines into flowing paragraphs.</li>
+  <li>Need only some pages as a PDF? <a href="/tools/extract-pdf-pages/">Extract pages</a> cuts them out, and <a href="/tools/word-counter/">Word counter</a> counts what you copied.</li>
+</ul>

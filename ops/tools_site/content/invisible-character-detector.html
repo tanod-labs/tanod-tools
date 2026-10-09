@@ -1,0 +1,92 @@
+<!--meta
+{
+  "category": "text",
+  "name": "Invisible character detector",
+  "title": "Invisible character & ASCII smuggling decoder | Tanod Tools",
+  "description": "Find zero-width, bidi and Unicode tag characters, decode hidden ASCII text and spot lookalike words. Copy a cleaned version. Free, in your browser.",
+  "h1": "Invisible character detector and ASCII smuggling decoder",
+  "lede": "Paste text to find the characters you cannot see, and to read any text hidden in invisible Unicode tag characters: zero-width spaces, text-direction controls, hidden Unicode tag characters and words that mix Latin letters with look-alike Cyrillic or Greek ones.",
+  "blurb": "Find invisible Unicode, decode hidden ASCII text and spot lookalike words.",
+  "keywords": "invisible character detector ascii smuggling decoder zero width space finder hidden unicode characters bidi trojan source unicode tag characters ascii smuggling prompt injection homoglyph cyrillic lookalike remove zero width characters",
+  "local_text": "Runs in your browser; nothing you type leaves your device",
+  "limits": "Text up to a few million characters. The check looks at Unicode code points, so it finds hidden characters but cannot tell whether a particular one is harmless in your text. Real emoji sequences, such as flags and family emoji, are not flagged.",
+  "howto_title": "How to find invisible characters",
+  "howto": [
+    "Paste the text you want to check, or choose <em>Load an example</em> to see what the tool finds.",
+    "Read the counts for each kind of character, the highlighted text and the table with the line, column and code point of every hit.",
+    "Choose <em>Copy cleaned text</em> to get the text with the invisible characters removed."
+  ],
+  "faq": [
+    ["What are zero-width characters?", "They are characters that take no space on screen, such as the zero width space (U+200B), the zero width non-joiner (U+200C), the word joiner (U+2060) and the byte order mark (U+FEFF). They sneak into text copied from web pages and chat apps, and they can break searches, passwords, code and file names without any visible sign. The joiner and non-joiner are also used on purpose in some scripts, such as Persian and Hindi, so check before you remove them."],
+    ["What is a Trojan Source attack?", "Unicode has controls that change the direction text is displayed in, such as the right-to-left override (U+202E). In source code they can make a line look different from what a compiler reads, so a harmless-looking comment can hide real code. The tool lists every bidirectional control so you can see them."],
+    ["What are Unicode tag characters and why do they matter?", "The tag characters (U+E0000 to U+E007F) mirror ASCII but display as nothing. Text written with them is invisible to a reader yet can be read by software, including AI assistants, which makes them a way to smuggle hidden instructions into a prompt or a document. The tool decodes each run of tag characters back to the ASCII text it spells and shows it prominently. This is known as ASCII smuggling. A flag of England, Scotland or Wales is made with a few tag characters on purpose, so a complete flag sequence is not flagged."],
+    ["Why is a word marked as mixed-script?", "Cyrillic and Greek have letters that look the same as Latin ones, such as the Cyrillic а and the Latin a. A word that mixes them, like pаypal with a Cyrillic а, can pass for a real name while pointing somewhere else. The tool lists any word that combines Latin letters with Cyrillic, Greek or Armenian ones and shows which letters do not belong."],
+    ["Does it flag emoji?", "No. A zero width joiner between two emoji, as in the family or profession emoji, and the variation selector that follows an emoji are part of how emoji are built, so they are left alone. The same characters in other places, such as between two letters, are reported."],
+    ["Is my text uploaded?", "No. The text is checked in your browser and never leaves your device."]
+  ],
+  "related": ["character-counter", "word-counter", "find-and-replace", "text-diff", "remove-line-breaks", "base64-encode-decode"]
+}
+-->
+<!--tool-->
+<div class="util-stack" id="ic">
+  <div class="field">
+    <label for="ic-in">Text to check</label>
+    <textarea id="ic-in" class="mono ic-in" rows="8" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste text here"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="ic-example" type="button">Load an example</button>
+    <button class="btn btn--quiet" id="ic-clear" type="button" disabled>Clear</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+  <p class="tt__report" id="ic-report" aria-live="polite">Paste text to check it.</p>
+  <div class="ic-decoded" id="ic-decoded" hidden>
+    <h3 class="util-h" id="ic-dec-h">Hidden text decoded from tag characters</h3>
+    <p class="help">These invisible characters spell the readable text below. Treat it as untrusted, especially if the text is going to an AI assistant.</p>
+    <ul class="ic-dec-list" id="ic-dec-list" aria-labelledby="ic-dec-h"></ul>
+  </div>
+  <dl class="stats ic-stats">
+    <div><dt>Zero-width characters</dt><dd id="ic-n-zero-width">0</dd></div>
+    <div><dt>Text-direction controls</dt><dd id="ic-n-bidi">0</dd></div>
+    <div><dt>Unicode tag characters</dt><dd id="ic-n-tag">0</dd></div>
+    <div><dt>Control characters</dt><dd id="ic-n-control">0</dd></div>
+    <div><dt>Other invisible characters</dt><dd id="ic-n-invisible">0</dd></div>
+    <div><dt>Unusual spaces</dt><dd id="ic-n-space">0</dd></div>
+    <div><dt>Mixed-script words</dt><dd id="ic-n-mixed">0</dd></div>
+  </dl>
+  <div class="util-stack" id="ic-out" hidden>
+    <h3 class="util-h">Highlighted text</h3>
+    <div class="ic-view mono" id="ic-view" tabindex="0" role="region" aria-label="Text with hidden characters marked"></div>
+    <h3 class="util-h">Cleaned text</h3>
+    <div class="util-checks">
+      <label class="check"><input type="checkbox" id="ic-spaces">Also turn unusual spaces into normal spaces</label>
+    </div>
+    <div class="field">
+      <label for="ic-clean">Text with the invisible characters removed</label>
+      <textarea id="ic-clean" class="mono" rows="5" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="ic-copy" type="button">{{mark:i-copy}}Copy cleaned text</button>
+    </div>
+    <h3 class="util-h">Findings</h3>
+    <div class="ic-table" tabindex="0" role="region" aria-label="Table of findings">
+      <table class="dv-table">
+        <thead><tr><th scope="col">Line:column</th><th scope="col">Character no.</th><th scope="col">Code point</th><th scope="col">What it is</th><th scope="col">Kind</th></tr></thead>
+        <tbody id="ic-rows"></tbody>
+      </table>
+    </div>
+    <p class="help" id="ic-more"></p>
+  </div>
+</div>
+<!--explain-->
+<h2>How hidden characters are found</h2>
+<p>Unicode defines many characters that print nothing: zero-width spaces and joiners, marks that flip the direction of text, soft hyphens, spaces of unusual widths and the tag characters that mirror ASCII. They are useful in the right place and a nuisance or a weapon in the wrong one. This tool reads your text one code point at a time and sorts each hit into a kind, so you can see what is there before you decide what to do about it.</p>
+<p>Seven kinds are reported. <strong>Zero-width characters</strong> include the zero width space, the joiners and the byte order mark. <strong>Text-direction controls</strong> are the embeddings, overrides, isolates and marks used in Trojan Source attacks on source code. <strong>Unicode tag characters</strong> are the U+E0000 block, used to smuggle invisible instructions into text for AI assistants; each run is decoded so you can read the ASCII it spells. <strong>Control characters</strong> are the C0 and C1 codes other than tab and line breaks. <strong>Other invisible characters</strong> cover the soft hyphen, invisible math operators, fillers and variation selectors, and <strong>unusual spaces</strong> are the no-break space, the em and en spaces and the ideographic space. Finally, <strong>mixed-script words</strong> are words that combine Latin letters with Cyrillic, Greek or Armenian ones, the usual way of faking a domain name or a username.</p>
+<p>Zero-width spaces turn up in AI-generated text too. Chat assistants and text pipelines sometimes leave zero-width spaces or joiners in their output, and the same characters can be used as an invisible watermark, so a pasted answer may carry more than you can see. Running the text through this check shows exactly what is hidden in it.</p>
+<p>Some of these characters belong in real text, so the tool leaves them alone where they do. A complete flag of England, Scotland or Wales (a black flag followed by a few tag letters and a cancel tag), a zero width joiner between two emoji, and an emoji presentation selector after an emoji are all normal. A joiner or non-joiner inside Persian, Hindi or Arabic words is also normal but is reported, because the tool cannot tell the language of your text.</p>
+<p>The cleaned copy removes zero-width, direction, tag, control and other invisible characters. It never changes mixed-script words, because replacing a letter would change the text; fix those by hand after checking the highlighted word.</p>
+<h3>Tips</h3>
+<ul>
+  <li>Count what is left with the <a href="/tools/character-counter/">character counter</a>, which counts characters, bytes and lines.</li>
+  <li>Compare the original with the cleaned text in <a href="/tools/text-diff/">Compare text</a>.</li>
+  <li>To remove one specific character everywhere, use <a href="/tools/find-and-replace/">Find and replace</a>.</li>
+</ul>

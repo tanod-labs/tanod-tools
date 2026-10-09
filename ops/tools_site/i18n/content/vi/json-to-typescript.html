@@ -1,0 +1,82 @@
+<!--meta
+{
+  "title": "Chuyển JSON sang interface TypeScript | Tanod Tools",
+  "description": "Dán mẫu JSON và nhận interface hoặc type TypeScript, với đối tượng lồng nhau được đặt tên, trường tùy chọn và union cho mảng hỗn hợp. Chạy trong trình duyệt.",
+  "h1": "JSON sang TypeScript",
+  "lede": "Biến một tài liệu JSON mẫu thành interface hoặc type alias TypeScript, với các trường tùy chọn và union được suy ra từ dữ liệu của bạn.",
+  "blurb": "Mẫu JSON thành interface hoặc type TypeScript.",
+  "keywords": "json sang typescript json sang ts tạo interface tạo type từ json kiểu dữ liệu phản hồi api json to typescript json to ts interface generator type generator quicktype json2ts typescript types from json",
+  "limits": "Kiểu được suy ra từ mẫu bạn dán, nên chúng mô tả mẫu đó chứ không phải một schema: một trường là chuỗi trong ví dụ của bạn có thể là số ở nơi khác. Mọi số đều là <code>number</code>, và ngày tháng vẫn là <code>string</code>. Thứ tự thuộc tính theo JSON.parse, vốn liệt kê các khóa là số nguyên lên trước.",
+  "howto_title": "Cách tạo TypeScript từ JSON",
+  "howto": [
+    "Dán một phản hồi hoặc tệp JSON vào ô. Nhiều phần tử trong mảng giúp kết quả tốt hơn, vì các trường thiếu ở một số phần tử sẽ trở thành tùy chọn.",
+    "Đặt tên cho kiểu cấp cao nhất, chọn <code>interface</code> hoặc <code>type</code>, và đánh dấu <strong>export</strong>, <strong>readonly</strong> hoặc nhận diện trường tùy chọn nếu cần.",
+    "Sao chép các khai báo hoặc tải xuống dưới dạng tệp <code>.ts</code>. Hãy xem lại các tên, vì chúng lấy từ tên khóa của bạn."
+  ],
+  "faq": [
+    ["Công cụ quyết định một trường là tùy chọn như thế nào?", "Khi bạn có một mảng đối tượng, các đối tượng được gộp thành một dạng duy nhất. Khóa xuất hiện ở một số phần tử nhưng không phải tất cả sẽ có dấu <code>?</code>. Khóa có mặt nhưng chứa <code>null</code> ở một số phần tử thì không phải là tùy chọn; nó trở thành <code>T | null</code>. Hãy tắt nhận diện trường tùy chọn nếu bạn muốn mọi khóa đều bắt buộc."],
+    ["Các kiểu lồng nhau được đặt tên như thế nào?", "Mỗi đối tượng lồng nhau được đặt tên theo khóa của nó ở dạng PascalCase, nên <code>billing_address</code> trở thành <code>BillingAddress</code>. Với mảng, kiểu phần tử bỏ chữ \"s\" ở cuối khi khóa dài hơn 3 chữ cái và không kết thúc bằng ss, us hoặc is: <code>users</code> cho <code>User</code>, còn <code>address</code> cho <code>AddressItem</code>. Nếu hai dạng khác nhau muốn cùng một tên, dạng thứ hai được đánh số, cho ra <code>User</code> và <code>User2</code>."],
+    ["Các đối tượng có cùng dạng thì sao?", "Chúng dùng chung một khai báo. Nếu <code>billing</code> và <code>shipping</code> đều chứa <code>{ street, city }</code>, bạn nhận một interface, đặt tên theo nơi nó xuất hiện đầu tiên. Hai đối tượng có cùng khóa nhưng kiểu giá trị khác nhau là hai dạng khác nhau và được đặt tên riêng."],
+    ["Vì sao mảng rỗng có kiểu unknown[]?", "Một mảng rỗng không chứa ví dụ nào, nên không thể suy ra gì về các phần tử của nó. <code>unknown[]</code> là câu trả lời trung thực; hãy tự sửa khi bạn biết kiểu phần tử. Mảng trộn nhiều loại giá trị trở thành một union, chẳng hạn <code>(string | number)[]</code>."],
+    ["Kết quả có thể khác với API thật không?", "Có. Một mẫu chỉ cho thấy các giá trị nó chứa. Một trường luôn có trong mẫu của bạn nhưng đôi khi thiếu trên môi trường thật sẽ là bắt buộc ở đây, và một chuỗi kiểu enum sẽ chỉ là <code>string</code> thuần. Để kiểm tra chặt chẽ, hãy dùng schema; để bắt đầu nhanh, hãy dùng kết quả này rồi điều chỉnh."],
+    ["JSON của tôi có bị tải lên không?", "Không. Không có gì bạn dán bị gửi đi; việc chuyển đổi chạy trong trình duyệt của bạn, và bạn có thể ngắt kết nối mạng sau khi trang đã tải."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack">
+  <div class="j2t">
+    <div class="field">
+      <label for="t-in">Mẫu JSON</label>
+      <textarea id="t-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" aria-describedby="t-info">{
+  "id": 1042,
+  "email": null,
+  "tags": ["admin", "beta"],
+  "address": { "city": "London", "geo": { "lat": 51.5, "lng": -0.12 } },
+  "orders": [
+    { "sku": "A-1", "qty": 2, "gift": true },
+    { "sku": "B-7", "qty": 1 }
+  ]
+}</textarea>
+    </div>
+    <div class="field">
+      <span class="label" id="t-out-l">TypeScript</span>
+      <pre class="out util-json j2t__out" id="t-out" tabindex="0" aria-labelledby="t-out-l"></pre>
+    </div>
+  </div>
+  <p class="tt__report" id="t-info" aria-live="polite"></p>
+  <div class="opts">
+    <div class="field">
+      <label for="t-root">Tên kiểu cấp cao nhất</label>
+      <input type="text" id="t-root" class="mono" value="Root" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </div>
+    <div class="field">
+      <span class="label" id="t-style-l">Khai báo bằng</span>
+      <div class="seg" role="radiogroup" aria-labelledby="t-style-l">
+        <label><input type="radio" name="t-style" value="interface" checked>interface</label>
+        <label><input type="radio" name="t-style" value="type">type</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Bổ ngữ</span>
+      <label class="check"><input type="checkbox" id="t-export" checked>Thêm <code>export</code></label>
+      <label class="check"><input type="checkbox" id="t-readonly">Đánh dấu thuộc tính là <code>readonly</code></label>
+      <label class="check"><input type="checkbox" id="t-optional" checked>Nhận diện trường tùy chọn</label>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="t-copy" type="button">Sao chép TypeScript</button>
+    <button class="btn" id="t-dl" type="button">Tải xuống .ts</button>
+  </div>
+</div>
+<!--explain-->
+<h2>Suy ra kiểu từ một mẫu JSON</h2>
+<p>Kiểu TypeScript mô tả hình dạng của dữ liệu, và một phản hồi JSON đã chứa sẵn một hình dạng: mỗi khóa, loại giá trị phía sau nó, và cách các đối tượng lồng nhau. Bộ chuyển đổi duyệt qua mẫu và ghi hình dạng đó thành các khai báo, nên bạn không phải gõ tay bốn mươi trường trước khi có thể gọi một API một cách tự tin.</p>
+<p>Bước quan trọng nhất là cách xử lý mảng. Mọi phần tử trong mảng đối tượng đều được đọc và các dạng của chúng được gộp lại: khóa có mặt ở mọi phần tử vẫn bắt buộc, khóa chỉ có ở một số phần tử trở thành tùy chọn, và các giá trị khác loại nhau trở thành một union. Đó là lý do một mẫu có nhiều bản ghi cho ra kiểu tốt hơn nhiều so với mẫu chỉ có một. Giá trị <code>null</code> được xử lý khác với khóa bị thiếu, vì hai trường hợp này có nghĩa khác nhau đối với đoạn mã đọc trường đó.</p>
+<p>Kiểu được suy ra chỉ là điểm khởi đầu, không phải một hợp đồng. Chúng không thể biết rằng một chuỗi luôn là một trong ba giá trị, rằng một số thực ra là ID nguyên, hay rằng một trường có mặt trong mọi ví dụ của bạn có thể biến mất trên môi trường thật. Hãy đọc kết quả, đổi tên những chỗ nghe vụng về và siết chặt các kiểu quan trọng.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Hãy kiểm tra mẫu của bạn đúng cú pháp trước bằng <a href="/tools/json-formatter/">Định dạng và kiểm tra JSON</a>, công cụ chỉ ra chính xác ký tự gây lỗi cú pháp.</li>
+  <li>Đang làm việc với cấu hình YAML? Chuyển đổi bằng <a href="/tools/yaml-to-json/">YAML sang JSON</a> rồi dán kết quả vào đây.</li>
+  <li>Cần xem nội dung của một payload token trước khi định kiểu? Giải mã bằng <a href="/tools/jwt-decoder/">Giải mã JWT</a>.</li>
+</ul>

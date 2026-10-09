@@ -1,5 +1,5 @@
-import { $, el, copyText, setStatus, announce, tx, txn, txf, EN, fmtNum, listText } from "./core.js?v=5";
-import { randIndex, shuffle, sampleIndices } from "./randcore.js?v=5";
+import { $, el, copyText, setStatus, announce, tx, txn, txf, EN, fmtNum, listText } from "./core.js?v=11";
+import { randIndex, shuffle, sampleIndices } from "./randcore.js?v=11";
 
 const SIZE = 800;            // canvas drawing size; CSS scales it down
 const LABEL_LIMIT = 100;     // above this many names the wheel is drawn without labels

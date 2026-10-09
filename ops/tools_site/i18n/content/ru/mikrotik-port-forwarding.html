@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Проброс портов и hairpin NAT для MikroTik | Tanod Tools",
+  "description": "Правила dst-nat для RouterOS по TCP и UDP, при необходимости с hairpin NAT и ограничением по источнику. С проверкой и комментариями, в браузере.",
+  "h1": "Генератор проброса портов MikroTik",
+  "lede": "Перечислите порты, которые нужно открыть, и серверы за ними, и получите правила dst-nat для RouterOS v7 с hairpin NAT, чтобы клиенты локальной сети тоже могли обращаться по публичному адресу.",
+  "blurb": "Правила dst-nat для TCP и UDP с hairpin NAT.",
+  "keywords": "проброс портов mikrotik микротик dst-nat destination nat routeros port forward hairpin nat nat loopback dstnat to-addresses to-ports открыть порт mikrotik rdp камера видеорегистратор",
+  "local_text": "Работает в браузере; введённые вами данные не покидают устройство",
+  "limits": "Создаёт синтаксис RouterOS v7 (подходит и для v6) для IPv4. Порты и адреса проверяются, но на вашем маршрутизаторе не тестируются. MikroTik и RouterOS являются товарными знаками SIA Mikrotīkls. Этот инструмент независим и не связан с MikroTik и не одобрен компанией.",
+  "howto_title": "Как пробросить порт на маршрутизаторе MikroTik",
+  "howto": [
+    "Выберите, как правило будет распознавать трафик к вашему публичному адресу: по списку интерфейсов WAN, по фиксированному публичному IP или по любому из адресов маршрутизатора.",
+    "Добавьте строку для каждой службы: протокол, публичный порт, IP внутреннего сервера и, если он отличается, внутренний порт.",
+    "Включите hairpin NAT, если клиенты локальной сети должны обращаться к службе по её публичному адресу, затем скопируйте скрипт или скачайте файл .rsc."
+  ],
+  "faq": [
+    ["Почему проброс порта не работает из локальной сети?", "Клиент локальной сети отправляет пакет на ваш публичный IP, маршрутизатор подменяет адрес назначения на адрес сервера, а сервер отвечает клиенту напрямую, потому что оба находятся в одной подсети. Клиент ждал ответ с публичного IP и отбрасывает такой пакет. Hairpin NAT маскирует этот трафик между узлами локальной сети, и ответ возвращается через маршрутизатор. Это работает, только если правило dst-nat привязано к публичному адресу, а не к интерфейсу WAN, потому что пакет приходит на интерфейс LAN."],
+    ["Что указывать в правиле: in-interface или dst-address?", "Список интерфейсов WAN проще всего и переживает смену публичного IP, но с ним нельзя сделать hairpin NAT. Правило по dst-address работает с hairpin, но его нужно обновлять при смене IP. Вариант dst-address-type=local срабатывает на любой адрес маршрутизатора, то есть подходит и для динамических IP, и для hairpin; но есть нюанс: эти порты перехватываются и на локальном адресе самого маршрутизатора."],
+    ["Нужно ли ещё и правило в firewall filter?", "С конфигурацией MikroTik по умолчанию нет: её цепочка forward отбрасывает новые соединения из WAN, только если они «not DSTNATed», поэтому проброшенные соединения проходят. Если вы написали более строгую цепочку forward, добавьте accept для connection-nat-state=dstnat перед финальным drop."],
+    ["Как пробросить диапазон портов?", "Введите диапазон, например 50000-50100, или список, например 80,443, а внутренний порт оставьте пустым. Порты пробрасываются без изменений. Трансляция порта (публичный 8443 во внутренний 443) работает для одиночных портов."],
+    ["Безопасно ли пробрасывать RDP, SSH или Winbox?", "Открытые на весь интернет службы удалённого доступа провоцируют попытки подбора пароля. Укажите разрешённые сети-источники, чтобы ограничить проброс известными адресами, или лучше спрячьте службу за VPN, например WireGuard."],
+    ["Отправляется ли моя конфигурация куда-либо?", "Нет. Правила создаёт JavaScript на этой странице, и ничего из введённого вами не загружается, не хранится и не записывается в журналы."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="pf">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Распознавать трафик к</legend>
+      <div class="seg" role="radiogroup" aria-label="Распознавать трафик к">
+        <label><input type="radio" name="pf-mode" value="list" checked>Список WAN</label>
+        <label><input type="radio" name="pf-mode" value="iface">Интерфейс WAN</label>
+        <label><input type="radio" name="pf-mode" value="ip">Публичный IP</label>
+        <label><input type="radio" name="pf-mode" value="local">Любой адрес маршрутизатора</label>
+      </div>
+      <div class="field" id="pf-wan-f">
+        <label for="pf-wan" id="pf-wan-l">Список интерфейсов WAN</label>
+        <input type="text" id="pf-wan" class="mono" value="WAN" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field" id="pf-ip-f" hidden>
+        <label for="pf-ip">Публичный IP-адрес</label>
+        <input type="text" id="pf-ip" class="mono" value="203.0.113.10" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="decimal">
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Пробросы</legend>
+      <ul class="ros-rows" id="pf-rows"></ul>
+      <button class="btn btn--sm ros-add" id="pf-add" type="button">{{mark:i-plus}}Добавить проброс</button>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Параметры</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="pf-hair">Hairpin NAT (доступ к службе из локальной сети по её публичному адресу)</label>
+      </div>
+      <div class="field" id="pf-lan-f" hidden>
+        <label for="pf-lan">Подсети локальной сети</label>
+        <input type="text" id="pf-lan" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="field">
+        <label for="pf-src">Разрешённые сети-источники</label>
+        <input type="text" id="pf-src" class="mono" value="" placeholder="198.51.100.0/24" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="pf-src-h">
+        <span class="help" id="pf-src-h">Необязательно. Оставьте пустым, чтобы принимать соединения откуда угодно.</span>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="pf-out" class="label">Скрипт RouterOS v7</label>
+    <textarea id="pf-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="pf-copy" type="button">Копировать скрипт</button>
+      <button class="btn" id="pf-dl" type="button">{{mark:i-download}}Скачать .rsc</button>
+    </div>
+    <ul class="ros-notes" id="pf-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Как работает проброс портов в RouterOS</h2>
+<p>Проброс порта — это правило <code>dst-nat</code> в цепочке <code>dstnat</code> раздела <code>/ip firewall nat</code>. Когда приходит новое соединение, подходящее под правило (протокол, порт назначения и либо интерфейс WAN, либо ваш публичный адрес), RouterOS подменяет адрес назначения на адрес внутреннего сервера и, при необходимости, порт. Отслеживание соединений запоминает трансляцию, поэтому ответы подменяются обратно автоматически; отдельное правило для обратного трафика не нужно.</p>
+<p>Трансляция выполняется до того, как пакет попадает в цепочку forward фильтра. Поэтому стандартное правило forward у MikroTik отбрасывает новые соединения из WAN, только если <code>connection-nat-state=!dstnat</code>: соединение, преобразованное правилом dst-nat, получает пометку dstnat и пропускается, а всё остальное из интернета отбрасывается.</p>
+<h3>Hairpin NAT</h3>
+<p>Когда компьютер в локальной сети обращается к публичному адресу сервера, который тоже находится в локальной сети, правило dst-nat направляет пакет на сервер, но сервер видит частный адрес клиента и отвечает ему напрямую. Клиент получает ответ от адреса, с которым не связывался, и отбрасывает его. Правило hairpin маскирует трафик из подсети локальной сети к серверу, поэтому сервер отвечает маршрутизатору, а тот переводит ответ обратно. Плата за это: в журналах сервера клиенты локальной сети выглядят как адрес маршрутизатора. Запись split-horizon DNS, которая указывает имя на внутренний адрес, вообще обходится без NAT и нередко оказывается более чистым решением.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Проверьте, что файрвол отбрасывает всё, что нужно, с помощью инструмента <a href="/tools/mikrotik-firewall-auditor/">Аудит файрвола MikroTik</a>.</li>
+  <li>Удалённый доступ безопаснее через VPN; <a href="/tools/mikrotik-wireguard-generator/">Генератор WireGuard для MikroTik</a> настроит его несколькими строками.</li>
+  <li>Нужно ограничить проброс многими сетями-источниками? Соберите список в инструменте <a href="/tools/mikrotik-address-list-generator/">Генератор Address List для MikroTik</a>.</li>
+</ul>

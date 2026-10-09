@@ -1,0 +1,89 @@
+<!--meta
+{
+  "title": "Koduj i dekoduj URL online oraz analizator adresów | Tanod Tools",
+  "description": "Koduj procentowo lub dekoduj tekst dla adresów URL: komponent, pełny adres lub dane formularza, z obsługą UTF-8 i czytelnymi błędami. Dzieli też URL na części.",
+  "h1": "Koduj i dekoduj URL",
+  "lede": "Zakoduj tekst procentowo do adresu URL albo go odkoduj, a dowolny adres URL podziel na części i parametry zapytania.",
+  "blurb": "Koduj procentowo, dekoduj i analizuj adresy URL.",
+  "keywords": "urlencode urldecode kodowanie procentowe encodeuricomponent ciąg zapytania parametry uri zakoduj url odkoduj url percent encoding query string escape",
+  "limits": "Tekst do około 5 MB. Wyniki odświeżają się w trakcie wpisywania.",
+  "howto_title": "Jak zakodować lub odkodować adres URL",
+  "howto": [
+    "Wybierz Koduj lub Dekoduj, a potem określ, czym jest tekst: pojedynczą wartością (komponentem), całym adresem URL czy danymi formularza.",
+    "Wpisz lub wklej tekst. Wynik pojawia się poniżej w trakcie wpisywania; uszkodzony znak specjalny jest zgłaszany wraz z pozycją.",
+    "Skopiuj wynik albo wklej pełny adres URL do analizatora niżej, aby zobaczyć jego host, ścieżkę i parametry zapytania."
+  ],
+  "faq": [
+    ["Czym różni się kodowanie komponentu od kodowania całego adresu URL?", "Kodowanie komponentu (<code>encodeURIComponent</code> w JavaScripcie) zamienia na sekwencje wszystko poza literami, cyframi i znakami <code>- _ . ! ~ * ' ( )</code>, więc znaki takie jak <code>/ ? &amp; =</code> stają się <code>%2F %3F %26 %3D</code>. Używaj go do pojedynczej wartości zapytania lub segmentu ścieżki. Kodowanie całego adresu URL (<code>encodeURI</code>) zostawia znaki nadające adresowi strukturę i zamienia tylko spacje, litery spoza ASCII i kilka innych, więc cały adres pozostaje użyteczny."],
+    ["Kiedy użyć kodowania formularza?", "Kodowanie formularza (<code>application/x-www-form-urlencoded</code>) to to, co wysyła formularz HTML i czego używa większość ciągów zapytania. Zapisuje spację jako <code>+</code> i zamienia wszystko poza literami, cyframi i znakami <code>* - . _</code>. Przy dekodowaniu w tym trybie <code>+</code> jest odczytywany jako spacja; w pozostałych trybach pozostaje plusem."],
+    ["Jak kodowane są litery z akcentami i emoji?", "Jako bajty UTF-8, każdy zapisany jako <code>%</code> i dwie cyfry szesnastkowe, czego oczekują przeglądarki i serwery. Na przykład é staje się <code>%C3%A9</code>. Dekodowanie sprawdza, czy bajty tworzą poprawny UTF-8, i informuje, jeśli nie."],
+    ["Dlaczego dekodowanie zgłasza błąd?", "Po każdym znaku procentu muszą następować dwie cyfry szesnastkowe (0-9, A-F). Zabłąkany znak <code>%</code>, ucięta sekwencja, taka jak <code>%A</code>, albo bajty niebędące poprawnym UTF-8 są zgłaszane wraz z pozycją, aby można je było znaleźć. Jeśli tekst zawiera dosłowny znak procentu, należy zapisać go jako <code>%25</code>."],
+    ["Czy analizator URL odwiedza adres?", "Nie. Korzysta z wbudowanego w przeglądarkę parsera adresów URL do podziału tekstu na części; nic nie jest pobierane ani nigdzie wysyłane. Wpisany tekst zostaje w tej karcie."],
+    ["Czy należy kodować cały adres URL więcej niż raz?", "Nie. Kodowanie już zakodowanego tekstu zamienia <code>%20</code> w <code>%2520</code>, co jest częstym błędem. Jeśli w wyniku widzisz <code>%25</code> i dwie cyfry szesnastkowe, dane wejściowe prawdopodobnie były już zakodowane; najpierw je odkoduj."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="opts">
+    <div class="field">
+      <span class="label" id="u-dir-l">Kierunek</span>
+      <div class="seg" role="radiogroup" aria-labelledby="u-dir-l">
+        <label><input type="radio" name="dir" value="encode" checked>Koduj</label>
+        <label><input type="radio" name="dir" value="decode">Dekoduj</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="u-kind">Tekst jest</label>
+      <select id="u-kind">
+        <option value="component" selected>Pojedynczą wartością (komponentem)</option>
+        <option value="uri">Całym adresem URL</option>
+        <option value="form">Danymi formularza (spacja jako +)</option>
+      </select>
+      <span class="help" id="u-kind-help"></span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="u-in">Dane wejściowe</label>
+    <textarea id="u-in" class="mono" rows="5" autocomplete="off" spellcheck="false" placeholder="Wpisz lub wklej tutaj, np. żółta kawa &amp; herbata"></textarea>
+  </div>
+  <div class="field">
+    <label for="u-out">Wynik</label>
+    <textarea id="u-out" class="mono" rows="5" readonly></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn btn--primary" id="u-copy" type="button" disabled>{{mark:i-copy}}Kopiuj</button>
+    <button class="btn btn--quiet" id="u-swap" type="button" disabled>Użyj wyniku jako danych wejściowych</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="u-clear" type="button">Wyczyść</button>
+  </div>
+  <div class="status" id="status" role="status" hidden></div>
+
+  <h2 class="util-h">Podziel adres URL na części</h2>
+  <div class="field">
+    <label for="p-in">URL</label>
+    <input type="url" id="p-in" class="mono" autocomplete="off" spellcheck="false" placeholder="https://example.com/search?q=caf%C3%A9&amp;page=2#results">
+    <span class="help" id="p-note" aria-live="polite"></span>
+  </div>
+  <div id="p-out" hidden>
+    <dl class="dv-rows" id="p-rows"></dl>
+    <h3 class="dv-sub" id="p-q-h">Parametry zapytania</h3>
+    <div class="dv-scroll" id="p-q-wrap" tabindex="0" aria-labelledby="p-q-h">
+      <table class="dv-table">
+        <thead><tr><th scope="col">#</th><th scope="col">Nazwa</th><th scope="col">Wartość (odkodowana)</th></tr></thead>
+        <tbody id="p-q"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--explain-->
+<h2>Co robi kodowanie URL</h2>
+<p>Adres URL może zawierać tylko ograniczony zestaw znaków ASCII, a niektóre z nich mają swoją funkcję: <code>/</code> rozdziela segmenty ścieżki, <code>?</code> zaczyna zapytanie, <code>&amp;</code> i <code>=</code> dzielą je na nazwy i wartości, a <code>#</code> zaczyna fragment. Kodowanie procentowe zapisuje każdy inny bajt jako <code>%</code> i dwie cyfry szesnastkowe, dzięki czemu wartość taka jak <code>R&amp;D / 2026</code> może podróżować w ciągu zapytania bez pomylenia jej ze strukturą: <code>R%26D%20%2F%202026</code>.</p>
+<p>Tekst jest najpierw zamieniany na bajty UTF-8, dlatego jedna litera z akcentem staje się dwiema sekwencjami, a emoji czterema. Dekodowanie odwraca ten proces i sprawdza, czy bajty tworzą poprawny UTF-8. To narzędzie dekoduje własnym, ścisłym czytnikiem, więc zamiast ogólnego błędu „URI malformed” mówi, która sekwencja jest uszkodzona i gdzie.</p>
+<p>Trzy tryby odpowiadają trzem typowym sytuacjom. Koduj pojedynczą wartość (komponent), gdy budujesz parametr zapytania lub segment ścieżki. Koduj cały adres URL tylko wtedy, gdy masz kompletny adres ze spacjami lub literami spoza ASCII. Dane formularza stosuj w treści wysyłanego formularza albo w ciągu zapytania zbudowanym tak, jak budują go formularze HTML.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Potrzebujesz czystej, czytelnej ścieżki zamiast sekwencji z procentami? Utwórz ją w narzędziu <a href="/tools/text-to-slug/">Generator slugów</a>.</li>
+  <li>Dane binarne w adresie URL to zwykle Base64url, a nie kodowanie procentowe: wypróbuj <a href="/tools/base64-encode-decode/">Koduj i dekoduj Base64</a>.</li>
+  <li>Token w ciągu zapytania zaczynający się od <code>eyJ</code> to prawdopodobnie JWT. Odczytaj go w narzędziu <a href="/tools/jwt-decoder/">Dekoder JWT</a>.</li>
+</ul>

@@ -1,0 +1,86 @@
+<!--meta
+{
+  "title": "MikroTik PCC yük dengeleme ve failover oluşturucu | Tanod Tools",
+  "description": "2 ile 8 WAN üzerinde özyinelemeli failover, yönlendirme tabloları ve masquerade ile RouterOS v7 PCC yük dengelemesi üretin. Yorumlu, tarayıcıda.",
+  "h1": "MikroTik yük dengeleme ve failover oluşturucu",
+  "lede": "WAN bağlantılarınızı girin; her bloğu açıklanmış, özyinelemeli rota failover'lı RouterOS v7 PCC yük dengelemesi ya da yalnızca failover alın.",
+  "blurb": "Özyinelemeli rota failover'lı, birkaç WAN üzerinde PCC.",
+  "keywords": "mikrotik yük dengeleme pcc per connection classifier çift wan failover özyinelemeli yönlendirme check-gateway ping routeros v7 yönlendirme tablosu mark-routing çoklu wan iki isp load balancing dual wan multi wan",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "RouterOS v7 sözdizimini (fib'li yönlendirme tabloları, rotalarda routing-table) üretir. Yalnızca IPv4. Ağ geçidi DHCP ile değişen WAN'ların ağ geçidinin elle ya da bir DHCP istemcisi betiğiyle güncellenmesi gerekir. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te PCC yük dengelemesi nasıl kurulur",
+  "howto": [
+    "Failover'lı PCC yük dengelemesini veya yalnızca failover'ı seçin.",
+    "Her WAN'ı arayüzü, ağ geçidi (PPPoE ve LTE için arayüz adı), ping'e yanıt veren herkese açık bir kontrol ana bilgisayarı ve bağlantılardan alacağı pay için bir ağırlıkla ekleyin.",
+    "Yerel ağları ve LAN arayüz listesini yazın, WAN istemcilerinde add-default-route seçeneğini kapatın ve betiği Safe Mode açıkken uygulayın."
+  ],
+  "faq": [
+    ["PCC trafiği nasıl bölüştürür?", "per-connection-classifier, her yeni bağlantının alanlarını (iki adres veya adresler ve portlar) N kovaya karma (hash) ile dağıtır ve her WAN bazı kovaları alır. Bağlantı işaretini korur; böylece tüm paketleri aynı WAN'ı kullanır. 2 ağırlığı bir WAN'a iki kova verir; yani ağırlığı 1 olan bir WAN'ın iki katı pay. Bölüşüm bağlantı başınadır, bayt başına değil; dolayısıyla büyük bir indirme yine tek bir bağlantıyı kullanır."],
+    ["Özyinelemeli failover nedir ve neden kullanılır?", "Normal bir varsayılan rotadaki check-gateway=ping yalnızca ISS'nin ilk atlamasını sınar; ISS'nin arkasındaki ağ bozukken bu atlama çoğu zaman ayakta kalır. Burada her WAN, herkese açık bir kontrol ana bilgisayarına bir ana bilgisayar rotası alır ve varsayılan rotalar ağ geçidi yerine bu ana bilgisayarı gösterir. Ana bilgisayar o WAN üzerinden yanıt vermeyi bıraktığında RouterOS, onun üzerinden geçen rotaları devre dışı bırakır ve trafik bir sonraki WAN'a geçer."],
+    ["Kontrol ana bilgisayarları için neden output drop kuralları var?", "Bir WAN'ın bağlantısı koparsa ana bilgisayar rotası kaybolur ve yönlendirici kontrol ana bilgisayarına bunun yerine başka bir WAN üzerinden ulaşırdı; böylece ölü WAN sağlıklı görünürdü. Drop kuralları, her kontrol ana bilgisayarına giden ping'lerin kendi WAN'ı dışındaki hiçbir arayüzden çıkmasını engeller."],
+    ["FastTrack'i kapatmam gerekir mi?", "PCC için evet. Yönlendirme işaretleri her pakete mangle ile uygulanır ve fasttrack'lenen paketler mangle'ı atlar; bu yüzden kendi WAN'larını değil ana tabloyu izlerlerdi. Düz failover, FastTrack açıkken çalışır."],
+    ["RouterOS v6 PCC kılavuzlarına göre ne değişti?", "v6 rotaları routing-mark= kullanıyordu ve işaretler örtük olarak oluşturuluyordu. v7'de her işaret, /routing table altında fib ile oluşturulmuş bir yönlendirme tablosu olmalı ve rotalar ona routing-table= ile başvurur. Mangle hâlâ new-routing-mark kullanır. v6'dan v7'ye geçiş yardımcısı eski rotaları dönüştürür ve tabloları ekler."],
+    ["Yazdığım herhangi bir şey bir yere gönderiliyor mu?", "Hayır. Betik tarayıcınızda üretilir."]
+  ]
+}
+-->
+<!--tool-->
+<div class="ros-gen" id="lb">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>Mod</legend>
+      <div class="seg" role="radiogroup" aria-label="Mod">
+        <label><input type="radio" name="lb-mode" value="pcc" checked>PCC yük dengeleme + failover</label>
+        <label><input type="radio" name="lb-mode" value="failover">Yalnızca failover</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>WAN bağlantıları</legend>
+      <ul class="ros-rows" id="lb-wans"></ul>
+      <button class="btn btn--sm ros-add" id="lb-add" type="button">{{mark:i-plus}}WAN ekle</button>
+      <span class="help">Failover ve yönlendiricinin kendi trafiği için tercih sırasıyla listelenir.</span>
+    </fieldset>
+    <fieldset class="gen-fs" id="lb-pcc-f">
+      <legend>Dengeleme</legend>
+      <div class="opts">
+        <div class="field"><label for="lb-lan">LAN arayüz listesi</label><input type="text" id="lb-lan" class="mono" value="LAN" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="lb-local">Yerel ağlar</label><input type="text" id="lb-local" class="mono" value="192.168.88.0/24" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field">
+          <label for="lb-class">Sınıflandırıcı</label>
+          <select id="lb-class">
+            <option value="both-addresses" selected>both-addresses (istemci ve sunucu başına sabit)</option>
+            <option value="both-addresses-and-ports">both-addresses-and-ports (daha ince dağılım)</option>
+            <option value="src-address">src-address (istemci başına bir WAN)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Seçenekler</legend>
+      <div class="ros-checks">
+        <label class="check"><input type="checkbox" id="lb-fast" checked>FastTrack'i kapat (PCC için gerekli)</label>
+        <label class="check"><input type="checkbox" id="lb-nat" checked>Her WAN'da masquerade</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <p class="ros-safe">{{mark:i-alert}}<span><strong>Dışarıda kalma riski.</strong> Uzaktaki bir yönlendiricide rotaları değiştirmek bağlantınızı kesebilir. Önce bir laboratuvarda deneyin ya da Safe Mode'u açın (terminalde <kbd>Ctrl</kbd>+<kbd>X</kbd>).</span></p>
+    <label for="lb-out" class="label">RouterOS v7 betiği</label>
+    <textarea id="lb-out" class="mono gen-out ros-out" rows="20" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="lb-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="lb-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+    <ul class="ros-notes" id="lb-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>Üretilen kurulum nasıl çalışır</h2>
+<p>PCC yük dengelemesinin üç hareketli parçası vardır. <strong>Mangle</strong>, LAN'dan gelen her yeni bağlantıyı per-connection-classifier'ın seçtiği bir bağlantı işaretiyle işaretler ve bir WAN'a gelen bağlantıları o WAN ile işaretler; böylece port yönlendirmelerinin yanıtları geldikleri yoldan çıkar. İkinci bir mangle kuralları kümesi, her bağlantı işaretini her pakette bir <strong>yönlendirme işaretine</strong> çevirir. WAN başına bir tane olan <strong>yönlendirme tabloları</strong> da o WAN üzerinden bir varsayılan rota tutar; diğer WAN'lar yedek olarak daha yüksek mesafededir.</p>
+<p>Failover <strong>özyinelemeli rotalar</strong> kullanır. Bir ana bilgisayar rotası, herkese açık bir kontrol ana bilgisayarını yalnızca her WAN üzerinden gönderir. Varsayılan rotalar kontrol ana bilgisayarını <code>target-scope=11</code> ile ağ geçidi olarak kullanır; böylece RouterOS onu o ana bilgisayar rotası üzerinden çözümler ve <code>check-gateway=ping</code> kontrol ana bilgisayarına on saniyede bir ping atar. İki yanıtın kaçırılması rotayı düşürür ve sonraki mesafe devralır; ana bilgisayar yeniden yanıt verdiğinde rota geri gelir.</p>
+<h3>Uygulamadan önce</h3>
+<ul>
+  <li>WAN DHCP veya PPPoE istemcilerinde <code>add-default-route=no</code> ayarlayın; yoksa kendi varsayılan rotaları kazanır.</li>
+  <li>Eski bir v6 PCC kurulumunu mu yükseltiyorsunuz? Nelerin değiştiğini görmek için export'unu <a href="/tools/routeros-v7-migration-helper/">RouterOS v6'dan v7'ye geçiş yardımcısı</a>ndan geçirin.</li>
+  <li>Güvenlik duvarının input ve forward zincirlerini yerinde tutun; <a href="/tools/mikrotik-firewall-generator/">MikroTik güvenlik duvarı oluşturucu</a> arayüz listeleri kullanır, bu yüzden her WAN'ı WAN listesine ekleyin.</li>
+</ul>

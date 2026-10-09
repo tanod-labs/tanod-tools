@@ -1,0 +1,94 @@
+<!--meta
+{
+  "title": "Minutnik z odliczaniem: czas lub data | Tanod Tools",
+  "description": "Bezpłatny minutnik online z gotowymi ustawieniami, dźwiękiem po upływie czasu, czasem w tytule karty i trybem daty do dowolnej chwili w dowolnej strefie czasowej.",
+  "h1": "Minutnik z odliczaniem",
+  "lede": "Ustaw czas trwania i naciśnij start albo odliczaj do daty i godziny w wybranej strefie czasowej i udostępnij link.",
+  "blurb": "Minutnik z gotowymi ustawieniami i alarmem albo odliczanie do daty.",
+  "keywords": "minutnik odliczanie timer zegar budzik pomodoro minutnik kuchenny odliczanie do wydarzenia ile dni do nowego roku termin countdown",
+  "limits": "Czas może wynosić do 99 godzin, 59 minut i 59 sekund. Minutnik działa tylko wtedy, gdy ta strona pozostaje otwarta w karcie; jej zamknięcie zatrzymuje odliczanie i dźwięk.",
+  "howto_title": "Jak korzystać z minutnika",
+  "howto": [
+    "Wpisz godziny, minuty i sekundy albo naciśnij <strong>gotowe ustawienie</strong>, a potem naciśnij <strong>Start</strong>. Tytuł karty pokazuje pozostały czas.",
+    "Wstrzymuj i wznawiaj, ile razy chcesz, albo naciśnij <strong>Resetuj</strong>, aby wrócić do czasu początkowego.",
+    "Aby zamiast tego odliczać do wydarzenia, przełącz na <em>Do daty</em>, wpisz datę, godzinę i strefę oraz skopiuj link do udostępnienia."
+  ],
+  "faq": [
+    ["Czy zachowa dokładność, jeśli przełączę się na inną kartę?", "Tak. Przeglądarki spowalniają liczniki w kartach w tle, więc strona nigdy nie zlicza kolejnych taktów. Porównuje bieżący odczyt zegara z chwilą, w której minutnik ma się zakończyć, dzięki czemu wyświetlacz nadrabia zaległość natychmiast po wyświetleniu karty, a czas zakończenia się nie przesuwa. Alarm w ukrytej karcie może przyjść z opóźnieniem do około sekundy."],
+    ["Czy dźwięk zostanie odtworzony?", "Alarm to krótki ton wytwarzany przez silnik audio przeglądarki, bez pliku dźwiękowego. Przeglądarki pozwalają na dźwięk dopiero po interakcji ze stroną, więc najpierw naciśnij Start na tej stronie. Jeśli urządzenie jest wyciszone lub karta jest wyciszona, nie usłyszysz go, a komunikat o zakończeniu pozostaje na ekranie. Pole wyboru pozwala wyłączyć dźwięk."],
+    ["Czy minutnik może utrzymać ekran włączony?", "Jest na to opcjonalne pole wyboru. Korzysta z funkcji Wake Lock przeglądarki, którą oferują Chrome, Edge i Safari. Jeśli przeglądarka lub tryb oszczędzania baterii odmówi, strona o tym informuje i działa dalej; samo odliczanie nie jest zakłócone."],
+    ["Jak udostępnić odliczanie do wydarzenia?", "Przełącz na tryb daty, wpisz datę, godzinę i strefę, a potem użyj Kopiuj link. Cel jest zapisany w części adresu po znaku <code>#</code>, na przykład <code>#to=2026-12-31T23:59&amp;tz=Europe/London</code>. Ta część nie jest wysyłana na żaden serwer, gdy ktoś otworzy link, a odbiorca widzi tę samą chwilę według własnego zegara."],
+    ["Co się dzieje przy zmianie czasu?", "W trybie daty czas jest wyliczany dla wybranej strefy na podstawie danych stref czasowych przeglądarki. Jeśli godzina zegarowa jest pomijana, na przykład 02:30 w nocy przestawienia zegarów do przodu, strona przechodzi do równoważnej późniejszej chwili i informuje o tym. Jeśli występuje dwukrotnie, używana jest pierwsza."],
+    ["Dlaczego pokazuje pełną sekundę, zanim dojdzie do zera?", "Wyświetlacz zaokrągla w górę, więc 00:00:01 pozostaje na ekranie przez ostatnią sekundę, a zero pojawia się w chwili upływu czasu, tak jak działa minutnik kuchenny."]
+  ]
+}
+-->
+<!--tool-->
+<div class="util-stack ct">
+  <fieldset class="field">
+    <legend>Odliczaj</legend>
+    <div class="seg">
+      <label><input type="radio" name="ct-mode" value="timer" checked>Przez określony czas</label>
+      <label><input type="radio" name="ct-mode" value="date">Do daty</label>
+    </div>
+  </fieldset>
+
+  <div id="ct-timer" class="util-stack">
+    <div class="ct-digits" id="ct-digits" role="timer" aria-live="off" aria-label="Pozostały czas" data-state="idle">00:05:00</div>
+    <p class="ct-done" id="ct-done" hidden>Czas minął.</p>
+    <div class="ct-hms">
+      <div class="field"><label for="ct-h">Godziny</label><input type="number" id="ct-h" min="0" max="99" value="0" inputmode="numeric"></div>
+      <div class="field"><label for="ct-m">Minuty</label><input type="number" id="ct-m" min="0" value="5" inputmode="numeric"></div>
+      <div class="field"><label for="ct-s">Sekundy</label><input type="number" id="ct-s" min="0" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="ct-presets" role="group" aria-label="Gotowe ustawienia">
+      <button class="btn btn--sm ct-preset" type="button" data-min="1">1 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="5">5 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="10">10 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="15">15 min</button>
+      <button class="btn btn--sm ct-preset" type="button" data-min="25">25 min</button>
+    </div>
+    <p class="help ct-err" id="ct-err" hidden></p>
+    <div class="actions">
+      <button class="btn btn--primary btn--lg" id="ct-start" type="button">Start</button>
+      <button class="btn" id="ct-reset" type="button" disabled>Resetuj</button>
+    </div>
+  </div>
+
+  <div id="ct-date" class="util-stack" hidden>
+    <div class="ct-when">
+      <div class="field"><label for="ct-dd">Data</label><input type="date" id="ct-dd" aria-invalid="false"></div>
+      <div class="field"><label for="ct-dt">Godzina</label><input type="time" id="ct-dt" value="00:00"></div>
+      <div class="field ct-zone"><label for="ct-dz">Strefa czasowa</label><select id="ct-dz"></select></div>
+    </div>
+    <p class="help ct-err" id="ct-date-msg" aria-live="polite"></p>
+    <dl class="stats ct-stats" id="ct-date-box" data-state="none">
+      <div><dt>Dni</dt><dd id="ct-days">-</dd></div>
+      <div><dt>Godziny</dt><dd id="ct-hours">-</dd></div>
+      <div><dt>Minuty</dt><dd id="ct-mins">-</dd></div>
+      <div><dt>Sekundy</dt><dd id="ct-secs">-</dd></div>
+    </dl>
+    <p class="help" id="ct-target"></p>
+    <div class="actions">
+      <button class="btn" id="ct-share" type="button" disabled>Kopiuj link do tego odliczania</button>
+    </div>
+  </div>
+
+  <div class="util-checks">
+    <label class="check"><input type="checkbox" id="ct-mute">Wycisz dźwięk po upływie czasu</label>
+    <label class="check"><input type="checkbox" id="ct-wake">Nie wygaszaj ekranu podczas odliczania</label>
+  </div>
+  <p class="help" id="ct-wake-help"></p>
+  <p class="visually-hidden" id="ct-announce" aria-live="polite"></p>
+</div>
+<!--explain-->
+<h2>Jak minutnik zachowuje dokładność i co robi z nim ukryta karta</h2>
+<p>Oczywisty sposób zbudowania odliczania to odejmowanie jedynki od liczby przy każdym wyzwoleniu jednosekundowego licznika. Jest też błędny. Przeglądarki ograniczają liczniki w kartach w tle do jednego razu na sekundę, a nawet na minutę, a zajęta strona opóźnia je jeszcze bardziej, więc tak odliczany minutnik po cichu się spóźnia. Ta strona zapisuje chwilę, w której minutnik ma się zakończyć, i przy każdym takcie odejmuje od niej bieżący czas, używając zegara monotonicznego dla czasu trwania i zegara ściennego dla dat. Takty decydują tylko o tym, kiedy ekran jest odświeżany.</p>
+<p>Tryb daty pracuje na czasie kalendarzowym, który jest bardziej kłopotliwy. „Północ 1 stycznia w Auckland” to inna chwila niż ten sam odczyt zegara w Londynie, a dwa razy w roku w niektórych strefach godzina jest pomijana lub powtarzana. Strona pyta bazę stref czasowych przeglądarki o dokładne przesunięcie w dniu docelowym, więc odliczanie do lokalnego wydarzenia jest poprawne dla miejsca, w którym ono się odbywa, niezależnie od strefy oglądającego.</p>
+<p>Komunikaty dla czytników ekranu są celowo oszczędne: start, każda pełna minuta, 10 i 5 sekund oraz koniec. Odczytywanie każdej sekundy uniemożliwiłoby korzystanie ze strony z czytnikiem ekranu i nie pomogłoby nikomu, kto widzi cyfry.</p>
+<h3>Wskazówki</h3>
+<ul>
+  <li>Planujesz wydarzenie w różnych regionach? Najpierw porównaj godziny w narzędziu <a href="/tools/time-zone-converter/">Konwerter stref czasowych</a>.</li>
+  <li>Chcesz mierzyć upłynięty czas zamiast pozostałego, z międzyczasami? Użyj narzędzia <a href="/tools/stopwatch/">Stoper</a>.</li>
+  <li>Potrzebujesz odstępu między dwiema datami w dniach, a nie zegara na żywo? Wypróbuj <a href="/tools/date-difference-calculator/">Ile dni między datami</a>.</li>
+</ul>

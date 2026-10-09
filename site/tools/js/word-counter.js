@@ -1,5 +1,5 @@
-import { $, el, live, openTextFile, fmtInt, fmtDec, fmtPct, tx, wireCopy, setStatus, announce } from "./textcore.js?v=5";
-import { analyse, readability, easeLabel, density, fmtTime } from "./wordcore.js?v=5";
+import { $, el, live, openTextFile, fmtInt, fmtDec, fmtPct, tx, wireCopy, setStatus, announce } from "./textcore.js?v=11";
+import { analyse, readability, easeLabel, density, fmtTime } from "./wordcore.js?v=11";
 
 const area = $("#text");
 const status = $("#status");

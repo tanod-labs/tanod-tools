@@ -1,6 +1,6 @@
 // Number base converter: whole numbers of any size (BigInt) between bases 2 to 36, plus two's complement views.
-import { $, el, debounce, copyText, setStatus, UserError, friendlyError, tx, txn, fmtNum, EN } from "./core.js?v=5";
-import { fmtNum as fmtExact } from "./i18n.js?v=5";
+import { $, el, debounce, copyText, setStatus, UserError, friendlyError, tx, txn, fmtNum, EN } from "./core.js?v=11";
+import { fmtNum as fmtExact } from "./i18n.js?v=11";
 
 const MAX_DIGITS = 4096;
 const NAMES = { 2: tx("binary"), 8: tx("octal"), 10: tx("decimal"), 16: tx("hexadecimal") };

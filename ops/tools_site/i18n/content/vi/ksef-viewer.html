@@ -1,0 +1,81 @@
+<!--meta
+{
+  "title": "Xem hóa đơn KSeF: mở XML FA(3) và FA(2) | Tanod Tools",
+  "description": "Mở hóa đơn KSeF của Ba Lan (XML FA(3) hoặc FA(2)) và đọc như hóa đơn bình thường. In, lưu PDF hoặc xuất JSON. Miễn phí, không tải lên.",
+  "h1": "Xem hóa đơn KSeF",
+  "lede": "Mở hóa đơn có cấu trúc từ KSeF của Ba Lan và đọc như một hóa đơn thông thường: bên bán, bên mua, các dòng hàng, nhóm thuế GTGT và thanh toán. XML được đọc trong trình duyệt và không bao giờ được tải lên.",
+  "blurb": "Đọc hóa đơn KSeF của Ba Lan (FA(3), FA(2)) như một hóa đơn bình thường.",
+  "keywords": "xem hóa đơn ksef mở file ksef xml đọc hóa đơn ksef hóa đơn điện tử Ba Lan ksef fa(3) fa(2) xem hóa đơn xml Ba Lan ksef sang pdf ksef viewer przeglądarka faktur ksef faktura ustrukturyzowana",
+  "limits": "Mỗi lần một tệp, tối đa 25 MB; 5.000 dòng hàng đầu tiên được hiển thị. Đọc được các lược đồ KSeF FA(3) và FA(2), kể cả hóa đơn điều chỉnh. Không đọc: tệp đính kèm có cấu trúc của FA(3) (Załącznik), hóa đơn FA_RR và FA(1) cũ hơn. Chỉ để xem: công cụ không kiểm tra hợp lệ hóa đơn và không kết nối với KSeF.",
+  "howto_title": "Cách mở hóa đơn KSeF",
+  "howto": [
+    "Chọn tệp XML hóa đơn bạn đã lưu từ KSeF hoặc từ phần mềm kế toán, hoặc kéo thả vào trang.",
+    "Đọc hóa đơn: bên bán (Podmiot1) và bên mua (Podmiot2), các dòng hàng, thuế GTGT theo thuế suất, các khoản tổng, thanh toán và ghi chú.",
+    "Nhấn <strong>In hoặc lưu thành PDF</strong>, <strong>Tải xuống JSON</strong> hoặc <strong>Hiện XML gốc</strong>."
+  ],
+  "faq": [
+    [
+      "Hóa đơn có được gửi đến KSeF hay tải lên không?",
+      "Không. Trang này không kết nối với KSeF hay bất kỳ máy chủ nào. XML được đọc trong trình duyệt và hiển thị trên trang này, và đóng thẻ là mọi thứ biến mất."
+    ],
+    [
+      "Lấy XML của hóa đơn ở đâu?",
+      "Trong KSeF, bạn có thể tải hóa đơn xuống dưới dạng tệp XML, và các phần mềm kế toán làm việc với KSeF cũng có thể xuất ra. Trang này đọc tệp bạn đã lưu."
+    ],
+    [
+      "FA(3) và FA(2) khác nhau thế nào?",
+      "Chúng là các phiên bản kế tiếp nhau của cùng một lược đồ hóa đơn (phần tử gốc là Faktura). FA(3) là phiên bản dùng từ khi KSeF bắt buộc bắt đầu vào năm 2026; FA(2) là phiên bản trước đó, và các hóa đơn lập theo FA(2) vẫn còn lưu hành. Cả hai đều được đọc ở đây."
+    ],
+    [
+      "Công cụ có vẽ mã QR của KSeF hay bản hiển thị chính thức không?",
+      "Không. Trang này hiển thị nội dung của XML dưới dạng hóa đơn dễ đọc. Nó không tạo mã QR của bản hiển thị chính thức, và độc lập với Bộ Tài chính."
+    ],
+    [
+      "Vì sao một số dòng không có thuế suất thuế GTGT?",
+      "Với các dòng miễn thuế (zw), đảo ngược nghĩa vụ nộp thuế (oo) và không chịu thuế (np), tệp ghi một mã thay cho thuế suất. Mã được hiển thị nguyên dạng, kèm loại thuế GTGT tương ứng."
+    ],
+    [
+      "Hóa đơn điều chỉnh thì sao?",
+      "Hóa đơn điều chỉnh (KOR) liệt kê các dòng hàng như trước và như hiện tại, còn các khoản tổng là phần chênh lệch. Các dòng cũ được đánh dấu Trước khi điều chỉnh. Số hóa đơn được điều chỉnh và số KSeF của nó được hiển thị nếu tệp có ghi."
+    ]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-einvoice drop__mark}}
+  <p class="drop__title">Thả hóa đơn điện tử vào đây</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept=".xml,.pdf,.p7m,text/xml,application/xml,application/pdf">{{mark:i-plus}}<span data-pick-label>Chọn tệp</span></label>
+  <p class="drop__hint">XML, PDF có hóa đơn bên trong (ZUGFeRD, Factur-X) hoặc tệp .p7m đã ký. Hoặc kéo thả vào bất kỳ đâu trên trang này.</p>
+</div>
+<div id="work" hidden>
+  <p class="pdf2-filebar"><strong id="fname"></strong> <span class="help" id="finfo"></span></p>
+  <div class="note ei-match" id="ei-match" hidden></div>
+  <ul class="ei-notes" id="ei-notes" hidden></ul>
+  <div class="actions ei-actions">
+    <button class="btn btn--primary" id="ei-print" type="button">{{mark:i-print}}In hoặc lưu thành PDF</button>
+    <button class="btn" id="ei-json" type="button">{{mark:i-download}}Tải xuống JSON</button>
+    <button class="btn" id="ei-xml" type="button" hidden>Tải xuống XML</button>
+    <button class="btn" id="ei-rawbtn" type="button" aria-expanded="false" aria-controls="ei-raw">Hiện XML gốc</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="clear" type="button">Làm lại từ đầu</button>
+  </div>
+  <div id="ei-invoices" class="ei-invoices"></div>
+  <section class="ei-raw" id="ei-raw" aria-label="XML gốc" hidden>
+    <pre class="out ei-rawtext" id="ei-rawtext" tabindex="0"></pre>
+    <p class="help" id="ei-rawcut" hidden>Ở đây chỉ hiển thị phần đầu của tệp dài. Hãy tải xuống XML để có toàn bộ nội dung.</p>
+  </section>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<!--explain-->
+<h2>KSeF và các hóa đơn của nó</h2>
+<p>KSeF, tức Krajowy System e-Faktur, là hệ thống hóa đơn điện tử quốc gia của Ba Lan do Bộ Tài chính vận hành. Hóa đơn được lập dưới dạng XML có cấu trúc theo lược đồ gọi là FA, và trong năm 2026 hệ thống trở thành bắt buộc đối với doanh nghiệp, theo từng giai đoạn. Tệp XML được lưu trữ và trao đổi mới là hóa đơn; bản dễ đọc chỉ là phần hiển thị của nó. Trang này tạo ra phần hiển thị đó ngay trong trình duyệt từ tệp XML bạn có. Đây là hệ thống của Ba Lan, không phải hệ thống hóa đơn điện tử của Việt Nam.</p>
+<h2>Công cụ hiển thị những gì</h2>
+<p>Bạn thấy bên bán (Podmiot1) và bên mua (Podmiot2) cùng NIP hoặc mã số thuế GTGT EU và địa chỉ, số hóa đơn (P_2), ngày tháng (P_1, P_6), đơn vị tiền tệ, từng dòng hàng với số lượng, đơn vị, đơn giá và thuế suất thuế GTGT, thuế GTGT theo nhóm thuế suất (P_13 và P_14), tổng cộng (P_15), thông tin thanh toán kèm tài khoản ngân hàng, các mô tả bổ sung, phần chân trang và số đăng ký, cùng các dấu hiệu quan trọng: thanh toán tách, đảo ngược nghĩa vụ nộp thuế, kế toán theo thực thu, bên mua tự lập hóa đơn và miễn thuế. Số tiền được hiển thị đúng như trong tệp.</p>
+<p>Công cụ không kiểm tra hợp lệ hóa đơn, không đối chiếu với KSeF và không đọc tệp đính kèm có cấu trúc của FA(3). Nếu hóa đơn lập bằng ngoại tệ, thuế GTGT quy đổi sang PLN được hiển thị bên dưới các khoản tổng.</p>
+<h3>Mẹo</h3>
+<ul>
+  <li>Tải xuống JSON cho bạn hóa đơn dưới dạng dữ liệu thuần, với tên trường tiếng Ba Lan được chuyển thành các thuật ngữ nghiệp vụ của EN 16931.</li>
+  <li>Các định dạng khác cũng mở được ở đây: XRechnung, ZUGFeRD / Factur-X, FatturaPA và Peppol. Trang sẽ gợi ý công cụ xem phù hợp khi bạn mở một trong số đó.</li>
+  <li>Hiện XML gốc hữu ích khi bạn cần một phần tử mà hóa đơn dạng dễ đọc không hiển thị.</li>
+</ul>

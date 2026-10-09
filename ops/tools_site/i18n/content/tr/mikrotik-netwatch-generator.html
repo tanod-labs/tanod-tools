@@ -1,0 +1,104 @@
+<!--meta
+{
+  "title": "MikroTik Netwatch oluşturucu: kesinti uyarıları | Tanod Tools",
+  "description": "Hostlarınızı izleyen ve düştüklerinde ya da döndüklerinde ntfy, Telegram veya e-posta ile uyaran bir RouterOS /tool netwatch betiği oluşturun. Tarayıcıda.",
+  "h1": "MikroTik Netwatch oluşturucu",
+  "lede": "İSS ağ geçidinizi ve diğer ana bilgisayarları yönlendiricinin kendisinden izleyin: ana bilgisayarları listeleyin, aralığı ve bildirim yöntemini seçin; kesinti ve geri dönüş uyarılı, yapıştırmaya hazır bir Netwatch betiği alın.",
+  "blurb": "ntfy, Telegram veya e-posta uyarılı Netwatch girdileri.",
+  "keywords": "mikrotik netwatch oluşturucu routeros tool netwatch up-script down-script ntfy telegram bot e-posta uyarı tool fetch ping izleme iss ağ geçidi kesinti bildirim v7 v6",
+  "local_text": "Tarayıcınızda çalışır; yazdığınız hiçbir şey cihazınızdan çıkmaz",
+  "limits": "IPv4 ana bilgisayarlarına ping atan (v7'de type=icmp, v6'da eski host= biçimi) ve her durum değişiminde bir betik çalıştıran RouterOS /tool netwatch girdileri üretir. Burada yönlendiricinizde denenemez, bu yüzden kullanmadan önce her satırı gözden geçirin. Bot belirteci ve e-posta ayarları yönlendiricide düz metin olarak durur. Netwatch yönlendiricide çalışır ve yönlendiricinin kendisinin çevrimdışı olduğunu bildiremez. MikroTik ve RouterOS, SIA Mikrotīkls'in ticari markalarıdır. Bu araç bağımsızdır; MikroTik ile bağlantılı değildir ve MikroTik tarafından onaylanmamıştır.",
+  "howto_title": "MikroTik'te Netwatch uyarıları nasıl kurulur",
+  "howto": [
+    "İzlenecek ana bilgisayarları her birine bir etiketle listeleyin: önce İSS ağ geçidiniz, sonra 8.8.8.8 ve 1.1.1.1 gibi güvenilir genel adresler.",
+    "Aralığı ve zaman aşımını, RouterOS sürümünüzü (v7 veya v6) ve nasıl haberdar olmak istediğinizi seçin: ntfy konusu, Telegram botu veya e-posta.",
+    "Betiği kopyalayın veya .rsc dosyasını indirin, yönlendiricinin terminaline yapıştırın ve /tool netwatch print ile /log print çıktısını kontrol edin."
+  ],
+  "faq": [
+    [
+      "Netwatch ne yapar?",
+      "Netwatch, belirlediğiniz aralıkla her ana bilgisayara ping atar. Bir ana bilgisayar zaman aşımı içinde yanıt vermeyi bıraktığında kapalı işaretlenir ve down-script bir kez çalışır; yeniden yanıt verdiğinde up-script çalışır. Üretilen betikler günlüğe bir satır yazar ve bir yöntem seçtiyseniz /tool fetch veya /tool e-mail ile mesaj gönderir."
+    ],
+    [
+      "Netwatch neden yönlendiricinin kendisinin çevrimdışı olduğunu bildiremez?",
+      "Netwatch yönlendiricinin bir parçasıdır. Yönlendiricinin elektriği kesilirse, çökerse veya uplink'ini kaybederse betiği çalıştıracak ya da mesajı gönderecek hiçbir şey kalmaz. Bunun için yönlendirici yanıt vermeyi bıraktığında bunu fark eden dışarıdan bir kontrol gerekir. <a href=\"https://tanod.dev/learn/mikrotik-router-offline-alert.html\">Yönlendirici çevrimdışı uyarıları rehberine</a> ve ücretsiz <a href=\"https://tanod.dev/monitor/\">dış heartbeat</a> hizmetine bakın."
+    ],
+    [
+      "İnternet bağlantım koptuğunda DOWN mesajı alır mıyım?",
+      "Çoğu zaman o anda almazsınız. Mesaj aynı yönlendiriciden çıkar; izlenen ana bilgisayar tek uplink'inizin ağ geçidiyse down-script çalışır ama mesaj bağlantı dönene kadar çıkamaz. Ardından UP mesajı bağlantının düzeldiğini bildirir. İkinci bir bağlantıyı ya da LAN'daki bir ana bilgisayarı izlemek, kopan bağlantıya bağlı olmayan uyarılar sağlar."
+    ],
+    [
+      "v7 ve v6 çıktısı arasındaki fark nedir?",
+      "RouterOS v7'de girdiler ping sondasını seçen type=icmp taşır. RouterOS v6'da type parametresi yoktur; girdiler yalnızca host, interval ve timeout kullanır. v7 sürümünüz eskiyse ve type=icmp'yi reddederse onu her satırdan silin."
+    ],
+    [
+      "Etiketlerdeki tırnak, ters eğik çizgi ve dolar işaretleri nasıl işlenir?",
+      "Etiketler ve yönlendirici adı RouterOS dizeleri için kaçışlanır: ters eğik çizgi, çift tırnak, dolar işareti ve soru işaretinin her biri bir ters eğik çizgi alır. Betikler Netwatch girdisinin içinde dize olarak saklanır; bu yüzden kaçışlama iki kez uygulanır: biri mesaj, biri saklanan betik için."
+    ],
+    [
+      "Yapılandırmam veya bot belirtecim bir yere gönderiliyor mu?",
+      "Hayır. Her şey tarayıcınızda üretilir. Betiği yapıştırdıktan sonra bir ana bilgisayarın durumu değiştiğinde ntfy'ye veya Telegram'a bağlanan yönlendiricinin kendisidir."
+    ]
+  ]
+}
+-->
+<!--tool-->
+
+<div class="ros-gen" id="nw">
+  <div class="ros-gen__form">
+    <fieldset class="gen-fs">
+      <legend>İzlenecek ana bilgisayarlar</legend>
+      <ul class="ros-rows" id="nw-hosts"></ul>
+      <button class="btn btn--sm ros-add" id="nw-add" type="button">{{mark:i-plus}}Ana bilgisayar ekle</button>
+      <span class="help">203.0.113.1 yerine İSS ağ geçidinizin adresini yazın.</span>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Süreler ve sürüm</legend>
+      <div class="opts">
+        <div class="field"><label for="nw-interval">Aralık</label><input type="text" id="nw-interval" class="mono" value="30s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-timeout">Zaman aşımı</label><input type="text" id="nw-timeout" class="mono" value="1s" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-router">Yönlendirici adı (mesajlarda görünür)</label><input type="text" id="nw-router" class="mono" value="MikroTik" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="RouterOS sürümü">
+        <label><input type="radio" name="nw-ver" value="v7" checked>RouterOS v7</label>
+        <label><input type="radio" name="nw-ver" value="v6">RouterOS v6</label>
+      </div>
+    </fieldset>
+    <fieldset class="gen-fs">
+      <legend>Bildirim</legend>
+      <div class="seg" role="radiogroup" aria-label="Bildirim yöntemi">
+        <label><input type="radio" name="nw-notify" value="none">Yok (yalnızca günlük)</label>
+        <label><input type="radio" name="nw-notify" value="ntfy" checked>ntfy</label>
+        <label><input type="radio" name="nw-notify" value="telegram">Telegram</label>
+        <label><input type="radio" name="nw-notify" value="email">E-posta</label>
+      </div>
+      <div class="field" id="nw-ntfy-f">
+        <label for="nw-ntfy">ntfy konu URL'si</label>
+        <input type="text" id="nw-ntfy" class="mono" value="https://ntfy.sh/my-router-alerts" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+      <div class="opts" id="nw-telegram-f" hidden>
+        <div class="field"><label for="nw-tg-token">Bot belirteci</label><input type="text" id="nw-tg-token" class="mono" value="" placeholder="123456789:ABC-DEF" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        <div class="field"><label for="nw-tg-chat">Sohbet kimliği</label><input type="text" id="nw-tg-chat" class="mono" value="" placeholder="-1001234567890" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      </div>
+      <div class="field" id="nw-email-f" hidden>
+        <label for="nw-mail-to">Uyarıların gönderileceği adres</label>
+        <input type="text" id="nw-mail-to" class="mono" value="" placeholder="ops@example.com" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </fieldset>
+  </div>
+  <div class="ros-gen__out">
+    <label for="nw-out" class="label">RouterOS betiği</label>
+    <textarea id="nw-out" class="mono gen-out ros-out" rows="18" readonly spellcheck="false" wrap="off"></textarea>
+    <div class="actions">
+      <button class="btn btn--primary" id="nw-copy" type="button">Betiği kopyala</button>
+      <button class="btn" id="nw-dl" type="button">{{mark:i-download}}.rsc indir</button>
+    </div>
+    <ul class="ros-notes" id="nw-notes" aria-live="polite" hidden></ul>
+  </div>
+</div>
+<!--explain-->
+<h2>RouterOS'ta Netwatch</h2>
+<p><code>/tool netwatch</code> altındaki Netwatch, bir ana bilgisayarı her <code>interval</code> süresinde yoklar ve durumunu açık veya kapalı olarak tutar. Bir ana bilgisayar <code>timeout</code> içinde yanıt vermezse kapalı sayılır. Her değişimde RouterOS girdinin <code>down-script</code> veya <code>up-script</code> betiğini çalıştırır; uyarı da burada gönderilir: <code>/tool fetch</code> bir ntfy konusuna gönderir veya Telegram <code>sendMessage</code> URL'sini çağırır, <code>/tool e-mail send</code> ise yönlendiricide zaten yapılandırılmış e-posta ayarlarını kullanır.</p>
+<p>Birden fazla ana bilgisayarı izleyin. Tek bir genel adres, bağlantınızla ilgisi olmayan nedenlerle çökebilir; bu yüzden İSS ağ geçidini iki bağımsız genel adresle eşlemek, sorunun son hatta mı yoksa genel internette mi olduğunu gösterir. Zaman aşımını aralıktan kısa tutun ve çok sayıda ana bilgisayarda çok kısa aralıklardan kaçının.</p>
+<h3>Netwatch'un size söyleyemeyeceği şey</h3>
+<p>Netwatch yönlendiricide çalışır, bu yüzden yönlendiricinin kendisinin çevrimdışı olduğunu bildiremez: elektrik kesintisi, çökme veya ölü bir uplink betiği çalıştıracak hiçbir şey bırakmaz. Bunun için yönlendirici yanıt vermeyi bıraktığında fark eden dışarıdan bir kontrol gerekir. <a href="https://tanod.dev/learn/mikrotik-router-offline-alert.html">Bir MikroTik yönlendirici çevrimdışı olduğunda nasıl uyarı alınır</a> yazısını okuyun ve ücretsiz <a href="https://tanod.dev/monitor/">dış heartbeat</a> hizmetini kullanın. Aynı bağlantılardaki trafiği de yönetiyorsanız, failover'ı kendi kontrol ana bilgisayarlarını kullanan <a href="/tools/mikrotik-load-balancing/">yük dengeleme oluşturucusuna</a> da göz atın.</p>

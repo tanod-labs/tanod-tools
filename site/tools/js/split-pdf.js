@@ -1,6 +1,6 @@
-import { $, $$, el, baseName, runJob, showResults, setStatus, clearNode, debounce, UserError, tx, txn, txf } from "./core.js?v=5";
-import { parseRanges, pagesToNewDoc, saveDoc } from "./pdfcore.js?v=5";
-import { singlePdf } from "./pdfpages.js?v=5";
+import { $, $$, el, baseName, runJob, showResults, setStatus, clearNode, debounce, UserError, tx, txn, txf } from "./core.js?v=11";
+import { parseRanges, pagesToNewDoc, saveDoc } from "./pdfcore.js?v=11";
+import { singlePdf } from "./pdfpages.js?v=11";
 
 const opts = $("#opts");
 const planWrap = $("#plan-wrap");

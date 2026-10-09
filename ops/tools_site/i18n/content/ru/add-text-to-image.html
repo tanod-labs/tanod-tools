@@ -1,0 +1,147 @@
+<!--meta
+{
+  "title": "Добавить текст на изображение онлайн: подписи, мемы | Tanod Tools",
+  "description": "Напишите подпись или водяной знак на фото: шрифт, размер, цвет, контур, тень и плашка. Положение задаётся касанием предпросмотра. Ничего не загружается.",
+  "h1": "Добавить текст на изображение",
+  "lede": "Разместите на картинке подпись, заголовок или водяной знак точно там, где нужно, и сохраните результат в полном размере.",
+  "blurb": "Подпись или водяной знак на фото со стилизованным текстом.",
+  "keywords": "текст на фото надпись на картинке подпись мем водяной знак заголовок наложить текст шрифт caption meme watermark overlay write text on photo",
+  "limits": "Подпись добавляется к одной картинке за раз (до 50 МБ, около 100 мегапикселей). Шрифты: Archivo, Bungee и системные шрифты устройства с засечками, без засечек и моноширинный.",
+  "howto_title": "Как добавить текст на изображение",
+  "howto": [
+    "Выберите изображение и введите текст. Enter переносит строку.",
+    "Выберите шрифт, размер и цвет. Если текст плохо читается, добавьте контур, тень или плашку. Выберите одно из девяти положений или коснитесь предпросмотра, чтобы поместить текст в нужную точку.",
+    "Нажмите <strong>Добавить текст и сохранить</strong>, чтобы получить картинку в исходном размере."
+  ],
+  "faq": [
+    ["Загружается ли моя картинка?", "Нет. Текст рисуется на изображении в вашем браузере, на вашем устройстве. Ничего не отправляется на сервер."],
+    ["В чём измеряется размер текста?", "В процентах от ширины изображения, поэтому текст занимает одинаковую долю картинки и в маленьком предпросмотре, и в файле полного размера. 6 % — читаемая подпись для большинства фото; для заголовка берите 10 % и больше."],
+    ["Как точно разместить текст?", "Выберите одно из девяти положений, а затем сдвиньте текст полями смещения по X и Y в процентах от изображения. Ещё можно коснуться предпросмотра или щёлкнуть по нему, и текст встанет центром в эту точку. Когда предпросмотр в фокусе, клавиши со стрелками сдвигают текст на 0,5 %, а со Shift — на 5 %."],
+    ["Какие шрифты можно использовать?", "Archivo и Bungee загружаются с этого сайта. Шрифты с засечками, без засечек и моноширинный берутся из того, что назначено этим названиям на вашем устройстве, поэтому на другом компьютере могут выглядеть немного иначе. В сохранённой картинке вид остаётся точным, потому что буквы рисуются прямо в пикселях."],
+    ["Сохраняется ли прозрачность в PNG?", "Да. Меняются только пиксели под текстом, контуром, тенью и плашкой, а остальная часть прозрачного PNG остаётся прозрачной. JPEG хранить прозрачность не умеет, поэтому при сохранении в JPEG такие области станут белыми."],
+    ["Можно ли использовать диакритику, другие алфавиты и эмодзи?", "Да, если нужные символы есть в шрифтах вашего устройства. Archivo и Bungee охватывают латиницу с диакритическими знаками. Для других письменностей и эмодзи браузер подставляет шрифт вашего устройства, в котором они есть."]
+  ]
+}
+-->
+<!--tool-->
+<div class="drop" id="drop">
+  {{mark:cat-image drop__mark}}
+  <p class="drop__title">Перетащите сюда изображение</p>
+  <label class="btn btn--primary btn--lg"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif">{{mark:i-plus}}<span data-pick-label>Выбрать изображение</span></label>
+  <p class="drop__hint">PNG, JPEG, WebP, GIF, BMP или AVIF. Или перетащите его в любое место этой страницы.</p>
+</div>
+<div id="editor" hidden>
+  <p class="help num" id="file-meta"></p>
+  <div class="preview txt-stage">
+    <canvas id="preview" tabindex="0" role="img" aria-label="Предпросмотр с вашим текстом. Коснитесь или щёлкните, чтобы разместить текст." aria-describedby="place-help"></canvas>
+  </div>
+  <p class="help" id="place-help">Коснитесь картинки или щёлкните по ней, чтобы поместить текст в эту точку. Когда картинка в фокусе, стрелки сдвигают текст на 0,5 %, а стрелки со Shift — на 5 %.</p>
+  <div class="opts txt-opts">
+    <div class="field txt-opts__wide">
+      <label for="text">Текст</label>
+      <textarea id="text" rows="3" autocomplete="off" spellcheck="false" placeholder="Ваша подпись">Ваша подпись</textarea>
+    </div>
+    <div class="field">
+      <label for="font">Шрифт</label>
+      <select id="font">
+        <option value="archivo" selected>Archivo</option>
+        <option value="bungee">Bungee</option>
+        <option value="serif">С засечками</option>
+        <option value="sans">Без засечек</option>
+        <option value="mono">Моноширинный</option>
+      </select>
+      <label class="check"><input type="checkbox" id="bold" checked>Полужирный</label>
+    </div>
+    <div class="field">
+      <label for="size">Размер: <span class="num" id="size-out">6</span> % от ширины</label>
+      <input type="range" id="size" min="1" max="40" step="0.5" value="6">
+    </div>
+    <div class="field">
+      <label for="color">Цвет текста</label>
+      <input type="color" id="color" value="#ffffff">
+    </div>
+    <fieldset class="field">
+      <legend>Выравнивание текста</legend>
+      <div class="seg">
+        <label><input type="radio" name="align" value="left">По левому краю</label>
+        <label><input type="radio" name="align" value="center" checked>По центру</label>
+        <label><input type="radio" name="align" value="right">По правому краю</label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <span class="label">Контур</span>
+      <label class="check"><input type="checkbox" id="outline" checked>Обвести буквы контуром</label>
+      <div class="txt-pair"><input type="color" id="outline-color" value="#111417" aria-label="Цвет контура"><input type="range" id="outline-w" min="1" max="30" value="8" aria-label="Толщина контура"></div>
+    </div>
+    <div class="field">
+      <span class="label">Тень</span>
+      <label class="check"><input type="checkbox" id="shadow">Добавить тень</label>
+      <input type="color" id="shadow-color" value="#000000" aria-label="Цвет тени">
+    </div>
+    <div class="field">
+      <span class="label">Плашка под текстом</span>
+      <label class="check"><input type="checkbox" id="box">Нарисовать плашку под текстом</label>
+      <div class="txt-pair"><input type="color" id="box-color" value="#111417" aria-label="Цвет плашки"></div>
+    </div>
+    <div class="field">
+      <label for="box-opacity">Непрозрачность плашки: <span class="num" id="box-opacity-out">70</span> %</label>
+      <input type="range" id="box-opacity" min="0" max="100" value="70">
+    </div>
+    <div class="field">
+      <label for="box-pad">Поля плашки: <span class="num" id="box-pad-out">40</span> % от размера текста</label>
+      <input type="range" id="box-pad" min="0" max="150" value="40">
+    </div>
+    <fieldset class="field">
+      <legend>Положение</legend>
+      <div class="pos" role="radiogroup" aria-label="Положение на картинке">
+        <label><input type="radio" name="pos" value="0,0"><span class="visually-hidden">Вверху слева</span></label>
+        <label><input type="radio" name="pos" value="1,0"><span class="visually-hidden">Вверху по центру</span></label>
+        <label><input type="radio" name="pos" value="2,0"><span class="visually-hidden">Вверху справа</span></label>
+        <label><input type="radio" name="pos" value="0,1"><span class="visually-hidden">В середине слева</span></label>
+        <label><input type="radio" name="pos" value="1,1"><span class="visually-hidden">По центру</span></label>
+        <label><input type="radio" name="pos" value="2,1"><span class="visually-hidden">В середине справа</span></label>
+        <label><input type="radio" name="pos" value="0,2"><span class="visually-hidden">Внизу слева</span></label>
+        <label><input type="radio" name="pos" value="1,2" checked><span class="visually-hidden">Внизу по центру</span></label>
+        <label><input type="radio" name="pos" value="2,2"><span class="visually-hidden">Внизу справа</span></label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="ox">Сдвиг вправо (% от ширины)</label>
+      <input type="number" id="ox" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="oy">Сдвиг вниз (% от высоты)</label>
+      <input type="number" id="oy" min="-100" max="100" step="0.5" value="0" inputmode="decimal">
+    </div>
+    <fieldset class="field">
+      <legend>Сохранить как</legend>
+      <div class="seg">
+        <label><input type="radio" name="fmt" value="keep" checked>Как у исходного</label>
+        <label><input type="radio" name="fmt" value="png">PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg">JPEG</label>
+        <label><input type="radio" name="fmt" value="webp">WebP</label>
+      </div>
+      <p class="help">При выборе «Как у исходного» PNG, JPEG и WebP сохраняют свой формат, а всё остальное записывается как PNG.</p>
+    </fieldset>
+  </div>
+  <p class="help" id="fit-help" aria-live="polite"></p>
+</div>
+<div class="actions" id="go-row" hidden>
+  <button class="btn btn--primary btn--lg" id="go" type="button">Добавить текст и сохранить</button>
+  <span class="help num" id="summary"></span>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="clear" type="button">Начать заново</button>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="result" hidden></div>
+<!--explain-->
+<h2>Как сделать текст читаемым на фото</h2>
+<p>Текст на картинке должен выделяться на фоне того, что за ним, а у фотографий редко бывает однотонный фон. Помогают три приёма. Тёмный контур сохраняет читаемость белых букв на светлых участках. Мягкая тень слегка приподнимает текст без резкой границы. Полупрозрачная плашка под строками обеспечивает самый стабильный контраст, но закрывает часть картинки.</p>
+<p>Поскольку размер задаётся в процентах от ширины изображения, то, что вы видите в предпросмотре, и попадает в файл, каким бы большим ни был оригинал. Поля, толщина контура и тень тоже масштабируются вместе с текстом, поэтому в полном размере ничего не выглядит тяжелее, чем на экране.</p>
+<p>Размещайте подписи в нижней трети, где их ожидает увидеть зритель, делайте строки короткими и оставляйте отступ от края; сетка из девяти положений автоматически сохраняет небольшой отступ. Выравнивание по центру подходит для заголовков, по левому краю — для нескольких строк подписи.</p>
+<h3>Советы</h3>
+<ul>
+  <li>Если картинка слишком пёстрая для текста, сначала поправьте яркость или контраст в инструменте «<a href="/tools/image-filters/">Фильтры для изображений</a>».</li>
+  <li>Оформите готовую картинку рамкой с помощью «<a href="/tools/add-border-to-image/">Добавить рамку к изображению</a>».</li>
+  <li>Нужен текст на PDF? «<a href="/tools/watermark-pdf/">Водяной знак для PDF</a>» ставит текст на каждую страницу.</li>
+</ul>

@@ -1,6 +1,6 @@
 // Hash generator: MD5 (md5.js) and SHA-1/256/384/512 (Web Crypto) of text or a file. Nothing is sent anywhere.
-import { $, $$, el, icon, debounce, dropzone, copyText, textBlob, setStatus, fmtBytes, fmtNum, tick, announce, UserError, friendlyError, tx, txn } from "./core.js?v=5";
-import { MD5 } from "./md5.js?v=5";
+import { $, $$, el, icon, debounce, dropzone, copyText, textBlob, setStatus, fmtBytes, fmtNum, tick, announce, UserError, friendlyError, tx, txn } from "./core.js?v=11";
+import { MD5 } from "./md5.js?v=11";
 
 const MAX_FILE = 200 * 1024 * 1024;
 const SLICE = 4 * 1024 * 1024;

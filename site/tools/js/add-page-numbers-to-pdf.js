@@ -1,5 +1,5 @@
-import { $, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, baseName, UserError, announce, tx, txn } from "./core.js?v=5";
-import { loadPdfLib, openForEdit, parseRanges, saveDoc } from "./pdfcore.js?v=5";
+import { $, fmtBytes, dropzone, readBytes, runJob, setStatus, showResults, clearNode, baseName, UserError, announce, tx, txn } from "./core.js?v=11";
+import { loadPdfLib, openForEdit, parseRanges, saveDoc } from "./pdfcore.js?v=11";
 
 const MAX_BYTES = 200 * 1024 * 1024;
 const drop = $("#drop"), work = $("#work"), status = $("#status"), result = $("#result"), go = $("#go");

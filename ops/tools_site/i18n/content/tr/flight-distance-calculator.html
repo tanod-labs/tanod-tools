@@ -1,0 +1,83 @@
+<!--meta
+{
+  "title": "Uçuş mesafesi hesaplama: büyük daire | Tanod Tools",
+  "description": "İki havalimanı (IATA veya ICAO kodu) ya da iki koordinat arasındaki büyük daire mesafesini km, deniz mili ve mil olarak; kerteriz, orta nokta ve uçuş süresiyle bulun.",
+  "h1": "Uçuş mesafesi hesaplama",
+  "lede": "İki havalimanı veya iki nokta arasındaki büyük daire mesafesini kilometre, deniz mili ve kara mili olarak; kerteriz, orta nokta ve yaklaşık uçuş süresiyle birlikte bulun.",
+  "blurb": "Havalimanları arası büyük daire mesafesi, kerteriz ve uçuş süresiyle.",
+  "keywords": "uçuş mesafesi büyük daire havalimanı iata icao deniz mili kilometre kerteriz orta nokta uçuş süresi haversine rota uzunluğu ne kadar uzak iki havalimanı arası mesafe",
+  "limits": "Küre biçimli bir Dünya'da (ortalama yarıçap 6.371 km) düz çizgi büyük daire tahminidir ve yaklaşık yüzde 0,5 doğrulukla çalışır. Uçuş planlaması veya seyrüsefer için kullanılmaz: gerçek rotalar hava yolları, rüzgârlar ve prosedürler nedeniyle daha uzundur. Havalimanı verileri: OurAirports, kamu malı, IATA kodlu yaklaşık 4.500 büyük ve orta boy havalimanı.",
+  "howto_title": "İki havalimanı arasındaki mesafe nasıl bulunur",
+  "howto": [
+    "Her kutuya bir havalimanı kodu (JFK gibi IATA veya EGLL gibi ICAO) ya da adının bir bölümünü yazın ve listeden seçin. Ya da koordinatlara geçip enlem ve boylamı ondalık derece olarak girin.",
+    "Yaklaşık uçuş süresini görmek için seyir hızınızı ve birimini ayarlayın.",
+    "Mesafeyi km, deniz mili ve mil olarak; ilk ve son kerteriz ile rotanın orta noktasını okuyun."
+  ],
+  "faq": [
+    ["Büyük daire mesafesi nedir?", "Merkezi Dünya'nın ortasında olan bir dairenin yayı boyunca, küre üzerindeki iki nokta arasındaki en kısa yoldur. Uzun uçuşlar buna yakın rotaları izler; bu yüzden düz bir haritada eğri görünürler."],
+    ["Ne kadar doğrudur?", "Ortalama yarıçapı 6.371 km olan bir küre üzerindeki haversine formülü, Dünya'nın hafif basık biçiminde gerçek mesafenin yaklaşık yüzde 0,5'i içindedir: JFK'den Londra Heathrow'a yaklaşık 5.540 km verir. Koordinatlar yaklaşık 100 metreye yuvarlanır; bu ölçekte önemli değildir."],
+    ["Gerçek uçuşum neden daha uzun?", "Uçaklar hava yollarını izler, yasak bölgelerden ve kötü havadan kaçınır, kalkış ve varış prosedürleri uygular; bu yüzden uçulan mesafe genellikle büyük daire mesafesinden yüzde 5 ile 10 fazladır. Buradaki uçuş süresi, mesafenin girdiğiniz hıza bölünmesinden ibarettir; taksi, tırmanış, alçalış, rüzgâr veya bekleme içermez."],
+    ["İlk kerteriz nedir?", "Büyük daire boyunca ilk noktadan ayrılırken yöneleceğiniz, gerçek kuzeyden derece cinsinden pusula yönüdür. Yol boyunca değişir; bu yüzden varıştaki son kerteriz farklıdır. Kerteriz gerçek (true) kerterizdir, manyetik değildir."],
+    ["Hangi havalimanları dahil?", "Kamu malı OurAirports verilerinden alınan, IATA kodu olan büyük ve orta boy havalimanlarıdır; yaklaşık 4.500 tanedir. Sizinki eksikse koordinat kipini kullanın. Kodlar ve adlar tarayıcınızda eşleştirilir; liste bu siteden yalnızca bu sayfayı açtığınızda indirilir."],
+    ["Deniz mili nedir?", "Bir deniz mili tam olarak 1.852 metredir ve yaklaşık bir enlem dakikasına eşittir. Havacılık bunu mesafe için, knot (saatte deniz mili) olarak ise hız için kullanır."]
+  ]
+}
+-->
+<!--tool-->
+<fieldset class="field">
+  <legend>İki yeri şu şekilde girin</legend>
+  <div class="seg" role="radiogroup">
+    <label><input type="radio" name="fd-mode" value="air" checked>Havalimanları</label>
+    <label><input type="radio" name="fd-mode" value="geo">Koordinatlar</label>
+  </div>
+</fieldset>
+<div class="fd" id="fd-air">
+  <div class="field fd__pt">
+    <label for="fd-a">Nereden</label>
+    <input type="text" id="fd-a" autocomplete="off" spellcheck="false" placeholder="JFK" aria-describedby="fd-a-pick">
+    <div class="fd__pick" id="fd-a-pick"></div>
+  </div>
+  <button class="btn btn--icon fd__swap" id="fd-swap" type="button" aria-label="İki yerin yerini değiştir">{{mark:convert-image}}</button>
+  <div class="field fd__pt">
+    <label for="fd-b">Nereye</label>
+    <input type="text" id="fd-b" autocomplete="off" spellcheck="false" placeholder="LHR" aria-describedby="fd-b-pick">
+    <div class="fd__pick" id="fd-b-pick"></div>
+  </div>
+</div>
+<div class="fd" id="fd-geo" hidden>
+  <div class="opts fd__pt">
+    <div class="field"><label for="fd-lat1">Nereden, enlem</label><input type="text" id="fd-lat1" inputmode="decimal" autocomplete="off" placeholder="40.6398"></div>
+    <div class="field"><label for="fd-lon1">Nereden, boylam</label><input type="text" id="fd-lon1" inputmode="decimal" autocomplete="off" placeholder="-73.7789"></div>
+  </div>
+  <button class="btn btn--icon fd__swap" id="fd-swap2" type="button" aria-label="İki yerin yerini değiştir">{{mark:convert-image}}</button>
+  <div class="opts fd__pt">
+    <div class="field"><label for="fd-lat2">Nereye, enlem</label><input type="text" id="fd-lat2" inputmode="decimal" autocomplete="off" placeholder="51.4706"></div>
+    <div class="field"><label for="fd-lon2">Nereye, boylam</label><input type="text" id="fd-lon2" inputmode="decimal" autocomplete="off" placeholder="-0.4619"></div>
+  </div>
+</div>
+<p class="help">Enlem kuzeyde pozitif, güneyde negatiftir; boylam doğuda pozitif, batıda negatiftir.</p>
+<div class="opts">
+  <div class="field">
+    <label for="fd-speed">Seyir hızı</label>
+    <input type="text" id="fd-speed" inputmode="decimal" autocomplete="off" value="450">
+  </div>
+  <div class="field">
+    <label for="fd-unit">Hız birimi</label>
+    <select id="fd-unit">
+      <option value="kt" selected>knot</option>
+      <option value="kmh">km/h</option>
+      <option value="mph">mph</option>
+    </select>
+  </div>
+</div>
+<p class="note" id="fd-msg" role="status" aria-live="polite"></p>
+<div class="calc-res" id="fd-res" hidden>
+  <p class="calc-main" aria-live="polite"><span class="calc-main__label">Mesafe</span> <span class="calc-main__val num" id="fd-main"></span></p>
+  <p class="fd__route" id="fd-route"></p>
+  <dl class="stats" id="fd-stats"></dl>
+</div>
+<!--explain-->
+<h2>Mesafe nasıl hesaplanır</h2>
+<p>Mesafe haversine formülünü kullanır (R. W. Sinnott, "Virtues of the Haversine", Sky and Telescope, 1984). φ1, φ2 enlemleri ve λ1, λ2 boylamlarıyla: a = sin²(Δφ/2) + cos φ1 · cos φ2 · sin²(Δλ/2), ardından d = 2R · atan2(√a, √(1−a)); burada R, 6.371,0088 km olan ortalama Dünya yarıçapıdır (IUGG). Kilometre, 1,852'ye bölünerek deniz miline, 1,609344'e bölünerek kara miline çevrilir; ikisi de kesindir.</p>
+<p>İlk kerteriz θ = atan2(sin Δλ · cos φ2, cos φ1 · sin φ2 − sin φ1 · cos φ2 · cos Δλ) ile bulunur; büyük dairenin orta noktası ise standart küresel trigonometri olan Chris Veness'in Movable Type Scripts sayfasındaki formülleri izler. Son kerteriz, varış noktasından geriye doğru kerterizin yarım daire döndürülmüş halidir.</p>
+<p>Dünya basık bir sferoid olduğu için Vincenty gibi elipsoidal yöntemler yaklaşık yüzde 0,5'e kadar farklı sonuç verebilir. Rota uzunluğu, rüzgâr ve yakıt için bu sayfa yalnızca bir tahmindir. <strong>Uçuş planlaması veya seyrüsefer için kullanılmaz.</strong> Havalimanı konumları kamu malı OurAirports veri setinden gelir ve havalimanlarının referans noktalarıdır, pist uçları değildir.</p>

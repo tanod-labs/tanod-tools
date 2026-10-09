@@ -1,6 +1,6 @@
 // BMI calculator: metric and imperial, WHO adult categories on the BMI rounded to one decimal, healthy weight range.
-import { $, $$, announce, prefs, tx, fmtNum, EN } from "./core.js?v=5";
-import { parseNum } from "./calccore.js?v=5";
+import { $, $$, announce, prefs, tx, fmtNum, EN } from "./core.js?v=11";
+import { parseNum } from "./calccore.js?v=11";
 
 const LB = 0.45359237, IN = 0.0254;
 const W = $("#bm-w"), CM = $("#bm-cm"), FT = $("#bm-ft"), INCH = $("#bm-in");
