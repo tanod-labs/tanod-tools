@@ -124,9 +124,69 @@ API_GUIDES = {
 # "Automate this" block and the note under the tool. Values come from scanapi settings.py / brand.py;
 # docs is the route's /learn guide, or the OpenAPI spec where no guide exists yet.
 API_ROUTES = {
-    "cron-expression-explainer": ("POST /v1/cron", "0.001", 10, "cron_next_runs", "/learn/cron-next-run-api.html"),
+    "merge-pdf": ("POST /v1/pdf/merge", "0.005", 3, "pdf_merge", "/learn/pdf-merge-api.html"),
+    "compress-pdf": ("POST /v1/pdf/compress", "0.01", 0, "pdf_compress", "/learn/compress-pdf-api.html"),
+    "split-pdf": ("POST /v1/pdf/split", "0.005", 3, "pdf_split", "/learn/pdf-split-api.html"),
+    "extract-pdf-pages": ("POST /v1/pdf/extract-pages", "0.005", 3, "pdf_extract_pages", "/learn/extract-pdf-pages-api.html"),
+    "remove-pdf-pages": ("POST /v1/pdf/remove-pages", "0.005", 3, "pdf_remove_pages", "/learn/remove-pdf-pages-api.html"),
+    "rotate-pdf": ("POST /v1/pdf/rotate", "0.005", 3, "pdf_rotate", "/learn/rotate-pdf-api.html"),
+    "reorder-pdf-pages": ("POST /v1/pdf/reorder", "0.005", 3, "pdf_reorder_pages", "/openapi.json"),
+    "add-page-numbers-to-pdf": ("POST /v1/pdf/page-numbers", "0.005", 3, "pdf_page_numbers", "/learn/pdf-page-numbers-api.html"),
+    "watermark-pdf": ("POST /v1/pdf/watermark", "0.005", 3, "pdf_watermark", "/learn/pdf-watermark-api.html"),
+    "jpg-to-pdf": ("POST /v1/pdf/from-images", "0.005", 0, "images_to_pdf", "/learn/images-to-pdf-api.html"),
+    "png-to-pdf": ("POST /v1/pdf/from-images", "0.005", 0, "images_to_pdf", "/learn/images-to-pdf-api.html"),
+    "url-to-pdf": ("POST /v1/pdf/html-to-pdf", "0.01", 0, "html_to_pdf", "/learn/html-to-pdf-api.html"),
+    "protect-pdf": ("POST /v1/pdf/protect", "0.005", 3, "pdf_protect", "/learn/password-protect-pdf-api.html"),
+    "unlock-pdf": ("POST /v1/pdf/unlock", "0.005", 3, "pdf_unlock", "/learn/unlock-pdf-api.html"),
+    "edit-pdf-metadata": ("POST /v1/pdf/metadata", "0.005", 3, "pdf_metadata", "/learn/pdf-metadata-api.html"),
+    "compress-image": ("POST /v1/image/compress", "0.003", 3, "image_compress", "/learn/image-compress-api.html"),
+    "resize-image": ("POST /v1/image/resize", "0.002", 3, "image_resize", "/learn/image-resize-api.html"),
+    "convert-image": ("POST /v1/image/convert", "0.002", 3, "image_convert", "/learn/image-convert-api.html"),
+    "png-to-jpg": ("POST /v1/image/convert", "0.002", 3, "image_convert", "/learn/image-convert-api.html"),
+    "jpg-to-png": ("POST /v1/image/convert", "0.002", 3, "image_convert", "/learn/image-convert-api.html"),
+    "webp-to-png": ("POST /v1/image/convert", "0.002", 3, "image_convert", "/learn/image-convert-api.html"),
     "image-to-webp": ("POST /v1/image/convert", "0.002", 3, "image_convert", "/learn/image-convert-api.html"),
+    "crop-image": ("POST /v1/image/crop", "0.002", 3, "image_crop", "/learn/image-crop-api.html"),
+    "rotate-image": ("POST /v1/image/rotate", "0.002", 3, "image_rotate", "/learn/image-rotate-api.html"),
+    "add-text-to-image": ("POST /v1/image/watermark", "0.002", 3, "image_watermark", "/learn/image-watermark-api.html"),
+    "remove-exif": ("POST /v1/image/strip-metadata", "0.002", 3, "image_strip_metadata", "/learn/strip-image-metadata-api.html"),
+    "favicon-generator": ("POST /v1/image/favicon", "0.003", 3, "image_favicon", "/learn/favicon-generator-api.html"),
+    "word-counter": ("POST /v1/text/stats", "0.001", 10, "text_stats", "/learn/text-statistics-api.html"),
+    "character-counter": ("POST /v1/text/stats", "0.001", 10, "text_stats", "/learn/text-statistics-api.html"),
+    "case-converter": ("POST /v1/text/case", "0.001", 10, "text_case", "/openapi.json"),
+    "remove-duplicate-lines": ("POST /v1/text/lines", "0.001", 10, "text_lines", "/openapi.json"),
+    "sort-lines-alphabetically": ("POST /v1/text/lines", "0.001", 10, "text_lines", "/openapi.json"),
+    "find-and-replace": ("POST /v1/text/replace", "0.001", 10, "text_replace", "/openapi.json"),
+    "text-diff": ("POST /v1/diff", "0.001", 10, "diff_text", "/learn/text-diff-api.html"),
+    "extract-emails-and-urls": ("POST /v1/text/extract", "0.001", 10, "text_extract", "/openapi.json"),
+    "invisible-character-detector": ("POST /v1/text/unicode", "0.001", 10, "text_unicode_inspect", "/learn/detect-ascii-smuggling-invisible-unicode-api.html"),
+    "word-frequency-counter": ("POST /v1/text/frequency", "0.001", 10, "text_frequency", "/learn/keyword-extraction-api.html"),
+    "text-to-slug": ("POST /v1/slug", "0.001", 10, "make_slug", "/learn/slug-generator-api.html"),
+    "markdown-to-html": ("POST /v1/markdown", "0.001", 10, "markdown_to_html", "/learn/markdown-to-html-api.html"),
+    "csv-to-json": ("POST /v1/convert", "0.001", 10, "convert_data", "/learn/convert-data-formats-api.html"),
+    "json-to-csv": ("POST /v1/convert", "0.001", 10, "convert_data", "/learn/convert-data-formats-api.html"),
+    "lorem-ipsum-generator": ("POST /v1/text/lorem", "0.001", 10, "text_lorem", "/openapi.json"),
+    "yaml-to-json": ("POST /v1/convert", "0.001", 10, "convert_data", "/learn/convert-data-formats-api.html"),
+    "json-to-yaml": ("POST /v1/convert", "0.001", 10, "convert_data", "/learn/convert-data-formats-api.html"),
+    "base64-encode-decode": ("POST /v1/text/encode", "0.001", 10, "text_encode", "/openapi.json"),
     "url-encode-decode": ("POST /v1/text/encode", "0.001", 10, "text_encode", "/openapi.json"),
+    "html-entity-encoder-decoder": ("POST /v1/text/encode", "0.001", 10, "text_encode", "/openapi.json"),
+    "hash-generator": ("POST /v1/hash", "0.001", 10, "hash_text", "/learn/hash-text-api.html"),
+    "unix-timestamp-converter": ("POST /v1/time", "0.001", 10, "convert_time", "/learn/timezone-converter-api.html"),
+    "cron-expression-explainer": ("POST /v1/cron", "0.001", 10, "cron_next_runs", "/learn/cron-next-run-api.html"),
+    "user-agent-parser": ("POST /v1/useragent", "0.001", 10, "parse_user_agent", "/learn/user-agent-parser-api.html"),
+    "color-converter": ("POST /v1/color/convert", "0.001", 10, "convert_color_check_contrast", "/learn/color-contrast-checker-api.html"),
+    "color-contrast-checker": ("POST /v1/color/convert", "0.001", 10, "convert_color_check_contrast", "/learn/color-contrast-checker-api.html"),
+    "uuid-generator": ("POST /v1/uuid", "0.001", 10, "generate_ids", "/learn/uuid-generator-api.html"),
+    "unit-converter": ("POST /v1/convert/units", "0.001", 10, "convert_units", "/learn/unit-conversion-api.html"),
+    "time-zone-converter": ("POST /v1/time", "0.001", 10, "convert_time", "/learn/timezone-converter-api.html"),
+    "business-days-calculator": ("POST /v1/date/business-days", "0.001", 10, "count_or_add_business_days", "/learn/business-days-api.html"),
+    "number-to-words": ("POST /v1/text/numbers", "0.001", 10, "text_numbers", "/openapi.json"),
+    "qr-code-generator": ("POST /v1/qr", "0.001", 10, "make_qr_code", "/learn/qr-code-api.html"),
+    "barcode-generator": ("POST /v1/barcode", "0.001", 10, "make_barcode", "/learn/barcode-generator-api.html"),
+    "metar-taf-decoder": ("POST /v1/aviation/metar/decode", "0.001", 5, "decode_metar_taf", "/learn/decode-metar-taf-api.html"),
+    "flight-distance-calculator": ("POST /v1/aviation/distance", "0.001", 5, "airport_distance", "/learn/airport-lookup-flight-distance-api.html"),
+    "sunrise-sunset-calculator": ("POST /v1/space/sun-moon", "0.001", 5, "sun_moon_times", "/learn/sunrise-sunset-moon-phase-api.html"),
 }
 
 ORDER = [
@@ -807,14 +867,21 @@ def tool_page(lang: str, meta: dict, pages: dict) -> str:
     route = API_ROUTES.get(slug)
     if route and lang == "en":
         r_path, r_price, r_free, r_mcp, r_docs = route
-        r_label = "Read the API guide" if r_docs.endswith(".html") else "Read the API spec"
         mcp = f'<a href="https://tanod.dev/mcp"><code>https://tanod.dev/mcp</code></a>'
+        if r_free:
+            free_a = (f'There are {r_free} free calls per IP per UTC day; over MCP at {mcp} (tool <code>{r_mcp}</code>) '
+                      f'the free allowance is applied automatically.')
+            free_b = f'{r_free} free calls a day via MCP at {mcp}.'
+        else:
+            free_a = f'There is no free tier for this route; over MCP at {mcp} (tool <code>{r_mcp}</code>) each call is paid the same way.'
+            free_b = f'no free tier; MCP at {mcp} (tool <code>{r_mcp}</code>).'
+        r_label = "Read the API guide" if r_docs.endswith(".html") else "Read the API spec"
         automate = (f'<aside class="automate" aria-labelledby="auto-h"><h2 id="auto-h">Automate this</h2>'
                     f'<p>Need this in code or for an AI agent? <code>{r_path}</code> costs USD {r_price} per call (USDC on Base or Polygon, x402). '
-                    f'There are {r_free} free calls per IP per UTC day; over MCP at {mcp} (tool <code>{r_mcp}</code>) the free allowance is applied automatically.</p>'
+                    f'{free_a}</p>'
                     f'<p class="automate__links"><a href="{ORIGIN}{r_docs}">{r_label}</a>'
                     f'<a href="{ORIGIN}/connect/">Connect an agent</a></p></aside>')
-        top_note = (f'<p class="limits">Need this in code? <code>{r_path}</code>, USD {r_price} per call; {r_free} free calls a day via MCP at {mcp}. '
+        top_note = (f'<p class="limits">Need this in code? <code>{r_path}</code>, USD {r_price} per call; {free_b} '
                     f'<a href="{ORIGIN}{r_docs}">{r_label}</a>.</p>')
     monitor = ""
     if meta["category"] == "mikrotik":
