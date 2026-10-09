@@ -48,7 +48,7 @@ export function lint(pr) {
     else rows.push(R("pass", "Description length", `${n} of ${MAX_DESC} characters.`));
 
     if (WHEN.test(desc)) rows.push(R("pass", "When-to-use sentence", "Found."));
-    else rows.push(R("warn", "When-to-use sentence", "No \"use when\" sentence found.", "Add one, for example: \"Use when an agent needs X before doing Y.\" Curators look for it; 99.1% of Bazaar listings lack it."));
+    else rows.push(R("warn", "When-to-use sentence", "No \"use when\" sentence found.", "Add one, for example: \"Use when an agent needs X before doing Y.\" Curators look for it; 94% of Bazaar listings lack it."));
   }
 
   const url = str(res.url) || str(pr.resource) || str(first.resource);
