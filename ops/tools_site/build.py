@@ -120,6 +120,15 @@ API_GUIDES = {
     "pdf-to-text": "pdf-to-text-api", "image-to-webp": "image-convert-api",
 }
 
+# Tool slug -> (route, price in USD, free calls per IP per UTC day, MCP tool, docs path) for the English
+# "Automate this" block and the note under the tool. Values come from scanapi settings.py / brand.py;
+# docs is the route's /learn guide, or the OpenAPI spec where no guide exists yet.
+API_ROUTES = {
+    "cron-expression-explainer": ("POST /v1/cron", "0.001", 10, "cron_next_runs", "/learn/cron-next-run-api.html"),
+    "image-to-webp": ("POST /v1/image/convert", "0.002", 3, "image_convert", "/learn/image-convert-api.html"),
+    "url-encode-decode": ("POST /v1/text/encode", "0.001", 10, "text_encode", "/openapi.json"),
+}
+
 ORDER = [
     "merge-pdf", "compress-pdf", "split-pdf", "extract-pdf-pages", "remove-pdf-pages", "rotate-pdf",
     "reorder-pdf-pages", "add-page-numbers-to-pdf", "watermark-pdf", "sign-pdf", "pdf-to-jpg", "pdf-to-text",
@@ -133,7 +142,7 @@ ORDER = [
     "text-to-slug", "reverse-text", "markdown-to-html", "html-to-markdown", "markdown-table-generator", "csv-to-json",
     "json-to-csv", "text-to-binary", "morse-code-translator", "lorem-ipsum-generator",
     "json-formatter", "sql-formatter", "xml-formatter", "html-formatter", "css-minifier",
-    "yaml-to-json", "json-to-yaml", "json-to-typescript",
+    "yaml-to-json", "json-to-yaml", "json-to-typescript", "x402-listing-lint",
     "base64-encode-decode", "url-encode-decode", "html-entity-encoder-decoder", "hash-generator",
     "jwt-decoder", "unix-timestamp-converter", "cron-expression-explainer", "cron-expression-generator",
     "regex-tester", "subnet-calculator", "chmod-calculator", "http-status-codes", "user-agent-parser",
@@ -359,6 +368,7 @@ ICONS = {
     "cra-incident-clock": '<circle cx="24" cy="26" r="17"/><path d="M24 14v12l8 5"/><path d="M18 4h12"/>',
     "e-fatura-ubl-tr-viewer": PAGE + '<path d="M28 27a6 6 0 1 0 0 10a4.7 4.7 0 1 1 0-10z"/><path d="M33 31l1 2.2 2.3.3-1.7 1.6.4 2.3-2-1.2-2 1.2.4-2.3-1.7-1.6 2.3-.3z" ' + F + '/>',
     "vietnam-e-invoice-viewer": PAGE + '<path d="M24 22l2.4 6.2 6.6.3-5.2 4.1 1.8 6.4-5.6-3.7-5.6 3.7 1.8-6.4-5.2-4.1 6.6-.3z"/>',
+    "x402-listing-lint": PAGE + '<path d="M16 20h16M16 26h10"/><path d="M17 35l4 4 9-9"/>',
     "cfdi-viewer": PAGE + '<path d="M17 22h14M17 28h8"/><circle cx="30" cy="35" r="5"/><path d="M27.5 35l2 2 3-3.5"/>',
     "i-print": '<path d="M13 17V5h22v12"/><path d="M13 35H5V17h38v18h-8"/><path d="M13 27h22v16H13z"/>',
     "i-x": '<path d="M10 10l28 28M38 10L10 38"/>',
@@ -793,6 +803,19 @@ def tool_page(lang: str, meta: dict, pages: dict) -> str:
                 f'<p class="automate__links"><a href="{ORIGIN}/learn/{guide}.html">{esc(S(lang, "Read the API guide"))}</a>'
                 f'<a href="{ORIGIN}/connect/">{esc(S(lang, "Connect an agent"))}</a></p></aside>'
                 if guide else "")
+    top_note = ""
+    route = API_ROUTES.get(slug)
+    if route and lang == "en":
+        r_path, r_price, r_free, r_mcp, r_docs = route
+        r_label = "Read the API guide" if r_docs.endswith(".html") else "Read the API spec"
+        mcp = f'<a href="https://tanod.dev/mcp"><code>https://tanod.dev/mcp</code></a>'
+        automate = (f'<aside class="automate" aria-labelledby="auto-h"><h2 id="auto-h">Automate this</h2>'
+                    f'<p>Need this in code or for an AI agent? <code>{r_path}</code> costs USD {r_price} per call (USDC on Base or Polygon, x402). '
+                    f'There are {r_free} free calls per IP per UTC day; over MCP at {mcp} (tool <code>{r_mcp}</code>) the free allowance is applied automatically.</p>'
+                    f'<p class="automate__links"><a href="{ORIGIN}{r_docs}">{r_label}</a>'
+                    f'<a href="{ORIGIN}/connect/">Connect an agent</a></p></aside>')
+        top_note = (f'<p class="limits">Need this in code? <code>{r_path}</code>, USD {r_price} per call; {r_free} free calls a day via MCP at {mcp}. '
+                    f'<a href="{ORIGIN}{r_docs}">{r_label}</a>.</p>')
     monitor = ""
     if meta["category"] == "mikrotik":
         audit = (f'<p><a href="{ORIGIN}/monitor/">{esc(S(lang, "Check from outside whether Winbox is reachable: free exposure scan."))}</a></p>'
@@ -821,7 +844,7 @@ def tool_page(lang: str, meta: dict, pages: dict) -> str:
     <section id="tool" class="board" aria-label="{esc(meta["name"])}" tabindex="-1">
 {with_drop_promise(lang, meta)}
     </section>
-    <p class="limits">{meta["limits"]}</p>
+    <p class="limits">{meta["limits"]}</p>{top_note}
     <div class="ad-slot" data-ad-slot="below-tool" aria-hidden="true"></div>
     <div class="below">
       <section class="howto" aria-labelledby="howto-h"><h2 id="howto-h">{esc(howto_title)}</h2><ol class="steps">{steps_html}</ol></section>

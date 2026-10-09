@@ -1,0 +1,62 @@
+<!--meta
+{
+  "category": "dev",
+  "icon": "x402-listing-lint",
+  "module": "listing-lint",
+  "name": "x402 listing lint",
+  "title": "x402 listing lint for the CDP Bazaar | Tanod Tools",
+  "description": "Paste an x402 PaymentRequired JSON and check it against the CDP Bazaar listing rules: description length, when-to-use sentence, https, outputSchema, payTo.",
+  "h1": "x402 listing lint",
+  "lede": "Paste your 402 response and see which CDP Bazaar listing rules it passes, with a one-line fix for each that it does not.",
+  "blurb": "Lint an x402 PaymentRequired against the CDP Bazaar listing rules.",
+  "keywords": "x402 bazaar cdp listing paymentrequired outputSchema description lint validate",
+  "limits": "Input up to 1 MB of JSON. Nothing is sent anywhere, and the page never contacts your endpoint.",
+  "howto_title": "How to lint an x402 listing",
+  "howto": [
+    "Get your endpoint's 402 response, for example with curl -s -i URL. Type the URL in the second box to get that command.",
+    "Paste the JSON body (or the base64 PAYMENT-REQUIRED header value) into the first box.",
+    "Read the list. Each rule is pass, warn or fail, and every warn and fail has a one-line fix."
+  ],
+  "faq": [
+    ["Is my JSON uploaded?", "No. The rules run in your browser and nothing is sent or stored. The page also does not fetch your endpoint."],
+    ["Why can't I just enter a URL and have it fetched?", "To keep the privacy promise, this page is not allowed to contact other sites, and most paid APIs do not send CORS headers anyway, so a browser could not read the response. Enter the URL to get a curl command, run it, and paste the body."],
+    ["Which formats are understood?", "x402 v1 (description, mimeType, outputSchema and maxAmountRequired inside each accepts entry) and v2 (resource object, amount, and extensions.bazaar). A bare accepts entry and the base64 PAYMENT-REQUIRED header value also work."],
+    ["Is this the official validator?", "No. It checks the documented rules and the curation criteria we collected in <a href=\"/learn/x402-bazaar-listing-checklist.html\">the Bazaar listing checklist</a>. For the authoritative result, call the free CDP validate endpoint described there."],
+    ["How is the when-to-use sentence detected?", "By phrases such as \"use when\", \"use this to\", \"call when\", \"best for\" and \"ideal for\". It is a warning, not a failure, because curation is editorial."]
+  ],
+  "related": ["json-formatter", "http-status-codes", "jwt-decoder", "base64-encode-decode"],
+  "app_category": "DeveloperApplication"
+}
+-->
+<!--tool-->
+<div class="field">
+  <label for="l-in">PaymentRequired JSON</label>
+  <textarea id="l-in" class="mono util-tall" rows="12" autocomplete="off" spellcheck="false" placeholder='{"x402Version": 2, "resource": {"url": "https://…", "description": "…"}, "accepts": [ … ]}'></textarea>
+</div>
+<div class="actions">
+  <button class="btn" id="l-sample" type="button">Load an example</button>
+  <span class="spacer"></span>
+  <button class="btn btn--quiet" id="l-clear" type="button">Clear</button>
+</div>
+<div class="field">
+  <label for="l-url">Endpoint URL (optional)</label>
+  <input id="l-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://api.example.com/v1/thing">
+  <span class="help">This page does not contact your endpoint. It gives you a command to run, then paste the output above.</span>
+  <pre class="out ll-curl" id="l-curl" hidden></pre>
+  <div class="actions"><button class="btn btn--sm" id="l-curl-copy" type="button" hidden>Copy command</button></div>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+<div id="l-result" hidden>
+  <p class="ll-sum" id="l-sum"></p>
+  <ul class="ll-list" id="l-list"></ul>
+</div>
+<!--explain-->
+<h2>The rules this checks</h2>
+<p>The Coinbase CDP x402 Bazaar lists paid endpoints for agents to discover. Listing quality decides whether an agent can pick your endpoint without guessing. This tool checks the pieces you control in the 402 response.</p>
+<ul>
+  <li><strong>Description</strong> must be present and at most 500 characters. CDP rejects longer ones at settle time.</li>
+  <li><strong>A "when to use" sentence</strong> is a curation rule. In our index of 37,275 Bazaar records, 99.1% lack one, 104 are over 500 characters and 92 are empty.</li>
+  <li><strong>Resource URL</strong> must be https. <strong>mimeType</strong> and <strong>outputSchema</strong> must be present.</li>
+  <li>Each payment option needs a positive integer <strong>amount</strong>, a <strong>network</strong>, an <strong>asset</strong> and a <strong>payTo</strong> address.</li>
+</ul>
+<p>The full list, with the free validate call and the featured-tier criteria, is in <a href="/learn/x402-bazaar-listing-checklist.html">How to get an x402 endpoint listed and featured in the CDP Bazaar</a>. For payer counts by endpoint, see <a href="/learn/x402-bazaar-agent-demand-data.html">what agents pay for over x402</a>.</p>
