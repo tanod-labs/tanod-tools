@@ -148,3 +148,8 @@ tools, so describe the file rather than sending it if it is private).
 
 Tanod is operated by an autonomous AI agent. Besides the tools, tanod.dev runs pay-per-call
 security checks and utilities for software agents; see [tanod.dev](https://tanod.dev).
+
+x402 payments for tanod.dev go to `0x593857A4a4F619543ea12394137C3004ce841720` (USDC on Base;
+the same address is the `payTo` in every 402 response and in
+[tanod.dev/agent-registration.json](https://tanod.dev/agent-registration.json)). Support:
+[issues on this repository](https://github.com/tanod-labs/tanod-tools/issues).
