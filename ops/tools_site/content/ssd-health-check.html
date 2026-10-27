@@ -1,0 +1,89 @@
+<!--meta
+{
+  "category": "util",
+  "name": "SSD health check",
+  "title": "SSD health check: NVMe percentage used and smartctl | Tanod Tools",
+  "description": "Paste smartctl or nvme smart-log output to see percentage used, TB written, spare, errors and a plain verdict. Runs in your browser; nothing is uploaded.",
+  "h1": "SSD health check",
+  "lede": "Paste the SMART output of an NVMe or SATA SSD to see how worn it is, how much has been written, and whether to trust it.",
+  "blurb": "Read an SSD's wear, writes and errors from smartctl.",
+  "keywords": "ssd health check nvme percentage used smartctl nvme smart-log data units written tbw used ssd available spare unsafe shutdowns media errors",
+  "limits": "Reads text you paste; nothing is uploaded. NVMe drives give the most complete result; SATA drives show wear, sectors and hours.",
+  "howto_title": "How to check an SSD's health",
+  "howto": [
+    "Get the SMART output. On Linux run <code>sudo smartctl -a /dev/nvme0</code> or <code>sudo nvme smart-log /dev/nvme0</code>; <code>smartctl -j -a</code> gives JSON. On Windows and macOS, install smartmontools and run <code>smartctl -a</code> on the drive.",
+    "Paste the whole output into the box, or press the sample button to see how a result looks.",
+    "Optional: type the maker's rated endurance in TB (the TBW on the spec sheet) to compare writes with the drive's own wear figure.",
+    "Read the verdict and the reasons under it. Problems are listed first."
+  ],
+  "faq": [
+    ["What does NVMe percentage used mean?", "It is the drive's own estimate of how much of its rated endurance is gone, worked out by its controller from actual use and the maker's model of the flash. 0% is new and 100% means the estimated endurance is used up. It can go past 100% (the spec allows up to 255), and a drive at 100% is not necessarily failing, but it is beyond the wear the maker designed for."],
+    ["How is TB written worked out?", "NVMe reports Data Units Written in thousands of 512-byte blocks, so one unit is 512,000 bytes. The page multiplies the count by 512,000 and shows decimal terabytes (1 TB = 10^12 bytes). The number counts what the computer asked the drive to write, not the extra writes the drive does internally."],
+    ["Why can the written share and percentage used differ?", "The written share is host writes divided by the rated TBW you type in. Percentage used comes from the drive and includes write amplification, flash type and the maker's own model. If the drive reports more than the TBW share, trust the drive; if it reports less, the rating was probably conservative."],
+    ["Is a drive with SMART 'PASSED' healthy?", "Not necessarily. The overall PASSED line only turns to FAILED when the drive crosses its own failure thresholds, which often happens late. Percentage used, spare, media errors and the critical warning flags show wear and trouble earlier."],
+    ["Can I trust SMART numbers on a used drive?", "Mostly, but they are reported by the drive itself. Some sellers reset or rewrite counters, so treat suspiciously low hours or writes on a drive that looks old with caution, and ask for the full output rather than a screenshot of one number."]
+  ],
+  "related": ["unit-converter", "percentage-calculator", "text-diff", "hash-generator"],
+  "app_category": "UtilitiesApplication"
+}
+-->
+<!--tool-->
+<div class="util-stack dv-stack">
+  <div class="field">
+    <label for="ssd-in">SMART output</label>
+    <textarea id="ssd-in" class="mono" rows="10" autocomplete="off" spellcheck="false" placeholder="Paste the output of smartctl -a, smartctl -j or nvme smart-log here"></textarea>
+  </div>
+  <div class="field">
+    <label for="ssd-tbw">Rated endurance in TB (TBW), optional</label>
+    <input type="text" inputmode="decimal" id="ssd-tbw" autocomplete="off" placeholder="600">
+  </div>
+  <div class="actions">
+    <button class="btn btn--quiet" id="ssd-sample" type="button">Try a sample</button>
+    <span class="spacer"></span>
+    <button class="btn btn--quiet" id="ssd-clear" type="button">Clear</button>
+  </div>
+  <p class="dv-soft" id="ssd-sample-name"></p>
+  <div class="status" id="status" role="status" hidden></div>
+  <div id="ssd-out" class="util-stack dv-stack" hidden>
+    <p class="dv-verdict" id="ssd-verdict" aria-live="polite"></p>
+    <p class="dv-soft" id="ssd-src"></p>
+    <dl class="stats" id="ssd-stats">
+      <div><dt>Percentage used</dt><dd id="ssd-pu" class="util-small">-</dd></div>
+      <div><dt>Data written</dt><dd id="ssd-tb" class="util-small">-</dd></div>
+      <div><dt>Share of rated TBW</dt><dd id="ssd-share" class="util-small">-</dd></div>
+      <div><dt>Gap vs percentage used</dt><dd id="ssd-gap" class="util-small">-</dd></div>
+      <div><dt>Available spare</dt><dd id="ssd-spare" class="util-small">-</dd></div>
+      <div><dt>Media or data errors</dt><dd id="ssd-media" class="util-small">-</dd></div>
+      <div><dt>Unsafe shutdowns</dt><dd id="ssd-unsafe" class="util-small">-</dd></div>
+      <div><dt>Power-on hours</dt><dd id="ssd-poh" class="util-small">-</dd></div>
+      <div><dt>Critical warning</dt><dd id="ssd-cw" class="util-small">-</dd></div>
+    </dl>
+    <div>
+      <h2 class="dv-sub" id="ssd-why-h">Why this verdict</h2>
+      <ul class="ssd-list" id="ssd-reasons" aria-labelledby="ssd-why-h"></ul>
+    </div>
+    <div id="ssd-notes-box">
+      <h2 class="dv-sub" id="ssd-notes-h">Also worth knowing</h2>
+      <ul class="ssd-list" id="ssd-notes" aria-labelledby="ssd-notes-h"></ul>
+    </div>
+    <p class="dv-caution">{{mark:i-alert}}<span><strong>An estimate, not a guarantee.</strong> Percentage used is the drive's own estimate and can pass 100%. A healthy reading does not rule out sudden failure, so keep backups of anything you cannot replace.</span></p>
+  </div>
+</div>
+<!--explain-->
+<h2>NVMe percentage used: what it means</h2>
+<p>Percentage used is a field in the NVMe SMART log. The drive's controller estimates how much of the flash's rated endurance has been consumed, from how much has really been written and the maker's model of how many write cycles the cells survive. A new drive reads 0%. At 100% the estimated endurance is used up, but the specification says that does not by itself mean the drive has failed, and the value is allowed to keep rising past 100%. Because it is the drive's own estimate, two models can differ for the same amount of data.</p>
+<p>It is not the same as how full the drive is, and it is not remaining life in years. A drive used for light office work can sit at 3% for years, while a drive used for video capture or databases can reach 100% in months. What matters is the trend, so check again in a month and compare.</p>
+<h2>Data units written and TBW</h2>
+<p>The same log counts Data Units Written. One unit is 1,000 blocks of 512 bytes, so 512,000 bytes. Multiply the count by 512,000 for the bytes the host has written, and divide by 10^12 for decimal terabytes. Makers publish an endurance rating in TBW (terabytes written) for the warranty, usually on the spec sheet for the exact model and capacity. Comparing the two figures is a cross-check: if the written share of the rating is far below percentage used, the drive is wearing faster than its rating suggests; if it is far above, the rating was conservative.</p>
+<h2>How to check a used SSD before you buy it</h2>
+<ol>
+  <li>Ask the seller for the full <code>smartctl -a</code> or <code>nvme smart-log</code> output, not a screenshot of one tool's summary score.</li>
+  <li>Look at percentage used first. Under about 20% is lightly worn; above 80% is near the end of its design life; at or over 100% is past it.</li>
+  <li>Check available spare against its threshold. Spare falling toward the threshold means the drive is running out of replacement blocks.</li>
+  <li>Check media and data integrity errors and the critical warning flags. Non-zero errors, or any warning flag other than temperature, are reasons to walk away.</li>
+  <li>Read power-on hours and data written together. A drive with a few hours and many terabytes, or the other way round, deserves questions, because counters can be reset.</li>
+  <li>Unsafe shutdowns are a clue to how the drive was treated, not a failure by themselves.</li>
+  <li>Run a full read test (for example <code>smartctl -t long</code>) and re-read the log afterwards to see whether any counter moved.</li>
+</ol>
+<h2>What SMART's PASSED line misses</h2>
+<p>The overall self-assessment only flips to FAILED when the drive crosses its own failure limits, which can be very late. A drive can pass with 95% used and a handful of media errors. The numbers above show wear and early trouble well before the headline result changes.</p>

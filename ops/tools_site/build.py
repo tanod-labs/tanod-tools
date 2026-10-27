@@ -213,7 +213,7 @@ ORDER = [
     "time-zone-converter", "age-calculator", "date-difference-calculator", "date-calculator", "business-days-calculator",
     "bmi-calculator", "roman-numeral-converter", "number-to-words", "aspect-ratio-calculator",
     "qr-code-generator", "wifi-qr-code-generator", "vcard-qr-code-generator", "barcode-generator",
-    "password-generator", "random-number-generator", "random-name-picker", "countdown-timer", "stopwatch",
+    "password-generator", "random-number-generator", "random-name-picker", "countdown-timer", "stopwatch", "ssd-health-check",
     "xrechnung-viewer", "zugferd-factur-x-viewer", "fatturapa-viewer", "ksef-viewer", "peppol-ubl-invoice-viewer",
     "e-fatura-ubl-tr-viewer", "vietnam-e-invoice-viewer", "cfdi-viewer",
     "metar-taf-decoder", "flight-distance-calculator", "crosswind-calculator", "density-altitude-calculator",
@@ -391,6 +391,7 @@ ICONS = {
     "mikrotik-netwatch-generator": '<path d="M4 26h10l5-14 8 26 5-12h12"/><circle cx="40" cy="12" r="3.5" ' + F + '/>',
     "mikrotik-wireguard-generator": '<path d="M4 42V24a20 20 0 0 1 40 0v18"/><path d="M14 42V25a10 10 0 0 1 20 0v17"/><path d="M2 42h44"/>',
     "routeros-export-diff": '<path d="M4 4h17v40H4zM27 4h17v40H27z"/><path d="M8 13h9M8 20h9M31 13h9M31 20h9M31 30h9M35.5 25.5v9M8 30h9"/>',
+    "ssd-health-check": '<rect x="6" y="14" width="36" height="20" rx="3"/><path d="M12 22h10M12 27h6"/><path d="M30 29l3-5 3 4 3-3"/>',
     # ui
     "i-check": '<path d="M8 25l10 10L40 13"/>',
     "i-alert": '<path d="M24 5L3 42h42z"/><path d="M24 18v11"/><rect x="22" y="33" width="4" height="4" ' + F + '/>',
